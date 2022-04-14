@@ -1,0 +1,181 @@
+{
+  "/": {
+    "typ": "page",
+    "widget": {
+      "typ": "expand",
+      "widget": {
+        "typ": "center",
+        "widget": {
+          "typ": "text",
+          "text": "ERROR: InitialData.swift is missing a \"/\" entry."
+        }
+      }
+    }
+  },
+  "/maggie-error-details": {
+    "typ": "page",
+    "widget": {
+      "typ": "column",
+      "widgets": [
+        {
+          "typ": "title-bar",
+          "text": "Error Details"
+        },
+        {
+          "typ": "scroll",
+          "widget": {
+            "typ": "error-details"
+          }
+        }
+      ]
+    }
+  },
+  "/maggie-server-status": {
+    "typ": "page",
+    "widget": {
+      "typ": "column",
+      "widgets": [
+        {
+          "typ": "title-bar",
+          "text": "Status"
+        },
+        {
+          "typ": "expand",
+          "widget": {
+            "typ": "center",
+            "widget": {
+              "typ": "text",
+              "text": "ERROR: InitialData.swift is missing a \"/maggie-server-status\" entry."
+            }
+          }
+        }
+      ]
+    }
+  },
+  "/maggie-contact-support-modal": {
+    "typ": "modal",
+    "widget": {
+      "typ": "alert",
+      "title": "Contact Support",
+      "widgets": [
+        {
+          "typ": "text",
+          "text": "ERROR: InitialData.swift is missing a \"maggie-contact-support-modal\" entry."
+        },
+        {
+          "typ": "button",
+          "text": "OK",
+          "actions": [
+            "pop"
+          ],
+          "default": true
+        }
+      ]
+    }
+  },
+  "/maggie-network-error-modal": {
+    "typ": "modal",
+    "widget": {
+      "typ": "alert",
+      "title": "Connection Problem",
+      "widgets": [
+        {
+          "typ": "text",
+          "text": "Could not contact server.  Check your connection and try again."
+        },
+        {
+          "typ": "button",
+          "text": "Details",
+          "actions": [
+            "push:/maggie-error-details"
+          ]
+        },
+        {
+          "typ": "button",
+          "text": "Status",
+          "actions": [
+            "push:/maggie-server-status"
+          ]
+        },
+        {
+          "typ": "button",
+          "text": "OK",
+          "actions": [
+            "pop"
+          ],
+          "default": true
+        }
+      ]
+    }
+  },
+  "/maggie-rpc-error-modal": {
+    "typ": "modal",
+    "widget": {
+      "typ": "alert",
+      "title": "Error",
+      "widgets": [
+        {
+          "typ": "text",
+          "text": "Problem talking to server.  Please try again or update the app."
+        },
+        {
+          "typ": "button",
+          "text": "Details",
+          "actions": [
+            "push:/maggie-error-details"
+          ]
+        },
+        {
+          "typ": "button",
+          "text": "Status",
+          "actions": [
+            "push:/maggie-server-status"
+          ]
+        },
+        {
+          "typ": "button",
+          "text": "Contact Support",
+          "actions": [
+            "push:/maggie-contact-support-modal"
+          ]
+        },
+        {
+          "typ": "button",
+          "text": "Update",
+          "actions": [
+            "push:/maggie-update-button-not-customized-modal"
+          ]
+        },
+        {
+          "typ": "button",
+          "text": "OK",
+          "actions": [
+            "pop"
+          ],
+          "default": true
+        }
+      ]
+    }
+  },
+  "/maggie-update-button-not-customized-modal": {
+    "typ": "modal",
+    "widget": {
+      "typ": "alert",
+      "title": "Update",
+      "widgets": [
+        {
+          "typ": "text",
+          "text": "ERROR: InitialData.swift is missing a \"maggie-rpc-error-modal\" entry."
+        },
+        {
+          "typ": "button",
+          "text": "OK",
+          "actions": [
+            "pop"
+          ],
+          "default": true
+        }
+      ]
+    }
+  }
+}
