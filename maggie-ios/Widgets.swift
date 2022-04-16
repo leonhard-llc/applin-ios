@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 struct MaggieAlert {
     static let TYP = "alert"
@@ -31,6 +32,10 @@ struct MaggieCenter {
     init(widget: MaggieWidget) {
         self.widget = widget
     }
+    
+    func toView() -> AnyView {
+        return AnyView(VStack(alignment: .center) { self.widget.toView() })
+    }
 }
 
 struct MaggieColumn {
@@ -39,6 +44,14 @@ struct MaggieColumn {
     
     init(widgets: [MaggieWidget]) {
         self.widgets = widgets
+    }
+    
+    func toView() -> AnyView {
+        return AnyView(VStack() {
+            ForEach(0..<self.widgets.count) {
+                n in self.widgets[n].toView()
+            }
+        })
     }
 }
 
@@ -52,6 +65,13 @@ struct MaggieExpand {
     
     init(widget: MaggieWidget) {
         self.widget = widget
+    }
+
+    func toView() -> AnyView {
+        return AnyView(self.widget.toView().frame(
+            maxWidth: .infinity,
+            maxHeight: .infinity
+        ))
     }
 }
 
@@ -98,18 +118,9 @@ struct MaggieText {
     init(_ text: String) {
         self.text = text
     }
-}
-
-struct MaggieTitleBar {
-    static let TYP = "title-bar"
-    let text: String
-    let start: (String, [MaggieAction])?
-    let end: (String, [MaggieAction])?
     
-    init(text: String, start: (String, [MaggieAction])?, end: (String, [MaggieAction])?) {
-        self.text = text
-        self.start = start
-        self.end = end
+    func toView() -> AnyView {
+        return AnyView(Text(self.text))
     }
 }
 
@@ -125,45 +136,20 @@ enum MaggieWidget {
     indirect case Scroll(MaggieScroll)
     indirect case HorizontalScroll(MaggieHorizontalScroll)
     case Text(MaggieText)
-    case TitleBar(MaggieTitleBar)
-}
-
-func getTitleBarText(_ widget: MaggieWidget) -> String? {
-    switch widget {
-    case let .Alert(alert):
-        return alert.title
-    case .Button(_):
-        return nil
-    case let .Center(center):
-        return getTitleBarText(center.widget)
-    case let .Column(col):
-        for widget in col.widgets {
-            if let title = getTitleBarText(widget) {
-                return title
-            }
+    
+    func toView() -> AnyView {
+        switch self {
+        case let .Center(inner):
+            return inner.toView()
+        case let .Column(inner):
+            return inner.toView()
+        case let .Expand(inner):
+            return inner.toView()
+        case let .Text(inner):
+            return inner.toView()
+        default:
+            return AnyView(SwiftUI.Text("unimplemented"))
         }
-        return nil
-    case .ErrorDetails(_):
-        return nil
-    case let .Expand(expand):
-        return getTitleBarText(expand.widget)
-    case .MarkdownView(_):
-        return nil
-    case let .Row(row):
-        for widget in row.widgets {
-            if let title = getTitleBarText(widget) {
-                return title
-            }
-        }
-        return nil
-    case let .Scroll(scroll):
-        return getTitleBarText(scroll.widget)
-    case let .HorizontalScroll(hScroll):
-        return getTitleBarText(hScroll.widget)
-    case .Text(_):
-        return nil
-    case let .TitleBar(bar):
-        return bar.text
     }
 }
 
@@ -263,7 +249,7 @@ class JsonWidget: Codable {
     func convertWidgets() throws -> [MaggieWidget] {
         return try (self.widgets ?? []).map { jsonWidget in try jsonWidget.toWidget() }
     }
-
+    
     func requireWidgets() throws -> [MaggieWidget] {
         if self.widgets == nil {
             throw MaggieError.deserializeError("missing 'widgets'")
@@ -300,41 +286,11 @@ class JsonWidget: Codable {
             return .HorizontalScroll(MaggieHorizontalScroll(widget: try self.requireWidget()))
         case MaggieText.TYP:
             return .Text(MaggieText(try self.requireText()))
-        case MaggieTitleBar.TYP:
-            let start: (String, [MaggieAction])?
-            switch (self.startText, self.startActions) {
-            case let (.none, .some(actions)) where !actions.isEmpty:
-                throw MaggieError.deserializeError("object has 'start-actions' without 'start-text'")
-            case (.none, _):
-                start = nil
-            case (.some(""), _):
-                throw MaggieError.deserializeError("empty 'start-text'")
-            case let (.some(text), opt_actions):
-                let actions = try (opt_actions ?? []).map({ s in try maggieAction(s) })
-                start = (text, actions)
-            }
-            let end: (String, [MaggieAction])?
-            switch (self.endText, self.endActions) {
-            case let (.none, .some(actions)) where !actions.isEmpty:
-                throw MaggieError.deserializeError("object has 'end-actions' without 'end-text'")
-            case (.none, _):
-                end = nil
-            case (.some(""), _):
-                throw MaggieError.deserializeError("empty 'end-text'")
-            case let (.some(text), opt_actions):
-                let actions = try (opt_actions ?? []).map({ s in try maggieAction(s) })
-                end = (text, actions)
-            }
-            return .TitleBar(MaggieTitleBar(
-                text: try self.requireText(),
-                start: start,
-                end: end
-            ))
         default:
             throw MaggieError.deserializeError("unexpected widget 'typ' value: \(self.typ)")
         }
     }
-
+    
     public func toPane() throws -> MaggiePane {
         switch self.typ {
         case MaggieDrawer.TYP:
@@ -344,17 +300,58 @@ class JsonWidget: Codable {
             return .Modal(MaggieModal(
                 widget: try self.requireWidget()))
         case MaggiePage.TYP:
+            // TODO: Add "leading-widgets", "trailing-widgets", and "typ":"back-button".
+            //let start: (String, [MaggieAction])?
+            //switch (self.startText, self.startActions) {
+            //case let (.none, .some(actions)) where !actions.isEmpty:
+            //    throw MaggieError.deserializeError("object has 'start-actions' without 'start-text'")
+            //case (.none, _):
+            //    start = nil
+            //case (.some(""), _):
+            //    throw MaggieError.deserializeError("empty 'start-text'")
+            //case let (.some(text), opt_actions):
+            //    let actions = try (opt_actions ?? []).map({ s in try maggieAction(s) })
+            //    start = (text, actions)
+            //}
+            //let end: (String, [MaggieAction])?
+            //switch (self.endText, self.endActions) {
+            //case let (.none, .some(actions)) where !actions.isEmpty:
+            //    throw MaggieError.deserializeError("object has 'end-actions' without 'end-text'")
+            //case (.none, _):
+            //    end = nil
+            //case (.some(""), _):
+            //    throw MaggieError.deserializeError("empty 'end-text'")
+            //case let (.some(text), opt_actions):
+            //    let actions = try (opt_actions ?? []).map({ s in try maggieAction(s) })
+            //    end = (text, actions)
+            //}
             return .Page(MaggiePage(
-                widget: try self.requireWidget()))
+                title: self.title,
+                widget: try self.requireWidget()
+                //start: start,
+                //end: end
+            ))
         default:
             throw MaggieError.deserializeError("unexpected stack-item 'typ' value: \(self.typ)")
         }
-    }}
+    }
+}
 
 enum MaggiePane {
     case Drawer(MaggieDrawer)
     case Modal(MaggieModal)
     case Page(MaggiePage)
+    
+    func toView() -> AnyView {
+        switch self {
+        case let .Drawer(drawer):
+            return AnyView(VStack(alignment: .center) { Text("Drawer unimplemented") })
+        case let .Modal(modal):
+            return AnyView(VStack(alignment: .center) { Text("Modal unimplemented") })
+        case let .Page(page):
+            return page.toView()
+        }
+    }
 }
 
 struct MaggieDrawer {
@@ -375,8 +372,20 @@ struct MaggieModal {
 
 struct MaggiePage {
     static let TYP = "page"
+    let title: String?
     let widget: MaggieWidget
-    init(widget: MaggieWidget) {
+    
+    init(title: String? = nil, widget: MaggieWidget) {
+        self.title = title
         self.widget = widget
+    }
+    
+    func toView() -> AnyView {
+        var widgetView = self.widget.toView()
+        if let title = self.title {
+            return AnyView(widgetView.navigationTitle(title))
+        } else {
+            return widgetView
+        }
     }
 }

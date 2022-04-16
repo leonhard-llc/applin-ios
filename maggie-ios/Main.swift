@@ -34,7 +34,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     override init() {
         self.navigationController = NavigationController(
-            rootView: VStack(alignment: .center) { Text("1")  }.background(Color.white)
+            rootView: VStack(alignment: .center) { ProgressView() }
         )
         self.session = MaggieSession(url: "http://localhost/", self.navigationController)
         super.init()

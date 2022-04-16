@@ -14,13 +14,10 @@
   },
   "/maggie-server-status": {
     "typ": "page",
+    "title": "Status",
     "widget": {
       "typ": "column",
       "widgets": [
-        {
-          "typ": "title-bar",
-          "text": "Status"
-        },
         {
           "typ": "expand",
           "widget": {

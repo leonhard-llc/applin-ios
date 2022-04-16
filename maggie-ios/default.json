@@ -12,66 +12,25 @@
       }
     }
   },
-  "/maggie-page-not-found": {
-    "typ": "page",
-    "widget": {
-      "typ": "column",
-      "widgets": [
-        {
-          "typ": "title-bar",
-          "text": "Not Found"
-        },
-        {
-          "typ": "expand",
-          "widget": {
-            "typ": "center",
-            "widget": {
-              "typ": "text",
-              "text": "Page not found."
-            }
-          }
-        }
-      ]
-    }
-  },
   "/maggie-error-details": {
     "typ": "page",
+    "title": "Error Details",
     "widget": {
-      "typ": "column",
-      "widgets": [
-        {
-          "typ": "title-bar",
-          "text": "Error Details"
-        },
-        {
-          "typ": "scroll",
-          "widget": {
-            "typ": "error-details"
-          }
-        }
-      ]
+      "typ": "scroll",
+      "widget": {
+        "typ": "error-details"
+      }
     }
   },
   "/maggie-server-status": {
     "typ": "page",
+    "title": "Status",
     "widget": {
-      "typ": "column",
-      "widgets": [
-        {
-          "typ": "title-bar",
-          "text": "Status"
-        },
-        {
-          "typ": "expand",
-          "widget": {
-            "typ": "center",
-            "widget": {
-              "typ": "text",
-              "text": "ERROR: initial.json is missing a \"/maggie-server-status\" entry."
-            }
-          }
-        }
-      ]
+      "typ": "center",
+      "widget": {
+        "typ": "text",
+        "text": "ERROR: initial.json is missing a \"/maggie-server-status\" entry."
+      }
     }
   },
   "/maggie-contact-support-modal": {

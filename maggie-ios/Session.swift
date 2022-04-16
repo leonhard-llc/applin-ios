@@ -29,14 +29,19 @@ class MaggieSession: ObservableObject {
         }
     }
     
+    static func pageNotFoundPane() -> MaggiePane {
+        return .Page(MaggiePage(
+            title: "Not Found",
+            widget:.Center(MaggieCenter(
+                widget: .Text(MaggieText("Page not found."))
+            ))
+        ))
+    }
+    
     func toView(_ key: String) -> AnyView {
-//        self.panes[key]? ?? self.panes["/maggie-page-not-found"]!
+        let pane = self.panes[key] ?? self.panes["/maggie-page-not-found"] ?? MaggieSession.pageNotFoundPane()
         print("toView \(key)")
-        return AnyView(
-            VStack(alignment: .center) {
-                Text("Page: \(key)")
-            }.background(Color.white)
-        )
+        return pane.toView()
     }
     
     func updateNav() {
@@ -67,11 +72,11 @@ class MaggieSession: ObservableObject {
             preconditionFailure("error loading initial.json: \(error)")
         }
         // TODO: Try to read cache file and restore previous stack.
-        self.stack = ["/", "/maggie-page-not-found"]
+        self.stack = ["/", "/maggie-server-status"]
         self.updateNav()
-        Task(priority: .medium) {
-            await self.connectTask()
-        }
+        //Task(priority: .medium) {
+        //    await self.connectTask()
+        //}
         print("startupTask done")
         //        let cookieFilePath = documentDirPath() + "/cookie"
         //        // The proper way is to open the file and catch file-not-found exception.
@@ -168,25 +173,25 @@ class MaggieSession: ObservableObject {
         // chunks of the HTTP response body and decode them as Server-Sent Events.
         // https://developer.apple.com/documentation/foundation/urlsessiondatadelegate
         // https://developer.apple.com/documentation/foundation/urlsession/1411597-init
-//        let urlSession = URLSession(configuration: config, delegate: TODO, delegateQueue: OperationQueue.main)
-//        self.state = .Connecting
-//        let task = urlSession.dataTask(with: self.url, completionHandler: {
-//            (data: Data?, response: URLResponse?, error: Error?) -> Void in
-//            if let error = error {
-//                print("transport error: \(error)")
-//                return
-//            }
-//            guard let httpResponse = response as? HTTPURLResponse,
-//                  (200...299).contains(httpResponse.statusCode) else {
-//                      print("server error: \(response!)")
-//                      return
-//                  }
-//            if let mimeType = httpResponse.mimeType, mimeType.starts(with: "text/plain"),
-//               let data = data,
-//               let string = String(data: data, encoding: .utf8) {
-//                print("response: \(httpResponse) \"\(string)\"")
-//            }
-//        })
+        //        let urlSession = URLSession(configuration: config, delegate: TODO, delegateQueue: OperationQueue.main)
+        //        self.state = .Connecting
+        //        let task = urlSession.dataTask(with: self.url, completionHandler: {
+        //            (data: Data?, response: URLResponse?, error: Error?) -> Void in
+        //            if let error = error {
+        //                print("transport error: \(error)")
+        //                return
+        //            }
+        //            guard let httpResponse = response as? HTTPURLResponse,
+        //                  (200...299).contains(httpResponse.statusCode) else {
+        //                      print("server error: \(response!)")
+        //                      return
+        //                  }
+        //            if let mimeType = httpResponse.mimeType, mimeType.starts(with: "text/plain"),
+        //               let data = data,
+        //               let string = String(data: data, encoding: .utf8) {
+        //                print("response: \(httpResponse) \"\(string)\"")
+        //            }
+        //        })
         //            task.resume()
         //            print("sleeping")
         //            /// The docs say this is function is async, but the compiler warns
@@ -205,7 +210,7 @@ class MaggieSession: ObservableObject {
         session.connected = false
         return session
     }
-
+    
     static func preview_connected() -> MaggieSession {
         let session = MaggieSession(url: "http://localhost:8000", nil, startTasks: false)
         session.connected = true
