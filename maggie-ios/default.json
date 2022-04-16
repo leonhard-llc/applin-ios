@@ -7,9 +7,31 @@
         "typ": "center",
         "widget": {
           "typ": "text",
-          "text": "ERROR: InitialData.swift is missing a \"/\" entry."
+          "text": "ERROR: initial.json is missing a \"/\" entry."
         }
       }
+    }
+  },
+  "/maggie-page-not-found": {
+    "typ": "page",
+    "widget": {
+      "typ": "column",
+      "widgets": [
+        {
+          "typ": "title-bar",
+          "text": "Not Found"
+        },
+        {
+          "typ": "expand",
+          "widget": {
+            "typ": "center",
+            "widget": {
+              "typ": "text",
+              "text": "Page not found."
+            }
+          }
+        }
+      ]
     }
   },
   "/maggie-error-details": {
@@ -45,7 +67,7 @@
             "typ": "center",
             "widget": {
               "typ": "text",
-              "text": "ERROR: InitialData.swift is missing a \"/maggie-server-status\" entry."
+              "text": "ERROR: initial.json is missing a \"/maggie-server-status\" entry."
             }
           }
         }
@@ -60,7 +82,7 @@
       "widgets": [
         {
           "typ": "text",
-          "text": "ERROR: InitialData.swift is missing a \"maggie-contact-support-modal\" entry."
+          "text": "ERROR: initial.json is missing a \"maggie-contact-support-modal\" entry."
         },
         {
           "typ": "button",
@@ -165,7 +187,7 @@
       "widgets": [
         {
           "typ": "text",
-          "text": "ERROR: InitialData.swift is missing a \"maggie-rpc-error-modal\" entry."
+          "text": "ERROR: initial.json is missing a \"maggie-rpc-error-modal\" entry."
         },
         {
           "typ": "button",

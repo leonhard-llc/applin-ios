@@ -17,16 +17,16 @@ func readFile(path: String) async throws -> Data {
     }).value
 }
 
-func readBundleFile(filename: String) async -> Data {
-    await (Task() {
+func readBundleFile(filename: String) async throws -> Data {
+    try await (Task() {
         guard let file = Bundle.main.url(forResource: filename, withExtension: nil)
         else {
-            fatalError("did not find bundle file: \(filename)")
+            throw MaggieError.deserializeError("bundle file not found: \(filename)")
         }
         do {
             return try Data(contentsOf: file)
         } catch {
-            fatalError("error reading bundle file \(filename): \(error)")
+            throw MaggieError.deserializeError("error reading bundle file \(filename): \(error)")
         }
     }).value
 }
@@ -37,13 +37,13 @@ func sleep(ms: Int) async {
     } catch {}
 }
 
-func decodeBundleJsonFile<T: Decodable>(_ filename: String) async -> T {
-    let data = await readBundleFile(filename: filename)
+func decodeBundleJsonFile<T: Decodable>(_ filename: String) async throws -> T {
+    let data = try await readBundleFile(filename: filename)
     do {
         let decoder = JSONDecoder()
         return try decoder.decode(T.self, from: data)
     } catch {
-        fatalError("Couldn't parse \(filename) as \(T.self):\n\(error)")
+        throw MaggieError.deserializeError("error parsing JSON \(filename) as \(T.self): \(error)")
     }
 }
 

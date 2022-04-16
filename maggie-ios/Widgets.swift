@@ -167,10 +167,6 @@ func getTitleBarText(_ widget: MaggieWidget) -> String? {
     }
 }
 
-enum MaggieError: Error {
-    case deserializeError(String)
-}
-
 enum MaggieAction {
     case CopyToClipboard(String)
     case LaunchUrl(URL)
@@ -339,7 +335,7 @@ class JsonWidget: Codable {
         }
     }
 
-    public func toStackItem() throws -> MaggiePane {
+    public func toPane() throws -> MaggiePane {
         switch self.typ {
         case MaggieDrawer.TYP:
             return .Drawer(MaggieDrawer(
