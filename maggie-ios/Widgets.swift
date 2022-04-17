@@ -1,6 +1,8 @@
 import Foundation
 import SwiftUI
 
+import NiftyMarkdownFormatter
+
 struct MaggieAlert {
     static let TYP = "alert"
     let title: String
@@ -12,7 +14,7 @@ struct MaggieAlert {
     }
 }
 
-struct MaggieButton {
+struct MaggieButton: View {
     static let TYP = "button"
     let text: String
     let isDefault: Bool
@@ -23,9 +25,17 @@ struct MaggieButton {
         self.isDefault = isDefault
         self.actions = actions
     }
+    
+    var body: some View {
+        Button(self.text) {
+            for action in self.actions {
+                action.perform()
+            }
+        }
+    }
 }
 
-struct MaggieCenter {
+struct MaggieCenter: View {
     static let TYP = "center"
     let widget: MaggieWidget
     
@@ -33,12 +43,12 @@ struct MaggieCenter {
         self.widget = widget
     }
     
-    func toView() -> AnyView {
-        return AnyView(VStack(alignment: .center) { self.widget.toView() })
+    var body: some View {
+        VStack(alignment: .center) { self.widget }
     }
 }
 
-struct MaggieColumn {
+struct MaggieColumn: View {
     static let TYP = "column"
     let widgets: [MaggieWidget]
     
@@ -46,12 +56,12 @@ struct MaggieColumn {
         self.widgets = widgets
     }
     
-    func toView() -> AnyView {
-        return AnyView(VStack() {
+    var body: some View {
+        VStack() {
             ForEach(0..<self.widgets.count) {
-                n in self.widgets[n].toView()
+                n in self.widgets[n]
             }
-        })
+        }
     }
 }
 
@@ -59,28 +69,106 @@ struct MaggieErrorDetails {
     static let TYP = "error-details"
 }
 
-struct MaggieExpand {
+struct MaggieExpand: View {
     static let TYP = "expand"
     let widget: MaggieWidget
     
     init(widget: MaggieWidget) {
         self.widget = widget
     }
-
-    func toView() -> AnyView {
-        return AnyView(self.widget.toView().frame(
+    
+    var body: some View {
+        self.widget.frame(
             maxWidth: .infinity,
-            maxHeight: .infinity
-        ))
+            maxHeight: .infinity,
+            alignment: .leading
+        )
     }
 }
 
-struct MaggieMarkdownView {
+enum MarkdownViewState {
+    case loading(Task<Void, Never>?)
+    case error(String)
+    case ok(String)
+}
+
+struct MaggieMarkdownView: View {
     static let TYP = "markdown-view"
     let url: URL
+    @State var state: MarkdownViewState = .loading(nil)
     
     init(url: URL) {
         self.url = url
+    }
+    
+    func setError(_ msg: String) {
+        print(msg)
+        self.state = .error(msg)
+    }
+    
+    func load() async {
+        do {
+            let (data, urlResponse) = try await URLSession.shared.data(from: self.url)
+            let response = urlResponse as! HTTPURLResponse
+            print("GET \(self.url) -> \(response), bodyLen=\(data.count)")
+            if response.statusCode != 200 {
+                let description = HTTPURLResponse.localizedString(
+                    forStatusCode: response.statusCode)
+                self.setError("ERROR: \(response.statusCode) \(description)")
+                return
+            }
+            let contentType = response.value(forHTTPHeaderField: "content-type")?.lowercased() ?? ""
+            let base = contentType.split(
+                separator: ";", maxSplits: 1, omittingEmptySubsequences: false)[0]
+            if base != "text/markdown" {
+                self.setError("ERROR: Response is not text/markdown")
+                return
+            }
+            if data.count > 1 * 1024 * 1024 {
+                self.setError("ERROR: Document is too big: \(data.count) bytes")
+                return
+            }
+            guard let string = String(data: data, encoding: String.Encoding.utf8) else {
+                self.setError("ERROR: Response is not UTF-8")
+                return
+            }
+            self.state = .ok(string)
+        } catch {
+            self.setError("ERROR: \(error)")
+        }
+    }
+    
+    func startLoad() {
+        switch self.state {
+        case .loading(.none), .error, .ok:
+            self.state = .loading(Task() { await self.load() })
+        case .loading:
+            break
+        }
+    }
+    
+    func stopLoad() {
+        if case let .loading(.some(task)) = self.state {
+            task.cancel()
+            self.state = .loading(nil)
+        }
+    }
+    
+    var body: some View {
+        get {
+            switch self.state {
+            case .loading:
+                return AnyView(
+                    ProgressView("Loading")
+                        .onAppear(perform: self.startLoad)
+                        .onDisappear(perform: self.stopLoad))
+            case let .error(msg):
+                return AnyView(Text(msg))
+            case let .ok(markdown):
+                return AnyView(FormattedMarkdown(
+                    markdown: markdown, alignment: .leading, spacing: 7.0))
+            }
+        }
     }
 }
 
@@ -111,7 +199,7 @@ struct MaggieHorizontalScroll {
     }
 }
 
-struct MaggieText {
+struct MaggieText: View {
     static let TYP = "text"
     let text: String
     
@@ -119,12 +207,20 @@ struct MaggieText {
         self.text = text
     }
     
-    func toView() -> AnyView {
-        return AnyView(Text(self.text))
+    var body: some View {
+        Text(self.text)
     }
 }
 
-enum MaggieWidget {
+struct MaggieSpacer: View {
+    static let TYP = "spacer"
+    
+    var body: Spacer {
+        Spacer()
+    }
+}
+
+enum MaggieWidget: View {
     indirect case Alert(MaggieAlert)
     case Button(MaggieButton)
     indirect case Center(MaggieCenter)
@@ -135,18 +231,25 @@ enum MaggieWidget {
     indirect case Row(MaggieRow)
     indirect case Scroll(MaggieScroll)
     indirect case HorizontalScroll(MaggieHorizontalScroll)
+    indirect case Spacer(MaggieSpacer)
     case Text(MaggieText)
     
-    func toView() -> AnyView {
+    var body: some View {
         switch self {
+        case let .Button(inner):
+            return AnyView(inner)
         case let .Center(inner):
-            return inner.toView()
+            return AnyView(inner)
         case let .Column(inner):
-            return inner.toView()
+            return AnyView(inner)
         case let .Expand(inner):
-            return inner.toView()
+            return AnyView(inner)
+        case let .MarkdownView(inner):
+            return AnyView(inner)
+        case let .Spacer(inner):
+            return AnyView(inner)
         case let .Text(inner):
-            return inner.toView()
+            return AnyView(inner)
         default:
             return AnyView(SwiftUI.Text("unimplemented"))
         }
@@ -160,6 +263,10 @@ enum MaggieAction {
     case Rpc(String)
     case Pop
     case Refresh
+    
+    func perform() {
+        print("unimplemented")
+    }
 }
 
 func maggieAction(_ action: String) throws -> MaggieAction {
@@ -284,6 +391,8 @@ class JsonWidget: Codable {
             return .Scroll(MaggieScroll(widget: try self.requireWidget()))
         case MaggieHorizontalScroll.TYP:
             return .HorizontalScroll(MaggieHorizontalScroll(widget: try self.requireWidget()))
+        case MaggieSpacer.TYP:
+            return .Spacer(MaggieSpacer())
         case MaggieText.TYP:
             return .Text(MaggieText(try self.requireText()))
         default:
@@ -337,19 +446,19 @@ class JsonWidget: Codable {
     }
 }
 
-enum MaggiePane {
+enum MaggiePane: View {
     case Drawer(MaggieDrawer)
     case Modal(MaggieModal)
     case Page(MaggiePage)
     
-    func toView() -> AnyView {
+    var body: AnyView {
         switch self {
         case let .Drawer(drawer):
             return AnyView(VStack(alignment: .center) { Text("Drawer unimplemented") })
         case let .Modal(modal):
             return AnyView(VStack(alignment: .center) { Text("Modal unimplemented") })
         case let .Page(page):
-            return page.toView()
+            return AnyView(page)
         }
     }
 }
@@ -370,7 +479,7 @@ struct MaggieModal {
     }
 }
 
-struct MaggiePage {
+struct MaggiePage: View {
     static let TYP = "page"
     let title: String?
     let widget: MaggieWidget
@@ -380,12 +489,11 @@ struct MaggiePage {
         self.widget = widget
     }
     
-    func toView() -> AnyView {
-        var widgetView = self.widget.toView()
+    var body: some View {
         if let title = self.title {
-            return AnyView(widgetView.navigationTitle(title))
+            return AnyView(self.widget.navigationTitle(title))
         } else {
-            return widgetView
+            return AnyView(self.widget)
         }
     }
 }

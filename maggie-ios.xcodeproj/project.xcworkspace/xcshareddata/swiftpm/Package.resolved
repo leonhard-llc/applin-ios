@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Nifty Markdown Formatter",
+        "repositoryURL": "/Users/user/fork-Nifty-Markdown-Formatter",
+        "state": {
+          "branch": null,
+          "revision": "c3a2fa4e141a0fe74b75d9ddb2c74df16ed4edde",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}

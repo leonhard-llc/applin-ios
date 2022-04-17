@@ -17,6 +17,7 @@
 		CE68B8FA280004E1000B7761 /* maggie_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B8F9280004E1000B7761 /* maggie_iosTests.swift */; };
 		CE68B904280004E1000B7761 /* maggie_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B903280004E1000B7761 /* maggie_iosUITests.swift */; };
 		CE68B906280004E1000B7761 /* maggie_iosUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B905280004E1000B7761 /* maggie_iosUITestsLaunchTests.swift */; };
+		CEB78F8D280B6F30006F1B51 /* Nifty Markdown Formatter in Frameworks */ = {isa = PBXBuildFile; productRef = CEB78F8C280B6F30006F1B51 /* Nifty Markdown Formatter */; };
 		CEE050862805D74200F68166 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE050852805D74200F68166 /* Session.swift */; };
 		CEE0508A28071F3300F68166 /* util.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE0508928071F3300F68166 /* util.swift */; };
 		CEE0509028076EAE00F68166 /* Widgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE0508F28076EAE00F68166 /* Widgets.swift */; };
@@ -64,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEB78F8D280B6F30006F1B51 /* Nifty Markdown Formatter in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,9 +86,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CE288656280B6A48001CE13E /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		CE68B8DC280004DE000B7761 = {
 			isa = PBXGroup;
 			children = (
+				CE288656280B6A48001CE13E /* Packages */,
 				CE68B8E7280004DE000B7761 /* maggie-ios */,
 				CE68B8F8280004E1000B7761 /* maggie-iosTests */,
 				CE68B902280004E1000B7761 /* maggie-iosUITests */,
@@ -163,6 +173,9 @@
 			dependencies = (
 			);
 			name = "maggie-ios";
+			packageProductDependencies = (
+				CEB78F8C280B6F30006F1B51 /* Nifty Markdown Formatter */,
+			);
 			productName = "maggie-ios";
 			productReference = CE68B8E5280004DE000B7761 /* maggie-ios.app */;
 			productType = "com.apple.product-type.application";
@@ -235,6 +248,9 @@
 				Base,
 			);
 			mainGroup = CE68B8DC280004DE000B7761;
+			packageReferences = (
+				CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "fork-Nifty-Markdown-Formatter" */,
+			);
 			productRefGroup = CE68B8E6280004DE000B7761 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -605,6 +621,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "fork-Nifty-Markdown-Formatter" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "file:///Users/user/fork-Nifty-Markdown-Formatter";
+			requirement = {
+				kind = revision;
+				revision = c3a2fa4e141a0fe74b75d9ddb2c74df16ed4edde;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CEB78F8C280B6F30006F1B51 /* Nifty Markdown Formatter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "fork-Nifty-Markdown-Formatter" */;
+			productName = "Nifty Markdown Formatter";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CE68B8DD280004DE000B7761 /* Project object */;
 }

@@ -19,12 +19,10 @@
       "typ": "column",
       "widgets": [
         {
-          "typ": "expand",
-          "widget": {
-            "typ": "markdown-view",
-            "url": "https://cozydatestatus.com/index.md"
-          }
+          "typ": "markdown-view",
+          "url": "https://cozydatestatus.com/index.md"
         },
+        {"typ": "spacer"},
         {
           "typ": "button",
           "text": "Reload",

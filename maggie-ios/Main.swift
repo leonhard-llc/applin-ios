@@ -17,7 +17,7 @@ class NavigationController: UINavigationController {
     }
 
     // Replaces all views, including the root.
-    func setViews(_ views: [AnyView], animated: Bool = true) {
+    func setViews<Content: View>(_ views: [Content], animated: Bool = true) {
         print("setViews count=\(views.count)")
         self.setViewControllers(
             views.map({ view in UIHostingController(rootView: view)}),

@@ -29,7 +29,7 @@ class MaggieSession: ObservableObject {
         }
     }
     
-    static func pageNotFoundPane() -> MaggiePane {
+    static func pageNotFound() -> MaggiePane {
         return .Page(MaggiePage(
             title: "Not Found",
             widget:.Center(MaggieCenter(
@@ -38,16 +38,16 @@ class MaggieSession: ObservableObject {
         ))
     }
     
-    func toView(_ key: String) -> AnyView {
-        let pane = self.panes[key] ?? self.panes["/maggie-page-not-found"] ?? MaggieSession.pageNotFoundPane()
+    func getPane(_ key: String) -> MaggiePane {
+        let pane = self.panes[key] ?? self.panes["/maggie-page-not-found"] ?? MaggieSession.pageNotFound()
         print("toView \(key)")
-        return pane.toView()
+        return pane
     }
     
     func updateNav() {
         print("updateNav")
         self.nav?.setViews(
-            self.stack.map({ key in self.toView(key)}),
+            self.stack.map({ key in self.getPane(key)}),
             animated: false
         )
     }
