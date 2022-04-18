@@ -128,18 +128,18 @@ struct MaggieErrorDetails: Equatable, View {
 struct MaggieExpand: Equatable, View {
     static let TYP = "expand"
     let widget: MaggieWidget
-    let minWidth: CGFloat
-    let maxWidth: CGFloat
-    let minHeight: CGFloat
-    let maxHeight: CGFloat
+    let minWidth: CGFloat?
+    let maxWidth: CGFloat?
+    let minHeight: CGFloat?
+    let maxHeight: CGFloat?
     let alignment: Alignment
     
     init(
         _ widget: MaggieWidget,
-        minWidth: CGFloat = 0.0,
-        maxWidth: CGFloat = .infinity,
-        minHeight: CGFloat = 0.0,
-        maxHeight: CGFloat = .infinity,
+        minWidth: CGFloat? = nil,
+        maxWidth: CGFloat? = nil,
+        minHeight: CGFloat? = nil,
+        maxHeight: CGFloat? = nil,
         _ alignment: Alignment = .center
     ) {
         self.widget = widget
@@ -152,10 +152,10 @@ struct MaggieExpand: Equatable, View {
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widget = try item.takeWidget(session)
-        self.minWidth = item.takeOptMinWidth() ?? 0.0
-        self.maxWidth = item.takeOptMaxWidth() ?? .infinity
-        self.minHeight = item.takeOptMinHeight() ?? 0.0
-        self.maxHeight = item.takeOptMaxHeight() ?? .infinity
+        self.minWidth = item.takeOptMinWidth()
+        self.maxWidth = item.takeOptMaxWidth()
+        self.minHeight = item.takeOptMinHeight()
+        self.maxHeight = item.takeOptMaxHeight()
         self.alignment = item.takeOptAlignment() ?? .center
     }
     
@@ -163,9 +163,9 @@ struct MaggieExpand: Equatable, View {
         self.widget
             .frame(
                 minWidth: self.minWidth,
-                maxWidth: self.maxWidth,
+                maxWidth: self.maxWidth ?? .infinity,
                 minHeight: self.minHeight,
-                maxHeight: self.maxHeight,
+                maxHeight: self.maxHeight ?? .infinity,
                 alignment: self.alignment
             )
             .border(Color.red)
@@ -188,6 +188,72 @@ struct MaggieHorizontalScroll: Equatable, View {
     var body: some View {
         ScrollView(Axis.Set.horizontal) {
             self.widget
+        }
+    }
+}
+
+struct MaggieImage: Equatable, View {
+    static let TYP = "image"
+    let url: URL
+    let width: CGFloat?
+    let height: CGFloat?
+    let disposition: MaggieDisposition
+    
+    init(
+        _ url: URL,
+        width: CGFloat? = nil,
+        height: CGFloat? = nil,
+        disposition: MaggieDisposition = .fit
+    ) {
+        self.url = url
+        self.width = width
+        self.height = height
+        self.disposition = disposition
+    }
+    
+    init(_ item: JsonItem) throws {
+        self.url = try item.takeUrl()
+        self.width = try item.takeOptWidth()
+        self.height = try item.takeOptHeight()
+        self.disposition = item.takeOptDisposition() ?? .fit
+    }
+    
+    var body: some View {
+        switch self.disposition {
+        case .cover:
+            return AnyView(
+                AsyncImage(url: self.url) { image in
+                    image.resizable()
+                } placeholder: {
+                    ProgressView()
+                }
+                    .scaledToFill()
+                    .frame(width: self.width, height: self.height)
+                    .clipped()
+                    .border(Color.black)
+                    .padding(1.0))
+        case .fit:
+            return AnyView(
+                AsyncImage(url: self.url) { image in
+                    image
+                        .resizable()
+                } placeholder: {
+                    ProgressView()
+                }
+                    .scaledToFit()
+                    .frame(width: self.width, height: self.height)
+                    .border(Color.black)
+                    .padding(1.0))
+        case .stretch:
+            return AnyView(
+                AsyncImage(url: self.url) { image in
+                    image.resizable()
+                } placeholder: {
+                    ProgressView()
+                }
+                    .frame(width: self.width, height: self.height)
+                    .border(Color.black)
+                    .padding(1.0))
         }
     }
 }
@@ -384,6 +450,7 @@ enum MaggieWidget: Equatable, View {
     case ErrorDetails(MaggieErrorDetails)
     indirect case Expand(MaggieExpand)
     indirect case HorizontalScroll(MaggieHorizontalScroll)
+    case Image(MaggieImage)
     indirect case Row(MaggieRow)
     indirect case Scroll(MaggieScroll)
     indirect case Spacer(MaggieSpacer)
@@ -407,6 +474,8 @@ enum MaggieWidget: Equatable, View {
             self = try .Expand(MaggieExpand(item, session))
         case MaggieHorizontalScroll.TYP:
             self = try .HorizontalScroll(MaggieHorizontalScroll(item, session))
+        case MaggieImage.TYP:
+            self = try .Image(MaggieImage(item))
         case MaggieRow.TYP:
             self = try .Row(MaggieRow(item, session))
         case MaggieScroll.TYP:
@@ -439,6 +508,8 @@ enum MaggieWidget: Equatable, View {
         case let .Expand(inner):
             return AnyView(inner)
         case let .HorizontalScroll(inner):
+            return AnyView(inner)
+        case let .Image(inner):
             return AnyView(inner)
         case let .Row(inner):
             return AnyView(inner)

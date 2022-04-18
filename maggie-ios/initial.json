@@ -75,12 +75,12 @@
               {
                 "typ": "text",
                 "text": "A"
-              },
+              }
             ]
           },
           {
             "typ": "horizontal-scroll",
-            "widget":           {
+            "widget": {
               "typ": "row",
               "widgets": [
                 {
@@ -109,7 +109,88 @@
                 }
               ]
             }
-
+          },
+          {
+            "typ": "text",
+            "text": "inside container with max-height"
+          },
+          {
+            "typ": "expand",
+            "max-height": 50,
+            "alignment": "center",
+            "widget": {
+              "typ": "image",
+              "url": "https://github.com/mleonhard/maggie-rs/raw/main/examples/placeholder-200x200.png"
+            }
+          },
+          {
+            "typ": "text",
+            "text": "unconstrained"
+          },
+          {
+            "typ": "image",
+            "url": "https://github.com/mleonhard/maggie-rs/raw/main/examples/placeholder-200x200.png"
+          },
+          {
+            "typ": "text",
+            "text": "constrained height"
+          },
+          {
+            "typ": "image",
+            "url": "https://github.com/mleonhard/maggie-rs/raw/main/examples/placeholder-200x200.png",
+            "height": 50
+          },
+          {
+            "typ": "text",
+            "text": "constrained width"
+          },
+          {
+            "typ": "image",
+            "url": "https://github.com/mleonhard/maggie-rs/raw/main/examples/placeholder-200x200.png",
+            "width": 100
+          },
+          {
+            "typ": "text",
+            "text": "constrained width & height"
+          },
+          {
+            "typ": "image",
+            "url": "https://github.com/mleonhard/maggie-rs/raw/main/examples/placeholder-200x200.png",
+            "width": 100,
+            "height": 50
+          },
+          {
+            "typ": "text",
+            "text": "fit"
+          },
+          {
+            "typ": "image",
+            "url": "https://github.com/mleonhard/maggie-rs/raw/main/examples/placeholder-200x200.png",
+            "disposition": "fit",
+            "width": 100,
+            "height": 50
+          },
+          {
+            "typ": "text",
+            "text": "fill"
+          },
+          {
+            "typ": "image",
+            "url": "https://github.com/mleonhard/maggie-rs/raw/main/examples/placeholder-200x200.png",
+            "disposition": "cover",
+            "width": 100,
+            "height": 50
+          },
+          {
+            "typ": "text",
+            "text": "stretch"
+          },
+          {
+            "typ": "image",
+            "url": "https://github.com/mleonhard/maggie-rs/raw/main/examples/placeholder-200x200.png",
+            "disposition": "stretch",
+            "width": 100,
+            "height": 50
           }
         ]
       }
