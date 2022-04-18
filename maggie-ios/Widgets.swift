@@ -96,19 +96,26 @@ struct MaggieColumn: Equatable, View {
     static let TYP = "column"
     let widgets: [MaggieWidget]
     let alignment: HorizontalAlignment
+    let spacing: CGFloat
 
-    init(_ widgets: [MaggieWidget], _ alignment: HorizontalAlignment) {
+    init(
+        _ widgets: [MaggieWidget],
+        _ alignment: HorizontalAlignment,
+        spacing: Double? = nil
+    ) {
         self.widgets = widgets
         self.alignment = alignment
+        self.spacing = CGFloat(spacing ?? 4.0)
     }
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widgets = try item.takeOptWidgets(session) ?? []
         self.alignment = item.takeOptHorizontalAlignment() ?? .leading
+        self.spacing = item.takeOptSpacing() ?? 4.0
     }
     
     var body: some View {
-        VStack(alignment: self.alignment) {
+        VStack(alignment: self.alignment, spacing: self.spacing) {
             ForEach(0..<self.widgets.count) {
                 n in self.widgets[n]
             }
@@ -214,19 +221,26 @@ struct MaggieRow: Equatable, View {
     static let TYP = "row"
     let widgets: [MaggieWidget]
     let alignment: VerticalAlignment
+    let spacing: CGFloat
     
-    init(_ widgets: [MaggieWidget], _ alignment: VerticalAlignment) {
+    init(
+        _ widgets: [MaggieWidget],
+        _ alignment: VerticalAlignment,
+        spacing: Double? = nil
+    ) {
         self.widgets = widgets
         self.alignment = alignment
+        self.spacing = CGFloat(spacing ?? 4.0)
     }
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widgets = try item.takeOptWidgets(session) ?? []
         self.alignment = item.takeOptVerticalAlignment() ?? .top
+        self.spacing = item.takeOptSpacing() ?? 4.0
     }
 
     var body: some View {
-        HStack(alignment: self.alignment) {
+        HStack(alignment: self.alignment, spacing: self.spacing) {
             ForEach(0..<self.widgets.count) {
                 n in self.widgets[n]
             }

@@ -12,6 +12,7 @@ class JsonItem: Codable {
     var minWidth: Double?
     var maxHeight: Double?
     var maxWidth: Double?
+    var spacing: Double?
     var start: JsonItem?
     var text: String?
     var title: String?
@@ -149,6 +150,14 @@ class JsonItem: Codable {
         return nil
     }
     
+    func takeOptSpacing() -> CGFloat? {
+        if let value = self.spacing {
+            self.spacing = nil
+            return CGFloat(value)
+        }
+        return nil
+    }
+
     func takeOptStart(_ session: MaggieSession) throws -> MaggieWidget? {
         if let value = self.start {
             self.start = nil
