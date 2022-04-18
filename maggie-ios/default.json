@@ -4,7 +4,8 @@
     "widget": {
       "typ": "expand",
       "widget": {
-        "typ": "center",
+        "typ": "expand",
+        "alignment": "center",
         "widget": {
           "typ": "text",
           "text": "ERROR: initial.json is missing a \"/\" entry."
@@ -26,7 +27,8 @@
     "typ": "nav-page",
     "title": "Status",
     "widget": {
-      "typ": "center",
+      "typ": "expand",
+      "alignment": "center",
       "widget": {
         "typ": "text",
         "text": "ERROR: initial.json is missing a \"/maggie-server-status\" entry."

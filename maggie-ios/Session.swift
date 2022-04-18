@@ -34,7 +34,7 @@ class MaggieSession: ObservableObject {
     static func pageNotFound() -> MaggiePage {
         return .NavPage(MaggieNavPage(
             title: "Not Found",
-            widget: .Center(MaggieCenter(
+            widget: .Expand(MaggieExpand(
                 .Text(MaggieText("Page not found."))
             )),
             start: .BackButton(MaggieBackButton())

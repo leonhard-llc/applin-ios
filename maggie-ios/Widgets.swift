@@ -67,31 +67,6 @@ struct MaggieButton: Equatable, View {
     }
 }
 
-// TODO: Delete and use Wide instead.
-struct MaggieCenter: Equatable, View {
-    static let TYP = "center"
-    let widget: MaggieWidget
-    
-    init(_ widget: MaggieWidget) {
-        self.widget = widget
-    }
-    
-    init(_ item: JsonItem, _ session: MaggieSession) throws {
-        self.widget = try item.takeWidget(session)
-    }
-    
-    var body: some View {
-        self.widget.frame(alignment: .center)
-            .border(Color.purple)
-            .padding(1.0)
-        //HStack(alignment: .center) {
-        //    VStack(alignment: .center) {
-        //        self.widget
-        //    }
-        //}
-    }
-}
-
 struct MaggieColumn: Equatable, View {
     static let TYP = "column"
     let widgets: [MaggieWidget]
@@ -161,11 +136,11 @@ struct MaggieExpand: Equatable, View {
     
     init(
         _ widget: MaggieWidget,
-        minWidth: CGFloat,
-        maxWidth: CGFloat,
-        minHeight: CGFloat,
-        maxHeight: CGFloat,
-        _ alignment: Alignment
+        minWidth: CGFloat = 0.0,
+        maxWidth: CGFloat = .infinity,
+        minHeight: CGFloat = 0.0,
+        maxHeight: CGFloat = .infinity,
+        _ alignment: Alignment = .center
     ) {
         self.widget = widget
         self.minWidth = minWidth
@@ -404,7 +379,6 @@ struct MaggieWide: Equatable, View {
 enum MaggieWidget: Equatable, View {
     case BackButton(MaggieBackButton)
     case Button(MaggieButton)
-    indirect case Center(MaggieCenter)
     indirect case Column(MaggieColumn)
     case Empty(MaggieEmpty)
     case ErrorDetails(MaggieErrorDetails)
@@ -423,8 +397,6 @@ enum MaggieWidget: Equatable, View {
             self = try .BackButton(MaggieBackButton(item))
         case MaggieButton.TYP:
             self = try .Button(MaggieButton(item))
-        case MaggieCenter.TYP:
-            self = try .Center(MaggieCenter(item, session))
         case MaggieColumn.TYP:
             self = try .Column(MaggieColumn(item, session))
         case MaggieEmpty.TYP:
@@ -457,8 +429,6 @@ enum MaggieWidget: Equatable, View {
         case let .BackButton(inner):
             return AnyView(inner)
         case let .Button(inner):
-            return AnyView(inner)
-        case let .Center(inner):
             return AnyView(inner)
         case let .Column(inner):
             return AnyView(inner)
