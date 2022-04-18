@@ -11,6 +11,7 @@ class JsonItem: Codable {
     var typ: String
     var actions: [String]?
     var alignment: String?
+    var cache: Bool?
     var disposition: String?
     var end: JsonItem?
     var height: Double?
@@ -33,6 +34,7 @@ class JsonItem: Codable {
         case typ
         case actions
         case alignment
+        case cache
         case disposition
         case end
         case height
@@ -126,6 +128,14 @@ class JsonItem: Codable {
         return nil
     }
     
+    func takeOptCache() -> Bool? {
+        if let value = self.cache {
+            self.cache = nil
+            return value
+        }
+        return nil
+    }
+
     func takeOptDisposition() -> MaggieDisposition? {
         if let value = self.disposition {
             self.disposition = nil

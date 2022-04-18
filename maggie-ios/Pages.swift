@@ -62,16 +62,19 @@ struct MaggieMarkdownPage: View {
     static let TYP = "markdown-page"
     let title: String
     let url: URL
+    let cache: Bool?
     @State var state: MarkdownViewState = .loading(nil)
     
-    init(title: String, url: URL) {
+    init(title: String, url: URL, cache: Bool? = nil) {
         self.title = title
         self.url = url
+        self.cache = cache
     }
     
     init(_ item: JsonItem) throws {
         self.title = try item.takeTitle()
         self.url = try item.takeUrl()
+        self.cache = item.takeOptCache()
     }
     
     func setError(_ msg: String) {
@@ -81,7 +84,7 @@ struct MaggieMarkdownPage: View {
     
     func load() async {
         do {
-            let urlSession = URLSession(configuration:URLSessionConfiguration.ephemeral)
+            let urlSession = (self.cache ?? false) ? URLSession.shared : URLSession(configuration:URLSessionConfiguration.ephemeral)
             let (data, urlResponse) = try await urlSession.data(from: self.url)
             let response = urlResponse as! HTTPURLResponse
             print("GET \(self.url) response: \(response), bodyLen=\(data.count)")

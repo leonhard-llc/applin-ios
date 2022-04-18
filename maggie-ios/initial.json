@@ -199,7 +199,8 @@
   "/maggie-server-status": {
     "typ": "markdown-page",
     "title": "Status",
-    "url": "https://cozydatestatus.com/index.md"
+    "url": "https://cozydatestatus.com/index.md",
+    "cache": false
   },
   "/copied-to-clipboard-modal": {
     "typ": "confirmation",
