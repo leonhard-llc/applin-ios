@@ -11,7 +11,9 @@ class MaggieSession: ObservableObject {
     @Published
     var connected = false
     @Published
-    var panes: [String: MaggiePane] = [:]
+    var error: String?
+    @Published
+    var pages: [String: MaggiePage] = [:]
     @Published
     var stack: [String] = []
     
@@ -29,25 +31,28 @@ class MaggieSession: ObservableObject {
         }
     }
     
-    static func pageNotFound() -> MaggiePane {
-        return .Page(MaggiePage(
+    static func pageNotFound() -> MaggiePage {
+        return .NavPage(MaggieNavPage(
             title: "Not Found",
-            widget:.Center(MaggieCenter(
-                widget: .Text(MaggieText("Page not found."))
-            ))
+            widget: .Center(MaggieCenter(
+                .Text(MaggieText("Page not found."))
+            )),
+            start: .BackButton(MaggieBackButton())
         ))
     }
     
-    func getPane(_ key: String) -> MaggiePane {
-        let pane = self.panes[key] ?? self.panes["/maggie-page-not-found"] ?? MaggieSession.pageNotFound()
+    func getPage(_ key: String) -> MaggiePage {
+        let page = self.pages[key]
+        ?? self.pages["/maggie-page-not-found"]
+        ?? MaggieSession.pageNotFound()
         print("toView \(key)")
-        return pane
+        return page
     }
     
     func updateNav() {
         print("updateNav")
         self.nav?.setViews(
-            self.stack.map({ key in self.getPane(key)}),
+            self.stack.map({ key in self.getPage(key)}),
             animated: false
         )
     }
@@ -56,23 +61,31 @@ class MaggieSession: ObservableObject {
     func startupTask() async -> () {
         print("startupTask starting")
         do {
-            let defaultJson: Dictionary<String,JsonWidget> = try await decodeBundleJsonFile("default.json")
+            let defaultJson: Dictionary<String,JsonItem> = try await decodeBundleJsonFile("default.json")
             for (key, jsonWidget) in defaultJson {
-                self.panes[key] = try jsonWidget.toPane()
+                do {
+                    self.pages[key] = try MaggiePage(jsonWidget, self)
+                } catch {
+                    preconditionFailure("error loading default.json key '\(key)': \(error)")
+                }
             }
         } catch {
             preconditionFailure("error loading default.json: \(error)")
         }
         do {
-            let initialJson: Dictionary<String,JsonWidget> = try await decodeBundleJsonFile("initial.json")
+            let initialJson: Dictionary<String,JsonItem> = try await decodeBundleJsonFile("initial.json")
             for (key, jsonWidget) in initialJson {
-                self.panes[key] = try jsonWidget.toPane()
+                do {
+                    self.pages[key] = try MaggiePage(jsonWidget, self)
+                } catch {
+                    preconditionFailure("error loading initial.json key '\(key)': \(error)")
+                }
             }
         } catch {
             preconditionFailure("error loading initial.json: \(error)")
         }
         // TODO: Try to read cache file and restore previous stack.
-        self.stack = ["/", "/maggie-server-status"]
+        self.stack = ["/"]
         self.updateNav()
         //Task(priority: .medium) {
         //    await self.connectTask()

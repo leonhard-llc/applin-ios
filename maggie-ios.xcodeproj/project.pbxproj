@@ -18,6 +18,9 @@
 		CE68B904280004E1000B7761 /* maggie_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B903280004E1000B7761 /* maggie_iosUITests.swift */; };
 		CE68B906280004E1000B7761 /* maggie_iosUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B905280004E1000B7761 /* maggie_iosUITestsLaunchTests.swift */; };
 		CEB78F8D280B6F30006F1B51 /* Nifty Markdown Formatter in Frameworks */ = {isa = PBXBuildFile; productRef = CEB78F8C280B6F30006F1B51 /* Nifty Markdown Formatter */; };
+		CEB78F8F280CA1BE006F1B51 /* JsonItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB78F8E280CA1BE006F1B51 /* JsonItem.swift */; };
+		CEB78F91280CA1CB006F1B51 /* Pages.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB78F90280CA1CB006F1B51 /* Pages.swift */; };
+		CEB78F93280CA560006F1B51 /* Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB78F92280CA560006F1B51 /* Actions.swift */; };
 		CEE050862805D74200F68166 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE050852805D74200F68166 /* Session.swift */; };
 		CEE0508A28071F3300F68166 /* util.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE0508928071F3300F68166 /* util.swift */; };
 		CEE0509028076EAE00F68166 /* Widgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE0508F28076EAE00F68166 /* Widgets.swift */; };
@@ -55,6 +58,9 @@
 		CE68B8FF280004E1000B7761 /* maggie-iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "maggie-iosUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE68B903280004E1000B7761 /* maggie_iosUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maggie_iosUITests.swift; sourceTree = "<group>"; };
 		CE68B905280004E1000B7761 /* maggie_iosUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maggie_iosUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		CEB78F8E280CA1BE006F1B51 /* JsonItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonItem.swift; sourceTree = "<group>"; };
+		CEB78F90280CA1CB006F1B51 /* Pages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pages.swift; sourceTree = "<group>"; };
+		CEB78F92280CA560006F1B51 /* Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions.swift; sourceTree = "<group>"; };
 		CEE050852805D74200F68166 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		CEE0508928071F3300F68166 /* util.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = util.swift; sourceTree = "<group>"; };
 		CEE0508F28076EAE00F68166 /* Widgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widgets.swift; sourceTree = "<group>"; };
@@ -119,15 +125,18 @@
 			children = (
 				CE28864F280A58C5001CE13E /* Info.plist */,
 				CE2886412807C8C7001CE13E /* default.json */,
-				CE68B8E8280004DE000B7761 /* Main.swift */,
 				CE2886432807D26F001CE13E /* initial.json */,
+				CEB78F92280CA560006F1B51 /* Actions.swift */,
+				CE2886452808720D001CE13E /* Error.swift */,
+				CEB78F8E280CA1BE006F1B51 /* JsonItem.swift */,
+				CE68B8E8280004DE000B7761 /* Main.swift */,
+				CEB78F90280CA1CB006F1B51 /* Pages.swift */,
 				CEE050852805D74200F68166 /* Session.swift */,
 				CE2886472808AB6D001CE13E /* SessionStatusView.swift */,
+				CEE0508F28076EAE00F68166 /* Widgets.swift */,
+				CEE0508928071F3300F68166 /* util.swift */,
 				CE68B8EC280004E1000B7761 /* Assets.xcassets */,
 				CE68B8EE280004E1000B7761 /* Preview Content */,
-				CEE0508928071F3300F68166 /* util.swift */,
-				CEE0508F28076EAE00F68166 /* Widgets.swift */,
-				CE2886452808720D001CE13E /* Error.swift */,
 			);
 			path = "maggie-ios";
 			sourceTree = "<group>";
@@ -300,6 +309,9 @@
 				CE68B8E9280004DE000B7761 /* Main.swift in Sources */,
 				CEE0508A28071F3300F68166 /* util.swift in Sources */,
 				CEE0509028076EAE00F68166 /* Widgets.swift in Sources */,
+				CEB78F8F280CA1BE006F1B51 /* JsonItem.swift in Sources */,
+				CEB78F93280CA560006F1B51 /* Actions.swift in Sources */,
+				CEB78F91280CA1CB006F1B51 /* Pages.swift in Sources */,
 				CE2886482808AB6D001CE13E /* SessionStatusView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
