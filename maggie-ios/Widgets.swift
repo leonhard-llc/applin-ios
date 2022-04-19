@@ -9,8 +9,8 @@ struct MaggieBackButton: Equatable, View {
         self.actions = actions
     }
     
-    init(_ item: JsonItem) throws {
-        self.actions = try item.takeOptActions()
+    init(_ item: JsonItem, _ session: MaggieSession) throws {
+        self.actions = try item.takeOptActions(session)
     }
     
     var body: some View {
@@ -45,11 +45,11 @@ struct MaggieButton: Equatable, View {
         self.actions = actions
     }
     
-    init(_ item: JsonItem) throws {
+    init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.text = try item.takeText()
         self.isDefault = item.takeOptIsDefault() ?? false
         self.isDestructive = item.takeOptIsDestructive() ?? false
-        self.actions = try item.takeOptActions() ?? []
+        self.actions = try item.takeOptActions(session) ?? []
     }
     
     var body: some View {
@@ -461,9 +461,9 @@ enum MaggieWidget: Equatable, View {
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         switch item.typ {
         case MaggieBackButton.TYP:
-            self = try .BackButton(MaggieBackButton(item))
+            self = try .BackButton(MaggieBackButton(item, session))
         case MaggieButton.TYP:
-            self = try .Button(MaggieButton(item))
+            self = try .Button(MaggieButton(item, session))
         case MaggieColumn.TYP:
             self = try .Column(MaggieColumn(item, session))
         case MaggieEmpty.TYP:

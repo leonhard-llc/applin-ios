@@ -1,22 +1,42 @@
 import Foundation
+import UIKit
 
 enum MaggieAction: Equatable {
+    static func == (lhs: MaggieAction, rhs: MaggieAction) -> Bool {
+        switch (lhs, rhs) {
+        case let (.CopyToClipboard(a), .CopyToClipboard(b)) where a == b:
+            return true
+        case let (.LaunchUrl(a), .LaunchUrl(b)) where a == b:
+            return true
+        case (.Logout, .Logout):
+            return true
+        case (.Pop, .Pop):
+            return true
+        case let (.Push(a, _), .Push(b, _)) where a == b:
+            return true
+        case let (.Rpc(a, _), .Rpc(b, _)) where a == b:
+            return true
+        default:
+            return false
+        }
+    }
+    
     case CopyToClipboard(String)
     case LaunchUrl(URL)
-    case Push(String)
-    case Rpc(String)
-    case Pop
-    case Refresh
-    
-    init(_ string: String) throws {
+    case Logout(MaggieSession)
+    case Pop(MaggieSession)
+    case Push(String, MaggieSession)
+    case Rpc(String, MaggieSession)
+
+    init(_ string: String, _ session: MaggieSession) throws {
         switch string {
         case "":
             throw MaggieError.deserializeError("action is empty")
-        case "pop":
-            self = .Pop
+        case "logout":
+            self = .Logout(session)
             return
-        case "refresh":
-            self = .Refresh
+        case "pop":
+            self = .Pop(session)
             return
         default:
             break
@@ -36,15 +56,29 @@ enum MaggieAction: Equatable {
                 throw MaggieError.deserializeError("failed parsing url: \(part1)")
             }
         case "push":
-            self = .Push(part1)
+            self = .Push(part1, session)
         case "rpc":
-            self = .Rpc(part1)
+            self = .Rpc(part1, session)
         default:
             throw MaggieError.deserializeError("unknown action: \(string)")
         }
     }
     
     func perform() {
-        print("unimplemented")
+        switch self {
+        case let .CopyToClipboard(string):
+            UIPasteboard.general.string = string
+            // TODO: Show popver.
+        case let .Pop(session):
+            if !session.stack.isEmpty {
+                session.stack.removeLast()
+                session.updateNav()
+            }
+        case let .Push(key, session):
+            session.stack.append(key)
+            session.updateNav()
+        default:
+            print("unimplemented")
+        }
     }
 }

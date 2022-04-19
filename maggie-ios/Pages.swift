@@ -209,7 +209,7 @@ struct MaggieNavPage: View {
         if let start = self.start {
             view = AnyView(view.toolbar() {
                 ToolbarItemGroup(placement: .navigationBarLeading) { start }
-            })
+            }.navigationBarBackButtonHidden(true))
         }
         if let end = self.end {
             view = AnyView(view.toolbar() {

@@ -54,10 +54,10 @@ class JsonItem: Codable {
         case width
     }
 
-    func takeOptActions() throws -> [MaggieAction]? {
+    func takeOptActions(_ session: MaggieSession) throws -> [MaggieAction]? {
         if let values = self.actions {
             self.actions = nil
-            return try values.map({ string in try MaggieAction(string) })
+            return try values.map({ string in try MaggieAction(string, session) })
         }
         return nil
     }

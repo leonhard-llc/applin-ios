@@ -20,9 +20,28 @@
           },
           {
             "typ": "button",
-            "text": "Button",
+            "text": "Disabled Button",
+            "actions": []
+          },
+          {
+            "typ": "button",
+            "text": "Copy 'abc:def'",
             "actions": [
-              "push:/page2"
+              "copy-to-clipboard:abc:def"
+            ]
+          },
+          {
+            "typ": "button",
+            "text": "Status",
+            "actions": [
+              "push:/maggie-server-status"
+            ]
+          },
+          {
+            "typ": "button",
+            "text": "Nonexistent Page",
+            "actions": [
+              "push:/nonexistent"
             ]
           },
           {

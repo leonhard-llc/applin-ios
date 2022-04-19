@@ -36,8 +36,7 @@ class MaggieSession: ObservableObject {
             title: "Not Found",
             widget: .Expand(MaggieExpand(
                 .Text(MaggieText("Page not found."))
-            )),
-            start: .BackButton(MaggieBackButton())
+            ))
         ))
     }
     
@@ -54,6 +53,17 @@ class MaggieSession: ObservableObject {
         self.nav?.setViews(
             self.stack.map({ key in self.getPage(key)}),
             animated: false
+            //self.stack.enumerated().map({ (n, key) -> AnyView in
+            //    if n < self.stack.count - 1 {
+            //        return AnyView(self.getPage(key))
+            //    } else {
+            //        return AnyView(
+            //            self.getPage(key)
+            //                .onDisappear(perform: { () in self.updateNav() })
+            //        )
+            //    }
+            //}),
+            //animated: true
         )
     }
     
