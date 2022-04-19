@@ -61,6 +61,7 @@
 		CEB78F8E280CA1BE006F1B51 /* JsonItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonItem.swift; sourceTree = "<group>"; };
 		CEB78F90280CA1CB006F1B51 /* Pages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pages.swift; sourceTree = "<group>"; };
 		CEB78F92280CA560006F1B51 /* Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Actions.swift; sourceTree = "<group>"; };
+		CEB78F94280F3D20006F1B51 /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
 		CEE050852805D74200F68166 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		CEE0508928071F3300F68166 /* util.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = util.swift; sourceTree = "<group>"; };
 		CEE0508F28076EAE00F68166 /* Widgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widgets.swift; sourceTree = "<group>"; };
@@ -102,6 +103,7 @@
 		CE68B8DC280004DE000B7761 = {
 			isa = PBXGroup;
 			children = (
+				CEB78F94280F3D20006F1B51 /* Readme.md */,
 				CE288656280B6A48001CE13E /* Packages */,
 				CE68B8E7280004DE000B7761 /* maggie-ios */,
 				CE68B8F8280004E1000B7761 /* maggie-iosTests */,
