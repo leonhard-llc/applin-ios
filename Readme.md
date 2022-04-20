@@ -55,8 +55,8 @@ This project is unfinished.  Progress:
     [ ] `hilight:WIDGET_ID`
     [ ] `launch-url:URL`
     [ ] `logout`
-    [ ] `pop`
-    [ ] `push:PAGE_KEY`
+    [X] `pop`
+    [X] `push:PAGE_KEY`
     [ ] `rpc:/PATH?ARGS`
     [ ] `rpc` to include page stack
     [ ] `rpc` to include page variables
@@ -87,3 +87,4 @@ This project is unfinished.  Progress:
 [ ] Log crashes
 [ ] Test coverage
 [ ] Integration tests
+[ ] Swipe from screen edge to go back

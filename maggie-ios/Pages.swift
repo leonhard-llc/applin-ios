@@ -2,7 +2,22 @@ import Foundation
 import SwiftUI
 import NiftyMarkdownFormatter
 
-struct MaggieAlert: View {
+func backButton(_ session: MaggieSession) -> some View {
+    return Button(action: { session.pop() }) {
+        HStack(spacing: 4) {
+            Image(systemName: "chevron.backward")
+                .font(Font.body.weight(.semibold))
+            Text("Back")
+        }
+    }.padding(Edge.Set.leading, -8.0)
+}
+
+struct MaggieAlert: Equatable {
+    static func == (lhs: MaggieAlert, rhs: MaggieAlert) -> Bool {
+        return lhs.title == rhs.title
+        && lhs.widgets == rhs.widgets
+    }
+    
     static let TYP = "alert"
     let title: String
     let widgets: [MaggieWidget]
@@ -18,16 +33,23 @@ struct MaggieAlert: View {
         self.widgets = try item.takeWidgets(session)
     }
     
-    var body: some View {
-        EmptyView().alert(self.title, isPresented: self.$isPresented) {
-            ForEach(0..<self.widgets.count) {
-                n in self.widgets[n]
+    public func toView() -> AnyView {
+        return AnyView(
+            EmptyView().alert(self.title, isPresented: self.$isPresented) {
+                ForEach(0..<self.widgets.count) {
+                    n in self.widgets[n]
+                }
             }
-        }
+        )
     }
 }
 
-struct MaggieConfirmation: View {
+struct MaggieConfirmation: Equatable {
+    static func == (lhs: MaggieConfirmation, rhs: MaggieConfirmation) -> Bool {
+        return lhs.title == rhs.title
+        && lhs.widgets == rhs.widgets
+    }
+    
     static let TYP = "confirmation"
     let title: String
     let widgets: [MaggieWidget]
@@ -43,12 +65,14 @@ struct MaggieConfirmation: View {
         self.widgets = try item.takeWidgets(session)
     }
     
-    var body: some View {
-        EmptyView().confirmationDialog(self.title, isPresented: self.$isPresented) {
-            ForEach(0..<self.widgets.count) {
-                n in self.widgets[n]
+    public func toView() -> AnyView {
+        return AnyView(
+            EmptyView().confirmationDialog(self.title, isPresented: self.$isPresented) {
+                ForEach(0..<self.widgets.count) {
+                    n in self.widgets[n]
+                }
             }
-        }
+        )
     }
 }
 
@@ -58,7 +82,13 @@ enum MarkdownViewState {
     case ok(String)
 }
 
-struct MaggieMarkdownPage: View {
+struct MaggieMarkdownPage: Equatable {
+    static func == (lhs: MaggieMarkdownPage, rhs: MaggieMarkdownPage) -> Bool {
+        return lhs.title == rhs.title
+        && lhs.url == rhs.url
+        && lhs.cache == rhs.cache
+    }
+    
     static let TYP = "markdown-page"
     let title: String
     let url: URL
@@ -132,17 +162,17 @@ struct MaggieMarkdownPage: View {
         }
     }
     
-    var body: some View {
+    public func toView(_ session: MaggieSession, hasPrevPage: Bool) -> AnyView {
+        var view: AnyView
         switch self.state {
         case .loading:
-            return AnyView(
+            view = AnyView(
                 VStack() {
                     Spacer()
                     ProgressView("Loading")
                     Spacer()
                     Button("Refresh") {}.disabled(true)
                 }
-                    .navigationTitle(self.title)
                     .onAppear(perform: self.startLoad)
                     .onDisappear(perform: self.stopLoad)
             )
@@ -158,8 +188,7 @@ struct MaggieMarkdownPage: View {
                     Text(msg).padding()
                     Spacer()
                     Button("Refresh") { self.startLoad() }
-                }
-                    .navigationTitle(self.title))
+                })
         case let .ok(markdown):
             return AnyView(
                 VStack() {
@@ -173,12 +202,30 @@ struct MaggieMarkdownPage: View {
                             .padding()
                     }
                     Button("Refresh") { self.startLoad() }
-                }.navigationTitle(self.title))
+                })
+        }
+        if hasPrevPage {
+            return AnyView(
+                view
+                    .navigationTitle(self.title)
+                    .navigationBarBackButtonHidden(true)
+                    .toolbar() {
+                        ToolbarItemGroup(placement: .navigationBarLeading) {
+                            backButton(session)
+                        }
+                    }
+            )
+        } else {
+            return AnyView(
+                view
+                    .navigationTitle(self.title)
+                    .navigationBarBackButtonHidden(true)
+            )
         }
     }
 }
 
-struct MaggieNavPage: View {
+struct MaggieNavPage: Equatable {
     static let TYP = "nav-page"
     let title: String
     let start: MaggieWidget?
@@ -204,12 +251,22 @@ struct MaggieNavPage: View {
         self.widget = try item.takeWidget(session)
     }
     
-    var body: some View {
-        var view: AnyView = AnyView(self.widget.navigationTitle(self.title))
+    public func toView(_ session: MaggieSession, hasPrevPage: Bool) -> AnyView {
+        var view: AnyView = AnyView(
+            self.widget
+                .navigationTitle(self.title)
+                .navigationBarBackButtonHidden(true)
+        )
         if let start = self.start {
             view = AnyView(view.toolbar() {
                 ToolbarItemGroup(placement: .navigationBarLeading) { start }
-            }.navigationBarBackButtonHidden(true))
+            })
+        } else if hasPrevPage {
+            view = AnyView(view.toolbar() {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
+                    backButton(session)
+                }
+            })
         }
         if let end = self.end {
             view = AnyView(view.toolbar() {
@@ -220,7 +277,7 @@ struct MaggieNavPage: View {
     }
 }
 
-struct MaggiePlainPage: View {
+struct MaggiePlainPage: Equatable {
     static let TYP = "plain-page"
     let title: String?
     let widget: MaggieWidget
@@ -235,42 +292,12 @@ struct MaggiePlainPage: View {
         self.widget = try item.takeWidget(session)
     }
     
-    var body: some View {
-        if let title = self.title {
-            return AnyView(self.widget.navigationTitle(title))
-        } else {
-            return AnyView(self.widget.navigationBarHidden(true))
-        }
+    public func toView() -> AnyView {
+        return AnyView(self.widget.navigationBarHidden(true))
     }
 }
 
-// TODO: Add "leading-widgets", "trailing-widgets", and "typ":"back-button".
-//let start: (String, [MaggieAction])?
-//switch (self.startText, self.startActions) {
-//case let (.none, .some(actions)) where !actions.isEmpty:
-//    throw MaggieError.deserializeError("object has 'start-actions' without 'start-text'")
-//case (.none, _):
-//    start = nil
-//case (.some(""), _):
-//    throw MaggieError.deserializeError("empty 'start-text'")
-//case let (.some(text), opt_actions):
-//    let actions = try (opt_actions ?? []).map({ s in try maggieAction(s) })
-//    start = (text, actions)
-//}
-//let end: (String, [MaggieAction])?
-//switch (self.endText, self.endActions) {
-//case let (.none, .some(actions)) where !actions.isEmpty:
-//    throw MaggieError.deserializeError("object has 'end-actions' without 'end-text'")
-//case (.none, _):
-//    end = nil
-//case (.some(""), _):
-//    throw MaggieError.deserializeError("empty 'end-text'")
-//case let (.some(text), opt_actions):
-//    let actions = try (opt_actions ?? []).map({ s in try maggieAction(s) })
-//    end = (text, actions)
-//}
-
-enum MaggiePage: View {
+enum MaggiePage: Equatable {
     case Alert(MaggieAlert)
     case Confirmation(MaggieConfirmation)
     case MarkdownPage(MaggieMarkdownPage)
@@ -294,18 +321,46 @@ enum MaggiePage: View {
         }
     }
     
-    var body: AnyView {
+    var isPage: Bool {
+        get {
+            switch self {
+            case .Alert(_), .Confirmation(_):
+                return false
+            case .MarkdownPage(_), .NavPage(_), .PlainPage(_):
+                return true
+            }
+        }
+    }
+    
+    var title: String? {
+        get {
+            switch self {
+            case let .Alert(inner):
+                return inner.title
+            case let .Confirmation(inner):
+                return inner.title
+            case let .MarkdownPage(inner):
+                return inner.title
+            case let .NavPage(inner):
+                return inner.title
+            case .PlainPage(_):
+                return nil
+            }
+        }
+    }
+    
+    public func toView(_ session: MaggieSession, hasPrevPage: Bool) -> AnyView {
         switch self {
         case let .Alert(inner):
-            return AnyView(inner)
+            return inner.toView()
         case let .Confirmation(inner):
-            return AnyView(inner)
+            return inner.toView()
         case let .MarkdownPage(inner):
-            return AnyView(inner)
+            return inner.toView(session, hasPrevPage: hasPrevPage)
         case let .NavPage(inner):
-            return AnyView(inner)
+            return inner.toView(session, hasPrevPage: hasPrevPage)
         case let .PlainPage(inner):
-            return AnyView(inner)
+            return inner.toView()
         }
     }
 }

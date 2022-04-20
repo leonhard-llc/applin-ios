@@ -70,13 +70,9 @@ enum MaggieAction: Equatable {
             UIPasteboard.general.string = string
             // TODO: Show popver.
         case let .Pop(session):
-            if !session.stack.isEmpty {
-                session.stack.removeLast()
-                session.updateNav()
-            }
+            session.pop()
         case let .Push(key, session):
-            session.stack.append(key)
-            session.updateNav()
+            session.push(pageKey: key)
         default:
             print("unimplemented")
         }

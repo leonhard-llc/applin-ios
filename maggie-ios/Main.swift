@@ -2,25 +2,59 @@ import SwiftUI
 import UIKit
 
 class NavigationController: UINavigationController {
-    init<Content: View>(rootView: Content) {
-        super.init(
-            rootViewController: UIHostingController(rootView: rootView)
-        )
+    var controllers: [(String, MaggiePage, UIHostingController<AnyView>)] = []
+
+    init() {
+        super.init(rootViewController: UIHostingController(
+            rootView: VStack(alignment: .center) { ProgressView() }
+        ))
     }
 
     required init?(coder: NSCoder) {
         fatalError("unimplemented")
     }
 
-    func pushView<Content: View>(_ content: Content, animated: Bool = true) {
-        self.pushViewController(UIHostingController(rootView: content), animated: animated)
+    static func shouldAnimate(old: [MaggiePage], new: [MaggiePage]) -> Bool {
+        if old.isEmpty {
+            return false
+        }
+        // TODO: Implement.
+        return false
     }
-
-    // Replaces all views, including the root.
-    func setViews<Content: View>(_ views: [Content], animated: Bool = true) {
-        print("setViews count=\(views.count)")
+    
+    func setStackPages(_ session: MaggieSession, _ newPages: [(String, MaggiePage)]) {
+        print("setStackPages")
+        precondition(!newPages.isEmpty)
+        var newControllers: [(String, MaggiePage, UIHostingController<AnyView>)] = []
+        var hasPrevPage = false
+        for (newKey, newPage) in newPages {
+            if let n = self.controllers
+                .map({(key, page, controller) in key})
+                .enumerated()
+                .filter({(n, key) in key == newKey})
+                .map({(n, key) in n})
+                .first {
+                let (key, page, controller) = self.controllers.remove(at: n)
+                if newPage != page {
+                    controller.rootView = newPage.toView(session, hasPrevPage: hasPrevPage)
+                }
+                newControllers.append((key, newPage, controller))
+            } else {
+                let view = newPage.toView(session, hasPrevPage: hasPrevPage)
+                let controller = UIHostingController(rootView: view)
+                newControllers.append((newKey, newPage, controller))
+            }
+            if newPage.isPage {
+                hasPrevPage = true
+            }
+        }
+        let animated = NavigationController.shouldAnimate(
+            old: self.controllers.map({ (key, page, controller) in page}),
+            new: newControllers.map({ (key, page, controller) in page})
+        )
+        self.controllers = newControllers
         self.setViewControllers(
-            views.map({ view in UIHostingController(rootView: view)}),
+            newControllers.map({(key, page, controller) in controller}),
             animated: animated
         )
     }
@@ -28,14 +62,12 @@ class NavigationController: UINavigationController {
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    var window: UIWindow?
-    let navigationController: NavigationController
     let session: MaggieSession
+    let navigationController: NavigationController
+    var window: UIWindow?
 
     override init() {
-        self.navigationController = NavigationController(
-            rootView: VStack(alignment: .center) { ProgressView() }
-        )
+        self.navigationController = NavigationController()
         self.session = MaggieSession(url: "http://localhost/", self.navigationController)
         super.init()
     }

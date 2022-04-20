@@ -12,10 +12,8 @@ class MaggieSession: ObservableObject {
     var connected = false
     @Published
     var error: String?
-    @Published
-    var pages: [String: MaggiePage] = [:]
-    @Published
-    var stack: [String] = []
+    private var pages: [String: MaggiePage] = [:]
+    private var stack: [String] = []
     
     init(
         url: String,
@@ -31,40 +29,37 @@ class MaggieSession: ObservableObject {
         }
     }
     
-    static func pageNotFound() -> MaggiePage {
-        return .NavPage(MaggieNavPage(
-            title: "Not Found",
-            widget: .Expand(MaggieExpand(
-                .Text(MaggieText("Page not found."))
-            ))
-        ))
-    }
-    
-    func getPage(_ key: String) -> MaggiePage {
-        let page = self.pages[key]
-        ?? self.pages["/maggie-page-not-found"]
-        ?? MaggieSession.pageNotFound()
-        print("toView \(key)")
-        return page
-    }
-    
-    func updateNav() {
+    private func updateNav() {
         print("updateNav")
-        self.nav?.setViews(
-            self.stack.map({ key in self.getPage(key)}),
-            animated: false
-            //self.stack.enumerated().map({ (n, key) -> AnyView in
-            //    if n < self.stack.count - 1 {
-            //        return AnyView(self.getPage(key))
-            //    } else {
-            //        return AnyView(
-            //            self.getPage(key)
-            //                .onDisappear(perform: { () in self.updateNav() })
-            //        )
-            //    }
-            //}),
-            //animated: true
-        )
+        let entries = self.stack.map({key -> (String, MaggiePage) in
+            let page =
+            self.pages[key]
+            ?? self.pages["/maggie-page-not-found"]
+            ?? .NavPage(MaggieNavPage(
+                title: "Not Found",
+                widget: .Expand(MaggieExpand(
+                    .Text(MaggieText("Page not found."))
+                ))
+            ))
+            return (key, page)
+        })
+        self.nav?.setStackPages(self, entries)
+    }
+    
+    func pop() {
+        if self.stack.count > 1 {
+            let key = self.stack.removeLast()
+            print("pop '\(key)'")
+            self.updateNav()
+        } else {
+            print("WARN: tried to pop root page")
+        }
+    }
+    
+    func push(pageKey: String) {
+        print("push '\(pageKey)'")
+        self.stack.append(pageKey)
+        self.updateNav()
     }
     
     @MainActor
