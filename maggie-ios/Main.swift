@@ -24,6 +24,11 @@ class NavigationController: UINavigationController {
     
     func setStackPages(_ session: MaggieSession, _ newPages: [(String, MaggiePage)]) {
         print("setStackPages")
+        let topPageController = self.controllers
+            .reversed()
+            .filter({(key, page, controller) in page.isPage})
+            .map({(key, page, controller) in controller})
+            .first
         precondition(!newPages.isEmpty)
         var newControllers: [(String, MaggiePage, UIHostingController<AnyView>)] = []
         var hasPrevPage = false
@@ -48,14 +53,15 @@ class NavigationController: UINavigationController {
                 hasPrevPage = true
             }
         }
-        let animated = NavigationController.shouldAnimate(
-            old: self.controllers.map({ (key, page, controller) in page}),
-            new: newControllers.map({ (key, page, controller) in page})
-        )
         self.controllers = newControllers
+        let newTopPageController = self.controllers
+            .reversed()
+            .filter({(key, page, controller) in page.isPage})
+            .map({(key, page, controller) in controller})
+            .first
         self.setViewControllers(
             newControllers.map({(key, page, controller) in controller}),
-            animated: animated
+            animated: topPageController !== newTopPageController
         )
     }
 }
