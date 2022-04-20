@@ -87,4 +87,4 @@ This project is unfinished.  Progress:
 [ ] Log crashes
 [ ] Test coverage
 [ ] Integration tests
-[ ] Swipe from screen edge to go back
+[ ] Swipe to go back

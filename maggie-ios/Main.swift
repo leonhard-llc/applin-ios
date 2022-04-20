@@ -1,6 +1,89 @@
 import SwiftUI
 import UIKit
 
+// Failed attempt to implement swipe-back.
+// UINavigationController does not set isBeingDismissed=true.
+// The view cannot easily find out if it was dismissed or just hidden.
+// One way is to ask the navigation controller if it is the top view
+// and assume that it was dismissed.
+// If the view decides that it was dismissed,
+// it must pop itself from the session's stack.
+// This seems prone to race conditions and popping the wrong page.
+//
+// One alternative is to combine the session and nav controller.
+// But then we lose the separation of concerns.
+//
+// Another alternative is to re-implement the swiping gesture and
+// give the nav controller a proper "dismissTopPage()" method.
+// That would still have to call session.pop().
+// There's no escaping the spaghetti.
+//
+// The root cause of all of this is that UIKits's UINavigationController
+// is not at all modular.  It is designed to be used in exactly one way.
+// It has very few features to allow flexibility or customization.
+// SwiftUI's NavigationView is even less flexible.
+// Apple, you can do better.
+//
+//class PageController: UIHostingController<AnyView> {
+//    weak var navController: NavigationController?
+//    //weak var session: MaggieSession?
+//    var page: MaggiePage
+//
+//    init(_ navController: NavigationController, _ session: MaggieSession, _ page: MaggiePage, hasPrevPage: Bool) {
+//        self.navController = navController
+//        self.page = page
+//        let view = page.toView(session, hasPrevPage: hasPrevPage)
+//        super.init(rootView: view)
+//    }
+//
+//    required init?(coder aDecoder: NSCoder) {
+//        fatalError("unimplemented")
+//    }
+//
+//    func setPage(_ session: MaggieSession, _ page: MaggiePage, hasPrevPage: Bool) {
+//        self.page = page
+//        let view = page.toView(session, hasPrevPage: hasPrevPage)
+//        self.rootView = view
+//    }
+//
+//    override func viewDidDisappear(_ animated: Bool) {
+//        print("PageController viewDidDisappear isBeingDismissed=\(self.isBeingDismissed) isMovingFromParent=\(self.isMovingFromParent)")
+//        super.viewDidDisappear(animated)
+//        if self.isBeingDismissed || self.isMovingFromParent {
+//            self.navController?.wasDismissed(self)
+//        }
+//    }
+//}
+//class NavigationController: UINavigationController, UIGestureRecognizerDelegate {
+//    deinit {
+//        self.interactivePopGestureRecognizer?.delegate = nil
+//    }
+//
+//    override func viewDidLoad() {
+//        super.viewDidLoad()
+//        self.interactivePopGestureRecognizer?.delegate = self
+//    }
+//
+//    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+//        let result = self.controllers.last?.1.allowBackSwipe() ?? false
+//        print("allowBackSwipe \(result)")
+//        return result
+//    }
+//
+//    public func wasDismissed(_ pageController: PageController) {
+//        print("NavigationController a page was dismissed")
+//        if self.controllers.last?.2 === pageController {
+//            print("NavigationController top page was dismissed")
+//            self.controllers.removeLast()
+//            self.setViewControllers(
+//                self.controllers.map({(key, page, controller) in controller}),
+//                animated: false
+//            )
+//        } else {
+//            print("NavigationController non-top page was dismissed")
+//        }
+//    }
+
 class NavigationController: UINavigationController {
     var controllers: [(String, MaggiePage, UIHostingController<AnyView>)] = []
 
@@ -9,17 +92,9 @@ class NavigationController: UINavigationController {
             rootView: VStack(alignment: .center) { ProgressView() }
         ))
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("unimplemented")
-    }
-
-    static func shouldAnimate(old: [MaggiePage], new: [MaggiePage]) -> Bool {
-        if old.isEmpty {
-            return false
-        }
-        // TODO: Implement.
-        return false
     }
     
     func setStackPages(_ session: MaggieSession, _ newPages: [(String, MaggiePage)]) {
