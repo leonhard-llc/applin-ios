@@ -51,3 +51,20 @@ func decodeJson<T: Decodable>(_ data: Data) async throws -> T {
     let decoder = JSONDecoder()
     return try decoder.decode(T.self, from: data)
 }
+
+func encodeJson<T: Encodable>(_ item: T) throws -> Data {
+    let encoder = JSONEncoder()
+    return try encoder.encode(item)
+}
+
+extension HTTPURLResponse {
+    func contentTypeBase() -> String? {
+        if let mimeType = self.mimeType {
+            return mimeType
+                .split(separator: ";", maxSplits: 1, omittingEmptySubsequences: false)[0]
+                .lowercased()
+        } else {
+            return nil
+        }
+    }
+}

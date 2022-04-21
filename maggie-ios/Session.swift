@@ -6,7 +6,7 @@ enum SessionState {
 }
 
 class MaggieSession: ObservableObject {
-    let url: String
+    let url: URL
     let nav: NavigationController?
     @Published
     var connected = false
@@ -16,10 +16,11 @@ class MaggieSession: ObservableObject {
     private var stack: [String] = []
     
     init(
-        url: String,
+        url: URL,
         _ nav: NavigationController?,
         startTasks: Bool = true
     ) {
+        precondition(url.scheme == "http" || url.scheme == "https")
         self.url = url
         self.nav = nav
         if startTasks {
@@ -66,10 +67,10 @@ class MaggieSession: ObservableObject {
     func startupTask() async -> () {
         print("startupTask starting")
         do {
-            let defaultJson: Dictionary<String,JsonItem> = try await decodeBundleJsonFile("default.json")
-            for (key, jsonWidget) in defaultJson {
+            let itemMap: Dictionary<String,JsonItem> = try await decodeBundleJsonFile("default.json")
+            for (key, item) in itemMap {
                 do {
-                    self.pages[key] = try MaggiePage(jsonWidget, self)
+                    self.pages[key] = try MaggiePage(item, self)
                 } catch {
                     preconditionFailure("error loading default.json key '\(key)': \(error)")
                 }
@@ -78,10 +79,10 @@ class MaggieSession: ObservableObject {
             preconditionFailure("error loading default.json: \(error)")
         }
         do {
-            let initialJson: Dictionary<String,JsonItem> = try await decodeBundleJsonFile("initial.json")
-            for (key, jsonWidget) in initialJson {
+            let itemMap: Dictionary<String,JsonItem> = try await decodeBundleJsonFile("initial.json")
+            for (key, item) in itemMap {
                 do {
-                    self.pages[key] = try MaggiePage(jsonWidget, self)
+                    self.pages[key] = try MaggiePage(item, self)
                 } catch {
                     preconditionFailure("error loading initial.json key '\(key)': \(error)")
                 }
@@ -169,7 +170,7 @@ class MaggieSession: ObservableObject {
     
     @MainActor
     func connectTask() async {
-        print("connectTask url=\(self.url)")
+        print("connectTask \(self.url)")
         while !Task.isCancelled {
             do {
                 try await self.connectOnce()
@@ -223,14 +224,110 @@ class MaggieSession: ObservableObject {
         throw MaggieError.deserializeError("err1")
     }
     
+    func rpc(path: String) async -> Bool {
+        print("rpc \(path)")
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 10.0 /* seconds */
+        config.timeoutIntervalForResource = 60.0 /* seconds */
+        let urlSession = URLSession(configuration: config)
+        let url = self.url.appendingPathComponent(
+            path.starts(with: "/") ? String(path.dropFirst()) : path)
+        var urlRequest = URLRequest(
+            url: url,
+            cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
+        )
+        urlRequest.httpMethod = "POST"
+        //urlRequest.httpBody = try! encodeJson(jsonRequest)
+        urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
+        let data: Data
+        let httpResponse: HTTPURLResponse
+        do {
+            let (urlData, urlResponse) = try await urlSession.data(for: urlRequest)
+            data = urlData
+            httpResponse = urlResponse as! HTTPURLResponse
+        } catch {
+            print("rpc \(path) transport error: \(error)")
+            // TODO: Push error modal
+            return false
+        }
+        if !(200...299).contains(httpResponse.statusCode) {
+            if httpResponse.contentTypeBase() == "text/plain",
+                let string = String(data: data, encoding: .utf8) {
+                print("rpc \(path) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
+            } else {
+            print("rpc \(path) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), len=\(data.count) \(httpResponse.mimeType ?? "")")
+            }
+            // TODO: Push error modal
+            return false
+        }
+        let contentTypeBase = httpResponse.contentTypeBase()
+        if contentTypeBase != "application/json" {
+            print("rpc \(path) server response content-type is not 'application/json': '\(contentTypeBase ?? "")'")
+            // TODO: Push error modal
+            return false
+        }
+        let response: Dictionary<String,JsonItem?>
+        do {
+            response = try await decodeJson(data)
+        } catch {
+            print("rpc \(path) error decoding server response: \(error)")
+            // TODO: Push error modal
+            return false
+        }
+        for (key, optItem) in response {
+            do {
+                if let item = optItem {
+                    self.pages[key] = try MaggiePage(item, self)
+                } else {
+                    self.pages.removeValue(forKey: key)
+                }
+            } catch {
+                print("rpc \(path) error processing server response, key '\(key)': \(error)")
+            }
+        }
+        self.updateNav()
+        return true
+    }
+    
+    @MainActor
+    func doActionsAsync(_ actions: [MaggieAction]) async {
+        loop: for action in actions {
+            switch action {
+            case let .CopyToClipboard(string):
+                UIPasteboard.general.string = string
+            case .LaunchUrl(_):
+                // TODO
+                print("unimplemented")
+            case .Logout:
+                // TODO
+                print("unimplemented")
+            case .Pop:
+                self.pop()
+            case let .Push(key):
+                self.push(pageKey: key)
+            case let .Rpc(path):
+                let result = await self.rpc(path: path)
+                if !result {
+                    break loop
+                }
+            }
+        }
+    }
+    
+    func doActions(_ actions: [MaggieAction]) {
+        Task() {
+            await self.doActionsAsync(actions)
+        }
+    }
+
     static func preview() -> MaggieSession {
-        let session = MaggieSession(url: "http://localhost:8000", nil, startTasks: false)
+        let session = MaggieSession(url: URL(string: "http://localhost:8000")!, nil, startTasks: false)
         session.connected = false
         return session
     }
     
     static func preview_connected() -> MaggieSession {
-        let session = MaggieSession(url: "http://localhost:8000", nil, startTasks: false)
+        let session = MaggieSession(url: URL(string: "http://localhost:8000")!, nil, startTasks: false)
         session.connected = true
         return session
     }

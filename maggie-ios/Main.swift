@@ -149,7 +149,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     override init() {
         self.navigationController = NavigationController()
-        self.session = MaggieSession(url: "http://localhost/", self.navigationController)
+        let url = URL(string: "http://127.0.0.1:8000/")!
+        self.session = MaggieSession(url: url, self.navigationController)
         super.init()
     }
 

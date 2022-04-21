@@ -54,10 +54,10 @@ class JsonItem: Codable {
         case width
     }
 
-    func takeOptActions(_ session: MaggieSession) throws -> [MaggieAction]? {
+    func takeOptActions() throws -> [MaggieAction]? {
         if let values = self.actions {
             self.actions = nil
-            return try values.map({ string in try MaggieAction(string, session) })
+            return try values.map({ string in try MaggieAction(string) })
         }
         return nil
     }
@@ -313,4 +313,6 @@ class JsonItem: Codable {
         }
         throw MaggieError.deserializeError("missing 'width'")
     }
+    
+    // TODO: Warn about unused values.
 }

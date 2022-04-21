@@ -7,6 +7,13 @@
         "typ": "column",
         "widgets": [
           {
+            "typ": "button",
+            "text": "RPC /rpc1",
+            "actions": [
+              "rpc:/increment"
+            ]
+          },
+          {
             "typ": "text",
             "text": "text"
           },

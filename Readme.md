@@ -52,12 +52,15 @@ This project is unfinished.  Progress:
 [ ] Actions:
     [ ] `connect`
     [X] `copy-to-clipboard`
+    [ ] `copy-to-clipboard` to show confirmation popover
     [ ] `hilight:WIDGET_ID`
     [ ] `launch-url:URL`
     [ ] `logout`
     [X] `pop`
     [X] `push:PAGE_KEY`
+    [X] `rpc:/PATH`
     [ ] `rpc:/PATH?ARGS`
+    [ ] Prevent overlapping RPCs or actions
     [ ] `rpc` to include page stack
     [ ] `rpc` to include page variables
     [ ] `rpc` response can update page stack

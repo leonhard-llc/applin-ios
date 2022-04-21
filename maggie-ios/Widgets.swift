@@ -2,64 +2,57 @@ import Foundation
 import SwiftUI
 
 struct MaggieBackButton: Equatable, View {
+    static func == (lhs: MaggieBackButton, rhs: MaggieBackButton) -> Bool {
+        return lhs.actions == rhs.actions
+    }
+    
     static let TYP = "back-button"
-    let actions: [MaggieAction]?
-    
-    init(_ actions: [MaggieAction]? = nil) {
-        self.actions = actions
-    }
-    
+    let actions: [MaggieAction]
+    weak var session: MaggieSession?
+
     init(_ item: JsonItem, _ session: MaggieSession) throws {
-        self.actions = try item.takeOptActions(session)
-    }
+        self.actions = try item.takeOptActions() ?? []
+        self.session = session
+   }
     
     var body: some View {
         Button(
-            // TODO: Use previous page's title.
             "Back",
-            action: {
-                for action in self.actions ?? [] {
-                    action.perform()
-                }
-            }
-        ).disabled(self.actions?.isEmpty ?? false)
+            action: { self.session?.doActions(self.actions) }
+        ).disabled(self.actions.isEmpty)
     }
 }
 
 struct MaggieButton: Equatable, View {
+    static func == (lhs: MaggieButton, rhs: MaggieButton) -> Bool {
+        return lhs.text == rhs.text
+        && lhs.isDefault == rhs.isDefault
+        && lhs.isDestructive == rhs.isDestructive
+        && lhs.actions == rhs.actions
+    }
+    
     static let TYP = "button"
     let text: String
     let isDefault: Bool
     let isDestructive: Bool
     let actions: [MaggieAction]
-    
-    init(
-        text: String,
-        isDefault: Bool,
-        isDestructive: Bool,
-        _ actions: [MaggieAction]
-    ) {
-        self.text = text
-        self.isDefault = isDefault
-        self.isDestructive = isDestructive
-        self.actions = actions
-    }
-    
+    weak var session: MaggieSession?
+        
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.text = try item.takeText()
         self.isDefault = item.takeOptIsDefault() ?? false
         self.isDestructive = item.takeOptIsDestructive() ?? false
-        self.actions = try item.takeOptActions(session) ?? []
+        self.actions = try item.takeOptActions() ?? []
+        self.session = session
     }
     
     var body: some View {
         Button(
             self.text,
             role: self.isDestructive ? .destructive : nil,
-            action: {
-                for action in self.actions {
-                    action.perform()
-                }
+            action: { () in
+                print("Button(\(self.text)) action")
+                self.session?.doActions(self.actions)
             }
         )
             .disabled(self.actions.isEmpty)
@@ -72,16 +65,6 @@ struct MaggieColumn: Equatable, View {
     let widgets: [MaggieWidget]
     let alignment: HorizontalAlignment
     let spacing: CGFloat
-
-    init(
-        _ widgets: [MaggieWidget],
-        _ alignment: HorizontalAlignment,
-        spacing: Double? = nil
-    ) {
-        self.widgets = widgets
-        self.alignment = alignment
-        self.spacing = CGFloat(spacing ?? 4.0)
-    }
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widgets = try item.takeOptWidgets(session) ?? []
@@ -109,19 +92,15 @@ struct MaggieEmpty: Equatable, View {
 }
 
 struct MaggieErrorDetails: Equatable, View {
-    static func == (lhs: MaggieErrorDetails, rhs: MaggieErrorDetails) -> Bool {
-        true
-    }
-    
-    @ObservedObject var session: MaggieSession
     static let TYP = "error-details"
+    let error: String
     
     init(_ session: MaggieSession) {
-        self.session = session
+        self.error = session.error ?? "no error"
     }
 
     var body: some View {
-        Text(session.error ?? "no error")
+        Text(self.error)
     }
 }
 
@@ -134,20 +113,13 @@ struct MaggieExpand: Equatable, View {
     let maxHeight: CGFloat?
     let alignment: Alignment
     
-    init(
-        _ widget: MaggieWidget,
-        minWidth: CGFloat? = nil,
-        maxWidth: CGFloat? = nil,
-        minHeight: CGFloat? = nil,
-        maxHeight: CGFloat? = nil,
-        _ alignment: Alignment = .center
-    ) {
+    init(_ widget: MaggieWidget) {
         self.widget = widget
-        self.minWidth = minWidth
-        self.maxWidth = maxWidth
-        self.minHeight = minHeight
-        self.maxHeight = maxHeight
-        self.alignment = alignment
+        self.minWidth = nil
+        self.maxWidth = nil
+        self.minHeight = nil
+        self.maxHeight = nil
+        self.alignment = .center
     }
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
@@ -176,11 +148,7 @@ struct MaggieExpand: Equatable, View {
 struct MaggieHorizontalScroll: Equatable, View {
     static let TYP = "horizontal-scroll"
     let widget: MaggieWidget
-    
-    init(widget: MaggieWidget) {
-        self.widget = widget
-    }
-    
+        
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widget = try item.takeWidget(session)
     }
@@ -198,18 +166,6 @@ struct MaggieImage: Equatable, View {
     let width: CGFloat?
     let height: CGFloat?
     let disposition: MaggieDisposition
-    
-    init(
-        _ url: URL,
-        width: CGFloat? = nil,
-        height: CGFloat? = nil,
-        disposition: MaggieDisposition = .fit
-    ) {
-        self.url = url
-        self.width = width
-        self.height = height
-        self.disposition = disposition
-    }
     
     init(_ item: JsonItem) throws {
         self.url = try item.takeUrl()
@@ -264,16 +220,6 @@ struct MaggieRow: Equatable, View {
     let alignment: VerticalAlignment
     let spacing: CGFloat
     
-    init(
-        _ widgets: [MaggieWidget],
-        _ alignment: VerticalAlignment,
-        spacing: Double? = nil
-    ) {
-        self.widgets = widgets
-        self.alignment = alignment
-        self.spacing = CGFloat(spacing ?? 4.0)
-    }
-    
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widgets = try item.takeOptWidgets(session) ?? []
         self.alignment = item.takeOptVerticalAlignment() ?? .top
@@ -294,10 +240,6 @@ struct MaggieRow: Equatable, View {
 struct MaggieScroll: Equatable, View {
     static let TYP = "scroll"
     let widget: MaggieWidget
-    
-    init(widget: MaggieWidget) {
-        self.widget = widget
-    }
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widget = try item.takeWidget(session)
@@ -326,18 +268,6 @@ struct MaggieTall: Equatable, View {
     let minHeight: CGFloat
     let maxHeight: CGFloat
     let vAlignment: VerticalAlignment
-    
-    init(
-        _ widget: MaggieWidget,
-        minHeight: CGFloat,
-        maxHeight: CGFloat,
-        _ vAlignment: VerticalAlignment
-    ) {
-        self.widget = widget
-        self.minHeight = minHeight
-        self.maxHeight = maxHeight
-        self.vAlignment = vAlignment
-    }
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widget = try item.takeWidget(session)
@@ -397,18 +327,6 @@ struct MaggieWide: Equatable, View {
     let minWidth: CGFloat
     let maxWidth: CGFloat
     let hAlignment: HorizontalAlignment
-    
-    init(
-        _ widget: MaggieWidget,
-        minWidth: CGFloat,
-        maxWidth: CGFloat,
-        _ alignment: HorizontalAlignment
-    ) {
-        self.widget = widget
-        self.minWidth = minWidth
-        self.maxWidth = maxWidth
-        self.hAlignment = alignment
-    }
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widget = try item.takeWidget(session)
