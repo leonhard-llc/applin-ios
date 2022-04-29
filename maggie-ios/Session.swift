@@ -2,18 +2,71 @@ import Foundation
 import SwiftUI
 
 enum SessionState {
-    case Connecting, ConnectError, ServerError(String), Connected
+    case startup, connectError, serverError, connected
+}
+
+struct CacheFileContents: Codable {
+    var pages: [String: JsonItem]?
+    var stack: [String]?
+}
+
+struct Update: Codable {
+    var pages: [String: JsonItem]?
+    var stack: [String]?
+    var user_error: String?
 }
 
 class MaggieSession: ObservableObject {
+    static func cacheFilePath() -> String {
+        return documentDirPath() + "/cache.json"
+    }
+    
+    static func readCacheFile() async -> CacheFileContents? {
+        print("readCacheFile")
+        let path = cacheFilePath()
+        let bytes: Data
+        do {
+            bytes = try await readFile(path: path)
+        } catch {
+            print("error reading file \(path): \(error)")
+            return nil
+        }
+        do {
+            return try decodeJson(bytes)
+        } catch {
+            print("error decoding file \(path): \(error)")
+            return nil
+        }
+    }
+    
+    static func writeCacheFile(pages: [String: MaggiePage], stack: [String]) async throws {
+        print("writeCacheFile")
+        var contents = CacheFileContents()
+        contents.pages = pages.mapValues({page in page.toJsonItem()})
+        contents.stack = stack
+        let bytes = try encodeJson(contents)
+        let path = cacheFilePath()
+        let tmpPath = path + ".tmp"
+        if await fileExists(path: tmpPath) {
+            try await deleteFile(path: tmpPath)
+        }
+        try await writeFile(data: bytes, path: tmpPath)
+        // Swift has no atomic file replace function.
+        if await fileExists(path: path) {
+            try await deleteFile(path: path)
+        }
+        try await moveFile(atPath: tmpPath, toPath: path)
+    }
+    
     let url: URL
     let nav: NavigationController?
     @Published
-    var connected = false
+    var state: SessionState = .startup
     @Published
     var error: String?
     private var pages: [String: MaggiePage] = [:]
     private var stack: [String] = []
+    private var writeCacheAfter: Date = .distantPast
     
     init(
         url: URL,
@@ -31,10 +84,15 @@ class MaggieSession: ObservableObject {
     }
     
     private func updateNav() {
-        print("updateNav")
+        print("updateNav \(self.stack)")
+        if self.stack.isEmpty {
+            self.stack = ["/"]
+            print("updateNav \(self.stack)")
+        }
         let entries = self.stack.map({key -> (String, MaggiePage) in
             let page =
             self.pages[key]
+            // TODO: Show loading.
             ?? self.pages["/maggie-page-not-found"]
             ?? .NavPage(MaggieNavPage(
                 title: "Not Found",
@@ -63,6 +121,124 @@ class MaggieSession: ObservableObject {
         self.updateNav()
     }
     
+    func scheduleWriteData() {
+        let now = Date()
+        if now < self.writeCacheAfter {
+            return
+        }
+        self.writeCacheAfter = now + 10.0 /* seconds */
+    }
+    
+    @MainActor
+    func cacheWriterTask() async {
+        print("cacheWriterTask \(MaggieSession.cacheFilePath())")
+        while !Task.isCancelled {
+            if self.writeCacheAfter != .distantPast && self.writeCacheAfter < Date() {
+                do {
+                    self.writeCacheAfter = .distantPast
+                    try await MaggieSession.writeCacheFile(
+                        pages: self.pages,
+                        stack: self.stack
+                    )
+                } catch {
+                    print("ERROR cacheWriterTask: \(error)")
+                    self.writeCacheAfter = Date()
+                    await sleep(ms: 60_000)
+                }
+            } else {
+                await sleep(ms: 1_000)
+            }
+        }
+        print("cacheWriterTask cancelled")
+    }
+
+    @MainActor
+    func connectOnce() async throws {
+        print("connectOnce")
+        let config = URLSessionConfiguration.default
+        config.urlCache = nil
+        config.timeoutIntervalForRequest = 60.0 /* seconds */
+        config.timeoutIntervalForResource = 60 * 60.0 /* seconds */
+        // config.waitsForConnectivity = true
+        config.httpCookieAcceptPolicy = .always
+        config.httpShouldSetCookies = true
+        let urlSession = URLSession(configuration: config)
+        let (asyncBytes, response) = try await urlSession.bytes(from: self.url)
+        let httpResponse = response as! HTTPURLResponse
+        if httpResponse.statusCode != 200 {
+            self.state = .serverError
+            if httpResponse.contentTypeBase() == "text/plain" {
+               let string = try await asyncBytes.lines.reduce(into: "", {result, item in result += item})
+                print("ERROR: connect \(self.url) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
+            } else {
+                print("ERROR: connect \(self.url) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), len=\(response.expectedContentLength) \(httpResponse.mimeType ?? "")")
+            }
+            return
+        }
+        if httpResponse.contentTypeBase() != "text/event-stream" {
+            self.state = .serverError
+            print("ERROR: connect \(self.url) server sent unexpected content-type: \" \(httpResponse.mimeType ?? "")\"")
+            return
+        }
+        self.state = .connected
+        defer { self.state = .connectError }
+        print("reading lines")
+        for try await line in asyncBytes.lines {
+            print("line: '\(line)'")
+            let parts = line.split(separator: ":", maxSplits: 1)
+            if parts.count != 2 || parts[1].isEmpty {
+                throw MaggieError.networkError("server sent line with unexpected format: \"\(line)\"")
+            }
+            if parts[0] != "data" {
+                print("ignoring non-data line from server: \"\(line)\"")
+                continue
+            }
+            let update: Update
+            do {
+                update = try decodeJson(parts[1].data(using: .utf8)!)
+            } catch {
+                print("error decoding update: \(error)")
+                return
+            }
+            if let newStack = update.stack {
+                self.stack = newStack
+            }
+            if let newPages = update.pages {
+                for (key, item) in newPages {
+                    do {
+                        self.pages[key] = try MaggiePage(item, self)
+                        print("updated key \(key)")
+                    } catch {
+                        print("ERROR: error processing updated key '\(key)': \(error)")
+                    }
+                }
+            }
+            // TODO: Handle user_error.
+            self.updateNav()
+            self.scheduleWriteData()
+        }
+        print("disconnected")
+    }
+
+    @MainActor
+    func connectTask() async {
+        print("connectTask \(self.url)")
+        while !Task.isCancelled {
+            do {
+                try await self.connectOnce()
+            } catch let error as NSError
+                        where error.code == -1004 /* Could not connect to the server */ {
+                self.state = .connectError
+            } catch {
+                // TODO: Show error to user on startup.
+                self.state = .connectError
+                print("ERROR connectTask: \(error)")
+            }
+            await sleep(ms: 5_000)
+        }
+        print("connectTask cancelled")
+    }
+
     @MainActor
     func startupTask() async -> () {
         print("startupTask starting")
@@ -78,157 +254,32 @@ class MaggieSession: ObservableObject {
         } catch {
             preconditionFailure("error loading default.json: \(error)")
         }
-        do {
-            let itemMap: Dictionary<String,JsonItem> = try await decodeBundleJsonFile("initial.json")
-            for (key, item) in itemMap {
+        if let contents = await MaggieSession.readCacheFile() {
+            for (key, item) in contents.pages ?? [:] {
                 do {
                     self.pages[key] = try MaggiePage(item, self)
                 } catch {
-                    preconditionFailure("error loading initial.json key '\(key)': \(error)")
+                    print("ERROR: error loading cached key '\(key)': \(error)")
                 }
             }
-        } catch {
-            preconditionFailure("error loading initial.json: \(error)")
+            self.stack = contents.stack ?? ["/"]
         }
-        // TODO: Try to read cache file and restore previous stack.
-        self.stack = ["/"]
         self.updateNav()
-        //Task(priority: .medium) {
-        //    await self.connectTask()
-        //}
-        print("startupTask done")
-        //        let cookieFilePath = documentDirPath() + "/cookie"
-        //        // The proper way is to open the file and catch file-not-found exception.
-        //        // I searched for an hour and found no documentated way to catch such an error. :(
-        //        if await fileExists(path: cookieFilePath) {
-        //            print("startupTask: reading \(cookieFilePath)")
-        //            let data: Data
-        //            do {
-        //                data = try await readFile(path: cookieFilePath)
-        //            } catch {
-        //                // TODO: Show a dialog.
-        //                fatalError("error reading cookie file \(cookieFilePath): \(error)")
-        //            }
-        //            switch data.count {
-        //            case 0:
-        //                break
-        //            case 1..512
-        //            }
-        //        }
-        //
-        //        let cacheJsonPath = documentDirPath() + "/cache.json"
-        //        // The proper way is to open the file and catch file-not-found exception.
-        //        // I searched for an hour and found no documentated way to catch such an error. :(
-        //        if await fileExists(path: cacheJsonPath) {
-        //            print("startupTask: reading \(cacheJsonPath)")
-        //            do {
-        //                let contents = try await readFile(path: cacheJsonPath)
-        //            } catch {
-        //                print("startupTask: error reading \(cacheJsonPath): \(error)")
-        //                // TODO: Push "data-load-error" page
-        //            }
-        //        }
-        //        print("startupTask: loading data file")
-        //        print("startupTask: no data file found, loading initial_data.json from bundle")
-        //
-        //        while true {
-        //            try await Task.sleep(nanoseconds:2_000_000_000)
-        //            print("startupTask: connecting")
-        //            self.state = .Connecting
-        //            try await Task.sleep(nanoseconds:2_000_000_000)
-        //            print("startupTask: error")
-        //            self.state = .ServerError("err1")
-        //            //            print("startupTask: state=\(self.state)")
-        //            //            try Task.checkCancellation()
-        //            //            let url = URL(string: "http://localhost:8000/health")!
-        //            //            let task = URLSession.shared.dataTask(with: url) { data, response, error in
-        //            //                if let error = error {
-        //            //                    print("transport error: \(error)")
-        //            //                    return
-        //            //                }
-        //            //                guard let httpResponse = response as? HTTPURLResponse,
-        //            //                      (200...299).contains(httpResponse.statusCode) else {
-        //            //                          print("server error: \(response!)")
-        //            //                          return
-        //            //                      }
-        //            //                if let mimeType = httpResponse.mimeType, mimeType.starts(with: "text/plain"),
-        //            //                   let data = data,
-        //            //                   let string = String(data: data, encoding: .utf8) {
-        //            //                    print("response: \(httpResponse) \"\(string)\"")
-        //            //                }
-        //            //            }
-        //            //            task.resume()
-        //            //            print("sleeping")
-        //            //            /// The docs say this is function is async, but the compiler warns
-        //            //            /// "no 'async' operations occur within 'await' expression".
-        //            //            /// `static func sleep(_ duration: UInt64) async`
-        //            //            /// https://developer.apple.com/documentation/swift/task/3814836-sleep
-        //            //            try await Task.sleep(nanoseconds:2_000_000_000)
-        //        }
-        //
-    }
-    
-    @MainActor
-    func connectTask() async {
-        print("connectTask \(self.url)")
-        while !Task.isCancelled {
-            do {
-                try await self.connectOnce()
-            } catch {
-                print("ERROR connectTask: \(error)")
-            }
-            await sleep(ms:1000)
+        Task(priority: .medium) {
+            await self.connectTask()
         }
-        print("connectTask cancelled")
+        Task(priority: .medium) {
+            await self.cacheWriterTask()
+        }
+        print("startupTask done")
     }
-    
-    @MainActor
-    func connectOnce() async throws {
-        print("connectOnce")
-        let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 60.0 /* seconds */
-        config.timeoutIntervalForResource = 60 * 60.0 /* seconds */
-        // TODO: Make a class that implements URLSessionDataDelegate to process
-        // chunks of the HTTP response body and decode them as Server-Sent Events.
-        // https://developer.apple.com/documentation/foundation/urlsessiondatadelegate
-        // https://developer.apple.com/documentation/foundation/urlsession/1411597-init
-        //        let urlSession = URLSession(configuration: config, delegate: TODO, delegateQueue: OperationQueue.main)
-        //        self.state = .Connecting
-        //        let task = urlSession.dataTask(with: self.url, completionHandler: {
-        //            (data: Data?, response: URLResponse?, error: Error?) -> Void in
-        //            if let error = error {
-        //                print("transport error: \(error)")
-        //                return
-        //            }
-        //            guard let httpResponse = response as? HTTPURLResponse,
-        //                  (200...299).contains(httpResponse.statusCode) else {
-        //                      print("server error: \(response!)")
-        //                      return
-        //                  }
-        //            if let mimeType = httpResponse.mimeType, mimeType.starts(with: "text/plain"),
-        //               let data = data,
-        //               let string = String(data: data, encoding: .utf8) {
-        //                print("response: \(httpResponse) \"\(string)\"")
-        //            }
-        //        })
-        //            task.resume()
-        //            print("sleeping")
-        //            /// The docs say this is function is async, but the compiler warns
-        //            /// "no 'async' operations occur within 'await' expression".
-        //            /// `static func sleep(_ duration: UInt64) async`
-        //            /// https://developer.apple.com/documentation/swift/task/3814836-sleep
-        //            try await Task.sleep(nanoseconds:2_000_000_000)
-        self.connected = true
-        defer { self.connected = false }
-        await sleep(ms: 2000)
-        throw MaggieError.deserializeError("err1")
-    }
-    
+        
     func rpc(path: String) async -> Bool {
         print("rpc \(path)")
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 10.0 /* seconds */
         config.timeoutIntervalForResource = 60.0 /* seconds */
+        config.urlCache = nil
         let urlSession = URLSession(configuration: config)
         let url = self.url.appendingPathComponent(
             path.starts(with: "/") ? String(path.dropFirst()) : path)
@@ -257,12 +308,14 @@ class MaggieSession: ObservableObject {
             } else {
             print("rpc \(path) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), len=\(data.count) \(httpResponse.mimeType ?? "")")
             }
+            // TODO: Save error
             // TODO: Push error modal
             return false
         }
         let contentTypeBase = httpResponse.contentTypeBase()
         if contentTypeBase != "application/json" {
             print("rpc \(path) server response content-type is not 'application/json': '\(contentTypeBase ?? "")'")
+            // TODO: Save error
             // TODO: Push error modal
             return false
         }
@@ -271,6 +324,7 @@ class MaggieSession: ObservableObject {
             response = try await decodeJson(data)
         } catch {
             print("rpc \(path) error decoding server response: \(error)")
+            // TODO: Save error
             // TODO: Push error modal
             return false
         }
@@ -283,6 +337,9 @@ class MaggieSession: ObservableObject {
                 }
             } catch {
                 print("rpc \(path) error processing server response, key '\(key)': \(error)")
+                // TODO: Save error
+                // TODO: Push error modal
+                return false
             }
         }
         self.updateNav()
@@ -322,13 +379,13 @@ class MaggieSession: ObservableObject {
 
     static func preview() -> MaggieSession {
         let session = MaggieSession(url: URL(string: "http://localhost:8000")!, nil, startTasks: false)
-        session.connected = false
+        session.state = .connectError
         return session
     }
     
     static func preview_connected() -> MaggieSession {
         let session = MaggieSession(url: URL(string: "http://localhost:8000")!, nil, startTasks: false)
-        session.connected = true
+        session.state = .connected
         return session
     }
 }

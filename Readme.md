@@ -4,7 +4,7 @@ Copy this iOS app and customize it to connect to your
 
 To use:
 1. Clone this repo.
- - [Do not make a GitHub fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/what-happens-to-forks-when-a-repository-is-deleted-or-changes-visibility).
+  - [Do not make a GitHub fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/what-happens-to-forks-when-a-repository-is-deleted-or-changes-visibility).
 1. Add initial pages to `initial.json`.  The app displays `"/"` on startup.
 1. Add your server's URL to `Main.swift`
 1. Add an icon
@@ -60,7 +60,6 @@ This project is not yet usable.  It is not production-ready.
   - [ ] `time-picker`
   - [X] `wide` with `alignment`, `min-width`, `max-width`, `widget`
 - [ ] Actions:
-  - [ ] `connect`
   - [X] `copy-to-clipboard`
   - [ ] `copy-to-clipboard` to show confirmation popover
   - [ ] `hilight:WIDGET_ID`
@@ -89,9 +88,9 @@ This project is not yet usable.  It is not production-ready.
   - [ ] `style` attribute on pages and widgets
 - [ ] Ephemeral client data, to allow an RPC to consume data from multiple pages
 - [ ] Monotonic state counter, to keep client in sync with server
-- [ ] Cache stack
-- [ ] Cache pages
-- [ ] Reduce power used for caching.  Append diffs, write after a delay, or something else.
+- [X] Cache stack
+- [X] Cache pages
+- [X] Reduce power used for caching.  Append diffs, write after a delay, or something else.  Writing after 10s delay.
 - [ ] Disconnect to save power, when in background, after a delay
 - [ ] Subscribe to notifications
 - [ ] Open notification to target page

@@ -12,6 +12,7 @@ class JsonItem: Codable {
     var actions: [String]?
     var alignment: String?
     var cache: Bool?
+    // TOOD: Split this into separate horizontal and vertical fields.
     var disposition: String?
     var end: JsonItem?
     var height: Double?
@@ -53,6 +54,10 @@ class JsonItem: Codable {
         case widgets
         case width
     }
+    
+    init(_ typ: String) {
+        self.typ = typ
+    }
 
     func takeOptActions() throws -> [MaggieAction]? {
         if let values = self.actions {
@@ -61,7 +66,32 @@ class JsonItem: Codable {
         }
         return nil
     }
-        
+    
+    func setAlignment(_ value: Alignment) {
+        switch value {
+        case .topLeading:
+            self.alignment = "top-start"
+        case .top:
+            self.alignment = "top-center"
+        case .topTrailing:
+            self.alignment = "top-end"
+        case .leading:
+            self.alignment = "center-start"
+        case .center:
+            self.alignment = "center"
+        case .trailing:
+            self.alignment = "center-end"
+        case .bottomLeading:
+            self.alignment = "bottom-start"
+        case .bottom:
+            self.alignment = "bottom-center"
+        case .bottomTrailing:
+            self.alignment = "bottom-end"
+        default:
+            preconditionFailure()
+        }
+    }
+    
     func takeOptAlignment() -> Alignment? {
         if let value = self.alignment {
             self.alignment = nil
@@ -92,6 +122,21 @@ class JsonItem: Codable {
         return nil
     }
     
+    func setHorizontalAlignment(_ value: HorizontalAlignment?) {
+        switch value {
+        case .none:
+            self.alignment = nil
+        case .some(.leading):
+            self.alignment = "start"
+        case .some(.center):
+            self.alignment = "center"
+        case .some(.trailing):
+            self.alignment = "end"
+        default:
+            preconditionFailure("unreachable")
+        }
+    }
+    
     func takeOptHorizontalAlignment() -> HorizontalAlignment? {
         if let value = self.alignment {
             self.alignment = nil
@@ -108,6 +153,21 @@ class JsonItem: Codable {
             }
         }
         return nil
+    }
+    
+    func setVerticalAlignment(_ value: VerticalAlignment?) {
+        switch value {
+        case .none:
+            self.alignment = nil
+        case .some(.top):
+            self.alignment = "top"
+        case .some(.center):
+            self.alignment = "center"
+        case .some(.bottom):
+            self.alignment = "bottom"
+        default:
+            preconditionFailure("unreachable")
+        }
     }
     
     func takeOptVerticalAlignment() -> VerticalAlignment? {
@@ -134,6 +194,17 @@ class JsonItem: Codable {
             return value
         }
         return nil
+    }
+    
+    func setDisposition(_ value: MaggieDisposition) {
+        switch value {
+        case .cover:
+            self.disposition = "cover"
+        case .fit:
+            self.disposition = "fit"
+        case .stretch:
+            self.disposition = "stretch"
+        }
     }
 
     func takeOptDisposition() -> MaggieDisposition? {

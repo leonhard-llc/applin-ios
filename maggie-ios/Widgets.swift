@@ -9,11 +9,17 @@ struct MaggieBackButton: Equatable, View {
     static let TYP = "back-button"
     let actions: [MaggieAction]
     weak var session: MaggieSession?
-
+    
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.actions = try item.takeOptActions() ?? []
         self.session = session
-   }
+    }
+    
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieBackButton.TYP)
+        item.actions = self.actions.map({action in action.toString()})
+        return item
+    }
     
     var body: some View {
         Button(
@@ -37,13 +43,22 @@ struct MaggieButton: Equatable, View {
     let isDestructive: Bool
     let actions: [MaggieAction]
     weak var session: MaggieSession?
-        
+    
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.text = try item.takeText()
         self.isDefault = item.takeOptIsDefault() ?? false
         self.isDestructive = item.takeOptIsDestructive() ?? false
         self.actions = try item.takeOptActions() ?? []
         self.session = session
+    }
+    
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieButton.TYP)
+        item.text = self.text
+        item.isDefault = self.isDefault
+        item.isDestructive = self.isDestructive
+        item.actions = self.actions.map({action in action.toString()})
+        return item
     }
     
     var body: some View {
@@ -72,6 +87,13 @@ struct MaggieColumn: Equatable, View {
         self.spacing = item.takeOptSpacing() ?? 4.0
     }
     
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieColumn.TYP)
+        item.widgets = self.widgets.map({widgets in widgets.toJsonItem()})
+        item.setHorizontalAlignment(self.alignment)
+        return item
+    }
+    
     var body: some View {
         VStack(alignment: self.alignment, spacing: self.spacing) {
             ForEach(0..<self.widgets.count) {
@@ -98,7 +120,7 @@ struct MaggieErrorDetails: Equatable, View {
     init(_ session: MaggieSession) {
         self.error = session.error ?? "no error"
     }
-
+    
     var body: some View {
         Text(self.error)
     }
@@ -131,6 +153,17 @@ struct MaggieExpand: Equatable, View {
         self.alignment = item.takeOptAlignment() ?? .center
     }
     
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieExpand.TYP)
+        item.widget = self.widget.toJsonItem()
+        item.minWidth = self.minWidth != nil ? Double(self.minWidth!) : nil
+        item.maxWidth = self.maxWidth != nil ? Double(self.maxWidth!) : nil
+        item.minHeight = self.minHeight != nil ? Double(self.minHeight!) : nil
+        item.maxHeight = self.maxHeight != nil ? Double(self.maxHeight!) : nil
+        item.setAlignment(self.alignment)
+        return item
+    }
+    
     var body: some View {
         self.widget
             .frame(
@@ -148,11 +181,17 @@ struct MaggieExpand: Equatable, View {
 struct MaggieHorizontalScroll: Equatable, View {
     static let TYP = "horizontal-scroll"
     let widget: MaggieWidget
-        
+    
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widget = try item.takeWidget(session)
     }
-
+    
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieHorizontalScroll.TYP)
+        item.widget = self.widget.toJsonItem()
+        return item
+    }
+    
     var body: some View {
         ScrollView(Axis.Set.horizontal) {
             self.widget
@@ -172,6 +211,15 @@ struct MaggieImage: Equatable, View {
         self.width = try item.takeOptWidth()
         self.height = try item.takeOptHeight()
         self.disposition = item.takeOptDisposition() ?? .fit
+    }
+    
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieImage.TYP)
+        item.url = self.url
+        item.width = self.width != nil ? Double(self.width!) : nil
+        item.height = self.height != nil ? Double(self.height!) : nil
+        item.setDisposition(self.disposition)
+        return item
     }
     
     var body: some View {
@@ -218,16 +266,24 @@ struct MaggieRow: Equatable, View {
     static let TYP = "row"
     let widgets: [MaggieWidget]
     let alignment: VerticalAlignment
-    let spacing: CGFloat
+    let spacing: CGFloat?
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widgets = try item.takeOptWidgets(session) ?? []
         self.alignment = item.takeOptVerticalAlignment() ?? .top
-        self.spacing = item.takeOptSpacing() ?? 4.0
+        self.spacing = item.takeOptSpacing()
     }
-
+    
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieRow.TYP)
+        item.widgets = self.widgets.map({widgets in widgets.toJsonItem()})
+        item.setVerticalAlignment(self.alignment)
+        item.spacing = self.spacing?.toDouble()
+        return item
+    }
+    
     var body: some View {
-        HStack(alignment: self.alignment, spacing: self.spacing) {
+        HStack(alignment: self.alignment, spacing: self.spacing ?? 4.0) {
             ForEach(0..<self.widgets.count) {
                 n in self.widgets[n]
             }
@@ -245,6 +301,12 @@ struct MaggieScroll: Equatable, View {
         self.widget = try item.takeWidget(session)
     }
     
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieScroll.TYP)
+        item.widget = self.widget.toJsonItem()
+        return item
+    }
+    
     var body: some View {
         ScrollView(Axis.Set.vertical) {
             self.widget
@@ -255,46 +317,49 @@ struct MaggieScroll: Equatable, View {
 struct MaggieSpacer: Equatable, View {
     static let TYP = "spacer"
     
-    var body: AnyView {
-        AnyView(Spacer()
-                    .background(Color.teal)
-        )
+    var body: some View {
+        Spacer()
+            .background(Color.teal)
+    }
+}
+
+struct MaggieSpinner: Equatable, View {
+    static let TYP = "spinner"
+    
+    var body: some View {
+        ProgressView()
     }
 }
 
 struct MaggieTall: Equatable, View {
     static let TYP = "tall"
     let widget: MaggieWidget
-    let minHeight: CGFloat
-    let maxHeight: CGFloat
-    let vAlignment: VerticalAlignment
+    let minHeight: CGFloat?
+    let maxHeight: CGFloat?
+    let alignment: VerticalAlignment?
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widget = try item.takeWidget(session)
-        self.minHeight = item.takeOptMinHeight() ?? 0.0
-        self.maxHeight = item.takeOptMaxHeight() ?? .infinity
-        self.vAlignment = item.takeOptVerticalAlignment() ?? .center
+        self.minHeight = item.takeOptMinHeight()
+        self.maxHeight = item.takeOptMaxHeight()
+        self.alignment = item.takeOptVerticalAlignment()
     }
     
-    func alignment() -> Alignment {
-        switch self.vAlignment {
-        case .top:
-            return .top
-        case .center:
-            return .center
-        case .bottom:
-            return .bottom
-        default:
-            preconditionFailure("unreachable")
-        }
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieExpand.TYP)
+        item.widget = self.widget.toJsonItem()
+        item.minHeight = self.minHeight?.toDouble()
+        item.maxHeight = self.maxHeight?.toDouble()
+        item.setVerticalAlignment(self.alignment)
+        return item
     }
     
     var body: some View {
         self.widget
             .frame(
-                minHeight: self.minHeight,
-                maxHeight: self.maxHeight,
-                alignment: self.alignment()
+                minHeight: self.minHeight ?? 0.0,
+                maxHeight: self.maxHeight ?? .infinity,
+                alignment: self.alignment?.toAlignment() ?? .center
             )
             .border(Color.brown)
             .padding(1.0)
@@ -313,6 +378,12 @@ struct MaggieText: Equatable, View {
         self.text = try item.takeText()
     }
     
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieText.TYP)
+        item.text = self.text
+        return item
+    }
+    
     var body: some View {
         Text(self.text)
             .padding(1.0)
@@ -324,36 +395,32 @@ struct MaggieText: Equatable, View {
 struct MaggieWide: Equatable, View {
     static let TYP = "wide"
     let widget: MaggieWidget
-    let minWidth: CGFloat
-    let maxWidth: CGFloat
-    let hAlignment: HorizontalAlignment
+    let minWidth: CGFloat?
+    let maxWidth: CGFloat?
+    let alignment: HorizontalAlignment?
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widget = try item.takeWidget(session)
-        self.minWidth = item.takeOptMinWidth() ?? 0.0
-        self.maxWidth = item.takeOptMaxWidth() ?? .infinity
-        self.hAlignment = item.takeOptHorizontalAlignment() ?? .center
+        self.minWidth = item.takeOptMinWidth()
+        self.maxWidth = item.takeOptMaxWidth()
+        self.alignment = item.takeOptHorizontalAlignment()
     }
     
-    func alignment() -> Alignment {
-        switch self.hAlignment {
-        case .leading:
-            return .leading
-        case .center:
-            return .center
-        case .trailing:
-            return .trailing
-        default:
-            preconditionFailure("unreachable")
-        }
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieWide.TYP)
+        item.widget = self.widget.toJsonItem()
+        item.minWidth = self.minWidth?.toDouble()
+        item.maxWidth = self.maxWidth?.toDouble()
+        item.setHorizontalAlignment(self.alignment)
+        return item
     }
     
     var body: some View {
         self.widget
             .frame(
-                minWidth: self.minWidth,
-                maxWidth: self.maxWidth,
-                alignment: self.alignment()
+                minWidth: self.minWidth ?? 0.0,
+                maxWidth: self.maxWidth ?? .infinity,
+                alignment: self.alignment?.toAlignment() ?? .center
             )
             .border(Color.mint)
             .padding(1.0)
@@ -372,10 +439,11 @@ enum MaggieWidget: Equatable, View {
     indirect case Row(MaggieRow)
     indirect case Scroll(MaggieScroll)
     indirect case Spacer(MaggieSpacer)
+    indirect case Spinner(MaggieSpinner)
     indirect case Tall(MaggieTall)
     case Text(MaggieText)
     indirect case Wide(MaggieWide)
-
+    
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         switch item.typ {
         case MaggieBackButton.TYP:
@@ -400,6 +468,8 @@ enum MaggieWidget: Equatable, View {
             self = try .Scroll(MaggieScroll(item, session))
         case MaggieSpacer.TYP:
             self = .Spacer(MaggieSpacer())
+        case MaggieSpinner.TYP:
+            self = .Spinner(MaggieSpinner())
         case MaggieTall.TYP:
             self = try .Tall(MaggieTall(item, session))
         case MaggieText.TYP:
@@ -408,6 +478,41 @@ enum MaggieWidget: Equatable, View {
             self = try .Wide(MaggieWide(item, session))
         default:
             throw MaggieError.deserializeError("unexpected widget 'typ' value: \(item.typ)")
+        }
+    }
+    
+    func toJsonItem() -> JsonItem {
+        switch self {
+        case let .BackButton(widget):
+            return widget.toJsonItem()
+        case let .Button(widget):
+            return widget.toJsonItem()
+        case let .Column(widget):
+            return widget.toJsonItem()
+        case .Empty(_):
+            return JsonItem(MaggieEmpty.TYP)
+        case .ErrorDetails(_):
+            return JsonItem(MaggieErrorDetails.TYP)
+        case let .Expand(widget):
+            return widget.toJsonItem()
+        case let .HorizontalScroll(widget):
+            return widget.toJsonItem()
+        case let .Image(widget):
+            return widget.toJsonItem()
+        case let .Row(widget):
+            return widget.toJsonItem()
+        case let .Scroll(widget):
+            return widget.toJsonItem()
+        case .Spacer(_):
+            return JsonItem(MaggieSpacer.TYP)
+        case .Spinner(_):
+            return JsonItem(MaggieSpinner.TYP)
+        case let .Tall(widget):
+            return widget.toJsonItem()
+        case let .Text(widget):
+            return widget.toJsonItem()
+        case let .Wide(widget):
+            return widget.toJsonItem()
         }
     }
     
@@ -435,6 +540,8 @@ enum MaggieWidget: Equatable, View {
             return AnyView(inner)
         case let .Spacer(inner):
             return AnyView(inner)
+        case let .Spinner(inner):
+            return AnyView(inner)
         case let .Tall(inner):
             return AnyView(inner)
         case let .Text(inner):
@@ -444,3 +551,4 @@ enum MaggieWidget: Equatable, View {
         }
     }
 }
+

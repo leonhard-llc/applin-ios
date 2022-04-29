@@ -33,6 +33,13 @@ struct MaggieAlert: Equatable {
         self.widgets = try item.takeWidgets(session)
     }
     
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieAlert.TYP)
+        item.title = self.title
+        item.widgets = self.widgets.map({widgets in widgets.toJsonItem()})
+        return item
+    }
+
     public func toView() -> AnyView {
         return AnyView(
             EmptyView().alert(self.title, isPresented: self.$isPresented) {
@@ -65,6 +72,13 @@ struct MaggieConfirmation: Equatable {
         self.widgets = try item.takeWidgets(session)
     }
     
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieAlert.TYP)
+        item.title = self.title
+        item.widgets = self.widgets.map({widgets in widgets.toJsonItem()})
+        return item
+    }
+
     public func toView() -> AnyView {
         return AnyView(
             EmptyView().confirmationDialog(self.title, isPresented: self.$isPresented) {
@@ -107,6 +121,14 @@ struct MaggieMarkdownPage: Equatable {
         self.cache = item.takeOptCache()
     }
     
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieAlert.TYP)
+        item.title = self.title
+        item.url = self.url
+        item.cache = self.cache
+        return item
+    }
+
     func setError(_ msg: String) {
         print(msg)
         self.state = .error(msg)
@@ -250,7 +272,16 @@ struct MaggieNavPage: Equatable {
         self.end = try item.takeOptEnd(session)
         self.widget = try item.takeWidget(session)
     }
-    
+
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieNavPage.TYP)
+        item.title = self.title
+        item.start = self.start?.toJsonItem()
+        item.end = self.end?.toJsonItem()
+        item.widget = self.widget.toJsonItem()
+        return item
+    }
+
     //public func allowBackSwipe() -> Bool {
     //    return self.start == nil
     //}
@@ -299,6 +330,13 @@ struct MaggiePlainPage: Equatable {
         self.widget = try item.takeWidget(session)
     }
     
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieNavPage.TYP)
+        item.title = self.title
+        item.widget = self.widget.toJsonItem()
+        return item
+    }
+
     public func toView() -> AnyView {
         return AnyView(self.widget.navigationBarHidden(true))
     }
@@ -325,6 +363,21 @@ enum MaggiePage: Equatable {
             self = try .PlainPage(MaggiePlainPage(item, session))
         default:
             throw MaggieError.deserializeError("unexpected page 'typ' value: \(item.typ)")
+        }
+    }
+    
+    func toJsonItem() -> JsonItem {
+        switch self {
+        case let .Alert(inner):
+            return inner.toJsonItem()
+        case let .Confirmation(inner):
+            return inner.toJsonItem()
+        case let .MarkdownPage(inner):
+            return inner.toJsonItem()
+        case let .NavPage(inner):
+            return inner.toJsonItem()
+        case let .PlainPage(inner):
+            return inner.toJsonItem()
         }
     }
     

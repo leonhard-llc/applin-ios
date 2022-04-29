@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-enum MaggieAction: Equatable {
+enum MaggieAction: Codable, Equatable {
     case CopyToClipboard(String)
     case LaunchUrl(URL)
     case Logout
@@ -42,6 +42,23 @@ enum MaggieAction: Equatable {
             self = .Rpc(part1)
         default:
             throw MaggieError.deserializeError("unknown action: \(string)")
+        }
+    }
+    
+    func toString() -> String {
+        switch self {
+        case let .CopyToClipboard(value):
+            return "copy-to-clipboard:\(value)"
+        case let .LaunchUrl(value):
+            return "launch-url:\(value)"
+        case .Logout:
+            return "logout"
+        case .Pop:
+            return "pop"
+        case let .Push(value):
+            return "push:\(value)"
+        case let .Rpc(value):
+            return "rpc:\(value)"
         }
     }
 }
