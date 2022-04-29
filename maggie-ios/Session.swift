@@ -152,6 +152,33 @@ class MaggieSession: ObservableObject {
         print("cacheWriterTask cancelled")
     }
 
+    func applyUpdate(_ data: Data) -> Bool {
+        let update: Update
+        do {
+            update = try decodeJson(data)
+        } catch {
+            print("error decoding update: \(error)")
+            return false
+        }
+        if let newStack = update.stack {
+            self.stack = newStack
+        }
+        if let newPages = update.pages {
+            for (key, item) in newPages {
+                do {
+                    self.pages[key] = try MaggiePage(item, self)
+                    print("updated key \(key)")
+                } catch {
+                    print("ERROR: error processing updated key '\(key)': \(error)")
+                }
+            }
+        }
+        // TODO: Handle user_error.
+        self.updateNav()
+        self.scheduleWriteData()
+        return true
+    }
+    
     @MainActor
     func connectOnce() async throws {
         print("connectOnce")
@@ -184,6 +211,7 @@ class MaggieSession: ObservableObject {
         defer { self.state = .connectError }
         print("reading lines")
         for try await line in asyncBytes.lines {
+            // https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events
             print("line: '\(line)'")
             let parts = line.split(separator: ":", maxSplits: 1)
             if parts.count != 2 || parts[1].isEmpty {
@@ -193,29 +221,7 @@ class MaggieSession: ObservableObject {
                 print("ignoring non-data line from server: \"\(line)\"")
                 continue
             }
-            let update: Update
-            do {
-                update = try decodeJson(parts[1].data(using: .utf8)!)
-            } catch {
-                print("error decoding update: \(error)")
-                return
-            }
-            if let newStack = update.stack {
-                self.stack = newStack
-            }
-            if let newPages = update.pages {
-                for (key, item) in newPages {
-                    do {
-                        self.pages[key] = try MaggiePage(item, self)
-                        print("updated key \(key)")
-                    } catch {
-                        print("ERROR: error processing updated key '\(key)': \(error)")
-                    }
-                }
-            }
-            // TODO: Handle user_error.
-            self.updateNav()
-            self.scheduleWriteData()
+            self.applyUpdate(parts[1].data(using: .utf8)!)
         }
         print("disconnected")
     }
@@ -274,12 +280,14 @@ class MaggieSession: ObservableObject {
         print("startupTask done")
     }
         
+    @MainActor
     func rpc(path: String) async -> Bool {
         print("rpc \(path)")
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 10.0 /* seconds */
         config.timeoutIntervalForResource = 60.0 /* seconds */
         config.urlCache = nil
+        config.httpShouldSetCookies = true
         let urlSession = URLSession(configuration: config)
         let url = self.url.appendingPathComponent(
             path.starts(with: "/") ? String(path.dropFirst()) : path)
@@ -319,31 +327,7 @@ class MaggieSession: ObservableObject {
             // TODO: Push error modal
             return false
         }
-        let response: Dictionary<String,JsonItem?>
-        do {
-            response = try await decodeJson(data)
-        } catch {
-            print("rpc \(path) error decoding server response: \(error)")
-            // TODO: Save error
-            // TODO: Push error modal
-            return false
-        }
-        for (key, optItem) in response {
-            do {
-                if let item = optItem {
-                    self.pages[key] = try MaggiePage(item, self)
-                } else {
-                    self.pages.removeValue(forKey: key)
-                }
-            } catch {
-                print("rpc \(path) error processing server response, key '\(key)': \(error)")
-                // TODO: Save error
-                // TODO: Push error modal
-                return false
-            }
-        }
-        self.updateNav()
-        return true
+        return self.applyUpdate(data)
     }
     
     @MainActor
