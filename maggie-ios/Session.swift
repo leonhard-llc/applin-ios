@@ -184,12 +184,22 @@ class MaggieSession: ObservableObject {
         print("connectOnce")
         let config = URLSessionConfiguration.default
         config.urlCache = nil
-        config.timeoutIntervalForRequest = 60.0 /* seconds */
-        config.timeoutIntervalForResource = 60 * 60.0 /* seconds */
-        // config.waitsForConnectivity = true
+        config.timeoutIntervalForRequest = 60.0 /* seconds to wait for next chunk */
+        config.timeoutIntervalForResource = 60 * 60.0 /* seconds, max connection duration */
+        // When config.waitsForConnectivity=true, it waits a long time between connect attempts.
         config.httpCookieAcceptPolicy = .always
         config.httpShouldSetCookies = true
         let urlSession = URLSession(configuration: config)
+        defer {
+            urlSession.invalidateAndCancel()
+        }
+        // URLSession.bytes does not call the URLSessionTaskDelegate on error.
+        // So we cannot use a delegate to suppress network error log spam.
+        // Probably the only way to do it is to re-implement bytes() using AsyncStream:
+        // https://developer.apple.com/documentation/swift/asyncstream
+        // If we're going to spend that code, then let's make it good.
+        // Let's make an URLSession extension with an asyncEventStream() method that returns
+        // whole Server-Sent Events.
         let (asyncBytes, response) = try await urlSession.bytes(from: self.url)
         let httpResponse = response as! HTTPURLResponse
         if httpResponse.statusCode != 200 {
@@ -221,7 +231,7 @@ class MaggieSession: ObservableObject {
                 print("ignoring non-data line from server: \"\(line)\"")
                 continue
             }
-            self.applyUpdate(parts[1].data(using: .utf8)!)
+            let _ = self.applyUpdate(parts[1].data(using: .utf8)!)
         }
         print("disconnected")
     }
@@ -289,6 +299,9 @@ class MaggieSession: ObservableObject {
         config.urlCache = nil
         config.httpShouldSetCookies = true
         let urlSession = URLSession(configuration: config)
+        defer {
+            urlSession.invalidateAndCancel()
+        }
         let url = self.url.appendingPathComponent(
             path.starts(with: "/") ? String(path.dropFirst()) : path)
         var urlRequest = URLRequest(
