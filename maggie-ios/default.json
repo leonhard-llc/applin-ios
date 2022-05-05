@@ -35,7 +35,7 @@
     }
   },
   "/maggie-contact-support-modal": {
-    "typ": "confirmation",
+    "typ": "question-modal",
     "title": "Contact Support",
     "widgets": [
       {
@@ -53,7 +53,7 @@
     ]
   },
   "/maggie-network-error-modal": {
-    "typ": "alert",
+    "typ": "alert-modal",
     "title": "Connection Problem",
     "widgets": [
       {
@@ -85,7 +85,7 @@
     ]
   },
   "/maggie-rpc-error-modal": {
-    "typ": "alert",
+    "typ": "alert-modal",
     "title": "Error",
     "widgets": [
       {
@@ -131,7 +131,7 @@
     ]
   },
   "/maggie-update-button-not-customized-modal": {
-    "typ": "alert",
+    "typ": "alert-modal",
     "title": "Update",
     "widgets": [
       {

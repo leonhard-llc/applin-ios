@@ -229,7 +229,7 @@
     "cache": false
   },
   "/copied-to-clipboard-modal": {
-    "typ": "confirmation",
+    "typ": "question-modal",
     "title": "Copied",
     "widgets": [
       {
@@ -243,7 +243,7 @@
     ]
   },
   "/maggie-contact-support-modal": {
-    "typ": "confirmation",
+    "typ": "question-modal",
     "title": "Contact Support",
     "widgets": [
       {
@@ -285,7 +285,7 @@
     ]
   },
   "/maggie-rpc-error-modal": {
-    "typ": "alert",
+    "typ": "alert-modal",
     "title": "Error",
     "widgets": [
       {

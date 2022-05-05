@@ -12,81 +12,83 @@ func backButton(_ session: MaggieSession) -> some View {
     }.padding(Edge.Set.leading, -8.0)
 }
 
-struct MaggieAlert: Equatable {
-    static func == (lhs: MaggieAlert, rhs: MaggieAlert) -> Bool {
-        return lhs.title == rhs.title
-        && lhs.widgets == rhs.widgets
-    }
+enum ModalKind: String {
+    case Alert
+    case Info
+    case Question
     
-    static let TYP = "alert"
-    let title: String
-    let widgets: [MaggieWidget]
-    @State var isPresented = true
-    
-    init(title: String, _ widgets: [MaggieWidget]) {
-        self.title = title
-        self.widgets = widgets
-    }
-    
-    init(_ item: JsonItem, _ session: MaggieSession) throws {
-        self.title = try item.takeTitle()
-        self.widgets = try item.takeWidgets(session)
-    }
-    
-    func toJsonItem() -> JsonItem {
-        let item = JsonItem(MaggieAlert.TYP)
-        item.title = self.title
-        item.widgets = self.widgets.map({widgets in widgets.toJsonItem()})
-        return item
-    }
-
-    public func toView() -> AnyView {
-        return AnyView(
-            EmptyView().alert(self.title, isPresented: self.$isPresented) {
-                ForEach(0..<self.widgets.count) {
-                    n in self.widgets[n]
-                }
-            }
-        )
+    public func typ() -> String {
+        switch self {
+        case .Alert:
+            return "alert-modal"
+        case .Info:
+            return "info-modal"
+        case .Question:
+            return "question-modal"
+        }
     }
 }
 
-struct MaggieConfirmation: Equatable {
-    static func == (lhs: MaggieConfirmation, rhs: MaggieConfirmation) -> Bool {
+struct MaggieModal: Equatable {
+    static func == (lhs: MaggieModal, rhs: MaggieModal) -> Bool {
         return lhs.title == rhs.title
         && lhs.widgets == rhs.widgets
     }
     
-    static let TYP = "confirmation"
+    let kind: ModalKind
+    let typ: String
     let title: String
     let widgets: [MaggieWidget]
     @State var isPresented = true
     
-    init(title: String, _ widgets: [MaggieWidget]) {
+    enum CodingKeys: String, CodingKey {
+        // case kind
+        case typ
+        case title
+        case widgets
+        // case isPresented
+    }
+    
+    init(_ kind: ModalKind, title: String, _ widgets: [MaggieWidget]) {
+        self.kind = kind
+        self.typ = kind.typ()
         self.title = title
         self.widgets = widgets
     }
     
-    init(_ item: JsonItem, _ session: MaggieSession) throws {
+    init(_ kind: ModalKind, _ item: JsonItem, _ session: MaggieSession) throws {
+        self.kind = kind
+        self.typ = kind.typ()
         self.title = try item.takeTitle()
         self.widgets = try item.takeWidgets(session)
     }
     
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(MaggieAlert.TYP)
+        let item = JsonItem(self.kind.typ())
         item.title = self.title
         item.widgets = self.widgets.map({widgets in widgets.toJsonItem()})
         return item
     }
 
     public func toView() -> AnyView {
-        return AnyView(
-            EmptyView().confirmationDialog(self.title, isPresented: self.$isPresented) {
-                ForEach(0..<self.widgets.count) {
-                    n in self.widgets[n]
+        switch self.kind {
+        case .Alert:
+            return AnyView(
+                EmptyView().alert(self.title, isPresented: self.$isPresented) {
+                    ForEach(self.widgets) {
+                        widget in widget
+                    }
                 }
-            }
-        )
+            )
+        case .Info, .Question:
+            return AnyView(
+                EmptyView().confirmationDialog(self.title, isPresented: self.$isPresented) {
+                    ForEach(self.widgets) {
+                        widget in widget
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -122,7 +124,7 @@ struct MaggieMarkdownPage: Equatable {
     }
     
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(MaggieAlert.TYP)
+        let item = JsonItem(MaggieMarkdownPage.TYP)
         item.title = self.title
         item.url = self.url
         item.cache = self.cache
@@ -343,18 +345,19 @@ struct MaggiePlainPage: Equatable {
 }
 
 enum MaggiePage: Equatable {
-    case Alert(MaggieAlert)
-    case Confirmation(MaggieConfirmation)
+    case Modal(MaggieModal)
     case MarkdownPage(MaggieMarkdownPage)
     case NavPage(MaggieNavPage)
     case PlainPage(MaggiePlainPage)
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         switch item.typ {
-        case MaggieAlert.TYP:
-            self = try .Alert(MaggieAlert(item, session))
-        case MaggieConfirmation.TYP:
-            self = try .Confirmation(MaggieConfirmation(item, session))
+        case ModalKind.Alert.typ():
+            self = try .Modal(MaggieModal(.Alert, item, session))
+        case ModalKind.Info.typ():
+            self = try .Modal(MaggieModal(.Info, item, session))
+        case ModalKind.Question.typ():
+            self = try .Modal(MaggieModal(.Question, item, session))
         case MaggieMarkdownPage.TYP:
             self = try .MarkdownPage(MaggieMarkdownPage(item))
         case MaggieNavPage.TYP:
@@ -368,9 +371,7 @@ enum MaggiePage: Equatable {
     
     func toJsonItem() -> JsonItem {
         switch self {
-        case let .Alert(inner):
-            return inner.toJsonItem()
-        case let .Confirmation(inner):
+        case let .Modal(inner):
             return inner.toJsonItem()
         case let .MarkdownPage(inner):
             return inner.toJsonItem()
@@ -384,7 +385,7 @@ enum MaggiePage: Equatable {
     var isPage: Bool {
         get {
             switch self {
-            case .Alert(_), .Confirmation(_):
+            case .Modal(_):
                 return false
             case .MarkdownPage(_), .NavPage(_), .PlainPage(_):
                 return true
@@ -395,9 +396,7 @@ enum MaggiePage: Equatable {
     var title: String? {
         get {
             switch self {
-            case let .Alert(inner):
-                return inner.title
-            case let .Confirmation(inner):
+            case let .Modal(inner):
                 return inner.title
             case let .MarkdownPage(inner):
                 return inner.title
@@ -411,9 +410,7 @@ enum MaggiePage: Equatable {
     
     public func toView(_ session: MaggieSession, hasPrevPage: Bool) -> AnyView {
         switch self {
-        case let .Alert(inner):
-            return inner.toView()
-        case let .Confirmation(inner):
+        case let .Modal(inner):
             return inner.toView()
         case let .MarkdownPage(inner):
             return inner.toView(session, hasPrevPage: hasPrevPage)
