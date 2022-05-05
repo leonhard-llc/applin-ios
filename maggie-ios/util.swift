@@ -106,6 +106,33 @@ extension HTTPURLResponse {
     }
 }
 
+extension Alignment: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        switch self {
+        case .topLeading:
+            hasher.combine(0)
+        case .top:
+            hasher.combine(1)
+        case .topTrailing:
+            hasher.combine(2)
+        case .leading:
+            hasher.combine(3)
+        case .center:
+            hasher.combine(4)
+        case .trailing:
+            hasher.combine(5)
+        case .bottomLeading:
+            hasher.combine(6)
+        case .bottom:
+            hasher.combine(7)
+        case .bottomTrailing:
+            hasher.combine(8)
+        default:
+            preconditionFailure("unreachable")
+        }
+    }
+}
+
 extension HorizontalAlignment {
     func toAlignment() -> Alignment {
         switch self {
@@ -115,6 +142,21 @@ extension HorizontalAlignment {
             return .center
         case .trailing:
             return .trailing
+        default:
+            preconditionFailure("unreachable")
+        }
+    }
+}
+
+extension HorizontalAlignment: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        switch self {
+        case .leading:
+            hasher.combine(0)
+        case .center:
+            hasher.combine(1)
+        case .trailing:
+            hasher.combine(2)
         default:
             preconditionFailure("unreachable")
         }
@@ -135,6 +177,22 @@ extension VerticalAlignment {
         }
     }
 }
+
+extension VerticalAlignment: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        switch self {
+        case .top:
+            hasher.combine(0)
+        case .center:
+            hasher.combine(1)
+        case .bottom:
+            hasher.combine(2)
+        default:
+            preconditionFailure("unreachable")
+        }
+    }
+}
+
 
 // Swift does not allow `throw ()` or `throw Error()` and
 // does not document an alternative.

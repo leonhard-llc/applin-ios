@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-enum MaggieAction: Codable, Equatable {
+enum MaggieAction: Codable, Equatable, Hashable {
     case CopyToClipboard(String)
     case LaunchUrl(URL)
     case Logout

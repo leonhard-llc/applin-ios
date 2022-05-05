@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-struct MaggieBackButton: Equatable, View {
+struct MaggieBackButton: Equatable, Hashable, View {
     static func == (lhs: MaggieBackButton, rhs: MaggieBackButton) -> Bool {
         return lhs.actions == rhs.actions
     }
@@ -13,6 +13,10 @@ struct MaggieBackButton: Equatable, View {
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.actions = try item.takeOptActions() ?? []
         self.session = session
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        self.actions.hash(into: &hasher)
     }
     
     func toJsonItem() -> JsonItem {
@@ -29,7 +33,7 @@ struct MaggieBackButton: Equatable, View {
     }
 }
 
-struct MaggieButton: Equatable, View {
+struct MaggieButton: Equatable, Hashable, View {
     static func == (lhs: MaggieButton, rhs: MaggieButton) -> Bool {
         return lhs.text == rhs.text
         && lhs.isDefault == rhs.isDefault
@@ -50,6 +54,13 @@ struct MaggieButton: Equatable, View {
         self.isDestructive = item.takeOptIsDestructive() ?? false
         self.actions = try item.takeOptActions() ?? []
         self.session = session
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.text)
+        hasher.combine(self.isDefault)
+        hasher.combine(self.isDestructive)
+        hasher.combine(self.actions)
     }
     
     func toJsonItem() -> JsonItem {
@@ -75,7 +86,7 @@ struct MaggieButton: Equatable, View {
     }
 }
 
-struct MaggieColumn: Equatable, View {
+struct MaggieColumn: Equatable, Hashable, View {
     static let TYP = "column"
     let widgets: [MaggieWidget]
     let alignment: HorizontalAlignment
@@ -96,8 +107,8 @@ struct MaggieColumn: Equatable, View {
     
     var body: some View {
         VStack(alignment: self.alignment, spacing: self.spacing) {
-            ForEach(0..<self.widgets.count) {
-                n in self.widgets[n]
+            ForEach(self.widgets) {
+                widget in widget
             }
         }
         .border(Color.green)
@@ -105,7 +116,7 @@ struct MaggieColumn: Equatable, View {
     }
 }
 
-struct MaggieEmpty: Equatable, View {
+struct MaggieEmpty: Equatable, Hashable, View {
     static let TYP = "empty"
     
     var body: EmptyView {
@@ -113,7 +124,7 @@ struct MaggieEmpty: Equatable, View {
     }
 }
 
-struct MaggieErrorDetails: Equatable, View {
+struct MaggieErrorDetails: Equatable, Hashable, View {
     static let TYP = "error-details"
     let error: String
     
@@ -126,7 +137,7 @@ struct MaggieErrorDetails: Equatable, View {
     }
 }
 
-struct MaggieExpand: Equatable, View {
+struct MaggieExpand: Equatable, Hashable, View {
     static let TYP = "expand"
     let widget: MaggieWidget
     let minWidth: CGFloat?
@@ -178,7 +189,7 @@ struct MaggieExpand: Equatable, View {
     }
 }
 
-struct MaggieHorizontalScroll: Equatable, View {
+struct MaggieHorizontalScroll: Equatable, Hashable, View {
     static let TYP = "horizontal-scroll"
     let widget: MaggieWidget
     
@@ -199,7 +210,7 @@ struct MaggieHorizontalScroll: Equatable, View {
     }
 }
 
-struct MaggieImage: Equatable, View {
+struct MaggieImage: Equatable, Hashable, View {
     static let TYP = "image"
     let url: URL
     let width: CGFloat?
@@ -262,7 +273,7 @@ struct MaggieImage: Equatable, View {
     }
 }
 
-struct MaggieRow: Equatable, View {
+struct MaggieRow: Equatable, Hashable, View {
     static let TYP = "row"
     let widgets: [MaggieWidget]
     let alignment: VerticalAlignment
@@ -284,8 +295,8 @@ struct MaggieRow: Equatable, View {
     
     var body: some View {
         HStack(alignment: self.alignment, spacing: self.spacing ?? 4.0) {
-            ForEach(0..<self.widgets.count) {
-                n in self.widgets[n]
+            ForEach(self.widgets) {
+                widget in widget
             }
         }
         .border(Color.blue)
@@ -293,7 +304,7 @@ struct MaggieRow: Equatable, View {
     }
 }
 
-struct MaggieScroll: Equatable, View {
+struct MaggieScroll: Equatable, Hashable, View {
     static let TYP = "scroll"
     let widget: MaggieWidget
     
@@ -314,7 +325,7 @@ struct MaggieScroll: Equatable, View {
     }
 }
 
-struct MaggieSpacer: Equatable, View {
+struct MaggieSpacer: Equatable, Hashable, View {
     static let TYP = "spacer"
     
     var body: some View {
@@ -323,7 +334,7 @@ struct MaggieSpacer: Equatable, View {
     }
 }
 
-struct MaggieSpinner: Equatable, View {
+struct MaggieSpinner: Equatable, Hashable, View {
     static let TYP = "spinner"
     
     var body: some View {
@@ -331,7 +342,7 @@ struct MaggieSpinner: Equatable, View {
     }
 }
 
-struct MaggieTall: Equatable, View {
+struct MaggieTall: Equatable, Hashable, View {
     static let TYP = "tall"
     let widget: MaggieWidget
     let minHeight: CGFloat?
@@ -366,7 +377,7 @@ struct MaggieTall: Equatable, View {
     }
 }
 
-struct MaggieText: Equatable, View {
+struct MaggieText: Equatable, Hashable, View {
     static let TYP = "text"
     let text: String
     
@@ -392,7 +403,7 @@ struct MaggieText: Equatable, View {
     }
 }
 
-struct MaggieWide: Equatable, View {
+struct MaggieWide: Equatable, Hashable, View {
     static let TYP = "wide"
     let widget: MaggieWidget
     let minWidth: CGFloat?
@@ -427,7 +438,7 @@ struct MaggieWide: Equatable, View {
     }
 }
 
-enum MaggieWidget: Equatable, View {
+enum MaggieWidget: Equatable, Hashable, Identifiable, View {
     case BackButton(MaggieBackButton)
     case Button(MaggieButton)
     indirect case Column(MaggieColumn)
@@ -550,5 +561,10 @@ enum MaggieWidget: Equatable, View {
             return AnyView(inner)
         }
     }
+    
+    var id: Int {
+        var hasher = Hasher()
+        hasher.combine(self)
+        return hasher.finalize()
+    }
 }
-

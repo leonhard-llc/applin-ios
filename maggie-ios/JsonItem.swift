@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-enum MaggieDisposition {
+enum MaggieDisposition: Equatable, Hashable {
     case fit
     case stretch
     case cover
