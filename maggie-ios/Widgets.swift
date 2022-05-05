@@ -116,6 +116,75 @@ struct MaggieColumn: Equatable, Hashable, View {
     }
 }
 
+struct MaggieDetailCell: Equatable, Hashable, View {
+    static func == (lhs: MaggieDetailCell, rhs: MaggieDetailCell) -> Bool {
+        return lhs.text == rhs.text
+        && lhs.actions == rhs.actions
+        && lhs.photoUrl == rhs.photoUrl
+    }
+
+    static let TYP = "detail-cell"
+    let text: String
+    let actions: [MaggieAction]
+    let photoUrl: URL?
+    weak var session: MaggieSession?
+    
+    init(_ item: JsonItem, _ session: MaggieSession) throws {
+        self.text = try item.takeText()
+        self.actions = try item.takeOptActions() ?? []
+        self.photoUrl = item.takeOptPhotoUrl()
+        self.session = session
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.text)
+        hasher.combine(self.actions)
+        hasher.combine(self.photoUrl)
+    }
+    
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(MaggieButton.TYP)
+        item.text = self.text
+        item.actions = self.actions.map({action in action.toString()})
+        item.photoUrl = self.photoUrl
+        return item
+    }
+    
+    var body: some View {
+        let binding = Binding(
+            get: {() in false},
+            set: { show in
+                print("DetailCell(\(self.text)) action")
+                if show {
+                    self.session?.doActions(self.actions)
+                }
+            })
+        let destination = EmptyView().navigationTitle("Empty View")
+        if let photoUrl = self.photoUrl {
+            NavigationLink(isActive: binding, destination: {destination}) {
+                HStack{
+                    AsyncImage(url: photoUrl) { image in
+                        image
+                            .resizable()
+                    } placeholder: {
+                        ProgressView()
+                    }
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
+                        .border(Color.black)
+                    Text(self.text)
+                }
+            }
+            .disabled(self.actions.isEmpty)
+        } else {
+            NavigationLink(isActive: binding, destination: {destination}) {
+                Text(self.text)
+            }
+            .disabled(self.actions.isEmpty)
+        }
+    }
+}
+
 struct MaggieEmpty: Equatable, Hashable, View {
     static let TYP = "empty"
     
@@ -442,6 +511,7 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
     case BackButton(MaggieBackButton)
     case Button(MaggieButton)
     indirect case Column(MaggieColumn)
+    case DetailCell(MaggieDetailCell)
     case Empty(MaggieEmpty)
     case ErrorDetails(MaggieErrorDetails)
     indirect case Expand(MaggieExpand)
@@ -463,6 +533,8 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
             self = try .Button(MaggieButton(item, session))
         case MaggieColumn.TYP:
             self = try .Column(MaggieColumn(item, session))
+        case MaggieDetailCell.TYP:
+            self = try .DetailCell(MaggieDetailCell(item, session))
         case MaggieEmpty.TYP:
             self = .Empty(MaggieEmpty())
         case MaggieErrorDetails.TYP:
@@ -500,6 +572,8 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
             return widget.toJsonItem()
         case let .Column(widget):
             return widget.toJsonItem()
+        case let .DetailCell(widget):
+            return widget.toJsonItem()
         case .Empty(_):
             return JsonItem(MaggieEmpty.TYP)
         case .ErrorDetails(_):
@@ -534,6 +608,8 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
         case let .Button(inner):
             return AnyView(inner)
         case let .Column(inner):
+            return AnyView(inner)
+        case let .DetailCell(inner):
             return AnyView(inner)
         case let .Empty(inner):
             return AnyView(inner)

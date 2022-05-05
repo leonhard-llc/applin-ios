@@ -22,6 +22,7 @@ class JsonItem: Codable {
     var maxWidth: Double?
     var minHeight: Double?
     var minWidth: Double?
+    var photoUrl: URL?
     var spacing: Double?
     var start: JsonItem?
     var text: String?
@@ -45,6 +46,7 @@ class JsonItem: Codable {
         case maxWidth = "max-width"
         case minHeight = "min-height"
         case minWidth = "min-width"
+        case photoUrl = "photo-url"
         case spacing
         case start
         case text
@@ -293,6 +295,14 @@ class JsonItem: Codable {
         if let value = self.minWidth {
             self.minWidth = nil
             return CGFloat(value)
+        }
+        return nil
+    }
+    
+    func takeOptPhotoUrl() -> URL? {
+        if let value = self.photoUrl {
+            self.photoUrl = nil
+            return value
         }
         return nil
     }
