@@ -348,18 +348,26 @@ class MaggieSession: ObservableObject {
         loop: for action in actions {
             switch action {
             case let .CopyToClipboard(string):
+                print("CopyToClipboard(\(string))")
                 UIPasteboard.general.string = string
-            case .LaunchUrl(_):
+            case let .LaunchUrl(url):
+                print("LaunchUrl(\(url))")
                 // TODO
                 print("unimplemented")
             case .Logout:
+                print("Logout")
                 // TODO
                 print("unimplemented")
+            case .Nothing:
+                print("Nothing")
             case .Pop:
+                print("Pop")
                 self.pop()
             case let .Push(key):
+                print("Push(\(key))")
                 self.push(pageKey: key)
             case let .Rpc(path):
+                print("Rpc(\(path))")
                 let result = await self.rpc(path: path)
                 if !result {
                     break loop

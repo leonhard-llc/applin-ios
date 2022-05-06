@@ -5,6 +5,7 @@ enum MaggieAction: Codable, Equatable, Hashable {
     case CopyToClipboard(String)
     case LaunchUrl(URL)
     case Logout
+    case Nothing
     case Pop
     case Push(String)
     case Rpc(String)
@@ -15,6 +16,9 @@ enum MaggieAction: Codable, Equatable, Hashable {
             throw MaggieError.deserializeError("action is empty")
         case "logout":
             self = .Logout
+            return
+        case "nothing":
+            self = .Nothing
             return
         case "pop":
             self = .Pop
@@ -53,6 +57,8 @@ enum MaggieAction: Codable, Equatable, Hashable {
             return "launch-url:\(value)"
         case .Logout:
             return "logout"
+        case .Nothing:
+            return "nothing"
         case .Pop:
             return "pop"
         case let .Push(value):
