@@ -11,6 +11,7 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
     indirect case Expand(MaggieExpand)
     indirect case HorizontalScroll(MaggieHorizontalScroll)
     case Image(MaggieImage)
+    case List(MaggieList)
     indirect case Row(MaggieRow)
     indirect case Scroll(MaggieScroll)
     indirect case Spacer(MaggieSpacer)
@@ -39,6 +40,8 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
             self = try .HorizontalScroll(MaggieHorizontalScroll(item, session))
         case MaggieImage.TYP:
             self = try .Image(MaggieImage(item))
+        case MaggieList.TYP:
+            self = try .List(MaggieList(item, session))
         case MaggieRow.TYP:
             self = try .Row(MaggieRow(item, session))
         case MaggieScroll.TYP:
@@ -78,6 +81,8 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
             return widget.toJsonItem()
         case let .Image(widget):
             return widget.toJsonItem()
+        case let .List(widget):
+            return widget.toJsonItem()
         case let .Row(widget):
             return widget.toJsonItem()
         case let .Scroll(widget):
@@ -114,6 +119,8 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
         case let .HorizontalScroll(inner):
             return AnyView(inner)
         case let .Image(inner):
+            return AnyView(inner)
+        case let .List(inner):
             return AnyView(inner)
         case let .Row(inner):
             return AnyView(inner)

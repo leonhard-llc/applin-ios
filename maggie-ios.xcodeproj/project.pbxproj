@@ -147,7 +147,6 @@
 			children = (
 				CE62D8B528249EA1001E16B9 /* BackButton.swift */,
 				CE62D8B728249EE2001E16B9 /* Button.swift */,
-				CE62D8B928249F0A001E16B9 /* List.swift */,
 				CE62D8BB28249F3D001E16B9 /* Column.swift */,
 				CE62D8BD28249F64001E16B9 /* DetailCell.swift */,
 				CE62D8BF28249F83001E16B9 /* Empty.swift */,
@@ -155,6 +154,7 @@
 				CE62D8C328249FB2001E16B9 /* Expand.swift */,
 				CE62D8C528249FDF001E16B9 /* HorizontalScroll.swift */,
 				CE62D8C728249FEF001E16B9 /* Image.swift */,
+				CE62D8B928249F0A001E16B9 /* List.swift */,
 				CE62D8C92824A003001E16B9 /* Row.swift */,
 				CE62D8CB2824A015001E16B9 /* Scroll.swift */,
 				CE62D8CD2824A028001E16B9 /* Spinner.swift */,
