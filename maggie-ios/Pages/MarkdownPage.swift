@@ -145,7 +145,7 @@ struct MaggieMarkdownPage: Equatable {
                     .navigationBarBackButtonHidden(true)
                     .toolbar() {
                         ToolbarItemGroup(placement: .navigationBarLeading) {
-                            backButton(session)
+                            MaggieBackButton([.Pop], session)
                         }
                     }
             )

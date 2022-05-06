@@ -50,13 +50,13 @@ struct MaggieNavPage: Equatable {
             view = AnyView(view.toolbar() {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     start
-                        .padding(Edge.Set.leading, -8.0)
+                        //.padding(Edge.Set.leading, -8.0)
                 }
             })
         } else if hasPrevPage {
             view = AnyView(view.toolbar() {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
-                    backButton(session)
+                    MaggieBackButton([.Pop], session)
                 }
             })
         }
