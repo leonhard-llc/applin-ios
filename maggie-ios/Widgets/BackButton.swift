@@ -36,11 +36,14 @@ struct MaggieBackButton: Equatable, Hashable, View {
         return item
     }
     
-    // TODO: Add chevron and fix styling.
     var body: some View {
-        Button(
-            "Back",
-            action: { self.session?.doActions(self.actions) }
-        ).disabled(self.actions.isEmpty)
+        Button(action: { self.session?.doActions(self.actions) }) {
+            HStack(spacing: 4) {
+                Image(systemName: "chevron.backward")
+                    .font(Font.body.weight(.semibold))
+                Text("Back")
+            }
+        }
+        .disabled(self.actions.isEmpty)
     }
 }
