@@ -17,7 +17,7 @@ struct MaggieDetailCell: Equatable, Hashable, View {
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.text = try item.takeText()
         self.actions = try item.takeOptActions() ?? []
-        self.photoUrl = item.takeOptPhotoUrl()
+        self.photoUrl = item.takeOptPhotoUrl(session)
         self.session = session
     }
     
@@ -31,7 +31,8 @@ struct MaggieDetailCell: Equatable, Hashable, View {
         let item = JsonItem(MaggieButton.TYP)
         item.text = self.text
         item.actions = self.actions.map({action in action.toString()})
-        item.photoUrl = self.photoUrl
+        // TODO: Test this.
+        item.photoUrl = self.photoUrl?.relativeString
         return item
     }
     
@@ -45,26 +46,25 @@ struct MaggieDetailCell: Equatable, Hashable, View {
                 }
             })
         let destination = EmptyView().navigationTitle("Empty View")
-        //if let photoUrl = self.photoUrl {
-        //    NavigationLink(isActive: binding, destination: {destination}) {
-        //        HStack{
-        //            AsyncImage(url: photoUrl) { image in
-        //                image
-        //                    .resizable()
-        //            } placeholder: {
-        //                ProgressView()
-        //            }
-        //                .scaledToFit()
-        //                .frame(width: 100, height: 100)
-        //                .border(Color.black)
-        //            Text(self.text)
-        //        }
-        //    }
-        //    .frame(maxWidth: .infinity)
-        //    .disabled(self.actions.isEmpty)
-        //} else {
-        NavigationLink(self.text, isActive: binding, destination: {destination})
-//            .frame(maxWidth: .infinity, minHeight: 44)
-//        .disabled(self.actions.isEmpty)
+        if let photoUrl = self.photoUrl {
+            NavigationLink(isActive: binding, destination: {destination}) {
+                HStack{
+                    AsyncImage(url: photoUrl) { image in
+                        image
+                            .resizable()
+                    } placeholder: {
+                        ProgressView()
+                    }
+                        .scaledToFit()
+                        .frame(width: 44, height: 44)
+                        .border(Color.black)
+                    Text(self.text)
+                }
+            }
+            .disabled(self.actions.isEmpty)
+        } else {
+            NavigationLink(self.text, isActive: binding, destination: {destination})
+            .disabled(self.actions.isEmpty)
+        }
     }
 }

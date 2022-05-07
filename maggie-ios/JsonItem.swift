@@ -22,7 +22,7 @@ class JsonItem: Codable {
     var maxWidth: Double?
     var minHeight: Double?
     var minWidth: Double?
-    var photoUrl: URL?
+    var photoUrl: String?
     var spacing: Double?
     var start: JsonItem?
     var text: String?
@@ -299,10 +299,10 @@ class JsonItem: Codable {
         return nil
     }
     
-    func takeOptPhotoUrl() -> URL? {
+    func takeOptPhotoUrl(_ session: MaggieSession?) -> URL? {
         if let value = self.photoUrl {
             self.photoUrl = nil
-            return value
+            return URL(string: value, relativeTo: session?.url)
         }
         return nil
     }
