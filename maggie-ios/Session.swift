@@ -59,23 +59,22 @@ class MaggieSession: ObservableObject {
     }
     
     let url: URL
-    let nav: NavigationController?
     @Published
     var state: SessionState = .startup
     @Published
     var error: String?
+    @Published
     private var pages: [String: MaggiePage] = [:]
-    private var stack: [String] = []
+    @Published
+    private var stack: [String] = ["/"]
     private var writeCacheAfter: Date = .distantPast
     
     init(
         url: URL,
-        _ nav: NavigationController?,
         startTasks: Bool = true
     ) {
         precondition(url.scheme == "http" || url.scheme == "https")
         self.url = url
-        self.nav = nav
         if startTasks {
             Task(priority: .high) {
                 await self.startupTask()
@@ -83,33 +82,28 @@ class MaggieSession: ObservableObject {
         }
     }
     
-    private func updateNav() {
-        print("updateNav \(self.stack)")
-        if self.stack.isEmpty {
-            self.stack = ["/"]
-            print("updateNav \(self.stack)")
-        }
-        let entries = self.stack.map({key -> (String, MaggiePage) in
-            let page =
-            self.pages[key]
-            // TODO: Show loading.
-            ?? self.pages["/maggie-page-not-found"]
-            ?? .NavPage(MaggieNavPage(
-                title: "Not Found",
-                widget: .Expand(MaggieExpand(
-                    .Text(MaggieText("Page not found."))
-                ))
-            ))
-            return (key, page)
-        })
-        self.nav?.setStackPages(self, entries)
+    public func isVisible(_ key: String) -> Bool {
+        let result = self.stack.contains(key);
+        print("isVisible(\(key)) -> \(result)")
+        return result
     }
     
+    public func getStack() -> [(String, MaggiePage)] {
+        precondition(!self.stack.isEmpty)
+        return self.stack.map({key -> (String, MaggiePage) in
+            let page =
+            self.pages[key]
+            ?? self.pages["/maggie-page-not-found"]
+            ?? MaggiePage.notFound()
+            return (key, page)
+        })
+    }
+
     func pop() {
         if self.stack.count > 1 {
             let key = self.stack.removeLast()
             print("pop '\(key)'")
-            self.updateNav()
+            print("stack=\(self.stack)")
         } else {
             print("WARN: tried to pop root page")
         }
@@ -118,7 +112,7 @@ class MaggieSession: ObservableObject {
     func push(pageKey: String) {
         print("push '\(pageKey)'")
         self.stack.append(pageKey)
-        self.updateNav()
+        print("stack=\(self.stack)")
     }
     
     func scheduleWriteData() {
@@ -174,7 +168,6 @@ class MaggieSession: ObservableObject {
             }
         }
         // TODO: Handle user_error.
-        self.updateNav()
         self.scheduleWriteData()
         return true
     }
@@ -278,9 +271,14 @@ class MaggieSession: ObservableObject {
                     print("ERROR: error loading cached key '\(key)': \(error)")
                 }
             }
-            self.stack = contents.stack ?? ["/"]
+            if contents.stack != nil && !contents.stack!.isEmpty {
+                self.stack = contents.stack!
+                print("stack=\(self.stack)")
+            } else {
+                self.stack = ["/"]
+                print("stack=\(self.stack)")
+            }
         }
-        self.updateNav()
         Task(priority: .medium) {
             await self.connectTask()
         }
@@ -383,13 +381,13 @@ class MaggieSession: ObservableObject {
     }
 
     static func preview() -> MaggieSession {
-        let session = MaggieSession(url: URL(string: "http://localhost:8000")!, nil, startTasks: false)
+        let session = MaggieSession(url: URL(string: "http://localhost:8000")!, startTasks: false)
         session.state = .connectError
         return session
     }
     
     static func preview_connected() -> MaggieSession {
-        let session = MaggieSession(url: URL(string: "http://localhost:8000")!, nil, startTasks: false)
+        let session = MaggieSession(url: URL(string: "http://localhost:8000")!, startTasks: false)
         session.state = .connected
         return session
     }

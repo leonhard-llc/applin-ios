@@ -142,6 +142,7 @@ struct MaggieMarkdownPage: Equatable {
             return AnyView(
                 view
                     .navigationTitle(self.title)
+                    .navigationBarTitleDisplayMode(.inline)
                     .navigationBarBackButtonHidden(true)
                     .toolbar() {
                         ToolbarItemGroup(placement: .navigationBarLeading) {
@@ -153,6 +154,7 @@ struct MaggieMarkdownPage: Equatable {
             return AnyView(
                 view
                     .navigationTitle(self.title)
+                    .navigationBarTitleDisplayMode(.inline)
                     .navigationBarBackButtonHidden(true)
             )
         }

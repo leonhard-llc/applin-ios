@@ -7,6 +7,22 @@ enum MaggiePage: Equatable {
     case NavPage(MaggieNavPage)
     case PlainPage(MaggiePlainPage)
     
+    static func notFound() -> MaggiePage {
+        return .NavPage(MaggieNavPage(
+            title: "Not Found",
+            widget: .Expand(MaggieExpand(
+                .Text(MaggieText("Page not found."))
+            ))
+        ))
+    }
+    
+    static func blankPage() -> MaggiePage {
+        return .PlainPage(MaggiePlainPage(
+            title: "Empty",
+            .Empty(MaggieEmpty())
+        ))
+    }
+    
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         switch item.typ {
         case ModalKind.Alert.typ():
@@ -39,13 +55,24 @@ enum MaggiePage: Equatable {
         }
     }
     
-    var isPage: Bool {
+    var isModal: Bool {
         get {
             switch self {
             case .Modal(_):
-                return false
-            case .MarkdownPage(_), .NavPage(_), .PlainPage(_):
                 return true
+            case .MarkdownPage(_), .NavPage(_), .PlainPage(_):
+                return false
+            }
+        }
+    }
+    
+    var asModal: MaggieModal? {
+        get {
+            switch self {
+            case let .Modal(inner):
+                return inner
+            case .MarkdownPage(_), .NavPage(_), .PlainPage(_):
+                return nil
             }
         }
     }

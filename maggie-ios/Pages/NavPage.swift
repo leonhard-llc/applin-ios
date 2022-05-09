@@ -44,6 +44,7 @@ struct MaggieNavPage: Equatable {
         var view: AnyView = AnyView(
             self.widget
                 .navigationTitle(self.title)
+                .navigationBarTitleDisplayMode(.inline)
                 .navigationBarBackButtonHidden(true)
         )
         if let start = self.start {

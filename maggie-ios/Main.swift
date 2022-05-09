@@ -92,11 +92,11 @@ class NavigationController: UINavigationController {
             rootView: VStack(alignment: .center) { ProgressView() }
         ))
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("unimplemented")
     }
-    
+
     func setStackPages(_ session: MaggieSession, _ newPages: [(String, MaggiePage)]) {
         print("setStackPages")
         let topPageController = self.controllers
@@ -141,16 +141,96 @@ class NavigationController: UINavigationController {
     }
 }
 
+struct AppView: View {
+    @EnvironmentObject var session: MaggieSession
+        
+    public func binding(_ key: String) -> Binding<Bool> {
+        return Binding(
+            get: {self.session.isVisible(key)},
+            set: { show in
+                if !show {
+                    let (lastKey, lastPage) = self.session.getStack().last!
+                    if lastKey == key && !lastPage.isModal {
+                        self.session.pop()
+                    }
+                }
+            }
+        )
+    }
+    
+    var body: some View {
+        var optPrevView: (String, AnyView)? = nil
+        var optPrevModal: (String, MaggieModal)? = nil
+        var stack = self.session.getStack()
+        precondition(!stack.isEmpty)
+        if stack.first!.1.isModal {
+            // Stack starts with a modal.  Show a blank page before it.
+            stack.insert(("/", MaggiePage.blankPage()), at: 0)
+        }
+        for (index, (key, page)) in stack.enumerated().reversed() {
+            if let modal = page.asModal {
+                if optPrevModal != nil {
+                    continue
+                }
+                optPrevModal = (key, modal)
+            } else {
+                var view = page.toView(self.session, hasPrevPage: index > 0)
+                var prevBinding = Binding(get: {false}, set: {show in})
+                var prevView = AnyView(EmptyView())
+                if let (prevKey, prevAnyView) = optPrevView {
+                    prevBinding = self.binding(prevKey)
+                    prevView = prevAnyView
+                } else if let (modalKey, modal) = optPrevModal {
+                    optPrevModal = nil
+                    switch modal.kind {
+                    case .Alert:
+                        view = AnyView(
+                            view.alert(modal.title, isPresented: self.binding(modalKey)) {
+                                ForEach(modal.widgets) {
+                                    widget in widget
+                                }
+                            }
+                        )
+                    case .Info, .Question:
+                        view = AnyView(
+                            view.confirmationDialog(modal.title, isPresented: self.binding(modalKey)) {
+                                ForEach(modal.widgets) {
+                                    widget in widget
+                                }
+                            }
+                        )
+                    }
+                }
+                view = AnyView(
+                    ZStack {
+                        NavigationLink(
+                            "Hidden",
+                            isActive: prevBinding,
+                            destination: {prevView}
+                        )
+                        .hidden()
+                        view
+                    }
+                )
+                optPrevView = (key, view)
+            }
+        }
+        let (_, prevAnyView) = optPrevView!
+        return NavigationView {
+            prevAnyView
+        }
+        .navigationViewStyle(.stack)
+    }
+}
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     let session: MaggieSession
-    let navigationController: NavigationController
     var window: UIWindow?
 
     override init() {
-        self.navigationController = NavigationController()
         let url = URL(string: "http://127.0.0.1:8000/")!
-        self.session = MaggieSession(url: url, self.navigationController)
+        self.session = MaggieSession(url: url)
         super.init()
     }
 
@@ -161,16 +241,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("application didFinishLaunchingWithOptions")
         // https://betterprogramming.pub/creating-ios-apps-without-storyboards-42a63c50756f
         window = UIWindow(frame: UIScreen.main.bounds)
-        window!.rootViewController = self.navigationController
-
-        // Demo
-        Task() {
-            // Run this after a small delay to prevent
-            // "Unbalanced calls to begin/end appearance transitions" warning
-            try? await Task.sleep(nanoseconds: 1_000)
-            window!.makeKeyAndVisible()
-        }
-
+        let view = AppView().environmentObject(self.session)
+        let controller = UIHostingController(rootView: view)
+        self.window = UIWindow(frame: UIScreen.main.bounds)
+        self.window!.rootViewController = controller
+        self.window!.makeKeyAndVisible()
         return true
     }
 }
