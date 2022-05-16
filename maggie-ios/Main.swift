@@ -2,24 +2,24 @@ import SwiftUI
 
 struct AppView: View {
     @EnvironmentObject var session: MaggieSession
-        
+
     public func binding(_ key: String) -> Binding<Bool> {
         return Binding(
-            get: {self.session.isVisible(key)},
-            set: { show in
-                print("binding key=\(key) show=\(show)")
-                if !show {
-                    let (lastKey, lastPage) = self.session.getStack().last!
-                    if lastKey == key && !lastPage.isModal {
-                        self.session.pop()
-                    } else if lastKey == key {
-                        self.session.redraw()
+                get: { self.session.isVisible(key) },
+                set: { show in
+                    print("binding key=\(key) show=\(show)")
+                    if !show {
+                        let (lastKey, lastPage) = self.session.getStack().last!
+                        if lastKey == key && !lastPage.isModal {
+                            self.session.pop()
+                        } else if lastKey == key {
+                            self.session.redraw()
+                        }
                     }
                 }
-            }
         )
     }
-    
+
     var body: some View {
         var optPrevView: (String, AnyView)? = nil
         var optPrevModal: (String, MaggieModal)? = nil
@@ -37,7 +37,7 @@ struct AppView: View {
                 optPrevModal = (key, modal)
             } else {
                 var view = page.toView(self.session, hasPrevPage: index > 0)
-                var prevBinding = Binding(get: {false}, set: {show in})
+                var prevBinding = Binding(get: { false }, set: { show in })
                 var prevView = AnyView(EmptyView())
                 if let (prevKey, prevAnyView) = optPrevView {
                     prevBinding = self.binding(prevKey)
@@ -47,32 +47,34 @@ struct AppView: View {
                     switch modal.kind {
                     case .Alert:
                         view = AnyView(
-                            view.alert(modal.title, isPresented: self.binding(modalKey)) {
-                                ForEach(modal.widgets) {
-                                    widget in widget
+                                view.alert(modal.title, isPresented: self.binding(modalKey)) {
+                                    ForEach(modal.widgets) {
+                                        widget in
+                                        widget
+                                    }
                                 }
-                            }
                         )
                     case .Info, .Question:
                         view = AnyView(
-                            view.confirmationDialog(modal.title, isPresented: self.binding(modalKey)) {
-                                ForEach(modal.widgets) {
-                                    widget in widget
+                                view.confirmationDialog(modal.title, isPresented: self.binding(modalKey)) {
+                                    ForEach(modal.widgets) {
+                                        widget in
+                                        widget
+                                    }
                                 }
-                            }
                         )
                     }
                 }
                 view = AnyView(
-                    ZStack {
-                        NavigationLink(
-                            "Hidden",
-                            isActive: prevBinding,
-                            destination: {prevView}
-                        )
-                        .hidden()
-                        view
-                    }
+                        ZStack {
+                            NavigationLink(
+                                    "Hidden",
+                                    isActive: prevBinding,
+                                    destination: { prevView }
+                            )
+                                    .hidden()
+                            view
+                        }
                 )
                 optPrevView = (key, view)
             }
@@ -81,7 +83,7 @@ struct AppView: View {
         return NavigationView {
             prevAnyView
         }
-        .navigationViewStyle(.stack)
+                .navigationViewStyle(.stack)
     }
 }
 
@@ -97,8 +99,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+            _ application: UIApplication,
+            didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         print("application didFinishLaunchingWithOptions")
         // https://betterprogramming.pub/creating-ios-apps-without-storyboards-42a63c50756f

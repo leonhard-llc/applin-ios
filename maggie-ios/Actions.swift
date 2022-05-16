@@ -48,7 +48,7 @@ enum MaggieAction: Codable, Equatable, Hashable {
             throw MaggieError.deserializeError("unknown action: \(string)")
         }
     }
-    
+
     func toString() -> String {
         switch self {
         case let .CopyToClipboard(value):

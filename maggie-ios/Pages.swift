@@ -6,23 +6,23 @@ enum MaggiePage: Equatable {
     case MarkdownPage(MaggieMarkdownPage)
     case NavPage(MaggieNavPage)
     case PlainPage(MaggiePlainPage)
-    
+
     static func notFound() -> MaggiePage {
         return .NavPage(MaggieNavPage(
-            title: "Not Found",
-            widget: .Expand(MaggieExpand(
-                .Text(MaggieText("Page not found."))
-            ))
+                title: "Not Found",
+                widget: .Expand(MaggieExpand(
+                        .Text(MaggieText("Page not found."))
+                ))
         ))
     }
-    
+
     static func blankPage() -> MaggiePage {
         return .PlainPage(MaggiePlainPage(
-            title: "Empty",
-            .Empty(MaggieEmpty())
+                title: "Empty",
+                .Empty(MaggieEmpty())
         ))
     }
-    
+
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         switch item.typ {
         case ModalKind.Alert.typ():
@@ -41,7 +41,7 @@ enum MaggiePage: Equatable {
             throw MaggieError.deserializeError("unexpected page 'typ' value: \(item.typ)")
         }
     }
-    
+
     func toJsonItem() -> JsonItem {
         switch self {
         case let .Modal(inner):
@@ -54,7 +54,7 @@ enum MaggiePage: Equatable {
             return inner.toJsonItem()
         }
     }
-    
+
     var isModal: Bool {
         get {
             switch self {
@@ -65,7 +65,7 @@ enum MaggiePage: Equatable {
             }
         }
     }
-    
+
     var asModal: MaggieModal? {
         get {
             switch self {
@@ -76,7 +76,7 @@ enum MaggiePage: Equatable {
             }
         }
     }
-    
+
     var title: String? {
         get {
             switch self {
@@ -91,7 +91,7 @@ enum MaggiePage: Equatable {
             }
         }
     }
-    
+
     public func toView(_ session: MaggieSession, hasPrevPage: Bool) -> AnyView {
         switch self {
         case let .Modal(inner):
@@ -104,7 +104,7 @@ enum MaggiePage: Equatable {
             return inner.toView()
         }
     }
-    
+
     //public func allowBackSwipe() -> Bool {
     //    switch self {
     //    case .Alert(_), .Confirmation(_), .MarkdownPage(_):

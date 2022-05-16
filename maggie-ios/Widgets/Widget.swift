@@ -19,7 +19,7 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
     indirect case Tall(MaggieTall)
     case Text(MaggieText)
     indirect case Wide(MaggieWide)
-    
+
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         switch item.typ {
         case MaggieBackButton.TYP:
@@ -60,7 +60,7 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
             throw MaggieError.deserializeError("unexpected widget 'typ' value: \(item.typ)")
         }
     }
-    
+
     func toJsonItem() -> JsonItem {
         switch self {
         case let .BackButton(widget):
@@ -99,7 +99,7 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
             return widget.toJsonItem()
         }
     }
-    
+
     var body: some View {
         switch self {
         case let .BackButton(inner):
@@ -138,7 +138,7 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
             return AnyView(inner)
         }
     }
-    
+
     var id: Int {
         var hasher = Hasher()
         hasher.combine(self)

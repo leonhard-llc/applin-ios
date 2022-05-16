@@ -2,11 +2,11 @@ import SwiftUI
 
 struct SessionStatusView: View {
     @ObservedObject var session: MaggieSession
-    
+
     init(_ session: MaggieSession) {
         self.session = session
     }
-    
+
     var body: some View {
         get {
             let message: String
@@ -21,15 +21,15 @@ struct SessionStatusView: View {
                 return AnyView(EmptyView())
             }
             return AnyView(
-                VStack(alignment: .center) {
-                    HStack(alignment: .center) {
-                        Text(message)
-                        ProgressView()
-                            .padding(EdgeInsets.init(
-                                top: 0, leading: 1, bottom: 0, trailing: 0))
+                    VStack(alignment: .center) {
+                        HStack(alignment: .center) {
+                            Text(message)
+                            ProgressView()
+                                    .padding(EdgeInsets.init(
+                                            top: 0, leading: 1, bottom: 0, trailing: 0))
+                        }
+                        Divider()
                     }
-                    Divider()
-                }
             )
         }
     }

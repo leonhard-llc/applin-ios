@@ -20,7 +20,7 @@ class MaggieSession: ObservableObject {
     static func cacheFilePath() -> String {
         return documentDirPath() + "/cache.json"
     }
-    
+
     static func readCacheFile() async -> CacheFileContents? {
         print("readCacheFile")
         let path = cacheFilePath()
@@ -38,11 +38,11 @@ class MaggieSession: ObservableObject {
             return nil
         }
     }
-    
+
     static func writeCacheFile(pages: [String: MaggiePage], stack: [String]) async throws {
         print("writeCacheFile")
         var contents = CacheFileContents()
-        contents.pages = pages.mapValues({page in page.toJsonItem()})
+        contents.pages = pages.mapValues({ page in page.toJsonItem() })
         contents.stack = stack
         let bytes = try encodeJson(contents)
         let path = cacheFilePath()
@@ -57,7 +57,7 @@ class MaggieSession: ObservableObject {
         }
         try await moveFile(atPath: tmpPath, toPath: path)
     }
-    
+
     let url: URL
     @Published
     var state: SessionState = .startup
@@ -70,27 +70,27 @@ class MaggieSession: ObservableObject {
     private var writeCacheAfter: Date = .distantPast
     @Published
     private var redrawCounter: Int = 0
-    
+
     init(
-        url: URL,
-    ) {
+            url: URL,
+            ) {
         precondition(url.scheme == "http" || url.scheme == "https")
         self.url = url
     }
-    
+
     public func isVisible(_ key: String) -> Bool {
         let result = self.stack.contains(key);
         print("isVisible(\(key)) -> \(result)")
         return result
     }
-    
+
     public func getStack() -> [(String, MaggiePage)] {
         precondition(!self.stack.isEmpty)
-        return self.stack.map({key -> (String, MaggiePage) in
+        return self.stack.map({ key -> (String, MaggiePage) in
             let page =
-            self.pages[key]
-            ?? self.pages["/maggie-page-not-found"]
-            ?? MaggiePage.notFound()
+                    self.pages[key]
+                            ?? self.pages["/maggie-page-not-found"]
+                            ?? MaggiePage.notFound()
             return (key, page)
         })
     }
@@ -104,17 +104,17 @@ class MaggieSession: ObservableObject {
             print("WARN: tried to pop root page")
         }
     }
-    
+
     func push(pageKey: String) {
         print("push '\(pageKey)'")
         self.stack.append(pageKey)
         print("stack=\(self.stack)")
     }
-    
+
     func redraw() {
         self.redrawCounter += 1
     }
-    
+
     func scheduleWriteData() {
         let now = Date()
         if now < self.writeCacheAfter {
@@ -122,7 +122,7 @@ class MaggieSession: ObservableObject {
         }
         self.writeCacheAfter = now + 10.0 /* seconds */
     }
-    
+
     @MainActor
     func cacheWriterTask() async {
         print("cacheWriterTask \(MaggieSession.cacheFilePath())")
@@ -131,8 +131,8 @@ class MaggieSession: ObservableObject {
                 do {
                     self.writeCacheAfter = .distantPast
                     try await MaggieSession.writeCacheFile(
-                        pages: self.pages,
-                        stack: self.stack
+                            pages: self.pages,
+                            stack: self.stack
                     )
                 } catch {
                     print("ERROR cacheWriterTask: \(error)")
@@ -171,7 +171,7 @@ class MaggieSession: ObservableObject {
         self.scheduleWriteData()
         return true
     }
-    
+
     @MainActor
     func connectOnce() async throws {
         print("connectOnce")
@@ -198,7 +198,7 @@ class MaggieSession: ObservableObject {
         if httpResponse.statusCode != 200 {
             self.state = .serverError
             if httpResponse.contentTypeBase() == "text/plain" {
-               let string = try await asyncBytes.lines.reduce(into: "", {result, item in result += item})
+                let string = try await asyncBytes.lines.reduce(into: "", { result, item in result += item })
                 print("ERROR: connect \(self.url) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
             } else {
                 print("ERROR: connect \(self.url) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), len=\(response.expectedContentLength) \(httpResponse.mimeType ?? "")")
@@ -211,7 +211,9 @@ class MaggieSession: ObservableObject {
             return
         }
         self.state = .connected
-        defer { self.state = .connectError }
+        defer {
+            self.state = .connectError
+        }
         print("reading lines")
         for try await line in asyncBytes.lines {
             // https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events
@@ -236,7 +238,7 @@ class MaggieSession: ObservableObject {
             do {
                 try await self.connectOnce()
             } catch let error as NSError
-                        where error.code == -1004 /* Could not connect to the server */ {
+            where error.code == -1004 /* Could not connect to the server */ {
                 self.state = .connectError
             } catch {
                 // TODO: Show error to user on startup.
@@ -252,7 +254,7 @@ class MaggieSession: ObservableObject {
     func startupTask() async -> () {
         print("startupTask starting")
         do {
-            let itemMap: Dictionary<String,JsonItem> = try await decodeBundleJsonFile("default.json")
+            let itemMap: Dictionary<String, JsonItem> = try await decodeBundleJsonFile("default.json")
             for (key, item) in itemMap {
                 do {
                     self.pages[key] = try MaggiePage(item, self)
@@ -287,7 +289,7 @@ class MaggieSession: ObservableObject {
         }
         print("startupTask done")
     }
-        
+
     @MainActor
     func rpc(path: String) async -> Bool {
         print("rpc \(path)")
@@ -301,10 +303,10 @@ class MaggieSession: ObservableObject {
             urlSession.invalidateAndCancel()
         }
         let url = self.url.appendingPathComponent(
-            path.starts(with: "/") ? String(path.dropFirst()) : path)
+                path.starts(with: "/") ? String(path.dropFirst()) : path)
         var urlRequest = URLRequest(
-            url: url,
-            cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
+                url: url,
+                cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
         )
         urlRequest.httpMethod = "POST"
         //urlRequest.httpBody = try! encodeJson(jsonRequest)
@@ -322,10 +324,10 @@ class MaggieSession: ObservableObject {
         }
         if !(200...299).contains(httpResponse.statusCode) {
             if httpResponse.contentTypeBase() == "text/plain",
-                let string = String(data: data, encoding: .utf8) {
+               let string = String(data: data, encoding: .utf8) {
                 print("rpc \(path) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
             } else {
-            print("rpc \(path) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), len=\(data.count) \(httpResponse.mimeType ?? "")")
+                print("rpc \(path) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), len=\(data.count) \(httpResponse.mimeType ?? "")")
             }
             // TODO: Save error
             // TODO: Push error modal
@@ -340,7 +342,7 @@ class MaggieSession: ObservableObject {
         }
         return self.applyUpdate(data)
     }
-    
+
     @MainActor
     func doActionsAsync(_ actions: [MaggieAction]) async {
         loop: for action in actions {
@@ -373,7 +375,7 @@ class MaggieSession: ObservableObject {
             }
         }
     }
-    
+
     func doActions(_ actions: [MaggieAction]) {
         Task() {
             await self.doActionsAsync(actions)
@@ -385,7 +387,7 @@ class MaggieSession: ObservableObject {
         session.state = .connectError
         return session
     }
-    
+
     static func preview_connected() -> MaggieSession {
         let session = MaggieSession(url: URL(string: "http://localhost:8000")!, startTasks: false)
         session.state = .connected

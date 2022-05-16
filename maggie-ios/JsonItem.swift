@@ -32,7 +32,7 @@ class JsonItem: Codable {
     var widget: JsonItem?
     var widgets: [JsonItem]?
     var width: Double?
-    
+
     enum CodingKeys: String, CodingKey {
         case typ
         case actions
@@ -58,7 +58,7 @@ class JsonItem: Codable {
         case widgets
         case width
     }
-    
+
     init(_ typ: String) {
         self.typ = typ
     }
@@ -70,7 +70,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func setAlignment(_ value: Alignment) {
         switch value {
         case .topLeading:
@@ -95,7 +95,7 @@ class JsonItem: Codable {
             preconditionFailure()
         }
     }
-    
+
     func takeOptAlignment() -> Alignment? {
         if let value = self.alignment {
             self.alignment = nil
@@ -125,7 +125,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func setHorizontalAlignment(_ value: HorizontalAlignment?) {
         switch value {
         case .none:
@@ -140,7 +140,7 @@ class JsonItem: Codable {
             preconditionFailure("unreachable")
         }
     }
-    
+
     func takeOptHorizontalAlignment() -> HorizontalAlignment? {
         if let value = self.alignment {
             self.alignment = nil
@@ -158,7 +158,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func setVerticalAlignment(_ value: VerticalAlignment?) {
         switch value {
         case .none:
@@ -173,7 +173,7 @@ class JsonItem: Codable {
             preconditionFailure("unreachable")
         }
     }
-    
+
     func takeOptVerticalAlignment() -> VerticalAlignment? {
         if let value = self.alignment {
             self.alignment = nil
@@ -191,7 +191,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeOptCache() -> Bool? {
         if let value = self.cache {
             self.cache = nil
@@ -199,7 +199,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func setDisposition(_ value: MaggieDisposition) {
         switch value {
         case .cover:
@@ -236,7 +236,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeOptHeight() throws -> CGFloat? {
         if let value = self.height {
             self.height = nil
@@ -260,7 +260,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeOptIsDefault() -> Bool? {
         if let value = self.isDefault {
             self.isDefault = nil
@@ -268,7 +268,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeOptIsDestructive() -> Bool? {
         if let value = self.isDestructive {
             self.isDestructive = nil
@@ -276,7 +276,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeOptMaxHeight() -> CGFloat? {
         if let value = self.maxHeight {
             self.maxHeight = nil
@@ -284,7 +284,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeOptMaxWidth() -> CGFloat? {
         if let value = self.maxWidth {
             self.maxWidth = nil
@@ -292,7 +292,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeOptMinHeight() -> CGFloat? {
         if let value = self.minHeight {
             self.minHeight = nil
@@ -300,7 +300,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeOptMinWidth() -> CGFloat? {
         if let value = self.minWidth {
             self.minWidth = nil
@@ -308,7 +308,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeOptPhotoUrl(_ session: MaggieSession?) -> URL? {
         if let value = self.photoUrl {
             self.photoUrl = nil
@@ -316,7 +316,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeOptSpacing() -> CGFloat? {
         if let value = self.spacing {
             self.spacing = nil
@@ -332,7 +332,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeText() throws -> String {
         if let value = self.text {
             self.text = nil
@@ -340,7 +340,7 @@ class JsonItem: Codable {
         }
         throw MaggieError.deserializeError("missing 'text'")
     }
-    
+
     func takeOptTitle() throws -> String? {
         if let value = self.title {
             self.title = nil
@@ -348,7 +348,7 @@ class JsonItem: Codable {
         }
         return nil
     }
-    
+
     func takeTitle() throws -> String {
         if let value = self.title {
             self.title = nil
@@ -356,7 +356,7 @@ class JsonItem: Codable {
         }
         throw MaggieError.deserializeError("missing 'title'")
     }
-    
+
     func takeUrl() throws -> URL {
         if let value = self.url {
             self.url = nil
@@ -364,7 +364,7 @@ class JsonItem: Codable {
         }
         throw MaggieError.deserializeError("missing 'url'")
     }
-    
+
     func takeWidget(_ session: MaggieSession) throws -> MaggieWidget {
         if let value = self.widget {
             self.widget = nil
@@ -372,23 +372,27 @@ class JsonItem: Codable {
         }
         throw MaggieError.deserializeError("missing 'widget'")
     }
-    
+
     func takeOptWidgets(_ session: MaggieSession) throws -> [MaggieWidget]? {
         if let values = self.widgets {
             self.widgets = nil
-            return try values.map { value in try MaggieWidget(value, session) }
+            return try values.map { value in
+                try MaggieWidget(value, session)
+            }
         }
         return nil
     }
-    
+
     func takeWidgets(_ session: MaggieSession) throws -> [MaggieWidget] {
         if let values = self.widgets {
             self.widgets = nil
-            return try values.map { value in try MaggieWidget(value, session) }
+            return try values.map { value in
+                try MaggieWidget(value, session)
+            }
         }
         throw MaggieError.deserializeError("missing 'widgets'")
     }
-    
+
     func takeOptWidth() throws -> CGFloat? {
         if let value = self.width {
             self.width = nil
@@ -404,6 +408,6 @@ class JsonItem: Codable {
         }
         throw MaggieError.deserializeError("missing 'width'")
     }
-    
+
     // TODO: Warn about unused values.
 }

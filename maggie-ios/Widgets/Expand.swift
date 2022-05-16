@@ -9,7 +9,7 @@ struct MaggieExpand: Equatable, Hashable, View {
     let minHeight: CGFloat?
     let maxHeight: CGFloat?
     let alignment: Alignment
-    
+
     init(_ widget: MaggieWidget) {
         self.widget = widget
         self.minWidth = nil
@@ -18,7 +18,7 @@ struct MaggieExpand: Equatable, Hashable, View {
         self.maxHeight = nil
         self.alignment = .center
     }
-    
+
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.widget = try item.takeWidget(session)
         self.minWidth = item.takeOptMinWidth()
@@ -27,7 +27,7 @@ struct MaggieExpand: Equatable, Hashable, View {
         self.maxHeight = item.takeOptMaxHeight()
         self.alignment = item.takeOptAlignment() ?? .center
     }
-    
+
     func toJsonItem() -> JsonItem {
         let item = JsonItem(MaggieExpand.TYP)
         item.widget = self.widget.toJsonItem()
@@ -38,17 +38,17 @@ struct MaggieExpand: Equatable, Hashable, View {
         item.setAlignment(self.alignment)
         return item
     }
-    
+
     var body: some View {
         self.widget
-            .frame(
-                minWidth: self.minWidth,
-                maxWidth: self.maxWidth ?? .infinity,
-                minHeight: self.minHeight,
-                maxHeight: self.maxHeight ?? .infinity,
-                alignment: self.alignment
-            )
-            .border(Color.red)
-            .padding(1.0)
+                .frame(
+                        minWidth: self.minWidth,
+                        maxWidth: self.maxWidth ?? .infinity,
+                        minHeight: self.minHeight,
+                        maxHeight: self.maxHeight ?? .infinity,
+                        alignment: self.alignment
+                )
+                .border(Color.red)
+                .padding(1.0)
     }
 }

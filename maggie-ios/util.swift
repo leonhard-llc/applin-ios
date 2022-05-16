@@ -9,25 +9,29 @@ func documentDirPath() -> String {
 func fileExists(path: String) async -> Bool {
     await (Task() {
         return FileManager.default.fileExists(atPath: path)
-    }).value
+    })
+            .value
 }
 
 func readFile(path: String) async throws -> Data {
     try await (Task() {
         return try Data(contentsOf: URL(fileURLWithPath: path))
-    }).value
+    })
+            .value
 }
 
 func writeFile(data: Data, path: String) async throws {
     try await (Task() {
-        return try data.write(to:URL(fileURLWithPath: path))
-    }).value
+        return try data.write(to: URL(fileURLWithPath: path))
+    })
+            .value
 }
 
 func moveFile(atPath: String, toPath: String) async throws {
     try await (Task() {
         try FileManager.default.moveItem(atPath: atPath, toPath: toPath)
-    }).value
+    })
+            .value
 }
 
 func deleteFile(path: String) async throws {
@@ -45,7 +49,8 @@ func deleteFile(path: String) async throws {
         } catch let error as NSError where error.code == 2 /* No such file or directory */ {
             // Do nothing.
         }
-    }).value
+    })
+            .value
 }
 
 func readBundleFile(filename: String) async throws -> Data {
@@ -59,13 +64,15 @@ func readBundleFile(filename: String) async throws -> Data {
         } catch {
             throw MaggieError.deserializeError("error reading bundle file \(filename): \(error)")
         }
-    }).value
+    })
+            .value
 }
 
 func sleep(ms: Int) async {
     do {
         try await Task.sleep(nanoseconds: UInt64(ms) * 1_000_000)
-    } catch {}
+    } catch {
+    }
 }
 
 func decodeBundleJsonFile<T: Decodable>(_ filename: String) async throws -> T {
@@ -98,8 +105,8 @@ extension HTTPURLResponse {
     func contentTypeBase() -> String? {
         if let mimeType = self.mimeType {
             return mimeType
-                .split(separator: ";", maxSplits: 1, omittingEmptySubsequences: false)[0]
-                .lowercased()
+                    .split(separator: ";", maxSplits: 1, omittingEmptySubsequences: false)[0]
+                    .lowercased()
         } else {
             return nil
         }
@@ -196,4 +203,5 @@ extension VerticalAlignment: Hashable {
 
 // Swift does not allow `throw ()` or `throw Error()` and
 // does not document an alternative.
-struct EmptyError: Error {}
+struct EmptyError: Error {
+}
