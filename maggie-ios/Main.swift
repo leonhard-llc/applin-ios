@@ -108,6 +108,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window = UIWindow(frame: UIScreen.main.bounds)
         self.window!.rootViewController = controller
         self.window!.makeKeyAndVisible()
+        // Start task after app is launched.
+        // This avoids starting it during prewarming.
+        Task(priority: .high) {
+            await self.session.startupTask()
+        }
         return true
     }
 }

@@ -73,15 +73,9 @@ class MaggieSession: ObservableObject {
     
     init(
         url: URL,
-        startTasks: Bool = true
     ) {
         precondition(url.scheme == "http" || url.scheme == "https")
         self.url = url
-        if startTasks {
-            Task(priority: .high) {
-                await self.startupTask()
-            }
-        }
     }
     
     public func isVisible(_ key: String) -> Bool {
