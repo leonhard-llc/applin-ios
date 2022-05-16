@@ -99,4 +99,4 @@ This project is not yet usable.  It is not production-ready.
 - [ ] Log crashes
 - [ ] Test coverage
 - [ ] Integration tests
-- [ ] Swipe to go back
+- [ ] Swipe to go back with custom back button

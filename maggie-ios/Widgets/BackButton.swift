@@ -30,8 +30,12 @@ struct MaggieBackButton: Equatable, Hashable, View {
         return item
     }
     
+    func doActions() {
+        self.session?.doActions(self.actions)
+    }
+    
     var body: some View {
-        Button(action: { self.session?.doActions(self.actions) }) {
+        Button(action: self.doActions) {
             HStack(spacing: 4) {
                 Image(systemName: "chevron.backward")
                     .font(Font.body.weight(.semibold))

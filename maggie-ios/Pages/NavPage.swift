@@ -36,10 +36,6 @@ struct MaggieNavPage: Equatable {
         return item
     }
 
-    //public func allowBackSwipe() -> Bool {
-    //    return self.start == nil
-    //}
-    
     public func toView(_ session: MaggieSession, hasPrevPage: Bool) -> AnyView {
         var view: AnyView = AnyView(
             self.widget
@@ -51,7 +47,6 @@ struct MaggieNavPage: Equatable {
             view = AnyView(view.toolbar() {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     start
-                        //.padding(Edge.Set.leading, -8.0)
                 }
             })
         } else if hasPrevPage {
