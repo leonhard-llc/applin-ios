@@ -16,6 +16,7 @@ class JsonItem: Codable {
     var disposition: String?
     var end: JsonItem?
     var height: Double?
+    var isCancel: Bool?
     var isDefault: Bool?
     var isDestructive: Bool?
     var maxHeight: Double?
@@ -40,6 +41,7 @@ class JsonItem: Codable {
         case disposition
         case end
         case height
+        case isCancel = "is-cancel"
         case isDefault = "is-default"
         case isDestructive = "is-destructive"
         case maxHeight = "max-height"
@@ -251,6 +253,14 @@ class JsonItem: Codable {
         throw MaggieError.deserializeError("missing 'height'")
     }
 
+    func takeOptIsCancel() -> Bool? {
+        if let value = self.isCancel {
+            self.isCancel = nil
+            return value
+        }
+        return nil
+    }
+    
     func takeOptIsDefault() -> Bool? {
         if let value = self.isDefault {
             self.isDefault = nil

@@ -11,6 +11,7 @@ struct MaggieButton: Equatable, Hashable, View {
     
     static let TYP = "button"
     let text: String
+    let isCancel: Bool
     let isDefault: Bool
     let isDestructive: Bool
     let actions: [MaggieAction]
@@ -18,6 +19,7 @@ struct MaggieButton: Equatable, Hashable, View {
     
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.text = try item.takeText()
+        self.isCancel = item.takeOptIsCancel() ?? false
         self.isDefault = item.takeOptIsDefault() ?? false
         self.isDestructive = item.takeOptIsDestructive() ?? false
         self.actions = try item.takeOptActions() ?? []
@@ -40,10 +42,38 @@ struct MaggieButton: Equatable, Hashable, View {
         return item
     }
     
+    func buttonRole() -> ButtonRole? {
+        if self.isDestructive {
+            return .destructive
+        } else if self.isCancel {
+            return .cancel
+        } else {
+            return nil
+        }
+    }
+    
+    func keyboardShortcut() -> KeyboardShortcut? {
+        if self.isDefault {
+            return .defaultAction
+        } else if self.isCancel {
+            return .cancelAction
+        } else {
+            return nil
+        }
+    }
+    
+    func addKeyboardShortcut<V: View>(_ view: V) -> AnyView {
+        if #available(iOS 15.4, *) {
+            return AnyView(view.keyboardShortcut(self.keyboardShortcut()))
+        } else {
+         return AnyView(view)
+        }
+    }
+
     var body: some View {
         Button(
             self.text,
-            role: self.isDestructive ? .destructive : nil,
+            role: self.buttonRole(),
             action: { () in
                 print("Button(\(self.text)) action")
                 self.session?.doActions(self.actions)
@@ -53,4 +83,3 @@ struct MaggieButton: Equatable, Hashable, View {
             .buttonStyle(.bordered)
     }
 }
-

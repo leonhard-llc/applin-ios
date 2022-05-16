@@ -68,6 +68,8 @@ class MaggieSession: ObservableObject {
     @Published
     private var stack: [String] = ["/"]
     private var writeCacheAfter: Date = .distantPast
+    @Published
+    private var redrawCounter: Int = 0
     
     init(
         url: URL,
@@ -113,6 +115,10 @@ class MaggieSession: ObservableObject {
         print("push '\(pageKey)'")
         self.stack.append(pageKey)
         print("stack=\(self.stack)")
+    }
+    
+    func redraw() {
+        self.redrawCounter += 1
     }
     
     func scheduleWriteData() {

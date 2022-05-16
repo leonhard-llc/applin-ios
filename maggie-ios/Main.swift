@@ -7,10 +7,13 @@ struct AppView: View {
         return Binding(
             get: {self.session.isVisible(key)},
             set: { show in
+                print("binding key=\(key) show=\(show)")
                 if !show {
                     let (lastKey, lastPage) = self.session.getStack().last!
                     if lastKey == key && !lastPage.isModal {
                         self.session.pop()
+                    } else if lastKey == key {
+                        self.session.redraw()
                     }
                 }
             }
