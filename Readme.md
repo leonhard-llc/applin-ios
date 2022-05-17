@@ -4,18 +4,20 @@ Copy this iOS app and customize it to connect to your
 
 To use:
 1. Clone this repo.
-  - [Do not make a GitHub fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/what-happens-to-forks-when-a-repository-is-deleted-or-changes-visibility).
-1. Add initial pages to `initial.json`.  The app displays `"/"` on startup.
-1. Add your server's URL to `Main.swift`
-1. Add an icon
-1. Use standard processes to build and test your app
+   - [Do not make a GitHub fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/what-happens-to-forks-when-a-repository-is-deleted-or-changes-visibility).
+2. Add an icon
+3. Add your server's URL to `Main.swift`
+4. Edit `default.json`.  The app uses pages in that file until it connects to the server the first time.
+   - Put your app's ID in the "Update" button action URL.
+   - Optional: Add `/maggie-server-status` and `/maggie-contact-support-modal` pages.
+     The default error modal has "Status" and "Contact Support" buttons which open those pages.
+5. Use standard processes to build and test your app
 
 ## Development Progress
 
 This project is not yet usable.  It is not production-ready.
 
 - [X] Load `default.json` on startup
-- [X] Load customizable `initial.json` on startup, with useful error logging
 - [ ] Widgets:
   - [X] `back-button` with `actions`
   - [X] `button` with `actions`, `actions-android`, `actions-ios`, `text`, `is-default`, `is-destructive`

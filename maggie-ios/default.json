@@ -22,36 +22,6 @@
       }
     }
   },
-  "/maggie-server-status": {
-    "typ": "nav-page",
-    "title": "Status",
-    "widget": {
-      "typ": "expand",
-      "alignment": "center",
-      "widget": {
-        "typ": "text",
-        "text": "ERROR: initial.json is missing a \"/maggie-server-status\" entry."
-      }
-    }
-  },
-  "/maggie-contact-support-modal": {
-    "typ": "question-modal",
-    "title": "Contact Support",
-    "widgets": [
-      {
-        "typ": "text",
-        "text": "ERROR: initial.json is missing a \"maggie-contact-support-modal\" entry."
-      },
-      {
-        "typ": "button",
-        "text": "OK",
-        "actions": [
-          "pop"
-        ],
-        "default": true
-      }
-    ]
-  },
   "/maggie-network-error-modal": {
     "typ": "alert-modal",
     "title": "Connection Problem",
@@ -117,26 +87,8 @@
         "typ": "button",
         "text": "Update",
         "actions": [
-          "push:/maggie-update-button-not-customized-modal"
+          "launch-url:itms-apps://itunes.apple.com/app/id00000000000"
         ]
-      },
-      {
-        "typ": "button",
-        "text": "OK",
-        "actions": [
-          "pop"
-        ],
-        "default": true
-      }
-    ]
-  },
-  "/maggie-update-button-not-customized-modal": {
-    "typ": "alert-modal",
-    "title": "Update",
-    "widgets": [
-      {
-        "typ": "text",
-        "text": "ERROR: initial.json is missing a \"maggie-rpc-error-modal\" entry."
       },
       {
         "typ": "button",
