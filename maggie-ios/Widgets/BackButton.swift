@@ -3,7 +3,7 @@ import SwiftUI
 
 struct MaggieBackButton: Equatable, Hashable, View {
     static func ==(lhs: MaggieBackButton, rhs: MaggieBackButton) -> Bool {
-        return lhs.actions == rhs.actions
+        lhs.actions == rhs.actions
     }
 
     static let TYP = "back-button"

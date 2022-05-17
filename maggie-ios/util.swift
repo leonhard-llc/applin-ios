@@ -7,54 +7,56 @@ func documentDirPath() -> String {
 }
 
 func fileExists(path: String) async -> Bool {
-    await (Task() {
-        return FileManager.default.fileExists(atPath: path)
-    })
-            .value
+    let task: Task<Bool, Never> = Task {
+        FileManager.default.fileExists(atPath: path)
+    }
+    return await task.value
 }
 
 func readFile(path: String) async throws -> Data {
-    try await (Task() {
-        return try Data(contentsOf: URL(fileURLWithPath: path))
-    })
-            .value
+    let task = Task {
+        try Data(contentsOf: URL(fileURLWithPath: path))
+    }
+    return try await task.value
 }
 
 func writeFile(data: Data, path: String) async throws {
-    try await (Task() {
-        return try data.write(to: URL(fileURLWithPath: path))
-    })
-            .value
+    let task = Task {
+        try data.write(to: URL(fileURLWithPath: path))
+    }
+    try await task.value
 }
 
 func moveFile(atPath: String, toPath: String) async throws {
-    try await (Task() {
+    let task = Task {
         try FileManager.default.moveItem(atPath: atPath, toPath: toPath)
-    })
-            .value
+    }
+    try await task.value
 }
 
 func deleteFile(path: String) async throws {
-    try await (Task() {
+    let task = Task {
         // Apple's docs don't say what happens when the file doesn't exist.
         // https://developer.apple.com/documentation/foundation/filemanager/1408573-removeitem
         // Here's what I get from iOS 15 in Simulator:
-        // Error Domain=NSCocoaErrorDomain Code=4 "“cache.json.tmp” couldn’t be removed."
-        // UserInfo={NSUserStringVariant=(Remove),
-        // NSFilePath=/Users/user/Library/Developer/CoreSimulator/Devices/61ED91D5-4782-4D6C-B943-74774C383CEC/data/Containers/Data/Application/CDF87840-5B50-4217-A2AC-5CC345A52A9B/Documents/cache.json.tmp,
-        // NSUnderlyingError=0x600000d541e0 {Error Domain=NSPOSIXErrorDomain Code=2 "No such file or directory"}
-        //}
+        // Error Domain=NSCocoaErrorDomain Code=4 "'cache.json.tmp' couldn't be removed."
+        // UserInfo={
+        //   NSUserStringVariant=(Remove),
+        //   NSFilePath=/Users/user/Library/Developer/CoreSimulator/Devices/61ED91D5-4782-4D6C-B943-74774C383CEC/data/
+        //     Containers/Data/Application/CDF87840-5B50-4217-A2AC-5CC345A52A9B/Documents/cache.json.tmp,
+        //   NSUnderlyingError=0x600000d541e0 {Error Domain=NSPOSIXErrorDomain Code=2 "No such file or directory"}
+        // }
         do {
             try FileManager.default.removeItem(atPath: path)
         } catch let error as NSError where error.code == 2 /* No such file or directory */ {
             // Do nothing.
         }
-    })
-            .value
+    }
+    try await task.value
 }
 
 func readBundleFile(filename: String) async throws -> Data {
-    try await (Task() {
+    let task: Task<Data, Error> = Task {
         guard let file = Bundle.main.url(forResource: filename, withExtension: nil)
         else {
             throw MaggieError.deserializeError("bundle file not found: \(filename)")
@@ -64,10 +66,11 @@ func readBundleFile(filename: String) async throws -> Data {
         } catch {
             throw MaggieError.deserializeError("error reading bundle file \(filename): \(error)")
         }
-    })
-            .value
+    }
+    return try await task.value
 }
 
+// swiftlint:disable identifier_name
 func sleep(ms: Int) async {
     do {
         try await Task.sleep(nanoseconds: UInt64(ms) * 1_000_000)
@@ -97,7 +100,7 @@ func encodeJson<T: Encodable>(_ item: T) throws -> Data {
 
 extension CGFloat {
     func toDouble() -> Double {
-        return Double(self)
+        Double(self)
     }
 }
 
@@ -199,7 +202,6 @@ extension VerticalAlignment: Hashable {
         }
     }
 }
-
 
 // Swift does not allow `throw ()` or `throw Error()` and
 // does not document an alternative.

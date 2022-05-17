@@ -1,3 +1,5 @@
+// swiftlint:disable file_length
+
 import Foundation
 import SwiftUI
 
@@ -13,12 +15,13 @@ struct CacheFileContents: Codable {
 struct Update: Codable {
     var pages: [String: JsonItem]?
     var stack: [String]?
-    var user_error: String?
+    var userError: String?
 }
 
+// swiftlint:disable type_body_length
 class MaggieSession: ObservableObject {
     static func cacheFilePath() -> String {
-        return documentDirPath() + "/cache.json"
+        documentDirPath() + "/cache.json"
     }
 
     static func readCacheFile() async -> CacheFileContents? {
@@ -71,15 +74,13 @@ class MaggieSession: ObservableObject {
     @Published
     private var redrawCounter: Int = 0
 
-    init(
-            url: URL,
-            ) {
+    init(url: URL) {
         precondition(url.scheme == "http" || url.scheme == "https")
         self.url = url
     }
 
     public func isVisible(_ key: String) -> Bool {
-        let result = self.stack.contains(key);
+        let result = self.stack.contains(key)
         print("isVisible(\(key)) -> \(result)")
         return result
     }
@@ -172,6 +173,7 @@ class MaggieSession: ObservableObject {
         return true
     }
 
+    // swiftlint:disable function_body_length
     @MainActor
     func connectOnce() async throws {
         print("connectOnce")
@@ -194,14 +196,20 @@ class MaggieSession: ObservableObject {
         // Let's make an URLSession extension with an asyncEventStream() method that returns
         // whole Server-Sent Events.
         let (asyncBytes, response) = try await urlSession.bytes(from: self.url)
+        // swiftlint:disable force_cast
         let httpResponse = response as! HTTPURLResponse
         if httpResponse.statusCode != 200 {
             self.state = .serverError
             if httpResponse.contentTypeBase() == "text/plain" {
                 let string = try await asyncBytes.lines.reduce(into: "", { result, item in result += item })
-                print("ERROR: connect \(self.url) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
+                print("ERROR: connect \(self.url) server error: "
+                        + "\(httpResponse.statusCode) "
+                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
             } else {
-                print("ERROR: connect \(self.url) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), len=\(response.expectedContentLength) \(httpResponse.mimeType ?? "")")
+                print("ERROR: connect \(self.url) server error: "
+                        + "\(httpResponse.statusCode) "
+                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), "
+                        + "len=\(response.expectedContentLength) \(httpResponse.mimeType ?? "")")
             }
             return
         }
@@ -226,7 +234,7 @@ class MaggieSession: ObservableObject {
                 print("ignoring non-data line from server: \"\(line)\"")
                 continue
             }
-            let _ = self.applyUpdate(parts[1].data(using: .utf8)!)
+            _ = self.applyUpdate(parts[1].data(using: .utf8)!)
         }
         print("disconnected")
     }
@@ -251,10 +259,10 @@ class MaggieSession: ObservableObject {
     }
 
     @MainActor
-    func startupTask() async -> () {
+    func startupTask() async {
         print("startupTask starting")
         do {
-            let itemMap: Dictionary<String, JsonItem> = try await decodeBundleJsonFile("default.json")
+            let itemMap: [String: JsonItem] = try await decodeBundleJsonFile("default.json")
             for (key, item) in itemMap {
                 do {
                     self.pages[key] = try MaggiePage(item, self)
@@ -309,13 +317,14 @@ class MaggieSession: ObservableObject {
                 cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
         )
         urlRequest.httpMethod = "POST"
-        //urlRequest.httpBody = try! encodeJson(jsonRequest)
+        // urlRequest.httpBody = try! encodeJson(jsonRequest)
         urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
         let data: Data
         let httpResponse: HTTPURLResponse
         do {
             let (urlData, urlResponse) = try await urlSession.data(for: urlRequest)
             data = urlData
+            // swiftlint:disable force_cast
             httpResponse = urlResponse as! HTTPURLResponse
         } catch {
             print("rpc \(path) transport error: \(error)")
@@ -325,9 +334,12 @@ class MaggieSession: ObservableObject {
         if !(200...299).contains(httpResponse.statusCode) {
             if httpResponse.contentTypeBase() == "text/plain",
                let string = String(data: data, encoding: .utf8) {
-                print("rpc \(path) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
+                print("rpc \(path) server error: \(httpResponse.statusCode) "
+                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
             } else {
-                print("rpc \(path) server error: \(httpResponse.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), len=\(data.count) \(httpResponse.mimeType ?? "")")
+                print("rpc \(path) server error: \(httpResponse.statusCode) "
+                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), "
+                        + "len=\(data.count) \(httpResponse.mimeType ?? "")")
             }
             // TODO: Save error
             // TODO: Push error modal
@@ -347,26 +359,26 @@ class MaggieSession: ObservableObject {
     func doActionsAsync(_ actions: [MaggieAction]) async {
         loop: for action in actions {
             switch action {
-            case let .CopyToClipboard(string):
+            case let .copyToClipboard(string):
                 print("CopyToClipboard(\(string))")
                 UIPasteboard.general.string = string
-            case let .LaunchUrl(url):
+            case let .launchUrl(url):
                 print("LaunchUrl(\(url))")
                 // TODO
                 print("unimplemented")
-            case .Logout:
+            case .logout:
                 print("Logout")
                 // TODO
                 print("unimplemented")
-            case .Nothing:
+            case .nothing:
                 print("Nothing")
-            case .Pop:
+            case .pop:
                 print("Pop")
                 self.pop()
-            case let .Push(key):
+            case let .push(key):
                 print("Push(\(key))")
                 self.push(pageKey: key)
-            case let .Rpc(path):
+            case let .rpc(path):
                 print("Rpc(\(path))")
                 let result = await self.rpc(path: path)
                 if !result {
@@ -377,19 +389,19 @@ class MaggieSession: ObservableObject {
     }
 
     func doActions(_ actions: [MaggieAction]) {
-        Task() {
+        Task {
             await self.doActionsAsync(actions)
         }
     }
 
     static func preview() -> MaggieSession {
-        let session = MaggieSession(url: URL(string: "http://localhost:8000")!, startTasks: false)
+        let session = MaggieSession(url: URL(string: "http://localhost:8000")!)
         session.state = .connectError
         return session
     }
 
     static func preview_connected() -> MaggieSession {
-        let session = MaggieSession(url: URL(string: "http://localhost:8000")!, startTasks: false)
+        let session = MaggieSession(url: URL(string: "http://localhost:8000")!)
         session.state = .connected
         return session
     }

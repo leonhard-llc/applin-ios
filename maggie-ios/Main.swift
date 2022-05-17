@@ -4,7 +4,7 @@ struct AppView: View {
     @EnvironmentObject var session: MaggieSession
 
     public func binding(_ key: String) -> Binding<Bool> {
-        return Binding(
+        Binding(
                 get: { self.session.isVisible(key) },
                 set: { show in
                     print("binding key=\(key) show=\(show)")
@@ -21,8 +21,8 @@ struct AppView: View {
     }
 
     var body: some View {
-        var optPrevView: (String, AnyView)? = nil
-        var optPrevModal: (String, MaggieModal)? = nil
+        var optPrevView: (String, AnyView)?
+        var optPrevModal: (String, MaggieModal)?
         var stack = self.session.getStack()
         precondition(!stack.isEmpty)
         if stack.first!.1.isModal {
@@ -37,7 +37,7 @@ struct AppView: View {
                 optPrevModal = (key, modal)
             } else {
                 var view = page.toView(self.session, hasPrevPage: index > 0)
-                var prevBinding = Binding(get: { false }, set: { show in })
+                var prevBinding = Binding(get: { false }, set: { _ in })
                 var prevView = AnyView(EmptyView())
                 if let (prevKey, prevAnyView) = optPrevView {
                     prevBinding = self.binding(prevKey)
@@ -45,20 +45,18 @@ struct AppView: View {
                 } else if let (modalKey, modal) = optPrevModal {
                     optPrevModal = nil
                     switch modal.kind {
-                    case .Alert:
+                    case .alert:
                         view = AnyView(
                                 view.alert(modal.title, isPresented: self.binding(modalKey)) {
-                                    ForEach(modal.widgets) {
-                                        widget in
+                                    ForEach(modal.widgets) { widget in
                                         widget
                                     }
                                 }
                         )
-                    case .Info, .Question:
+                    case .info, .question:
                         view = AnyView(
                                 view.confirmationDialog(modal.title, isPresented: self.binding(modalKey)) {
-                                    ForEach(modal.widgets) {
-                                        widget in
+                                    ForEach(modal.widgets) { widget in
                                         widget
                                     }
                                 }

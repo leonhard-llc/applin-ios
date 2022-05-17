@@ -5,12 +5,13 @@ import NiftyMarkdownFormatter
 enum MarkdownViewState {
     case loading(Task<Void, Never>?)
     case error(String)
+    // swiftlint:disable identifier_name
     case ok(String)
 }
 
 struct MaggieMarkdownPage: Equatable {
     static func ==(lhs: MaggieMarkdownPage, rhs: MaggieMarkdownPage) -> Bool {
-        return lhs.title == rhs.title
+        lhs.title == rhs.title
                 && lhs.url == rhs.url
                 && lhs.cache == rhs.cache
     }
@@ -48,8 +49,10 @@ struct MaggieMarkdownPage: Equatable {
 
     func load() async {
         do {
-            let urlSession = (self.cache ?? false) ? URLSession.shared : URLSession(configuration: URLSessionConfiguration.ephemeral)
+            let urlSession = (self.cache ?? false)
+                    ? URLSession.shared : URLSession(configuration: URLSessionConfiguration.ephemeral)
             let (data, urlResponse) = try await urlSession.data(from: self.url)
+            // swiftlint:disable force_cast
             let response = urlResponse as! HTTPURLResponse
             print("GET \(self.url) response: \(response), bodyLen=\(data.count)")
             if response.statusCode != 200 {
@@ -83,7 +86,7 @@ struct MaggieMarkdownPage: Equatable {
     func startLoad() {
         switch self.state {
         case .loading(.none), .error, .ok:
-            self.state = .loading(Task() {
+            self.state = .loading(Task {
                 await self.load()
             })
         case .loading:
@@ -98,12 +101,13 @@ struct MaggieMarkdownPage: Equatable {
         }
     }
 
+    // swiftlint:disable function_body_length
     public func toView(_ session: MaggieSession, hasPrevPage: Bool) -> AnyView {
         var view: AnyView
         switch self.state {
         case .loading:
             view = AnyView(
-                    VStack() {
+                    VStack {
                         Spacer()
                         ProgressView("Loading")
                         Spacer()
@@ -116,7 +120,7 @@ struct MaggieMarkdownPage: Equatable {
             )
         case let .error(msg):
             return AnyView(
-                    VStack() {
+                    VStack {
                         Spacer()
                         Image(systemName: "xmark.octagon")
                                 .resizable()
@@ -131,7 +135,7 @@ struct MaggieMarkdownPage: Equatable {
                     })
         case let .ok(markdown):
             return AnyView(
-                    VStack() {
+                    VStack {
                         ScrollView(showsIndicators: true) {
                             FormattedMarkdown(
                                     markdown: markdown,
@@ -152,9 +156,9 @@ struct MaggieMarkdownPage: Equatable {
                             .navigationTitle(self.title)
                             .navigationBarTitleDisplayMode(.inline)
                             .navigationBarBackButtonHidden(true)
-                            .toolbar() {
+                            .toolbar {
                                 ToolbarItemGroup(placement: .navigationBarLeading) {
-                                    MaggieBackButton([.Pop], session)
+                                    MaggieBackButton([.pop], session)
                                 }
                             }
             )

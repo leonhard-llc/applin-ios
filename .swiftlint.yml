@@ -1,0 +1,3 @@
+disabled_rules:
+  - operator_whitespace
+  - todo

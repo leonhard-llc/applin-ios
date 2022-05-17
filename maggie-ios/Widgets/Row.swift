@@ -23,8 +23,7 @@ struct MaggieRow: Equatable, Hashable, View {
 
     var body: some View {
         HStack(alignment: self.alignment, spacing: self.spacing ?? 4.0) {
-            ForEach(self.widgets) {
-                widget in
+            ForEach(self.widgets) { widget in
                 widget
             }
         }

@@ -3,7 +3,7 @@ import SwiftUI
 
 struct MaggieButton: Equatable, Hashable, View {
     static func ==(lhs: MaggieButton, rhs: MaggieButton) -> Bool {
-        return lhs.text == rhs.text
+        lhs.text == rhs.text
                 && lhs.isDefault == rhs.isDefault
                 && lhs.isDestructive == rhs.isDestructive
                 && lhs.actions == rhs.actions

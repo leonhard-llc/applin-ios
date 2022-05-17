@@ -22,8 +22,7 @@ struct MaggieColumn: Equatable, Hashable, View {
 
     var body: some View {
         VStack(alignment: self.alignment, spacing: self.spacing) {
-            ForEach(self.widgets) {
-                widget in
+            ForEach(self.widgets) { widget in
                 widget
             }
         }

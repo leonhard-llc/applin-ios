@@ -1,3 +1,5 @@
+// swiftlint:disable file_length
+
 import Foundation
 import SwiftUI
 
@@ -7,12 +9,13 @@ enum MaggieDisposition: Equatable, Hashable {
     case cover
 }
 
+// swiftlint:disable type_body_length
 class JsonItem: Codable {
     var typ: String
     var actions: [String]?
     var alignment: String?
     var cache: Bool?
-    // TOOD: Split this into separate horizontal and vertical fields.
+    // TODO: Split this into separate horizontal and vertical fields.
     var disposition: String?
     var end: JsonItem?
     var height: Double?
@@ -96,6 +99,7 @@ class JsonItem: Codable {
         }
     }
 
+    // swiftlint:disable cyclomatic_complexity
     func takeOptAlignment() -> Alignment? {
         if let value = self.alignment {
             self.alignment = nil

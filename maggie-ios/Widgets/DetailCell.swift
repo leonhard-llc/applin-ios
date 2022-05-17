@@ -3,7 +3,7 @@ import SwiftUI
 
 struct MaggieDetailCell: Equatable, Hashable, View {
     static func ==(lhs: MaggieDetailCell, rhs: MaggieDetailCell) -> Bool {
-        return lhs.text == rhs.text
+        lhs.text == rhs.text
                 && lhs.actions == rhs.actions
                 && lhs.photoUrl == rhs.photoUrl
     }
@@ -47,20 +47,23 @@ struct MaggieDetailCell: Equatable, Hashable, View {
                 })
         let destination = EmptyView().navigationTitle("Empty View")
         if let photoUrl = self.photoUrl {
-            NavigationLink(isActive: binding, destination: { destination }) {
-                HStack {
-                    AsyncImage(url: photoUrl) { image in
-                        image
-                                .resizable()
-                    } placeholder: {
-                        ProgressView()
-                    }
-                            .scaledToFit()
-                            .frame(width: 44, height: 44)
-                            .border(Color.black)
-                    Text(self.text)
-                }
-            }
+            NavigationLink(
+                    isActive: binding,
+                    destination: { destination },
+                    label: {
+                        HStack {
+                            AsyncImage(url: photoUrl) { image in
+                                image
+                                        .resizable()
+                            } placeholder: {
+                                ProgressView()
+                            }
+                                    .scaledToFit()
+                                    .frame(width: 44, height: 44)
+                                    .border(Color.black)
+                            Text(self.text)
+                        }
+                    })
                     .disabled(self.actions.isEmpty)
         } else {
             NavigationLink(self.text, isActive: binding, destination: { destination })

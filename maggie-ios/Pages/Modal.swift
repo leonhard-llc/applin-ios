@@ -2,17 +2,17 @@ import Foundation
 import SwiftUI
 
 enum ModalKind: String {
-    case Alert
-    case Info
-    case Question
+    case alert
+    case info
+    case question
 
     public func typ() -> String {
         switch self {
-        case .Alert:
+        case .alert:
             return "alert-modal"
-        case .Info:
+        case .info:
             return "info-modal"
-        case .Question:
+        case .question:
             return "question-modal"
         }
     }
@@ -20,7 +20,7 @@ enum ModalKind: String {
 
 struct MaggieModal: Equatable {
     static func ==(lhs: MaggieModal, rhs: MaggieModal) -> Bool {
-        return lhs.title == rhs.title
+        lhs.title == rhs.title
                 && lhs.widgets == rhs.widgets
     }
 
@@ -61,20 +61,18 @@ struct MaggieModal: Equatable {
 
     public func toView() -> AnyView {
         switch self.kind {
-        case .Alert:
+        case .alert:
             return AnyView(
                     EmptyView().alert(self.title, isPresented: self.$isPresented) {
-                        ForEach(self.widgets) {
-                            widget in
+                        ForEach(self.widgets) { widget in
                             widget
                         }
                     }
             )
-        case .Info, .Question:
+        case .info, .question:
             return AnyView(
                     EmptyView().confirmationDialog(self.title, isPresented: self.$isPresented) {
-                        ForEach(self.widgets) {
-                            widget in
+                        ForEach(self.widgets) { widget in
                             widget
                         }
                     }

@@ -44,20 +44,20 @@ struct MaggieNavPage: Equatable {
                         .navigationBarBackButtonHidden(true)
         )
         if let start = self.start {
-            view = AnyView(view.toolbar() {
+            view = AnyView(view.toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     start
                 }
             })
         } else if hasPrevPage {
-            view = AnyView(view.toolbar() {
+            view = AnyView(view.toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
-                    MaggieBackButton([.Pop], session)
+                    MaggieBackButton([.pop], session)
                 }
             })
         }
         if let end = self.end {
-            view = AnyView(view.toolbar() {
+            view = AnyView(view.toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     end
                 }

@@ -24,6 +24,6 @@ struct MaggiePlainPage: Equatable {
     }
 
     public func toView() -> AnyView {
-        return AnyView(self.widget.navigationBarHidden(true))
+        AnyView(self.widget.navigationBarHidden(true))
     }
 }

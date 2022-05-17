@@ -8,4 +8,3 @@ struct MaggieEmpty: Equatable, Hashable, View {
         EmptyView()
     }
 }
-

@@ -2,26 +2,27 @@ import Foundation
 import UIKit
 
 enum MaggieAction: Codable, Equatable, Hashable {
-    case CopyToClipboard(String)
-    case LaunchUrl(URL)
-    case Logout
-    case Nothing
-    case Pop
-    case Push(String)
-    case Rpc(String)
+    case copyToClipboard(String)
+    case launchUrl(URL)
+    case logout
+    case nothing
+    case pop
+    case push(String)
+    case rpc(String)
 
+    // swiftlint:disable cyclomatic_complexity
     init(_ string: String) throws {
         switch string {
         case "":
             throw MaggieError.deserializeError("action is empty")
         case "logout":
-            self = .Logout
+            self = .logout
             return
         case "nothing":
-            self = .Nothing
+            self = .nothing
             return
         case "pop":
-            self = .Pop
+            self = .pop
             return
         default:
             break
@@ -33,17 +34,17 @@ enum MaggieAction: Codable, Equatable, Hashable {
         let part1 = String(parts[1])
         switch parts[0] {
         case "copy-to-clipboard":
-            self = .CopyToClipboard(part1)
+            self = .copyToClipboard(part1)
         case "launch-url":
             if let url = URL(string: part1) {
-                self = .LaunchUrl(url)
+                self = .launchUrl(url)
             } else {
                 throw MaggieError.deserializeError("failed parsing url: \(part1)")
             }
         case "push":
-            self = .Push(part1)
+            self = .push(part1)
         case "rpc":
-            self = .Rpc(part1)
+            self = .rpc(part1)
         default:
             throw MaggieError.deserializeError("unknown action: \(string)")
         }
@@ -51,19 +52,19 @@ enum MaggieAction: Codable, Equatable, Hashable {
 
     func toString() -> String {
         switch self {
-        case let .CopyToClipboard(value):
+        case let .copyToClipboard(value):
             return "copy-to-clipboard:\(value)"
-        case let .LaunchUrl(value):
+        case let .launchUrl(value):
             return "launch-url:\(value)"
-        case .Logout:
+        case .logout:
             return "logout"
-        case .Nothing:
+        case .nothing:
             return "nothing"
-        case .Pop:
+        case .pop:
             return "pop"
-        case let .Push(value):
+        case let .push(value):
             return "push:\(value)"
-        case let .Rpc(value):
+        case let .rpc(value):
             return "rpc:\(value)"
         }
     }
