@@ -328,7 +328,7 @@
 			);
 			mainGroup = CE68B8DC280004DE000B7761;
 			packageReferences = (
-				CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "Nifty-Markdown-Formatter" */,
+				CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "Nifty-Markdown-Formatter.git" */,
 			);
 			productRefGroup = CE68B8E6280004DE000B7761 /* Products */;
 			projectDirPath = "";
@@ -727,7 +727,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "Nifty-Markdown-Formatter" */ = {
+		CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "Nifty-Markdown-Formatter.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/NiftyTreeStudios/Nifty-Markdown-Formatter.git";
 			requirement = {
@@ -740,7 +740,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		CEB78F8C280B6F30006F1B51 /* Nifty Markdown Formatter */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "Nifty-Markdown-Formatter" */;
+			package = CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "Nifty-Markdown-Formatter.git" */;
 			productName = "Nifty Markdown Formatter";
 		};
 /* End XCSwiftPackageProductDependency section */
