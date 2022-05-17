@@ -32,21 +32,3 @@ struct SessionStatusView: View {
         )
     }
 }
-
-struct SessionStatusView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            VStack {
-                SessionStatusView(MaggieSession.preview())
-                Text("Hello")
-                Spacer()
-            }
-            VStack {
-                SessionStatusView(MaggieSession.preview_connected())
-                Text("Hello")
-                Spacer()
-            }
-        }
-        // .previewLayout(.fixed(width: 400, height: 70))
-    }
-}

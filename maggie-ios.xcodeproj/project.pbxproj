@@ -35,7 +35,6 @@
 		CE62D8E02824A2B0001E16B9 /* PlainPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE62D8DF2824A2B0001E16B9 /* PlainPage.swift */; };
 		CE68B8E9280004DE000B7761 /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B8E8280004DE000B7761 /* Main.swift */; };
 		CE68B8ED280004E1000B7761 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE68B8EC280004E1000B7761 /* Assets.xcassets */; };
-		CE68B8F0280004E1000B7761 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE68B8EF280004E1000B7761 /* Preview Assets.xcassets */; };
 		CE68B8FA280004E1000B7761 /* maggie_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B8F9280004E1000B7761 /* maggie_iosTests.swift */; };
 		CE68B904280004E1000B7761 /* maggie_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B903280004E1000B7761 /* maggie_iosUITests.swift */; };
 		CE68B906280004E1000B7761 /* maggie_iosUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B905280004E1000B7761 /* maggie_iosUITestsLaunchTests.swift */; };
@@ -96,7 +95,6 @@
 		CE68B8E5280004DE000B7761 /* maggie-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "maggie-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE68B8E8280004DE000B7761 /* Main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Main.swift; sourceTree = "<group>"; };
 		CE68B8EC280004E1000B7761 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		CE68B8EF280004E1000B7761 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		CE68B8F5280004E1000B7761 /* maggie-iosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "maggie-iosTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE68B8F9280004E1000B7761 /* maggie_iosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maggie_iosTests.swift; sourceTree = "<group>"; };
 		CE68B8FF280004E1000B7761 /* maggie-iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "maggie-iosUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -220,17 +218,8 @@
 				CE2886472808AB6D001CE13E /* SessionStatusView.swift */,
 				CEE0508928071F3300F68166 /* util.swift */,
 				CE68B8EC280004E1000B7761 /* Assets.xcassets */,
-				CE68B8EE280004E1000B7761 /* Preview Content */,
 			);
 			path = "maggie-ios";
-			sourceTree = "<group>";
-		};
-		CE68B8EE280004E1000B7761 /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				CE68B8EF280004E1000B7761 /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		CE68B8F8280004E1000B7761 /* maggie-iosTests */ = {
@@ -360,7 +349,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CE68B8F0280004E1000B7761 /* Preview Assets.xcassets in Resources */,
 				CE2886422807C8C7001CE13E /* default.json in Resources */,
 				CE2886442807D26F001CE13E /* initial.json in Resources */,
 				CE68B8ED280004E1000B7761 /* Assets.xcassets in Resources */,

@@ -393,16 +393,4 @@ class MaggieSession: ObservableObject {
             await self.doActionsAsync(actions)
         }
     }
-
-    static func preview() -> MaggieSession {
-        let session = MaggieSession(url: URL(string: "http://localhost:8000")!)
-        session.state = .connectError
-        return session
-    }
-
-    static func preview_connected() -> MaggieSession {
-        let session = MaggieSession(url: URL(string: "http://localhost:8000")!)
-        session.state = .connected
-        return session
-    }
 }
