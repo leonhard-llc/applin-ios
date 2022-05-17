@@ -1,3 +1,12 @@
 disabled_rules:
+  - large_tuple
   - operator_whitespace
   - todo
+
+identifier_name:
+  min_length:
+    warning: 1
+    error: 1
+  max_length:
+    warning: 100
+    error: 100
