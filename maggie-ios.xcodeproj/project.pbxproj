@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		36EBC011C10A02B3F9525F35 /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 36EBC5430B831FFCC6098B08 /* .swiftlint.yml */; };
 		CE2886422807C8C7001CE13E /* default.json in Resources */ = {isa = PBXBuildFile; fileRef = CE2886412807C8C7001CE13E /* default.json */; };
-		CE2886442807D26F001CE13E /* initial.json in Resources */ = {isa = PBXBuildFile; fileRef = CE2886432807D26F001CE13E /* initial.json */; };
 		CE2886462808720D001CE13E /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2886452808720D001CE13E /* Error.swift */; };
 		CE2886482808AB6D001CE13E /* SessionStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2886472808AB6D001CE13E /* SessionStatusView.swift */; };
 		CE62D8B628249EA1001E16B9 /* BackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE62D8B528249EA1001E16B9 /* BackButton.swift */; };
@@ -67,7 +66,6 @@
 /* Begin PBXFileReference section */
 		36EBC5430B831FFCC6098B08 /* .swiftlint.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		CE2886412807C8C7001CE13E /* default.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = default.json; sourceTree = "<group>"; };
-		CE2886432807D26F001CE13E /* initial.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = initial.json; sourceTree = "<group>"; };
 		CE2886452808720D001CE13E /* Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
 		CE2886472808AB6D001CE13E /* SessionStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStatusView.swift; sourceTree = "<group>"; };
 		CE28864F280A58C5001CE13E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -208,7 +206,6 @@
 				CE62D8D72824A19E001E16B9 /* Widgets */,
 				CE28864F280A58C5001CE13E /* Info.plist */,
 				CE2886412807C8C7001CE13E /* default.json */,
-				CE2886432807D26F001CE13E /* initial.json */,
 				CEB78F92280CA560006F1B51 /* Actions.swift */,
 				CE2886452808720D001CE13E /* Error.swift */,
 				CEB78F8E280CA1BE006F1B51 /* JsonItem.swift */,
@@ -350,7 +347,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE2886422807C8C7001CE13E /* default.json in Resources */,
-				CE2886442807D26F001CE13E /* initial.json in Resources */,
 				CE68B8ED280004E1000B7761 /* Assets.xcassets in Resources */,
 				36EBC011C10A02B3F9525F35 /* .swiftlint.yml in Resources */,
 			);
