@@ -1,16 +1,13 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "Nifty Markdown Formatter",
-        "repositoryURL": "/Users/user/fork-Nifty-Markdown-Formatter",
-        "state": {
-          "branch": null,
-          "revision": "c3a2fa4e141a0fe74b75d9ddb2c74df16ed4edde",
-          "version": null
-        }
+  "pins" : [
+    {
+      "identity" : "nifty-markdown-formatter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/NiftyTreeStudios/Nifty-Markdown-Formatter.git",
+      "state" : {
+        "revision" : "13b9655285eaa163f4dad2442c0fe0e047cadadf"
       }
-    ]
-  },
-  "version": 1
+    }
+  ],
+  "version" : 2
 }
