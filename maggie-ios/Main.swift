@@ -87,12 +87,20 @@ struct AppView: View {
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    let dataDirPath: String
+    let cacheFileWriter: CacheFileWriter
+    let connection: MaggieConnection = MaggieConnection()
     let session: MaggieSession
+    let navigationController: NavigationController
     var window: UIWindow?
 
     override init() {
+        // Note: This code runs during app prewarming.
+        self.dataDirPath = getDataDirPath()
+        self.cacheFileWriter = CacheFileWriter(dataDirPath: dataDirPath)
+        self.navigationController = NavigationController()
         let url = URL(string: "http://127.0.0.1:8000/")!
-        self.session = MaggieSession(url: url)
+        self.session = MaggieSession(self.cacheFileWriter, self.connection, self.navigationController, url)
         super.init()
     }
 
@@ -100,19 +108,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             _ application: UIApplication,
             didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        print("application didFinishLaunchingWithOptions")
+        print("launch")
         // https://betterprogramming.pub/creating-ios-apps-without-storyboards-42a63c50756f
-        window = UIWindow(frame: UIScreen.main.bounds)
-        let view = AppView().environmentObject(self.session)
-        let controller = UIHostingController(rootView: view)
         self.window = UIWindow(frame: UIScreen.main.bounds)
-        self.window!.rootViewController = controller
+        self.window!.rootViewController = self.navigationController
         self.window!.makeKeyAndVisible()
-        // Start task after app is launched.
-        // This avoids starting it during prewarming.
         Task(priority: .high) {
-            await self.session.startupTask()
+            do {
+                await readDefaultData(self.session)
+                try createDir(dataDirPath)
+                await readCacheFile(dataDirPath: self.dataDirPath, self.session)
+                self.connection.start(self.session)
+            } catch {
+                print("startup error: \(error)")
+            }
         }
         return true
+    }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        print("active")
+        self.connection.start(self.session)
+    }
+
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        print("background")
+        self.connection.stop()
+        self.cacheFileWriter.stop()
     }
 }

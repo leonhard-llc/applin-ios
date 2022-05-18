@@ -5,7 +5,6 @@ import NiftyMarkdownFormatter
 enum MarkdownViewState {
     case loading(Task<Void, Never>?)
     case error(String)
-    // swiftlint:disable identifier_name
     case ok(String)
 }
 
@@ -52,7 +51,6 @@ struct MaggieMarkdownPage: Equatable {
             let urlSession = (self.cache ?? false)
                     ? URLSession.shared : URLSession(configuration: URLSessionConfiguration.ephemeral)
             let (data, urlResponse) = try await urlSession.data(from: self.url)
-            // swiftlint:disable force_cast
             let response = urlResponse as! HTTPURLResponse
             print("GET \(self.url) response: \(response), bodyLen=\(data.count)")
             if response.statusCode != 200 {

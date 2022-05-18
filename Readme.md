@@ -19,25 +19,25 @@ This project is not yet usable.  It is not production-ready.
 
 - [X] Load `default.json` on startup
 - [ ] Widgets:
-  - [X] `back-button` with `actions`
-  - [X] `button` with `actions`, `actions-android`, `actions-ios`, `text`, `is-default`, `is-destructive`
+  - [ ] `back-button` with `actions`
+  - [ ] `button` with `actions`, `actions-android`, `actions-ios`, `text`, `is-default`, `is-destructive`
   - [ ] `button-cell`
   - [ ] `checkbox`
   - [ ] `checkbox-cell`
-  - [X] `column` with `spacing`, `widgets`
-  - [X] `column.alignment`: `top`, `center`, `bottom`
+  - [ ] `column` with `spacing`, `widgets`
+  - [ ] `column.alignment`: `top`, `center`, `bottom`
   - [ ] `detail-cell`
-  - [X] `empty`
+  - [ ] `empty`
   - [ ] `error-cell`
-  - [X] `error-details`
-  - [X] `expand` with `min-height`, `min-width`, `max-height`, `max-width`, `widget`
-  - [X] `expand.alignment`: `top-start`, `top-center`, `top-end`, `center-start`, `center`, `center-end`, `bottom-start`, `bottom-center`, `bottom-end`
+  - [ ] `error-details`
+  - [ ] `expand` with `min-height`, `min-width`, `max-height`, `max-width`, `widget`
+  - [ ] `expand.alignment`: `top-start`, `top-center`, `top-end`, `center-start`, `center`, `center-end`, `bottom-start`, `bottom-center`, `bottom-end`
   - [ ] `date-picker`
   - [ ] `date-time-picker`
-  - [X] `horizontal-scroll` with `widget`
+  - [ ] `horizontal-scroll` with `widget`
   - [ ] `icon` with `id`, `height`, `width`, `alignment`
-  - [X] `image` with `url`, `height`, `width`
-  - [X] `image.disposition`: `cover`, `fit`, `stretch`
+  - [ ] `image` with `url`, `height`, `width`
+  - [ ] `image.disposition`: `cover`, `fit`, `stretch`
   - [ ] `image` zoom
   - [ ] `image` retry load failure
   - [ ] `image-picker` camera
@@ -47,29 +47,30 @@ This project is not yet usable.  It is not production-ready.
   - [ ] `markdown`
   - [ ] `picker`
   - [ ] `radio-button`
-  - [X] `row` with `spacing`, `widgets`
-  - [X] `row.alignment`: `start`, `center`, `end`
+  - [ ] `row` with `spacing`, `widgets`
+  - [ ] `row.alignment`: `start`, `center`, `end`
   - [ ] `row` item sizing: unconstrained, fixed-width, max-width, min-width
   - [ ] `row` spacing: Make `Spacer` fixed size, and use `Wide` & `Tall` for expanded spacing.
   - [ ] `row` wrapping
-  - [X] `scroll` with `widget`
-  - [X] `spacer`
+  - [ ] `scroll` with `widget`
+  - [ ] `spacer`
   - [ ] `table`
-  - [X] `tall` with `alignment`, `min-height`, `max-height`, `widget`
-  - [X] `text`
+  - [ ] `tall` with `alignment`, `min-height`, `max-height`, `widget`
+  - [ ] `text`
   - [ ] `text` should not show markdown-formatting
   - [ ] `text-cell`
   - [ ] `time-picker`
-  - [X] `wide` with `alignment`, `min-width`, `max-width`, `widget`
+  - [ ] `wide` with `alignment`, `min-width`, `max-width`, `widget`
 - [ ] Actions:
-  - [X] `copy-to-clipboard`
+  - [ ] `copy-to-clipboard`
   - [ ] `copy-to-clipboard` to show confirmation popover
   - [ ] `hilight:WIDGET_ID`
   - [ ] `launch-url:URL`
   - [ ] `logout`
-  - [X] `pop`
-  - [X] `push:PAGE_KEY`
-  - [X] `rpc:/PATH`
+    - <https://developer.apple.com/documentation/foundation/urlsession/1411479-reset>
+  - [ ] `pop`
+  - [ ] `push:PAGE_KEY`
+  - [ ] `rpc:/PATH`
   - [ ] `rpc:/PATH?ARGS`
   - [ ] Prevent overlapping RPCs or actions
   - [ ] `rpc` to include page stack
@@ -90,9 +91,9 @@ This project is not yet usable.  It is not production-ready.
   - [ ] `style` attribute on pages and widgets
 - [ ] Ephemeral client data, to allow an RPC to consume data from multiple pages
 - [ ] Monotonic state counter, to keep client in sync with server
-- [X] Cache stack
-- [X] Cache pages
-- [X] Reduce power used for caching.  Append diffs, write after a delay, or something else.  Writing after 10s delay.
+- [ ] Cache stack
+- [ ] Cache pages
+- [ ] Reduce power used for caching.  Append diffs, write after a delay, or something else.  Writing after 10s delay.
 - [ ] Disconnect to save power, when in background, after a delay
 - [ ] Subscribe to notifications
 - [ ] Open notification to target page
@@ -102,3 +103,11 @@ This project is not yet usable.  It is not production-ready.
 - [ ] Test coverage
 - [ ] Integration tests
 - [ ] Swipe to go back with custom back button
+- [ ] Preserve content entered in text fields and other widget state:
+  <https://developer.apple.com/documentation/uikit/view_controllers/preserving_your_app_s_ui_across_launches>
+- Respond to memory pressure warnings
+  <https://developer.apple.com/documentation/uikit/app_and_environment/managing_your_app_s_life_cycle/responding_to_memory_warnings>
+  - Release non-visible images
+  - Write cache since app may get terminated
+- [ ] Download media in background task
+  - <https://www.avanderlee.com/swift/urlsession-common-pitfalls-with-background-download-upload-tasks/>

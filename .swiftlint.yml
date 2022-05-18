@@ -1,4 +1,5 @@
 disabled_rules:
+  - force_cast
   - large_tuple
   - operator_whitespace
   - todo
