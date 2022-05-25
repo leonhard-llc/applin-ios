@@ -40,11 +40,13 @@ func deleteFile(path: String) async throws {
         //     Containers/Data/Application/CDF87840-5B50-4217-A2AC-5CC345A52A9B/Documents/cache.json.tmp,
         //   NSUnderlyingError=0x600000d541e0 {Error Domain=NSPOSIXErrorDomain Code=2 "No such file or directory"}
         // }
-        do {
-            try FileManager.default.removeItem(atPath: path)
-        } catch let error as NSError where error.code == 2 /* No such file or directory */ {
-            // Do nothing.
+        // Apple docs also don't list the constant values.  And the editor won't show the values.
+        // I printed out the value of kCFNotFound, which printed as -1.  But that value is not found in the error.
+        // So I give up making this method idempotent.
+        if !FileManager.default.fileExists(atPath: path) {
+            return
         }
+        try FileManager.default.removeItem(atPath: path)
     }
     try await task.value
 }
