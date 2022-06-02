@@ -9,7 +9,6 @@ class MaggieConnection {
     private var task: Task<(), Never>?
     private var running: Bool = false
 
-    // swiftlint:disable function_body_length
     func connectOnce(_ session: MaggieSession) async throws {
         print("MaggieConnection connect")
         let config = URLSessionConfiguration.default

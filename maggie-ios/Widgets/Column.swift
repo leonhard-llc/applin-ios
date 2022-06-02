@@ -1,32 +1,39 @@
 import Foundation
-import SwiftUI
+import UIKit
 
-struct MaggieColumn: Equatable, Hashable, View {
+struct MaggieColumn: Equatable, Hashable {
     static let TYP = "column"
     let widgets: [MaggieWidget]
-    let alignment: HorizontalAlignment
-    let spacing: CGFloat
+    let alignment: MaggieHAlignment
+    let spacing: Float32
 
     init(_ item: JsonItem, _ session: MaggieSession) throws {
-        self.widgets = try item.takeOptWidgets(session) ?? []
-        self.alignment = item.takeOptHorizontalAlignment() ?? .leading
-        self.spacing = item.takeOptSpacing() ?? 4.0
+        self.widgets = try item.optWidgets(session) ?? []
+        self.alignment = item.optAlign() ?? .start
+        self.spacing = item.spacing ?? Float32(UIStackView.spacingUseDefault)
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(MaggieColumn.TYP)
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
-        item.setHorizontalAlignment(self.alignment)
+        item.setAlign(self.alignment)
         return item
     }
 
-    var body: some View {
-        VStack(alignment: self.alignment, spacing: self.spacing) {
-            ForEach(self.widgets) { widget in
-                widget
-            }
+    func makeView(_ session: MaggieSession) -> UIView {
+        let subViews = self.widgets.map({ widget in widget.makeView(session) })
+        let stack = UIStackView(arrangedSubviews: subViews)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.backgroundColor = pastelPink
+        switch self.alignment {
+        case .center:
+            stack.alignment = .center
+        case .start:
+            stack.alignment = .leading
+        case .end:
+            stack.alignment = .trailing
         }
-                .border(Color.green)
-                .padding(1.0)
+        stack.spacing = CGFloat(self.spacing)
+        return stack
     }
 }

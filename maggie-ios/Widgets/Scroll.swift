@@ -1,12 +1,11 @@
 import Foundation
-import SwiftUI
 
-struct MaggieScroll: Equatable, Hashable, View {
+struct MaggieScroll: Equatable, Hashable {
     static let TYP = "scroll"
     let widget: MaggieWidget
 
     init(_ item: JsonItem, _ session: MaggieSession) throws {
-        self.widget = try item.takeWidget(session)
+        self.widget = try item.requireWidget(session)
     }
 
     func toJsonItem() -> JsonItem {
@@ -15,9 +14,9 @@ struct MaggieScroll: Equatable, Hashable, View {
         return item
     }
 
-    var body: some View {
-        ScrollView(Axis.Set.vertical) {
-            self.widget
-        }
-    }
+//    var body: some View {
+//        ScrollView(Axis.Set.vertical) {
+//            self.widget
+//        }
+//    }
 }

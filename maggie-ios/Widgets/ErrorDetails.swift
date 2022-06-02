@@ -1,7 +1,7 @@
 import Foundation
-import SwiftUI
+import UIKit
 
-struct MaggieErrorDetails: Equatable, Hashable, View {
+struct MaggieErrorDetails: Equatable, Hashable {
     static let TYP = "error-details"
     let error: String
 
@@ -9,7 +9,7 @@ struct MaggieErrorDetails: Equatable, Hashable, View {
         self.error = session.error ?? "no error"
     }
 
-    var body: some View {
-        Text(self.error)
+    func makeView() -> UIView {
+        MaggieText(self.error).makeView()
     }
 }

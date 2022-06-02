@@ -1,5 +1,5 @@
 import Foundation
-import SwiftUI
+import UIKit
 
 func createDir(_ path: String) throws {
     if FileManager.default.fileExists(atPath: path) {
@@ -115,72 +115,22 @@ func writeFile(data: Data, path: String) async throws {
     try await task.value
 }
 
+func pastel(hue: CGFloat) -> UIColor {
+    return UIColor(hue: hue, saturation: 0.5, brightness: 0.7, alpha: 1.0)
+}
+
+let pastelYellow = UIColor(hue: 48.0 / 360.0, saturation: 0.56, brightness: 0.96, alpha: 1.0)
+let pastelPeach = UIColor(hue: 19.0 / 360.0, saturation: 0.28, brightness: 1.0, alpha: 1.0)
+let pastelPink = UIColor(hue: 0.0, saturation: 0.2, brightness: 1.0, alpha: 1.0)
+let pastelLavender = UIColor(hue: 299.0 / 360.0, saturation: 0.23, brightness: 1.0, alpha: 1.0)
+let pastelBlue = UIColor(hue: 210.0 / 360.0, saturation: 0.25, brightness: 1.0, alpha: 1.0)
+let pastelMint = UIColor(hue: 171.0 / 360.0, saturation: 0.36, brightness: 0.93, alpha: 1.0)
+let pastelGreen = UIColor(hue: 144.0 / 360.0, saturation: 0.41, brightness: 0.96, alpha: 1.0)
+let pastelYellowGreen = UIColor(hue: 66.0 / 360.0, saturation: 0.66, brightness: 0.91, alpha: 1.0)
+
 // Swift does not allow `throw ()` or `throw Error()` and
 // does not document an alternative.
 struct EmptyError: Error {
-}
-
-extension Alignment: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        switch self {
-        case .topLeading:
-            hasher.combine(0)
-        case .top:
-            hasher.combine(1)
-        case .topTrailing:
-            hasher.combine(2)
-        case .leading:
-            hasher.combine(3)
-        case .center:
-            hasher.combine(4)
-        case .trailing:
-            hasher.combine(5)
-        case .bottomLeading:
-            hasher.combine(6)
-        case .bottom:
-            hasher.combine(7)
-        case .bottomTrailing:
-            hasher.combine(8)
-        default:
-            preconditionFailure("unreachable")
-        }
-    }
-}
-
-extension CGFloat {
-    func toDouble() -> Double {
-        Double(self)
-    }
-}
-
-extension HorizontalAlignment {
-    func toAlignment() -> Alignment {
-        switch self {
-        case .leading:
-            return .leading
-        case .center:
-            return .center
-        case .trailing:
-            return .trailing
-        default:
-            preconditionFailure("unreachable")
-        }
-    }
-}
-
-extension HorizontalAlignment: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        switch self {
-        case .leading:
-            hasher.combine(0)
-        case .center:
-            hasher.combine(1)
-        case .trailing:
-            hasher.combine(2)
-        default:
-            preconditionFailure("unreachable")
-        }
-    }
 }
 
 extension HTTPURLResponse {
@@ -195,32 +145,9 @@ extension HTTPURLResponse {
     }
 }
 
-extension VerticalAlignment {
-    func toAlignment() -> Alignment {
-        switch self {
-        case .top:
-            return .top
-        case .center:
-            return .center
-        case .bottom:
-            return .bottom
-        default:
-            preconditionFailure("unreachable")
-        }
-    }
-}
-
-extension VerticalAlignment: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        switch self {
-        case .top:
-            hasher.combine(0)
-        case .center:
-            hasher.combine(1)
-        case .bottom:
-            hasher.combine(2)
-        default:
-            preconditionFailure("unreachable")
-        }
+extension NSLayoutConstraint {
+    func withPriority(_ priority: UILayoutPriority) -> NSLayoutConstraint {
+        self.priority = priority
+        return self
     }
 }

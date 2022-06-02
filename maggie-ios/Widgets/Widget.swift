@@ -1,8 +1,8 @@
 import Foundation
-import SwiftUI
+import UIKit
 
 // swiftlint:disable cyclomatic_complexity
-enum MaggieWidget: Equatable, Hashable, Identifiable, View {
+enum MaggieWidget: Equatable, Hashable, Identifiable {
     case backButton(MaggieBackButton)
     case button(MaggieButton)
     indirect case column(MaggieColumn)
@@ -12,7 +12,6 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
     indirect case expand(MaggieExpand)
     indirect case horizontalScroll(MaggieHorizontalScroll)
     case image(MaggieImage)
-    case list(MaggieList)
     indirect case row(MaggieRow)
     indirect case scroll(MaggieScroll)
     indirect case spacer(MaggieSpacer)
@@ -40,9 +39,7 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
         case MaggieHorizontalScroll.TYP:
             self = try .horizontalScroll(MaggieHorizontalScroll(item, session))
         case MaggieImage.TYP:
-            self = try .image(MaggieImage(item))
-        case MaggieList.TYP:
-            self = try .list(MaggieList(item, session))
+            self = try .image(MaggieImage(item, session))
         case MaggieRow.TYP:
             self = try .row(MaggieRow(item, session))
         case MaggieScroll.TYP:
@@ -64,79 +61,38 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
 
     func toJsonItem() -> JsonItem {
         switch self {
-        case let .backButton(widget):
-            return widget.toJsonItem()
-        case let .button(widget):
-            return widget.toJsonItem()
-        case let .column(widget):
-            return widget.toJsonItem()
-        case let .detailCell(widget):
-            return widget.toJsonItem()
+        case let .backButton(inner):
+            return inner.toJsonItem()
+        case let .button(inner):
+            return inner.toJsonItem()
+        case let .column(inner):
+            return inner.toJsonItem()
+        case let .detailCell(inner):
+            return inner.toJsonItem()
         case .empty:
             return JsonItem(MaggieEmpty.TYP)
         case .errorDetails:
             return JsonItem(MaggieErrorDetails.TYP)
-        case let .expand(widget):
-            return widget.toJsonItem()
-        case let .horizontalScroll(widget):
-            return widget.toJsonItem()
-        case let .image(widget):
-            return widget.toJsonItem()
-        case let .list(widget):
-            return widget.toJsonItem()
-        case let .row(widget):
-            return widget.toJsonItem()
-        case let .scroll(widget):
-            return widget.toJsonItem()
+        case let .expand(inner):
+            return inner.toJsonItem()
+        case let .horizontalScroll(inner):
+            return inner.toJsonItem()
+        case let .image(inner):
+            return inner.toJsonItem()
+        case let .row(inner):
+            return inner.toJsonItem()
+        case let .scroll(inner):
+            return inner.toJsonItem()
         case .spacer:
             return JsonItem(MaggieSpacer.TYP)
         case .spinner:
             return JsonItem(MaggieSpinner.TYP)
-        case let .tall(widget):
-            return widget.toJsonItem()
-        case let .text(widget):
-            return widget.toJsonItem()
-        case let .wide(widget):
-            return widget.toJsonItem()
-        }
-    }
-
-    var body: some View {
-        switch self {
-        case let .backButton(inner):
-            return AnyView(inner)
-        case let .button(inner):
-            return AnyView(inner)
-        case let .column(inner):
-            return AnyView(inner)
-        case let .detailCell(inner):
-            return AnyView(inner)
-        case let .empty(inner):
-            return AnyView(inner)
-        case let .errorDetails(inner):
-            return AnyView(inner)
-        case let .expand(inner):
-            return AnyView(inner)
-        case let .horizontalScroll(inner):
-            return AnyView(inner)
-        case let .image(inner):
-            return AnyView(inner)
-        case let .list(inner):
-            return AnyView(inner)
-        case let .row(inner):
-            return AnyView(inner)
-        case let .scroll(inner):
-            return AnyView(inner)
-        case let .spacer(inner):
-            return AnyView(inner)
-        case let .spinner(inner):
-            return AnyView(inner)
         case let .tall(inner):
-            return AnyView(inner)
+            return inner.toJsonItem()
         case let .text(inner):
-            return AnyView(inner)
+            return inner.toJsonItem()
         case let .wide(inner):
-            return AnyView(inner)
+            return inner.toJsonItem()
         }
     }
 
@@ -144,5 +100,32 @@ enum MaggieWidget: Equatable, Hashable, Identifiable, View {
         var hasher = Hasher()
         hasher.combine(self)
         return hasher.finalize()
+    }
+
+    func makeView(_ session: MaggieSession) -> UIView {
+        switch self {
+        case let .button(inner):
+            return inner.makeView(session)
+        case let .column(inner):
+            return inner.makeView(session)
+        case let .empty(inner):
+            return inner.makeView()
+        case let .errorDetails(inner):
+            return inner.makeView()
+        case let .expand(inner):
+            return inner.makeView(session)
+        case let .horizontalScroll(inner):
+            return inner.makeView(session)
+        case let .spacer(inner):
+            return inner.makeView()
+        case let .tall(inner):
+            return inner.makeView(session)
+        case let .text(inner):
+            return inner.makeView()
+        case let .wide(inner):
+            return inner.makeView(session)
+        default:
+            fatalError("unimplemented")
+        }
     }
 }

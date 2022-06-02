@@ -1,6 +1,4 @@
 import Foundation
-import SwiftUI
-import NiftyMarkdownFormatter
 
 enum MarkdownViewState {
     case loading(Task<Void, Never>?)
@@ -19,7 +17,7 @@ struct MaggieMarkdownPage: Equatable {
     let title: String
     let url: URL
     let cache: Bool?
-    @State var state: MarkdownViewState = .loading(nil)
+    var state: MarkdownViewState = .loading(nil)
 
     init(title: String, url: URL, cache: Bool? = nil) {
         self.title = title
@@ -27,23 +25,23 @@ struct MaggieMarkdownPage: Equatable {
         self.cache = cache
     }
 
-    init(_ item: JsonItem) throws {
-        self.title = try item.takeTitle()
-        self.url = try item.takeUrl()
-        self.cache = item.takeOptCache()
+    init(_ item: JsonItem, _ session: MaggieSession?) throws {
+        self.title = try item.requireTitle()
+        self.url = try item.requireUrl(session)
+        self.cache = item.cache
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(MaggieMarkdownPage.TYP)
         item.title = self.title
-        item.url = self.url
+        item.url = self.url.absoluteString
         item.cache = self.cache
         return item
     }
 
     func setError(_ msg: String) {
         print(msg)
-        self.state = .error(msg)
+//        self.state = .error(msg)
     }
 
     func load() async {
@@ -74,7 +72,7 @@ struct MaggieMarkdownPage: Equatable {
                 self.setError("Response is not UTF-8")
                 return
             }
-            self.state = .ok(string)
+//            self.state = .ok(string)
         } catch {
             print("ERROR GET \(self.url) : \(error)")
             self.setError(error.localizedDescription)
@@ -84,9 +82,10 @@ struct MaggieMarkdownPage: Equatable {
     func startLoad() {
         switch self.state {
         case .loading(.none), .error, .ok:
-            self.state = .loading(Task {
-                await self.load()
-            })
+//            self.state = .loading(Task {
+//                await self.load()
+//            })
+            break
         case .loading:
             break
         }
@@ -95,78 +94,56 @@ struct MaggieMarkdownPage: Equatable {
     func stopLoad() {
         if case let .loading(.some(task)) = self.state {
             task.cancel()
-            self.state = .loading(nil)
+//            self.state = .loading(nil)
         }
     }
 
-    // swiftlint:disable function_body_length
-    public func toView(_ session: MaggieSession, hasPrevPage: Bool) -> AnyView {
-        var view: AnyView
-        switch self.state {
-        case .loading:
-            view = AnyView(
-                    VStack {
-                        Spacer()
-                        ProgressView("Loading")
-                        Spacer()
-                        Button("Refresh") {
-                        }
-                                .disabled(true)
-                    }
-                            .onAppear(perform: self.startLoad)
-                            .onDisappear(perform: self.stopLoad)
-            )
-        case let .error(msg):
-            return AnyView(
-                    VStack {
-                        Spacer()
-                        Image(systemName: "xmark.octagon")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 100)
-                        Text("ERROR")
-                        Text(msg).padding()
-                        Spacer()
-                        Button("Refresh") {
-                            self.startLoad()
-                        }
-                    })
-        case let .ok(markdown):
-            return AnyView(
-                    VStack {
-                        ScrollView(showsIndicators: true) {
-                            FormattedMarkdown(
-                                    markdown: markdown,
-                                    alignment: .leading,
-                                    spacing: 7.0
-                            )
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding()
-                        }
-                        Button("Refresh") {
-                            self.startLoad()
-                        }
-                    })
-        }
-        if hasPrevPage {
-            return AnyView(
-                    view
-                            .navigationTitle(self.title)
-                            .navigationBarTitleDisplayMode(.inline)
-                            .navigationBarBackButtonHidden(true)
-                            .toolbar {
-                                ToolbarItemGroup(placement: .navigationBarLeading) {
-                                    MaggieBackButton([.pop], session)
-                                }
-                            }
-            )
-        } else {
-            return AnyView(
-                    view
-                            .navigationTitle(self.title)
-                            .navigationBarTitleDisplayMode(.inline)
-                            .navigationBarBackButtonHidden(true)
-            )
-        }
-    }
+//    public func toView(_ session: MaggieSession) -> AnyView {
+//        switch self.state {
+//        case .loading:
+//            return AnyView(
+//                    VStack {
+//                        Spacer()
+//                        ProgressView("Loading")
+//                        Spacer()
+//                        Button("Refresh") {
+//                        }
+//                                .disabled(true)
+//                    }
+//                            .onAppear(perform: self.startLoad)
+//                            .onDisappear(perform: self.stopLoad)
+//            )
+//        case let .error(msg):
+//            return AnyView(
+//                    VStack {
+//                        Spacer()
+//                        Image(systemName: "xmark.octagon")
+//                                .resizable()
+//                                .aspectRatio(contentMode: .fit)
+//                                .frame(width: 100)
+//                        Text("ERROR")
+//                        Text(msg).padding()
+//                        Spacer()
+//                        Button("Refresh") {
+//                            self.startLoad()
+//                        }
+//                    })
+//        case let .ok(markdown):
+//            return AnyView(
+//                    VStack {
+//                        ScrollView(showsIndicators: true) {
+//                            FormattedMarkdown(
+//                                    markdown: markdown,
+//                                    alignment: .leading,
+//                                    spacing: 7.0
+//                            )
+//                                    .frame(maxWidth: .infinity, alignment: .leading)
+//                                    .padding()
+//                        }
+//                        Button("Refresh") {
+//                            self.startLoad()
+//                        }
+//                    })
+//        }
+//    }
 }

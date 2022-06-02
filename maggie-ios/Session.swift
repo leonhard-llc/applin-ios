@@ -10,11 +10,11 @@ struct Update: Codable {
 class MaggieSession: ObservableObject {
     let cacheFileWriter: CacheFileWriter
     let connection: MaggieConnection
-    let nav: NavigationController
+    weak var nav: NavigationController?
     let url: URL
     var error: String?
     var pages: [String: MaggiePage] = [:]
-    var stack: [String] = ["/"]
+    var stack: [String] = ["/", "/page1"]
 
     init(_ cacheFileWriter: CacheFileWriter,
          _ connection: MaggieConnection,
@@ -29,7 +29,7 @@ class MaggieSession: ObservableObject {
         self.url = url
     }
 
-    private func updateNav() {
+    public func updateNav() {
         print("updateNav \(self.stack)")
         if self.stack.isEmpty {
             self.stack = ["/"]
@@ -38,7 +38,6 @@ class MaggieSession: ObservableObject {
         let entries = self.stack.map({ key -> (String, MaggiePage) in
             let page =
                     self.pages[key]
-                            // TODO: Show loading.
                             ?? self.pages["/maggie-page-not-found"]
                             ?? .navPage(MaggieNavPage(
                             title: "Not Found",
@@ -48,7 +47,9 @@ class MaggieSession: ObservableObject {
                     ))
             return (key, page)
         })
-        self.nav.setStackPages(self, entries)
+        DispatchQueue.main.async {
+            self.nav?.setStackPages(self, entries)
+        }
     }
 
     func pop() {

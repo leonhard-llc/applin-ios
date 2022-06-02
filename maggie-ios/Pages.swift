@@ -1,6 +1,51 @@
 import Foundation
-import SwiftUI
+import UIKit
 
+enum PageController: Equatable {
+//    case modal(ModalController)
+//    case markdownPage(MarkdownPageController)
+    case navPage(NavPageController)
+    case plainPage(PlainPageController)
+
+    init(_ navController: NavigationController, _ session: MaggieSession, _ page: MaggiePage) {
+        switch page {
+        case let .navPage(inner):
+            self = .navPage(NavPageController(navController, session, inner))
+        case let .plainPage(inner):
+            self = .plainPage(PlainPageController(session, inner))
+        default:
+            fatalError("unimplemented")
+        }
+    }
+
+    mutating func setPage(_ navController: NavigationController, _ session: MaggieSession, _ page: MaggiePage) {
+        if case let .plainPage(controller) = self, case let .plainPage(maggiePlainPage) = page {
+            controller.setPage(maggiePlainPage)
+        } else {
+            self = PageController(navController, session, page)
+        }
+    }
+
+    func inner() -> UIViewController {
+        switch self {
+        case let .navPage(inner):
+            return inner
+        case let .plainPage(inner):
+            return inner
+        }
+    }
+
+    func showNavigationBar() -> Bool {
+        switch self {
+        case .navPage:
+            return true
+        case .plainPage:
+            return false
+        }
+    }
+}
+
+// TODO: Move to Pages/ dir.
 enum MaggiePage: Equatable {
     case modal(MaggieModal)
     case markdownPage(MaggieMarkdownPage)
@@ -32,7 +77,7 @@ enum MaggiePage: Equatable {
         case ModalKind.question.typ():
             self = try .modal(MaggieModal(.question, item, session))
         case MaggieMarkdownPage.TYP:
-            self = try .markdownPage(MaggieMarkdownPage(item))
+            self = try .markdownPage(MaggieMarkdownPage(item, session))
         case MaggieNavPage.TYP:
             self = try .navPage(MaggieNavPage(item, session))
         case MaggiePlainPage.TYP:
@@ -86,27 +131,14 @@ enum MaggiePage: Equatable {
         }
     }
 
-    public func toView(_ session: MaggieSession, hasPrevPage: Bool) -> AnyView {
+    public func allowBackSwipe() -> Bool {
         switch self {
-        case let .modal(inner):
-            return inner.toView()
-        case let .markdownPage(inner):
-            return inner.toView(session, hasPrevPage: hasPrevPage)
+        case .markdownPage, .modal:
+            return true
         case let .navPage(inner):
-            return inner.toView(session, hasPrevPage: hasPrevPage)
+            return inner.allowBackSwipe()
         case let .plainPage(inner):
-            return inner.toView()
+            return inner.allowBackSwipe()
         }
     }
-
-    // public func allowBackSwipe() -> Bool {
-    //    switch self {
-    //    case .Alert, .Confirmation, .MarkdownPage:
-    //        return true
-    //    case let .NavPage(inner):
-    //        return inner.allowBackSwipe()
-    //    case .PlainPage:
-    //        return false
-    //    }
-    // }
 }

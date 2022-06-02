@@ -1,8 +1,10 @@
 disabled_rules:
   - force_cast
+  - function_body_length
   - large_tuple
   - operator_whitespace
   - todo
+  - trailing_comma
 
 identifier_name:
   min_length:

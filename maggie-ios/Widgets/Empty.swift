@@ -1,10 +1,12 @@
 import Foundation
-import SwiftUI
+import UIKit
 
-struct MaggieEmpty: Equatable, Hashable, View {
+struct MaggieEmpty: Equatable, Hashable {
     static let TYP = "empty"
 
-    var body: EmptyView {
-        EmptyView()
+    func makeView() -> UIView {
+        let view = UIView()
+        view.backgroundColor = pastelPink
+        return view
     }
 }

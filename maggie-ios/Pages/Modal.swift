@@ -1,5 +1,4 @@
 import Foundation
-import SwiftUI
 
 enum ModalKind: String {
     case alert
@@ -28,7 +27,8 @@ struct MaggieModal: Equatable {
     let typ: String
     let title: String
     let widgets: [MaggieWidget]
-    @State var isPresented = true
+
+//    @State var isPresented = true
 
     enum CodingKeys: String, CodingKey {
         // case kind
@@ -48,8 +48,8 @@ struct MaggieModal: Equatable {
     init(_ kind: ModalKind, _ item: JsonItem, _ session: MaggieSession) throws {
         self.kind = kind
         self.typ = kind.typ()
-        self.title = try item.takeTitle()
-        self.widgets = try item.takeWidgets(session)
+        self.title = try item.requireTitle()
+        self.widgets = try item.requireWidgets(session)
     }
 
     func toJsonItem() -> JsonItem {
@@ -59,24 +59,28 @@ struct MaggieModal: Equatable {
         return item
     }
 
-    public func toView() -> AnyView {
-        switch self.kind {
-        case .alert:
-            return AnyView(
-                    EmptyView().alert(self.title, isPresented: self.$isPresented) {
-                        ForEach(self.widgets) { widget in
-                            widget
-                        }
-                    }
-            )
-        case .info, .question:
-            return AnyView(
-                    EmptyView().confirmationDialog(self.title, isPresented: self.$isPresented) {
-                        ForEach(self.widgets) { widget in
-                            widget
-                        }
-                    }
-            )
-        }
+    public func add(_ controller: PageController) {
+        fatalError("unimplemented")
     }
+
+//    public func toView() -> AnyView {
+//        switch self.kind {
+//        case .alert:
+//            return AnyView(
+//                    EmptyView().alert(self.title, isPresented: self.$isPresented) {
+//                        ForEach(self.widgets) { widget in
+//                            widget
+//                        }
+//                    }
+//            )
+//        case .info, .question:
+//            return AnyView(
+//                    EmptyView().confirmationDialog(self.title, isPresented: self.$isPresented) {
+//                        ForEach(self.widgets) { widget in
+//                            widget
+//                        }
+//                    }
+//            )
+//        }
+//    }
 }

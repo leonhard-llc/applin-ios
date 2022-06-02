@@ -111,3 +111,4 @@ This project is not yet usable.  It is not production-ready.
   - Write cache since app may get terminated
 - [ ] Download media in background task
   - <https://www.avanderlee.com/swift/urlsession-common-pitfalls-with-background-download-upload-tasks/>
+- [ ] Reduce memory usage of pages that are not visible.

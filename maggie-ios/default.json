@@ -1,15 +1,31 @@
 {
   "/": {
     "typ": "plain-page",
+    "title": "Home",
     "widget": {
-      "typ": "expand",
-      "widget": {
-        "typ": "expand",
-        "alignment": "center",
-        "widget": {
-          "typ": "spinner"
-        }
-      }
+      "typ": "column",
+      "widgets": [{
+        "typ": "text",
+        "text": "Hello"
+      }]
+    }
+  },
+  "/page1": {
+    "typ": "nav-page",
+    "title": "Page 1",
+    "end": {
+      "typ": "button",
+      "text": "Back1",
+      "actions": [
+        "pop"
+      ]
+    },
+    "widget": {
+      "typ": "button",
+      "text": "Back1",
+      "actions": [
+        "pop"
+      ]
     }
   },
   "/maggie-error-details": {

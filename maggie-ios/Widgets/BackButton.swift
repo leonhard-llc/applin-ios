@@ -1,7 +1,6 @@
 import Foundation
-import SwiftUI
 
-struct MaggieBackButton: Equatable, Hashable, View {
+struct MaggieBackButton: Equatable, Hashable {
     static func ==(lhs: MaggieBackButton, rhs: MaggieBackButton) -> Bool {
         lhs.actions == rhs.actions
     }
@@ -16,7 +15,7 @@ struct MaggieBackButton: Equatable, Hashable, View {
     }
 
     init(_ item: JsonItem, _ session: MaggieSession) throws {
-        self.actions = try item.takeOptActions() ?? []
+        self.actions = try item.optActions() ?? []
         self.session = session
     }
 
@@ -34,14 +33,14 @@ struct MaggieBackButton: Equatable, Hashable, View {
         self.session?.doActions(self.actions)
     }
 
-    var body: some View {
-        Button(action: self.doActions) {
-            HStack(spacing: 4) {
-                Image(systemName: "chevron.backward")
-                        .font(Font.body.weight(.semibold))
-                Text("Back")
-            }
-        }
-                .disabled(self.actions.isEmpty)
-    }
+//    var body: some View {
+//        Button(action: self.doActions) {
+//            HStack(spacing: 4) {
+//                Image(systemName: "chevron.backward")
+//                        .font(Font.body.weight(.semibold))
+//                Text("Back")
+//            }
+//        }
+//                .disabled(self.actions.isEmpty)
+//    }
 }
