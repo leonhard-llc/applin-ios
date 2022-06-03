@@ -14,7 +14,7 @@ class MaggieSession: ObservableObject {
     let url: URL
     var error: String?
     var pages: [String: MaggiePage] = [:]
-    var stack: [String] = ["/", "/page1"]
+    var stack: [String] = ["/"]
 
     init(_ cacheFileWriter: CacheFileWriter,
          _ connection: MaggieConnection,

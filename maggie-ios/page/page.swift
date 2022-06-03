@@ -52,7 +52,6 @@ enum PageController: Equatable {
     }
 }
 
-// TODO: Move to Pages/ dir.
 enum MaggiePage: Equatable {
     case modal(MaggieModal)
     case markdownPage(MaggieMarkdownPage)
