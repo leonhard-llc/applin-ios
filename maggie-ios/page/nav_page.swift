@@ -91,7 +91,11 @@ class NavPageController: UIViewController, UINavigationBarDelegate {
             // This is looks bad.  So we add our own navbar.
             self.navBar.translatesAutoresizingMaskIntoConstraints = false
             self.navBar.removeFromSuperview()
-            self.navBar.items = [UINavigationItem(title: "Back"), self.navigationItem]
+            if self.hasPrev {
+                self.navBar.items = [UINavigationItem(title: "Back"), self.navigationItem]
+            } else {
+                self.navBar.items = [self.navigationItem]
+            }
             self.navBar.isHidden = false
             self.view.addSubview(self.navBar)
             self.constraints.append(
