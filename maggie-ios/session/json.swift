@@ -1,4 +1,5 @@
 // swiftlint:disable file_length
+
 import Foundation
 
 enum MaggieDimension: Equatable, Hashable {
@@ -90,6 +91,8 @@ class JsonItem: Codable {
     var disposition: String?
     var end: JsonItem?
     var height: Float32?
+    var id: String?
+    var initialBool: Bool?
     var isCancel: Bool?
     var isDefault: Bool?
     var isDestructive: Bool?
@@ -115,6 +118,8 @@ class JsonItem: Codable {
         case disposition
         case end
         case height
+        case id
+        case initialBool = "initial-bool"
         case isCancel = "is-cancel"
         case isDefault = "is-default"
         case isDestructive = "is-destructive"
@@ -283,6 +288,13 @@ class JsonItem: Codable {
             return try MaggieWidget(value, session)
         }
         return nil
+    }
+
+    func requireId() throws -> String {
+        if let value = self.id {
+            return value
+        }
+        throw MaggieError.deserializeError("missing \(self.typ).id")
     }
 
     func getMinMaxHeight() -> (Float32?, Float32?) {

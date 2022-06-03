@@ -15,3 +15,10 @@ extension NSLayoutConstraint {
         return self
     }
 }
+
+// From https://www.biteinteractive.com/control-target-and-action-in-ios-14/
+extension UIControl {
+    func addAction(for event: UIControl.Event, handler: @escaping UIActionHandler) {
+        self.addAction(UIAction(handler: handler), for: event)
+    }
+}

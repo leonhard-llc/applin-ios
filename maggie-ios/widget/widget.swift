@@ -5,6 +5,7 @@ import UIKit
 enum MaggieWidget: Equatable, Hashable, Identifiable {
     case backButton(MaggieBackButton)
     case button(MaggieButton)
+    case checkbox(MaggieCheckbox)
     indirect case column(MaggieColumn)
     case detailCell(MaggieDetailCell)
     case empty(MaggieEmpty)
@@ -26,6 +27,8 @@ enum MaggieWidget: Equatable, Hashable, Identifiable {
             self = try .backButton(MaggieBackButton(item, session))
         case MaggieButton.TYP:
             self = try .button(MaggieButton(item, session))
+        case MaggieCheckbox.TYP:
+            self = try .checkbox(MaggieCheckbox(item, session))
         case MaggieColumn.TYP:
             self = try .column(MaggieColumn(item, session))
         case MaggieDetailCell.TYP:
@@ -59,11 +62,14 @@ enum MaggieWidget: Equatable, Hashable, Identifiable {
         }
     }
 
+    // TODO: Use an interface to eliminate this method and others.
     func toJsonItem() -> JsonItem {
         switch self {
         case let .backButton(inner):
             return inner.toJsonItem()
         case let .button(inner):
+            return inner.toJsonItem()
+        case let .checkbox(inner):
             return inner.toJsonItem()
         case let .column(inner):
             return inner.toJsonItem()
@@ -105,6 +111,8 @@ enum MaggieWidget: Equatable, Hashable, Identifiable {
     func makeView(_ session: MaggieSession) -> UIView {
         switch self {
         case let .button(inner):
+            return inner.makeView(session)
+        case let .checkbox(inner):
             return inner.makeView(session)
         case let .column(inner):
             return inner.makeView(session)

@@ -93,6 +93,7 @@ enum MaggiePage: Equatable {
         }
     }
 
+    // TODO: Use an interface to eliminate this method and others.
     func toJsonItem() -> JsonItem {
         switch self {
         case let .modal(inner):
