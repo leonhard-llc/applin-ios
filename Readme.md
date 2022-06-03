@@ -175,18 +175,19 @@ This project is not yet usable.  It is not production-ready.
   - Markdown
   - Other widget-specific settings
 - Connect to server
-  - [ ] Receive page updates
-  - [ ] Receive page stack updates & actions
+  - [X] Receive page updates
+  - [ ] Receive page stack updates
+  - [ ] Receive actions to execute immediately
   - [ ] Always apply diffs from connection and RPCs in correct order.
   - [ ] Avoid downloading all pages on new connection, use cached data
-  - [ ] Connect only when app is active.  Disconnect when in background, after a delay.
+  - [X] Connect only when app is active.  Disconnect when in background, after a delay.
   - [ ] Let pages specify "don't connect", "connect automatically" or "poll this RPC on this interval".
 - Save data
   - [X] pages
   - [X] Write pages after 10s delay, to reduce power usage
   - [X] stack
   - [ ] downloaded images
-  - [ ] cookies
+  - [X] cookies
 - Notifications
   - [ ] action to request notifications
   - [ ] subscribe to notifications

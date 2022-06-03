@@ -103,6 +103,7 @@ class MaggieSession: ObservableObject {
         }
         // TODO: Handle user_error.
         self.cacheFileWriter.scheduleWrite(self)
+        self.updateNav()
         return true
     }
 
