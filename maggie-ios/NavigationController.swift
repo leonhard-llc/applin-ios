@@ -6,12 +6,13 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
 
     init() {
         super.init(rootViewController: LoadingPageController())
-        self.isNavigationBarHidden = false
+        self.isNavigationBarHidden = true
         self.interactivePopGestureRecognizer?.delegate = self
-    }
-
-    deinit {
-        self.interactivePopGestureRecognizer?.delegate = nil
+        // We cannot set the navbar delegate because it crashes with
+        // "NSInternalInconsistencyException: Cannot manually set the delegate
+        // on a UINavigationBar managed by a controller."
+        // That means we cannot intercept navigationBar(:didPop:) or navigationBar(:shouldPop:).
+        // self.navigationBar.delegate = self
     }
 
     required init?(coder: NSCoder) {
@@ -37,7 +38,7 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
                 .first
         precondition(!newPages.isEmpty)
         var newControllers: [(String, MaggiePage, PageController)] = []
-        // var hasPrevPage = false
+        var hasPrevPage = false
         for (newKey, newPage) in newPages {
             if let n = self.controllers
                     .map({ (key, _, _) in key })
@@ -47,16 +48,17 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
                     .first {
                 var (key, page, controller) = self.controllers.remove(at: n)
                 if newPage != page {
-                    controller.setPage(self, session, newPage)
+                    controller.setPage(self, session, newPage, hasPrevPage)
                 }
                 newControllers.append((key, newPage, controller))
             } else {
-                let controller = PageController(self, session, newPage)
+                let controller = PageController(self, session, newPage, hasPrevPage)
                 newControllers.append((newKey, newPage, controller))
             }
             // if !newPage.isModal {
             //     hasPrevPage = true
             // }
+            hasPrevPage = true
         }
         let newTopPageController = newControllers
                 .reversed()
@@ -70,6 +72,5 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
                 newControllers.map({ (_, _, controller) in controller.inner() }),
                 animated: changedTopPage && !appJustStarted
         )
-        self.isNavigationBarHidden = !newTopPageController.showNavigationBar()
     }
 }

@@ -17,29 +17,71 @@ To use:
 
 This project is not yet usable.  It is not production-ready.
 
-- [X] Load `default.json` on startup
-- [ ] Widgets:
-  - [ ] `back-button` with `actions`
-  - [ ] `button` with `actions`, `actions-android`, `actions-ios`, `text`, `is-default`, `is-destructive`
-  - [ ] `button-cell`
-  - [ ] `checkbox`
-  - [ ] `checkbox-cell`
-  - [ ] `column` with `spacing`, `widgets`
-  - [ ] `column.alignment`: `top`, `center`, `bottom`
-  - [ ] `detail-cell`
-  - [ ] `empty`
+- Pages
+  - `nav-page`
+    - [X] `title`
+    - [X] `widget`
+    - [X] custom back button actions
+    - [ ] Use name of previous page, not "Back"
+    - [ ] Swipe to go back with custom back button
+  - `plain-page`
+    - [X] `title`
+    - [X] `widget`
+  - `alert-modal`, `info-modal`, `question-modal`
+    - [ ] `title`
+    - [ ] `widgets`
+  - `markdown-page`
+    - [ ] `title`
+    - [ ] `url`
+    - [ ] `cache` boolean
+- Widgets
+  - [ ] Preserve widget data across page updates
+  - [ ] Preserve widget data across app launches
+    - <https://developer.apple.com/documentation/uikit/view_controllers/preserving_your_app_s_ui_across_launches>
+  - `back-button`
+    - [X] `actions`
+    - [ ] Use name of previous page, not "Back"
+  - `button`
+    - [ ] `text`
+    - [ ] `actions`, `actions-android`, `actions-ios`
+    - [ ] `is-default`
+    - [ ] `is-destructive`
+  - `button-cell`
+    - [ ] `text`
+    - [ ] `actions`, `actions-android`, `actions-ios`
+    - [ ] `is-destructive`
+  - `checkbox`
+    - [ ] `id`
+    - [ ] `initial-value`
+    - [ ] `actions`
+  - `checkbox-cell`
+    - [ ] `text`
+    - [ ] `initial-value`
+    - [ ] `actions`
+  - `column`
+    - [ ] `spacing`
+    - [ ] `widgets`
+    - [ ] `alignment`: `top`, `center`, `bottom`
+  - `detail-cell`
+    - [ ] `text`
+    - [ ] `image-url`
+    - [ ] `actions`
+  - [X] `empty`
   - [ ] `error-cell`
   - [ ] `error-details`
   - [ ] `expand` with `min-height`, `min-width`, `max-height`, `max-width`, `widget`
   - [ ] `expand.alignment`: `top-start`, `top-center`, `top-end`, `center-start`, `center`, `center-end`, `bottom-start`, `bottom-center`, `bottom-end`
   - [ ] `date-picker`
   - [ ] `date-time-picker`
-  - [ ] `horizontal-scroll` with `widget`
+  - `horizontal-scroll`
+    - [ ] `widget`
   - [ ] `icon` with `id`, `height`, `width`, `alignment`
-  - [ ] `image` with `url`, `height`, `width`
-  - [ ] `image.disposition`: `cover`, `fit`, `stretch`
-  - [ ] `image` zoom
-  - [ ] `image` retry load failure
+  - `image`
+    - [ ] `url`
+    - [ ] dimensions
+    - [ ] `disposition`: `cover`, `fit`, `stretch`
+    - [ ] `image` zoom
+    - [ ] retry load failure
   - [ ] `image-picker` camera
   - [ ] `image-picker` photo
   - [ ] `image-picker` upload
@@ -52,59 +94,121 @@ This project is not yet usable.  It is not production-ready.
   - [ ] `row` item sizing: unconstrained, fixed-width, max-width, min-width
   - [ ] `row` spacing: Make `Spacer` fixed size, and use `Wide` & `Tall` for expanded spacing.
   - [ ] `row` wrapping
-  - [ ] `scroll` with `widget`
+  - `scroll`
+    - [ ] `widget`
   - [ ] `spacer`
   - [ ] `table`
   - [ ] `tall` with `alignment`, `min-height`, `max-height`, `widget`
-  - [ ] `text`
-  - [ ] `text` should not show markdown-formatting
+  - `text`
+    - [X] `text`
+    - [ ] `text` should not show markdown-formatting
   - [ ] `text-cell`
   - [ ] `time-picker`
   - [ ] `wide` with `alignment`, `min-width`, `max-width`, `widget`
-- [ ] Actions:
-  - [ ] `copy-to-clipboard`
-  - [ ] `copy-to-clipboard` to show confirmation popover
-  - [ ] `hilight:WIDGET_ID`
+- Actions:
+  - `copy-to-clipboard`
+    - [X] implement
+    - [ ] show confirmation popover
+  - `hilight:WIDGET_ID`
+    - [ ] show flashing highlight
+    - [ ] scroll the widget into view
   - [ ] `launch-url:URL`
   - [ ] `logout`
     - <https://developer.apple.com/documentation/foundation/urlsession/1411479-reset>
-  - [ ] `pop`
-  - [ ] `push:PAGE_KEY`
-  - [ ] `rpc:/PATH`
-  - [ ] `rpc:/PATH?ARGS`
-  - [ ] Prevent overlapping RPCs or actions
-  - [ ] `rpc` to include page stack
-  - [ ] `rpc` to include page variables
-  - [ ] `rpc` response can update page stack
-- [ ] Style
-  - [ ] `style` key
-  - [ ] Text style: size, font-family, font, weight
-  - [ ] Text preset styles: title, heading, text, emphasis
-  - [ ] Text auto-size, with min & max
-  - [ ] Text auto-size group
-  - [ ] Border width, corner radius, color, pattern
-  - [ ] Background color, pattern
-  - [ ] Background image, disposition, origin, opacity
-  - [ ] Margin
-  - [ ] Padding
-  - [ ] `style` widget
+  - [X] `pop`
+  - [X] `push:PAGE_KEY`
+  - `rpc:/PATH`
+    - [X] call server
+    - [X] send cookies, receive & save cookies
+    - [ ] send page stack to server
+    - [ ] send page variables to server, `rpc:/PATH,ARG1,ARG2`
+    - [ ] Ephemeral client data, to allow an RPC to include data from multiple pages
+    - [ ] Option to automatically perform RPC when data changes, after a delay
+    - [ ] Prevent overlapping RPCs or actions
+    - [ ] Show modal to prevent race between user changing widgets and server changing UI in RPC response
+    - [X] response can update pages
+    - [ ] response can update stack
+    - [ ] show user error dialog
+    - [ ] show client error dialog
+    - [ ] show server error dialog
+- Style
+  - Pick one:
+    - Each widget gets values from the style subsystem
+    - Each widget has normal attributes for style.
+      - Styles are a kind of JSON overlay which replace attributes.  This is like class inheritance.
+      - Implement styles entirely on the server.
+        This could make tests more verbose.
+        This would simplify debugging. <--- This one.
+  - [ ] `default-style` key
   - [ ] `style` attribute on pages and widgets
-- [ ] Ephemeral client data, to allow an RPC to consume data from multiple pages
-- [ ] Monotonic state counter, to keep client in sync with server
-- [ ] Cache stack
-- [ ] Cache pages
-- [ ] Reduce power used for caching.  Append diffs, write after a delay, or something else.  Writing after 10s delay.
-- [ ] Disconnect to save power, when in background, after a delay
-- [ ] Subscribe to notifications
-- [ ] Open notification to target page
-- [ ] Display received notifications while using app
-- [ ] Upload logs
-- [ ] Log crashes
-- [ ] Test coverage
-- [ ] Integration tests
-- [ ] Swipe to go back with custom back button
-- [ ] Preserve content entered in text fields and other widget state:
-  <https://developer.apple.com/documentation/uikit/view_controllers/preserving_your_app_s_ui_across_launches>
+  - [ ] `style` widget
+  - Text:
+    - [ ] size
+    - [ ] font
+    - [ ] weight
+    - [ ] color
+    - [ ] effects
+    - [ ] auto-size, with min & max
+    - [ ] auto-size group
+  - Box
+    - [ ] width, height, min & max & preferred
+    - [ ] padding
+    - [ ] margin
+    - Border
+      - [ ] color
+      - [ ] width
+      - [ ] corner radius
+      - [ ] pattern
+    - Shadow
+    - Background
+      - [ ] color
+      - [ ] pattern
+      - [ ] gradient
+    - Background image
+      - [ ] disposition
+      - [ ] origin
+      - [ ] opacity
+      - [ ] effects
+  - Navigation bar
+    - [ ] title text style
+    - [ ] button text style
+  - Markdown
+  - Other widget-specific settings
+- Connect to server
+  - [ ] Receive page updates
+  - [ ] Receive page stack updates & actions
+  - [ ] Always apply diffs from connection and RPCs in correct order.
+  - [ ] Avoid downloading all pages on new connection, use cached data
+  - [ ] Connect only when app is active.  Disconnect when in background, after a delay.
+  - [ ] Let pages specify "don't connect", "connect automatically" or "poll this RPC on this interval".
+- Save data
+  - [X] pages
+  - [X] Write pages after 10s delay, to reduce power usage
+  - [X] stack
+  - [ ] downloaded images
+  - [ ] cookies
+- Notifications
+  - [ ] action to request notifications
+  - [ ] subscribe to notifications
+  - [ ] Tap a notification to open the target page
+  - [ ] Display received notifications while using app
+- Logging
+  - [ ] gzip
+  - [ ] log crashes
+  - [ ] log JSON
+  - [ ] encrypt with public key
+  - [ ] max file size bytes
+  - [ ] max file interval seconds
+  - [ ] upload url
+- Test coverage
+  - [ ] 1%
+  - [ ] 50%
+  - [ ] 80%
+  - [ ] 95%
+- Integration tests
+  - [ ] cookie & logout
+  - [ ] 
+- [X] Load `default.json` on startup
 - Respond to memory pressure warnings
   <https://developer.apple.com/documentation/uikit/app_and_environment/managing_your_app_s_life_cycle/responding_to_memory_warnings>
   - Release non-visible images

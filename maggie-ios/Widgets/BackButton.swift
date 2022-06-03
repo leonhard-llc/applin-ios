@@ -9,7 +9,7 @@ struct MaggieBackButton: Equatable, Hashable {
     let actions: [MaggieAction]
     weak var session: MaggieSession?
 
-    init(_ actions: [MaggieAction], _ session: MaggieSession) {
+    init(_ actions: [MaggieAction], _ session: MaggieSession?) {
         self.actions = actions
         self.session = session
     }

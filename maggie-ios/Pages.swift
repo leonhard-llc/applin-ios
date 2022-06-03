@@ -7,10 +7,10 @@ enum PageController: Equatable {
     case navPage(NavPageController)
     case plainPage(PlainPageController)
 
-    init(_ navController: NavigationController, _ session: MaggieSession, _ page: MaggiePage) {
+    init(_ navController: NavigationController, _ session: MaggieSession, _ page: MaggiePage, _ hasPrev: Bool) {
         switch page {
         case let .navPage(inner):
-            self = .navPage(NavPageController(navController, session, inner))
+            self = .navPage(NavPageController(navController, session, inner, hasPrev))
         case let .plainPage(inner):
             self = .plainPage(PlainPageController(session, inner))
         default:
@@ -18,11 +18,18 @@ enum PageController: Equatable {
         }
     }
 
-    mutating func setPage(_ navController: NavigationController, _ session: MaggieSession, _ page: MaggiePage) {
+    mutating func setPage(
+            _ navController: NavigationController,
+            _ session: MaggieSession,
+            _ page: MaggiePage,
+            _ hasPrev: Bool
+    ) {
         if case let .plainPage(controller) = self, case let .plainPage(maggiePlainPage) = page {
             controller.setPage(maggiePlainPage)
+        } else if case let .navPage(controller) = self, case let .navPage(maggieNavPage) = page {
+            controller.setPage(maggieNavPage, hasPrev)
         } else {
-            self = PageController(navController, session, page)
+            self = PageController(navController, session, page, hasPrev)
         }
     }
 
