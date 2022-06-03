@@ -23,6 +23,7 @@ struct MaggieColumn: Equatable, Hashable {
     func makeView(_ session: MaggieSession) -> UIView {
         let subViews = self.widgets.map({ widget in widget.makeView(session) })
         let stack = UIStackView(arrangedSubviews: subViews)
+        stack.axis = .vertical
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.backgroundColor = pastelPink
         switch self.alignment {

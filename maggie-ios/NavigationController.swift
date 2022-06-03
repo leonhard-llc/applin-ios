@@ -31,11 +31,11 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
 
     func setStackPages(_ session: MaggieSession, _ newPages: [(String, MaggiePage)]) {
         print("setStackPages")
-        let topPageController = self.controllers
+        let appJustStarted = self.controllers.isEmpty
+        let topPageController: PageController? = self.controllers
                 .reversed()
                 .filter({ (_, page, _) in !page.isModal })
-                .map({ (_, _, controller) in controller })
-                .first
+                .first?.2
         precondition(!newPages.isEmpty)
         var newControllers: [(String, MaggiePage, PageController)] = []
         var hasPrevPage = false
@@ -60,13 +60,11 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
             // }
             hasPrevPage = true
         }
-        let newTopPageController = newControllers
+        let newTopPageController: PageController? = newControllers
                 .reversed()
                 .filter({ (_, page, _) in !page.isModal })
-                .map({ (_, _, controller) in controller })
-                .first!
+                .first?.2
         let changedTopPage = topPageController != newTopPageController
-        let appJustStarted = self.controllers.isEmpty
         self.controllers = newControllers
         self.setViewControllers(
                 newControllers.map({ (_, _, controller) in controller.inner() }),

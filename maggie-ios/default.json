@@ -4,10 +4,17 @@
     "title": "Home",
     "widget": {
       "typ": "column",
-      "widgets": [{
-        "typ": "text",
-        "text": "Hello"
-      }]
+      "widgets": [
+        {
+          "typ": "text",
+          "text": "Hello"
+        },
+        {
+          "typ": "button",
+          "text": "Page 1",
+          "actions": ["push:/page1"]
+        }
+      ]
     }
   },
   "/page1": {
