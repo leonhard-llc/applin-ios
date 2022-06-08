@@ -9,6 +9,29 @@ let pastelMint = UIColor(hue: 171.0 / 360.0, saturation: 0.36, brightness: 0.93,
 let pastelGreen = UIColor(hue: 144.0 / 360.0, saturation: 0.41, brightness: 0.96, alpha: 1.0)
 let pastelYellowGreen = UIColor(hue: 66.0 / 360.0, saturation: 0.66, brightness: 0.91, alpha: 1.0)
 
+class SuperviewHelper {
+    private var constraints: [NSLayoutConstraint] = []
+
+    init() {
+    }
+
+    func deactivateConstraints() {
+        NSLayoutConstraint.deactivate(self.constraints)
+    }
+
+    func removeSubviewsAndConstraints(_ view: UIView) {
+        self.deactivateConstraints()
+        for subView in view.subviews {
+            subView.removeFromSuperview()
+        }
+    }
+
+    func setConstraints(_ constraints: [NSLayoutConstraint]) {
+        self.constraints = constraints
+        NSLayoutConstraint.activate(self.constraints)
+    }
+}
+
 extension NSLayoutConstraint {
     func withPriority(_ priority: UILayoutPriority) -> NSLayoutConstraint {
         self.priority = priority

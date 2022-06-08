@@ -24,7 +24,7 @@ func readCacheFile(dataDirPath: String, _ session: MaggieSession) async {
     }
     for (key, item) in contents.pages ?? [:] {
         do {
-            session.pages[key] = try MaggiePage(item, session)
+            session.pages[key] = try PageData(item, session)
         } catch {
             print("CacheFile error loading cached key '\(key)': \(error)")
         }

@@ -69,3 +69,9 @@ enum MaggieAction: Codable, Equatable, Hashable {
         }
     }
 }
+
+extension Array where Element == MaggieAction {
+    func toString() -> String {
+        "[\(self.map({ action in action.toString() }).joined(separator: ","))]"
+    }
+}

@@ -13,7 +13,7 @@ class MaggieSession: ObservableObject {
     weak var nav: NavigationController?
     let url: URL
     var error: String?
-    var pages: [String: MaggiePage] = [:]
+    var pages: [String: PageData] = [:]
     var stack: [String] = ["/"]
 
     init(_ cacheFileWriter: CacheFileWriter,
@@ -35,15 +35,14 @@ class MaggieSession: ObservableObject {
             self.stack = ["/"]
             print("updateNav \(self.stack)")
         }
-        let entries = self.stack.map({ key -> (String, MaggiePage) in
+        let entries = self.stack.map({ key -> (String, PageData) in
             let page =
                     self.pages[key]
                             ?? self.pages["/maggie-page-not-found"]
-                            ?? .navPage(MaggieNavPage(
+                            ?? .navPage(NavPageData(
                             title: "Not Found",
-                            widget: .expand(MaggieExpand(
-                                    .text(MaggieText("Page not found."))
-                            ))
+                            // TODO: Center the text.
+                            widget: .text(TextData("Page not found."))
                     ))
             return (key, page)
         })
@@ -94,7 +93,7 @@ class MaggieSession: ObservableObject {
         if let newPages = update.pages {
             for (key, item) in newPages {
                 do {
-                    self.pages[key] = try MaggiePage(item, self)
+                    self.pages[key] = try PageData(item, self)
                     print("updated key \(key)")
                 } catch {
                     print("ERROR: error processing updated key '\(key)': \(error)")

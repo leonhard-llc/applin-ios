@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct MaggieText: Equatable, Hashable {
+struct TextData: Equatable, Hashable {
     static let TYP = "text"
     let text: String
 
@@ -14,12 +14,12 @@ struct MaggieText: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(MaggieText.TYP)
+        let item = JsonItem(TextData.TYP)
         item.text = self.text
         return item
     }
 
-    func makeView() -> UIView {
+    func getView(_ session: MaggieSession, _ widgetCache: WidgetCache) -> UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.preferredFont(forTextStyle: .body)

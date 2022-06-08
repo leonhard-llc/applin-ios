@@ -1,68 +1,86 @@
 import Foundation
 import UIKit
 
-struct MaggieButton: Equatable, Hashable {
-    static func ==(lhs: MaggieButton, rhs: MaggieButton) -> Bool {
-        lhs.text == rhs.text
-                && lhs.isDefault == rhs.isDefault
-                && lhs.isDestructive == rhs.isDestructive
-                && lhs.actions == rhs.actions
-    }
-
+struct ButtonData: Equatable, Hashable {
     static let TYP = "button"
-    let text: String
+    let actions: [MaggieAction]
     let isCancel: Bool
     let isDefault: Bool
     let isDestructive: Bool
-    let actions: [MaggieAction]
-    weak var session: MaggieSession?
+    let text: String
 
-    init(_ item: JsonItem, _ session: MaggieSession) throws {
-        self.text = try item.requireText()
+    init(_ item: JsonItem) throws {
+        self.actions = try item.optActions() ?? []
         self.isCancel = item.isCancel ?? false
         self.isDefault = item.isDefault ?? false
         self.isDestructive = item.isDestructive ?? false
-        self.actions = try item.optActions() ?? []
-        self.session = session
+        self.text = try item.requireText()
     }
 
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(self.text)
-        hasher.combine(self.isDefault)
-        hasher.combine(self.isDestructive)
-        hasher.combine(self.actions)
+    init(_ actions: [MaggieAction], text: String) {
+        self.actions = actions
+        self.isCancel = false
+        self.isDefault = false
+        self.isDestructive = false
+        self.text = text
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(MaggieButton.TYP)
-        item.text = self.text
+        let item = JsonItem(ButtonData.TYP)
+        item.actions = self.actions.map({ action in action.toString() })
         item.isDefault = self.isDefault
         item.isDestructive = self.isDestructive
-        item.actions = self.actions.map({ action in action.toString() })
+        item.text = self.text
         return item
     }
 
-    func makeView(_ session: MaggieSession) -> UIView {
-        let action = UIAction(title: self.text, handler: { _ in session.doActions(self.actions) })
-        let button = UIButton(type: .system, primaryAction: action)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-//        let container = UIView()
-//        container.translatesAutoresizingMaskIntoConstraints = false
-//        container.addSubview(button)
-//        // None of these work.  The docs lie:
-//        // https://developer.apple.com/documentation/uikit/uiview/positioning_content_within_layout_margins
-//        // container.directionalLayoutMargins =
-//        //        NSDirectionalEdgeInsets(top: 20.0, leading: 20.0, bottom: 20.0, trailing: 20.0)
-//        // container.alignmentRectInsets = UIEdgeInsets(top: 20.0, left: 20.0, bottom: 20.0, right: 20.0)
-//        // container.frame.inset(by: UIEdgeInsets(top: -20.0, left: -20.0, bottom: -20.0, right: -20.0))
-//        NSLayoutConstraint.activate([
-//            button.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8.0),
-//            button.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8.0),
-//            button.topAnchor.constraint(equalTo: container.topAnchor, constant: 8.0),
-//            button.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -8.0)
-//        ])
-//        return container
+    func keys() -> [String] {
+        ["button:\(self.text)", "button:\(self.actions)"]
+    }
+
+    func getView(_ session: MaggieSession, _ widgetCache: WidgetCache) -> UIView {
+        var buttonWidget: ButtonWidget
+        switch widgetCache.remove(self.keys()) {
+        case let widget as ButtonWidget:
+            buttonWidget = widget
+            buttonWidget.data = self
+        default:
+            buttonWidget = ButtonWidget(self)
+        }
+        widgetCache.putNext(buttonWidget)
+        return buttonWidget.getView(session, widgetCache)
+    }
+}
+
+class ButtonWidget: Widget {
+    var data: ButtonData
+    var button: UIButton!
+    weak var session: MaggieSession?
+
+    init(_ data: ButtonData) {
+        print("ButtonWidget.init(\(data))")
+        self.data = data
+        let action = UIAction(title: "uninitialized", handler: { [weak self] _ in
+            print("button UIAction")
+            self?.doActions()
+        })
+        self.button = UIButton(type: .system, primaryAction: action)
+        self.button.translatesAutoresizingMaskIntoConstraints = false
+    }
+
+    func keys() -> [String] {
+        self.data.keys()
+    }
+
+    func doActions() {
+        print("button actions")
+        self.session?.doActions(self.data.actions)
+    }
+
+    func getView(_ session: MaggieSession, _ widgetCache: WidgetCache) -> UIView {
+        self.session = session
+        self.button.setTitle(self.data.text, for: .normal)
+        return self.button
     }
 
 //    func buttonRole() -> ButtonRole? {

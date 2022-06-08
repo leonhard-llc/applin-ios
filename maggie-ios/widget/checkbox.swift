@@ -1,49 +1,73 @@
 import Foundation
 import UIKit
 
-struct MaggieCheckbox: Equatable, Hashable {
-    static func ==(lhs: MaggieCheckbox, rhs: MaggieCheckbox) -> Bool {
-        lhs.id == rhs.id
-                && lhs.initialBool == rhs.initialBool
-                && lhs.actions == rhs.actions
-    }
-
+struct CheckboxData: Equatable, Hashable {
     static let TYP = "checkbox"
     let id: String
     let initialBool: Bool
     let actions: [MaggieAction]
-    weak var session: MaggieSession?
 
     init(_ item: JsonItem, _ session: MaggieSession) throws {
         self.actions = try item.optActions() ?? []
         self.id = try item.requireId()
         self.initialBool = item.initialBool ?? false
-        self.session = session
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(self.actions)
-        hasher.combine(self.id)
-        hasher.combine(self.initialBool)
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(MaggieCheckbox.TYP)
+        let item = JsonItem(CheckboxData.TYP)
         item.actions = self.actions.map({ action in action.toString() })
         item.id = self.id
         item.initialBool = self.initialBool
         return item
     }
 
-    func makeView(_ session: MaggieSession) -> UIView {
-        let widget = UISwitch()
-        widget.translatesAutoresizingMaskIntoConstraints = false
-        widget.addAction(for: .valueChanged, handler: { _ in
-            print("checkbox actions")
-            session.doActions(self.actions)
+    func keys() -> [String] {
+        ["checkbox:\(self.id)"]
+    }
+
+    func getView(_ session: MaggieSession, _ widgetCache: WidgetCache) -> UIView {
+        var widget: CheckboxWidget
+        switch widgetCache.remove(self.keys()) {
+        case let checkboxWidget as CheckboxWidget:
+            widget = checkboxWidget
+            widget.data = self
+        default:
+            widget = CheckboxWidget(self)
+        }
+        widgetCache.putNext(widget)
+        return widget.getView(session, widgetCache)
+    }
+}
+
+class CheckboxWidget: Widget {
+    var data: CheckboxData
+    let view: UISwitch
+    weak var session: MaggieSession?
+
+    init(_ data: CheckboxData) {
+        print("CheckboxWidget.init(\(data))")
+        self.data = data
+        self.view = UISwitch()
+        self.view.translatesAutoresizingMaskIntoConstraints = false
+        self.view.preferredStyle = .checkbox
+        self.view.addAction(for: .valueChanged, handler: { [weak self] _ in
+            print("checkbox .valueChanged")
+            self?.valueChanged()
         })
-        widget.preferredStyle = .checkbox
-        widget.setOn(self.initialBool, animated: true)
-        return widget
+        self.view.setOn(self.data.initialBool, animated: false)
+    }
+
+    func keys() -> [String] {
+        self.data.keys()
+    }
+
+    func valueChanged() {
+        print("checkbox actions")
+        self.session?.doActions(self.data.actions)
+    }
+
+    func getView(_ session: MaggieSession, _ widgetCache: WidgetCache) -> UIView {
+        self.session = session
+        return self.view
     }
 }

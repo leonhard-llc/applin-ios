@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-class LoadingPageController: UIViewController {
+class LoadingPage: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .systemBackground

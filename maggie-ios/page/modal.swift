@@ -17,8 +17,8 @@ enum ModalKind: String {
     }
 }
 
-struct MaggieModal: Equatable {
-    static func ==(lhs: MaggieModal, rhs: MaggieModal) -> Bool {
+struct ModalData: Equatable {
+    static func ==(lhs: ModalData, rhs: ModalData) -> Bool {
         lhs.title == rhs.title
                 && lhs.widgets == rhs.widgets
     }
@@ -26,7 +26,7 @@ struct MaggieModal: Equatable {
     let kind: ModalKind
     let typ: String
     let title: String
-    let widgets: [MaggieWidget]
+    let widgets: [WidgetData]
 
 //    @State var isPresented = true
 
@@ -38,7 +38,7 @@ struct MaggieModal: Equatable {
         // case isPresented
     }
 
-    init(_ kind: ModalKind, title: String, _ widgets: [MaggieWidget]) {
+    init(_ kind: ModalKind, title: String, _ widgets: [WidgetData]) {
         self.kind = kind
         self.typ = kind.typ()
         self.title = title
@@ -59,7 +59,7 @@ struct MaggieModal: Equatable {
         return item
     }
 
-    public func add(_ controller: PageController) {
+    public func add(_ controller: PageData) {
         fatalError("unimplemented")
     }
 

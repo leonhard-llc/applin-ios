@@ -1,141 +1,18 @@
 import Foundation
 import UIKit
 
-class NavPageController: UIViewController, UINavigationBarDelegate {
-    weak var navController: NavigationController?
-    weak var session: MaggieSession?
-    var page: MaggieNavPage
-    var navBar: UINavigationBar
-    var hasPrev: Bool
-    var subView: UIView = UIView()
-    var constraints: [NSLayoutConstraint] = []
-
-    init(
-            _ navController: NavigationController,
-            _ session: MaggieSession,
-            _ page: MaggieNavPage,
-            _ hasPrev: Bool
-    ) {
-        self.navController = navController
-        self.session = session
-        self.navBar = UINavigationBar()
-        self.page = page
-        self.hasPrev = hasPrev
-        super.init(nibName: nil, bundle: nil)
-        self.navBar.delegate = self
-        self.update()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("unimplemented")
-    }
-
-    func back() {
-        print("back")
-        if self.navController?.topPageController()?.inner() !== self {
-            return
-        }
-        if let start = self.page.start {
-            self.session?.doActions(start.actions)
-        } else {
-            self.session?.pop()
-        }
-    }
-
-    // Called when the user taps the Back button.
-    func navigationBar(_ navigationBar: UINavigationBar, shouldPop item: UINavigationItem) -> Bool {
-        print("navigationBar shouldPop=\(item)")
-        self.back()
-        return false
-    }
-
-    // Called when the user presses the Back button,
-    // or long-presses the Back button and taps Back from the popup menu.
-    func navigationBar(_ navigationBar: UINavigationBar, didPop item: UINavigationItem) {
-        print("navigationBar didPop=\(item)")
-        self.back()
-    }
-
-    // Called when the view gets covered by another view (isMovingFromParent=false) or
-    // when the view is removed from the view (isMovingFromParent=true).
-    override func viewDidDisappear(_ animated: Bool) {
-        // NOTE: UIKit on iOS 15 does not set self.isBeingDismissed=true like the docs claim.
-        print("NavPageController viewDidDisappear isMovingFromParent=\(self.isMovingFromParent)")
-        if self.isMovingFromParent {
-            self.back()
-        }
-        super.viewDidDisappear(animated)
-    }
-
-    func setPage(_ page: MaggieNavPage, _ hasPrev: Bool) {
-        if page == self.page && self.hasPrev == hasPrev {
-            return
-        }
-        self.page = page
-        self.hasPrev = hasPrev
-        self.update()
-    }
-
-    func update() {
-        if let session = self.session {
-            self.title = page.title
-            self.view.backgroundColor = .systemBackground
-            NSLayoutConstraint.deactivate(self.constraints)
-            self.constraints.removeAll(keepingCapacity: true)
-            self.subView.removeFromSuperview()
-            self.subView = self.page.widget.makeView(session)
-            self.view.addSubview(self.subView)
-            // We do not use UINavigationController's navbar because when we pop a
-            // NavPage with a PlainPage underneath, the PlainPage shows a navbar for
-            // a second while the animation is running, then it disappears.
-            // This is looks bad.  So we add our own navbar.
-            self.navBar.translatesAutoresizingMaskIntoConstraints = false
-            self.navBar.removeFromSuperview()
-            if self.hasPrev {
-                self.navBar.items = [UINavigationItem(title: "Back"), self.navigationItem]
-            } else {
-                self.navBar.items = [self.navigationItem]
-            }
-            self.navBar.isHidden = false
-            self.view.addSubview(self.navBar)
-            self.constraints.append(
-                    self.navBar.topAnchor.constraint(
-                            equalTo: self.view.safeAreaLayoutGuide.topAnchor))
-            self.constraints.append(
-                    self.navBar.leadingAnchor.constraint(
-                            equalTo: self.view.safeAreaLayoutGuide.leadingAnchor))
-            self.constraints.append(
-                    self.navBar.trailingAnchor.constraint(
-                            equalTo: self.view.safeAreaLayoutGuide.trailingAnchor))
-            self.constraints.append(
-                    self.subView.topAnchor.constraint(
-                            equalTo: self.navBar.safeAreaLayoutGuide.bottomAnchor))
-            self.constraints.append(
-                    self.subView.bottomAnchor.constraint(
-                            lessThanOrEqualTo: self.view.safeAreaLayoutGuide.bottomAnchor))
-            self.constraints.append(
-                    self.subView.leadingAnchor.constraint(
-                            equalTo: self.view.safeAreaLayoutGuide.leadingAnchor))
-            self.constraints.append(
-                    self.subView.trailingAnchor.constraint(
-                            lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor))
-            NSLayoutConstraint.activate(self.constraints)
-        }
-    }
-}
-
-struct MaggieNavPage: Equatable {
+struct NavPageData: Equatable {
     static let TYP = "nav-page"
     let title: String
-    let start: MaggieBackButton?
-    let end: MaggieWidget?
-    let widget: MaggieWidget
+    let start: BackButtonData?
+    let end: WidgetData?
+    let widget: WidgetData
 
     init(
             title: String,
-            widget: MaggieWidget,
-            start: MaggieBackButton? = nil,
-            end: MaggieWidget? = nil
+            widget: WidgetData,
+            start: BackButtonData? = nil,
+            end: WidgetData? = nil
     ) {
         self.title = title
         self.start = start
@@ -158,45 +35,123 @@ struct MaggieNavPage: Equatable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(MaggieNavPage.TYP)
+        let item = JsonItem(NavPageData.TYP)
         item.title = self.title
         item.start = self.start?.toJsonItem()
         item.end = self.end?.toJsonItem()
         item.widget = self.widget.toJsonItem()
         return item
     }
+}
 
-    func allowBackSwipe() -> Bool {
-        self.start == nil
+class NavPageController: UIViewController, UINavigationBarDelegate, PageController {
+    weak var navController: NavigationController?
+    weak var session: MaggieSession?
+    var data: NavPageData?
+    var hasPrevPage: Bool = false
+    var navBar: UINavigationBar
+    var subView: UIView?
+    let helper = SuperviewHelper()
+
+    init(_ navController: NavigationController, _ session: MaggieSession) {
+        self.navController = navController
+        self.session = session
+        // PlainPageController cannot do self.navigationItem.navBarHidden = true,
+        // because Apple didn't add support for that.
+        // Instead, we must show/hide UINavigationController's navbar whenever the top
+        // page changes between NavPage and PlainPage.
+        // This works, but whenever we pop a NavPage with a PlainPage underneath,
+        // the PlainPage shows a navbar for a second while the animation is running, then it disappears.
+        // This is looks bad.  So we hide the UINavigationController's navbar
+        // and give each NavPage its own navbar.
+        self.navBar = UINavigationBar()
+        self.navBar.translatesAutoresizingMaskIntoConstraints = false
+        super.init(nibName: nil, bundle: nil)
+        self.navBar.delegate = self
+        self.view.addSubview(self.navBar)
     }
 
-//    public func toView(_ session: MaggieSession, hasPrevPage: Bool) -> AnyView {
-//        var view: AnyView = AnyView(
-//                self.widget
-//                        .navigationTitle(self.title)
-//                        .navigationBarTitleDisplayMode(.inline)
-//                        .navigationBarBackButtonHidden(true)
-//        )
-//        if let start = self.start {
-//            view = AnyView(view.toolbar {
-//                ToolbarItemGroup(placement: .navigationBarLeading) {
-//                    start
-//                }
-//            })
-//        } else if hasPrevPage {
-//            view = AnyView(view.toolbar {
-//                ToolbarItemGroup(placement: .navigationBarLeading) {
-//                    MaggieBackButton([.pop], session)
-//                }
-//            })
-//        }
-//        if let end = self.end {
-//            view = AnyView(view.toolbar {
-//                ToolbarItemGroup(placement: .navigationBarTrailing) {
-//                    end
-//                }
-//            })
-//        }
-//        return view
-//    }
+    required init?(coder: NSCoder) {
+        fatalError("unimplemented")
+    }
+
+    func back() {
+        print("back")
+        if self.navController?.topPageController() !== self {
+            return
+        }
+        if let start = self.data?.start {
+            self.session?.doActions(start.actions)
+        } else {
+            self.session?.pop()
+        }
+    }
+
+    // Called when the user taps the Back button.
+    func navigationBar(_ navigationBar: UINavigationBar, shouldPop item: UINavigationItem) -> Bool {
+        print("navigationBar shouldPop=\(item)")
+        self.back()
+        return false  // UINavigationBar should not remove NavigationItem objects.
+    }
+
+    // Called when the user presses the Back button,
+    // or long-presses the Back button and taps Back from the popup menu.
+    func navigationBar(_ navigationBar: UINavigationBar, didPop item: UINavigationItem) {
+        print("navigationBar didPop=\(item)")
+        self.back()
+    }
+
+    // Called when the view gets covered by another view (isMovingFromParent=false) or
+    // when the view is removed from the view (isMovingFromParent=true).
+    override func viewDidDisappear(_ animated: Bool) {
+        // NOTE: UIKit on iOS 15 does not set self.isBeingDismissed=true like the docs claim.
+        print("NavPageController viewDidDisappear isMovingFromParent=\(self.isMovingFromParent)")
+        if self.isMovingFromParent {
+            self.back()
+        }
+        super.viewDidDisappear(animated)
+    }
+
+    func isModal() -> Bool {
+        false
+    }
+
+    func allowBackSwipe() -> Bool {
+        self.data?.start == nil
+    }
+
+    func update(
+            _ session: MaggieSession,
+            _ widgetCache: WidgetCache,
+            _ newData: NavPageData,
+            hasPrevPage: Bool
+    ) {
+        self.hasPrevPage = hasPrevPage
+        if hasPrevPage {
+            self.navBar.items = [UINavigationItem(title: "Back"), self.navigationItem]
+        } else {
+            self.navBar.items = [self.navigationItem]
+        }
+        if newData == self.data {
+            return
+        }
+        self.data = newData
+        self.title = newData.title
+        self.view.backgroundColor = .systemBackground
+        self.helper.deactivateConstraints()
+        self.subView?.removeFromSuperview()
+        let subView = newData.widget.getView(session, widgetCache)
+        self.view.addSubview(subView)
+        self.subView = subView
+        self.helper.setConstraints([
+            self.navBar.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            self.navBar.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
+            self.navBar.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+            subView.topAnchor.constraint(equalTo: self.navBar.safeAreaLayoutGuide.bottomAnchor),
+            subView.bottomAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.bottomAnchor),
+            subView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
+            subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+        ])
+        widgetCache.flip()
+    }
 }

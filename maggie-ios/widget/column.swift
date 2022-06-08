@@ -1,9 +1,9 @@
 import Foundation
 import UIKit
 
-struct MaggieColumn: Equatable, Hashable {
+struct ColumnData: Equatable, Hashable {
     static let TYP = "column"
-    let widgets: [MaggieWidget]
+    let widgets: [WidgetData]
     let alignment: MaggieHAlignment
     let spacing: Float32
 
@@ -14,27 +14,27 @@ struct MaggieColumn: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(MaggieColumn.TYP)
+        let item = JsonItem(ColumnData.TYP)
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         item.setAlign(self.alignment)
         return item
     }
 
-    func makeView(_ session: MaggieSession) -> UIView {
-        let subViews = self.widgets.map({ widget in widget.makeView(session) })
-        let stack = UIStackView(arrangedSubviews: subViews)
-        stack.axis = .vertical
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.backgroundColor = pastelPink
+    func getView(_ session: MaggieSession, _ widgetCache: WidgetCache) -> UIView {
+        let subViews = self.widgets.map({ widget in widget.getView(session, widgetCache) })
+        let view = UIStackView(arrangedSubviews: subViews)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.axis = .vertical
+        view.backgroundColor = pastelPink
         switch self.alignment {
         case .center:
-            stack.alignment = .center
+            view.alignment = .center
         case .start:
-            stack.alignment = .leading
+            view.alignment = .leading
         case .end:
-            stack.alignment = .trailing
+            view.alignment = .trailing
         }
-        stack.spacing = CGFloat(self.spacing)
-        return stack
+        view.spacing = CGFloat(self.spacing)
+        return view
     }
 }
