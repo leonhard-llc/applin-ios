@@ -1,0 +1,108 @@
+{
+  "/": {
+    "typ": "plain-page",
+    "title": "Home",
+    "widget": {
+      "typ": "column",
+      "widgets": [
+        {
+          "typ": "text",
+          "text": "Hello"
+        },
+        {
+          "typ": "button",
+          "text": "Page 1",
+          "actions": ["push:/page1"]
+        }
+      ]
+    }
+  },
+  "/applin-error-details": {
+    "typ": "nav-page",
+    "title": "Error Details",
+    "widget": {
+      "typ": "scroll",
+      "widget": {
+        "typ": "error-details"
+      }
+    }
+  },
+  "/applin-network-error-modal": {
+    "typ": "alert-modal",
+    "title": "Connection Problem",
+    "widgets": [
+      {
+        "typ": "text",
+        "text": "Could not contact server.  Check your connection and try again."
+      },
+      {
+        "typ": "button",
+        "text": "Details",
+        "actions": [
+          "push:/applin-error-details"
+        ]
+      },
+      {
+        "typ": "button",
+        "text": "Status",
+        "actions": [
+          "push:/applin-server-status"
+        ]
+      },
+      {
+        "typ": "button",
+        "text": "OK",
+        "actions": [
+          "pop"
+        ],
+        "default": true
+      }
+    ]
+  },
+  "/applin-rpc-error-modal": {
+    "typ": "alert-modal",
+    "title": "Error",
+    "widgets": [
+      {
+        "typ": "text",
+        "text": "Problem talking to server.  Please try again or update the app."
+      },
+      {
+        "typ": "button",
+        "text": "Details",
+        "actions": [
+          "push:/applin-error-details"
+        ]
+      },
+      {
+        "typ": "button",
+        "text": "Status",
+        "actions": [
+          "push:/applin-server-status"
+        ]
+      },
+      {
+        "typ": "button",
+        "text": "Contact Support",
+        "actions": [
+          "push:/applin-contact-support-modal"
+        ]
+      },
+      {
+        "typ": "button",
+        "text": "Update",
+        "actions": [
+          "launch-url:itms-apps://itunes.apple.com/app/id00000000000"
+        ]
+      },
+      {
+        "typ": "button",
+        "text": "OK",
+        "actions": [
+          "pop"
+        ],
+        "default": true
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
-#  Maggie iOS Client
+#  Applin iOS Client
 Copy this iOS app and customize it to connect to your
-[`maggie-rs`](https://github.com/mleonhard/maggie-rs) server.
+[`applin-rs`](https://github.com/mleonhard/applin-rs) server.
 
 To use:
 1. Clone this repo.
@@ -9,7 +9,7 @@ To use:
 3. Add your server's URL to `Main.swift`
 4. Edit `default.json`.  The app uses pages in that file until it connects to the server the first time.
    - Put your app's ID in the "Update" button action URL.
-   - Optional: Add `/maggie-server-status` and `/maggie-contact-support-modal` pages.
+   - Optional: Add `/applin-server-status` and `/applin-contact-support-modal` pages.
      The default error modal has "Status" and "Contact Support" buttons which open those pages.
 5. Use standard processes to build and test your app
 
