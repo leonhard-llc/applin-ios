@@ -6,8 +6,8 @@ enum OptWidget {
 class WidgetCache {
     private var widgets: [String: OptWidget] = [:]
     private var nextWidgets: [String: OptWidget] = [:]
-    var scroll: [ScrollWidget] = []
-    var nextScroll: [ScrollWidget] = []
+    private var scroll: [ScrollWidget] = []
+    private var nextScroll: [ScrollWidget] = []
 
     public func remove(_ key: String) -> Widget? {
         switch self.widgets.removeValue(forKey: key) {
@@ -40,6 +40,17 @@ class WidgetCache {
                 self.nextWidgets.updateValue(.disabled, forKey: key)
             }
         }
+    }
+
+    public func removeScroll() -> ScrollWidget? {
+        if self.scroll.isEmpty {
+            return nil
+        }
+        return self.scroll.remove(at: 0)
+    }
+
+    public func putNextScroll(_ widget: ScrollWidget) {
+        self.nextScroll.append(widget)
     }
 
     public func flip() {

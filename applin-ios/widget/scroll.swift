@@ -16,15 +16,15 @@ struct ScrollData: Equatable, Hashable {
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        var scrollWidget: ScrollWidget
-        if widgetCache.scroll.isEmpty {
-            scrollWidget = ScrollWidget(self)
+        var widget: ScrollWidget
+        if let cachedWidget = widgetCache.removeScroll() {
+            widget = cachedWidget
+            widget.data = self
         } else {
-            scrollWidget = widgetCache.scroll.remove(at: 0)
-            scrollWidget.data = self
+            widget = ScrollWidget(self)
         }
-        widgetCache.nextScroll.append(scrollWidget)
-        return scrollWidget.getView(session, widgetCache)
+        widgetCache.putNextScroll(widget)
+        return widget.getView(session, widgetCache)
     }
 }
 
