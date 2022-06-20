@@ -1,47 +1,32 @@
 import Foundation
+import UIKit
 
 enum ModalKind: String {
     case alert
-    case info
-    case question
+    case drawer
 
     public func typ() -> String {
         switch self {
         case .alert:
             return "alert-modal"
-        case .info:
-            return "info-modal"
-        case .question:
-            return "question-modal"
+        case .drawer:
+            return "drawer-modal"
         }
     }
 }
 
 struct ModalData: Equatable {
-    static func ==(lhs: ModalData, rhs: ModalData) -> Bool {
-        lhs.title == rhs.title
-                && lhs.widgets == rhs.widgets
-    }
-
     let kind: ModalKind
     let typ: String
     let title: String
-    let widgets: [WidgetData]
+    let text: String?
+    let widgets: [ModalButtonData]
 
-//    @State var isPresented = true
-
-    enum CodingKeys: String, CodingKey {
-        // case kind
-        case typ
-        case title
-        case widgets
-        // case isPresented
-    }
-
-    init(_ kind: ModalKind, title: String, _ widgets: [WidgetData]) {
+    init(_ kind: ModalKind, title: String, text: String?, _ widgets: [ModalButtonData]) {
         self.kind = kind
         self.typ = kind.typ()
         self.title = title
+        self.text = text
         self.widgets = widgets
     }
 
@@ -49,38 +34,42 @@ struct ModalData: Equatable {
         self.kind = kind
         self.typ = kind.typ()
         self.title = try item.requireTitle()
-        self.widgets = try item.requireWidgets(session)
+        self.text = item.text
+        var widgets: [ModalButtonData] = []
+        guard let items = item.widgets else {
+            throw ApplinError.deserializeError("\(self.typ).widgets is empty")
+        }
+        for item in items {
+            if item.typ == ModalButtonData.TYP {
+                widgets.append(try ModalButtonData(item))
+            } else {
+                throw ApplinError.deserializeError(
+                        "\(self.typ).widgets contains entry that is not \(ModalButtonData.TYP): \(item.typ)")
+            }
+        }
+        self.widgets = widgets
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(self.kind.typ())
         item.title = self.title
+        item.text = self.text
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
     }
 
-    public func add(_ controller: PageData) {
-        fatalError("unimplemented")
+    func makeController(_ session: ApplinSession) -> UIAlertController {
+        let style: UIAlertController.Style
+        switch self.kind {
+        case .alert:
+            style = .alert
+        case .drawer:
+            style = .actionSheet
+        }
+        let controller = UIAlertController(title: self.title, message: self.text, preferredStyle: style)
+        for widget in self.widgets {
+            controller.addAction(widget.toAlertAction(session))
+        }
+        return controller
     }
-
-//    public func toView() -> AnyView {
-//        switch self.kind {
-//        case .alert:
-//            return AnyView(
-//                    EmptyView().alert(self.title, isPresented: self.$isPresented) {
-//                        ForEach(self.widgets) { widget in
-//                            widget
-//                        }
-//                    }
-//            )
-//        case .info, .question:
-//            return AnyView(
-//                    EmptyView().confirmationDialog(self.title, isPresented: self.$isPresented) {
-//                        ForEach(self.widgets) { widget in
-//                            widget
-//                        }
-//                    }
-//            )
-//        }
-//    }
 }

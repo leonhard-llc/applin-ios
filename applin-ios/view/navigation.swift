@@ -1,8 +1,67 @@
 import Foundation
 import UIKit
 
+private struct ModalNode {
+    let key: String
+    let data: ModalData
+    let controller: UIAlertController
+
+    init(_ key: String, _ data: ModalData, _ controller: UIAlertController) {
+        self.key = key
+        self.data = data
+        self.controller = controller
+    }
+}
+
+private struct PageNode {
+    let key: String
+    let data: PageData
+    let controller: PageController
+    let cache: WidgetCache
+    var modals: [ModalNode] = []
+
+    init(_ key: String, _ data: PageData, _ controller: PageController, _ cache: WidgetCache) {
+        self.key = key
+        self.data = data
+        self.controller = controller
+        self.cache = cache
+    }
+}
+
+private enum Controller {
+    case modal(String, ModalData, UIAlertController)
+    case page(String, PageController, WidgetCache)
+
+    func key() -> String {
+        switch self {
+        case let .modal(key, _, _):
+            return key
+        case let .page(key, _, _):
+            return key
+        }
+    }
+
+    func isModal() -> Bool {
+        switch self {
+        case .modal:
+            return true
+        case .page:
+            return false
+        }
+    }
+
+    func asPageController() -> PageController? {
+        switch self {
+        case .modal:
+            return nil
+        case let .page(_, pageController, _):
+            return pageController
+        }
+    }
+}
+
 class NavigationController: UINavigationController, UIGestureRecognizerDelegate {
-    private var controllers: [(String, PageController, WidgetCache)] = []
+    private var controllers: [Controller] = []
 
     init() {
         super.init(rootViewController: LoadingPage())
@@ -19,63 +78,112 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
     }
 
     public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        let result = self.controllers.last?.1.allowBackSwipe() ?? false
+        let result = !(self.controllers.last?.isModal() ?? true)
         print("allowBackSwipe \(result)")
         return result
     }
 
     public func topPageController() -> PageController? {
-        self.controllers.last?.1
+        self.controllers.compactMap({ controller in controller.asPageController() }).last
+    }
+
+    private func removeController(_ key: String) -> Controller? {
+        if let n = self.controllers.firstIndex(where: { entry in entry.key() == key }) {
+            return self.controllers.remove(at: n)
+        } else {
+            return nil
+        }
+    }
+
+    private func removeModalController(_ key: String) -> (ModalData?, UIAlertController?) {
+        if case let .modal(_, data, ctl) = self.removeController(key) {
+            return (data, ctl)
+        }
+        return (nil, nil)
+    }
+
+    private func removePageController(_ key: String) -> (PageController?, WidgetCache?) {
+        if case let .page(_, ctl, cache) = self.removeController(key) {
+            return (ctl, cache)
+        }
+        return (nil, nil)
     }
 
     func setStackPages(_ session: ApplinSession, _ newPages: [(String, PageData)]) {
         print("setStackPages")
         let appJustStarted = self.controllers.isEmpty
-        let topPageController: PageController? =
-                self.controllers.reversed().first(where: { (_, controller, _) in !controller.isModal() })?.1
+        let topPageController: PageController? = self.topPageController()
         precondition(!newPages.isEmpty)
-        var newControllers: [(String, PageController, WidgetCache)] = []
-        var hasPrevPage = false
-        for (newKey, newData) in newPages {
-            var controller: PageController?
-            var widgetCache: WidgetCache
-            if let n = self.controllers.firstIndex(where: { (key, _, _) in key == newKey }) {
-                print("reusing WidgetCache")
-                (_, controller, widgetCache) = self.controllers.remove(at: n)
-            } else {
-                print("new WidgetCache")
-                widgetCache = WidgetCache()
+        var nodes: [PageNode] = []
+        for (key, pageData) in newPages {
+            let hasPrevPage = !nodes.isEmpty
+            switch pageData {
+            case let .modal(data):
+                var (oldData, oldCtl) = self.removeModalController(key)
+                if oldData != data {
+                    oldCtl = nil
+                }
+                let modalNode = ModalNode.init(key, data, oldCtl ?? data.makeController(session))
+                if nodes.isEmpty {
+                    let blankData = PlainPageData.blank()
+                    let blankController = PlainPageController()
+                    let cache = WidgetCache()
+                    blankController.update(session, cache, blankData)
+                    nodes.append(PageNode.init(
+                            "applin-empty-page-for-root-modal", .plainPage(blankData), blankController, cache))
+                }
+                let lastIndex = nodes.lastIndex(where: { _ in true })!
+                nodes[lastIndex].modals.append(modalNode)
+            case let .navPage(data):
+                let (optOldCtl, optOldCache) = self.removePageController(key)
+                let cache = optOldCache ?? WidgetCache()
+                let pageController: PageController;
+                if let oldCtl = optOldCtl as? NavPageController {
+                    oldCtl.update(session, cache, data, hasPrevPage: hasPrevPage)
+                    pageController = oldCtl
+                } else {
+                    let ctl = NavPageController(self, session)
+                    ctl.update(session, cache, data, hasPrevPage: hasPrevPage)
+                    pageController = ctl
+                }
+                nodes.append(PageNode.init(key, pageData, pageController, cache))
+            case let .plainPage(data):
+                let (optOldCtl, optOldCache) = self.removePageController(key)
+                let cache = optOldCache ?? WidgetCache()
+                let pageController: PageController;
+                if let oldCtl = optOldCtl as? PlainPageController {
+                    oldCtl.update(session, cache, data)
+                    pageController = oldCtl
+                } else {
+                    let ctl = PlainPageController()
+                    ctl.update(session, cache, data)
+                    pageController = ctl
+                }
+                nodes.append(PageNode.init(key, pageData, pageController, cache))
             }
-            switch (newData, controller) {
-            case (.modal, _):
-                fatalError("unimplemented")
-            case (.markdownPage, _):
-                fatalError("unimplemented")
-            case let (.navPage(data), controller as NavPageController):
-                controller.update(session, widgetCache, data, hasPrevPage: hasPrevPage)
-            case let (.navPage(data), _):
-                let newController = NavPageController(self, session)
-                newController.update(session, widgetCache, data, hasPrevPage: hasPrevPage)
-                controller = newController
-            case let (.plainPage(data), controller as PlainPageController):
-                controller.update(self, session, widgetCache, data)
-            case let (.plainPage(data), _):
-                let newController = PlainPageController()
-                newController.update(self, session, widgetCache, data)
-                controller = newController
+        }
+        var newControllers: [Controller] = []
+        for node in nodes {
+            var prevViewController: UIViewController = node.controller
+            newControllers.append(.page(node.key, node.controller, node.cache))
+            for modal in node.modals {
+                if prevViewController.presentedViewController !== modal.controller {
+                    modal.controller.dismiss(animated: false)
+                    prevViewController.present(modal.controller, animated: true)
+                }
+                prevViewController = modal.controller
+                newControllers.append(.modal(modal.key, modal.data, modal.controller))
             }
-            newControllers.append((newKey, controller!, widgetCache))
-            // if !newPage.isModal {
-            //     hasPrevPage = true
-            // }
-            hasPrevPage = true
+            if let presentedViewController = prevViewController.presentedViewController {
+                presentedViewController.dismiss(animated: true)
+            }
         }
         let newTopPageController: PageController? =
-                newControllers.reversed().first(where: { (_, controller, _) in !controller.isModal() })?.1
+                newControllers.compactMap({ controller in controller.asPageController() }).last
         let changedTopPage = topPageController !== newTopPageController
         self.controllers = newControllers
         self.setViewControllers(
-                newControllers.map({ (_, controller, _) in controller }),
+                newControllers.compactMap({ controller in controller.asPageController() }),
                 animated: changedTopPage && !appJustStarted
         )
     }

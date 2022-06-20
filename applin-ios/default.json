@@ -12,10 +12,56 @@
         {
           "typ": "button",
           "text": "Page 1",
-          "actions": ["push:/page1"]
+          "actions": [
+            "push:/page1"
+          ]
+        },
+        {
+          "typ": "button",
+          "text": "Example Alert 1",
+          "actions": [
+            "push:/example-alert1"
+          ]
         }
       ]
     }
+  },
+  "/example-alert1": {
+    "typ": "alert-modal",
+    "title": "Example Alert 1",
+    "text": "Hello",
+    "widgets": [
+      {
+        "typ": "modal-button",
+        "text": "Example Alert 2",
+        "actions": [
+          "push:/example-alert2"
+        ]
+      },
+      {
+        "typ": "modal-button",
+        "text": "OK",
+        "actions": [
+          "pop"
+        ],
+        "default": true
+      }
+    ]
+  },
+  "/example-alert2": {
+    "typ": "alert-modal",
+    "title": "Example Alert 2",
+    "text": "Hello again",
+    "widgets": [
+      {
+        "typ": "modal-button",
+        "text": "OK",
+        "actions": [
+          "pop"
+        ],
+        "default": true
+      }
+    ]
   },
   "/applin-error-details": {
     "typ": "nav-page",

@@ -4,32 +4,21 @@ import UIKit
 struct ButtonData: Equatable, Hashable {
     static let TYP = "button"
     let actions: [ApplinAction]
-    let isCancel: Bool
-    let isDefault: Bool
-    let isDestructive: Bool
     let text: String
 
     init(_ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
-        self.isCancel = item.isCancel ?? false
-        self.isDefault = item.isDefault ?? false
-        self.isDestructive = item.isDestructive ?? false
         self.text = try item.requireText()
     }
 
     init(_ actions: [ApplinAction], text: String) {
         self.actions = actions
-        self.isCancel = false
-        self.isDefault = false
-        self.isDestructive = false
         self.text = text
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ButtonData.TYP)
         item.actions = self.actions.map({ action in action.toString() })
-        item.isDefault = self.isDefault
-        item.isDestructive = self.isDestructive
         item.text = self.text
         return item
     }
@@ -39,16 +28,15 @@ struct ButtonData: Equatable, Hashable {
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        var buttonWidget: ButtonWidget
-        switch widgetCache.remove(self.keys()) {
-        case let widget as ButtonWidget:
-            buttonWidget = widget
-            buttonWidget.data = self
-        default:
-            buttonWidget = ButtonWidget(self)
+        var widget: ButtonWidget
+        if let cachedWidget = widgetCache.remove(self.keys()) as? ButtonWidget {
+            widget = cachedWidget
+            widget.data = self
+        } else {
+            widget = ButtonWidget(self)
         }
-        widgetCache.putNext(buttonWidget)
-        return buttonWidget.getView(session, widgetCache)
+        widgetCache.putNext(widget)
+        return widget.getView(session, widgetCache)
     }
 }
 

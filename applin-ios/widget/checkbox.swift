@@ -27,11 +27,10 @@ struct CheckboxData: Equatable, Hashable {
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         var widget: CheckboxWidget
-        switch widgetCache.remove(self.keys()) {
-        case let checkboxWidget as CheckboxWidget:
-            widget = checkboxWidget
+        if let cachedWidget = widgetCache.remove(self.keys()) as? CheckboxWidget {
+            widget = cachedWidget
             widget.data = self
-        default:
+        } else {
             widget = CheckboxWidget(self)
         }
         widgetCache.putNext(widget)

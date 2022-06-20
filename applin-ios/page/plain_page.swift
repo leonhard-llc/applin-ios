@@ -2,6 +2,10 @@ import Foundation
 import UIKit
 
 struct PlainPageData: Equatable {
+    static func blank() -> PlainPageData {
+        PlainPageData(title: "Empty", .empty)
+    }
+
     static let TYP = "plain-page"
     let title: String?
     let widget: WidgetData
@@ -37,7 +41,6 @@ class PlainPageController: UIViewController, PageController {
     }
 
     func update(
-            _ navController: NavigationController,
             _ session: ApplinSession,
             _ widgetCache: WidgetCache,
             _ newData: PlainPageData

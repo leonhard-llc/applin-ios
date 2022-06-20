@@ -8,7 +8,6 @@ protocol PageController: UIViewController {
 
 enum PageData: Equatable {
     case modal(ModalData)
-    case markdownPage(MarkdownPageData)
     case navPage(NavPageData)
     case plainPage(PlainPageData)
 
@@ -20,19 +19,15 @@ enum PageData: Equatable {
     }
 
     static func blankPage() -> PageData {
-        .plainPage(PlainPageData(title: "Empty", .empty))
+        .plainPage(PlainPageData.blank())
     }
 
     init(_ item: JsonItem, _ session: ApplinSession) throws {
         switch item.typ {
         case ModalKind.alert.typ():
             self = try .modal(ModalData(.alert, item, session))
-        case ModalKind.info.typ():
-            self = try .modal(ModalData(.info, item, session))
-        case ModalKind.question.typ():
-            self = try .modal(ModalData(.question, item, session))
-        case MarkdownPageData.TYP:
-            self = try .markdownPage(MarkdownPageData(item, session))
+        case ModalKind.drawer.typ():
+            self = try .modal(ModalData(.drawer, item, session))
         case NavPageData.TYP:
             self = try .navPage(NavPageData(item, session))
         case PlainPageData.TYP:
@@ -45,8 +40,6 @@ enum PageData: Equatable {
     func toJsonItem() -> JsonItem {
         switch self {
         case let .modal(inner):
-            return inner.toJsonItem()
-        case let .markdownPage(inner):
             return inner.toJsonItem()
         case let .navPage(inner):
             return inner.toJsonItem()
