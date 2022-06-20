@@ -38,7 +38,7 @@ struct CheckboxData: Equatable, Hashable {
     }
 }
 
-class CheckboxWidget: Widget {
+class CheckboxWidget: WidgetProto {
     var data: CheckboxData
     let view: UISwitch
     weak var session: ApplinSession?

@@ -1,6 +1,7 @@
 enum OptWidget {
     case disabled
-    case present(Widget)
+    // Rename to `some`.
+    case present(WidgetProto)
 }
 
 class WidgetCache {
@@ -9,7 +10,7 @@ class WidgetCache {
     private var scroll: [ScrollWidget] = []
     private var nextScroll: [ScrollWidget] = []
 
-    public func remove(_ key: String) -> Widget? {
+    public func remove(_ key: String) -> WidgetProto? {
         switch self.widgets.removeValue(forKey: key) {
         case nil, .disabled:
             return nil
@@ -21,7 +22,7 @@ class WidgetCache {
         }
     }
 
-    public func remove(_ keys: [String]) -> Widget? {
+    public func remove(_ keys: [String]) -> WidgetProto? {
         for key in keys {
             if let widget = self.remove(key) {
                 return widget
@@ -30,7 +31,7 @@ class WidgetCache {
         return nil
     }
 
-    public func putNext(_ widget: Widget) {
+    public func putNext(_ widget: WidgetProto) {
         for key in widget.keys() {
             if self.nextWidgets[key] == nil {
                 self.nextWidgets[key] = .present(widget)

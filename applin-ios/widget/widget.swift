@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-protocol Widget {
+protocol WidgetProto {
     func keys() -> [String]
 }
 

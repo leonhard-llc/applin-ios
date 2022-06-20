@@ -40,7 +40,7 @@ struct ButtonData: Equatable, Hashable {
     }
 }
 
-class ButtonWidget: Widget {
+class ButtonWidget: WidgetProto {
     var data: ButtonData
     var button: UIButton!
     weak var session: ApplinSession?
