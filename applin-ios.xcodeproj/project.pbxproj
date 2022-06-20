@@ -51,7 +51,6 @@
 		CE68B8FA280004E1000B7761 /* applin_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B8F9280004E1000B7761 /* applin_iosTests.swift */; };
 		CE68B904280004E1000B7761 /* applin_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B903280004E1000B7761 /* applin_iosUITests.swift */; };
 		CE68B906280004E1000B7761 /* applin_iosUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B905280004E1000B7761 /* applin_iosUITestsLaunchTests.swift */; };
-		CEB78F8D280B6F30006F1B51 /* Nifty Markdown Formatter in Frameworks */ = {isa = PBXBuildFile; productRef = CEB78F8C280B6F30006F1B51 /* Nifty Markdown Formatter */; };
 		CEE0509028076EAE00F68166 /* widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE0508F28076EAE00F68166 /* widget.swift */; };
 /* End PBXBuildFile section */
 
@@ -130,7 +129,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CEB78F8D280B6F30006F1B51 /* Nifty Markdown Formatter in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,7 +278,6 @@
 			);
 			name = "applin-ios";
 			packageProductDependencies = (
-				CEB78F8C280B6F30006F1B51 /* Nifty Markdown Formatter */,
 			);
 			productName = "applin-ios";
 			productReference = CE68B8E5280004DE000B7761 /* applin-ios.app */;
@@ -355,7 +352,6 @@
 			);
 			mainGroup = CE68B8DC280004DE000B7761;
 			packageReferences = (
-				CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "Nifty-Markdown-Formatter.git" */,
 			);
 			productRefGroup = CE68B8E6280004DE000B7761 /* Products */;
 			projectDirPath = "";
@@ -761,25 +757,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "Nifty-Markdown-Formatter.git" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NiftyTreeStudios/Nifty-Markdown-Formatter.git";
-			requirement = {
-				kind = revision;
-				revision = 13b9655285eaa163f4dad2442c0fe0e047cadadf;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		CEB78F8C280B6F30006F1B51 /* Nifty Markdown Formatter */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CEB78F8B280B6F30006F1B51 /* XCRemoteSwiftPackageReference "Nifty-Markdown-Formatter.git" */;
-			productName = "Nifty Markdown Formatter";
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CE68B8DD280004DE000B7761 /* Project object */;
 }
