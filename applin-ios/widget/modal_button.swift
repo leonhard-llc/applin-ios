@@ -3,7 +3,7 @@ import UIKit
 
 struct ModalButtonData: Equatable, Hashable {
     static let TYP = "modal-button"
-    let actions: [ApplinAction]
+    let actions: [ActionData]
     let isCancel: Bool
     let isDefault: Bool
     let isDestructive: Bool
@@ -17,7 +17,7 @@ struct ModalButtonData: Equatable, Hashable {
         self.text = try item.requireText()
     }
 
-    init(_ actions: [ApplinAction], text: String) {
+    init(_ actions: [ActionData], text: String) {
         self.actions = actions
         self.isCancel = false
         self.isDefault = false

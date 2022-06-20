@@ -3,7 +3,7 @@ import UIKit
 
 struct ButtonData: Equatable, Hashable {
     static let TYP = "button"
-    let actions: [ApplinAction]
+    let actions: [ActionData]
     let text: String
 
     init(_ item: JsonItem) throws {
@@ -11,7 +11,7 @@ struct ButtonData: Equatable, Hashable {
         self.text = try item.requireText()
     }
 
-    init(_ actions: [ApplinAction], text: String) {
+    init(_ actions: [ActionData], text: String) {
         self.actions = actions
         self.text = text
     }

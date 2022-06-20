@@ -2,9 +2,9 @@ import Foundation
 
 struct BackButtonData: Equatable, Hashable {
     static let TYP = "back-button"
-    let actions: [ApplinAction]
+    let actions: [ActionData]
 
-    init(_ actions: [ApplinAction], _ session: ApplinSession?) {
+    init(_ actions: [ActionData], _ session: ApplinSession?) {
         self.actions = actions
     }
 

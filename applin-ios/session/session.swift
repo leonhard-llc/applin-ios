@@ -161,7 +161,7 @@ class ApplinSession: ObservableObject {
         return self.applyUpdate(data)
     }
 
-    func doActionsAsync(_ actions: [ApplinAction]) async {
+    func doActionsAsync(_ actions: [ActionData]) async {
         loop: for action in actions {
             switch action {
             case let .copyToClipboard(string):
@@ -193,7 +193,7 @@ class ApplinSession: ObservableObject {
         }
     }
 
-    func doActions(_ actions: [ApplinAction]) {
+    func doActions(_ actions: [ActionData]) {
         Task {
             await self.doActionsAsync(actions)
         }

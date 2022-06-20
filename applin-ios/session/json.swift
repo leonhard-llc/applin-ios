@@ -142,8 +142,8 @@ class JsonItem: Codable {
         self.typ = typ
     }
 
-    func optActions() throws -> [ApplinAction]? {
-        try self.actions?.map({ string in try ApplinAction(string) })
+    func optActions() throws -> [ActionData]? {
+        try self.actions?.map({ string in try ActionData(string) })
     }
 
     // swiftlint:disable cyclomatic_complexity

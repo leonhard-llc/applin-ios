@@ -5,7 +5,7 @@ struct CheckboxData: Equatable, Hashable {
     static let TYP = "checkbox"
     let id: String
     let initialBool: Bool
-    let actions: [ApplinAction]
+    let actions: [ActionData]
 
     init(_ item: JsonItem, _ session: ApplinSession) throws {
         self.actions = try item.optActions() ?? []
