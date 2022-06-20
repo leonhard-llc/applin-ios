@@ -184,6 +184,9 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
         self.controllers = newControllers
         self.setViewControllers(
                 newControllers.compactMap({ controller in controller.asPageController() }),
+                // TODO: Prevent warning "setViewControllers:animated: called on <applin_ios.NavigationController>
+                //       while an existing transition or presentation is occurring;
+                //       the navigation stack will not be updated."
                 animated: changedTopPage && !appJustStarted
         )
     }
