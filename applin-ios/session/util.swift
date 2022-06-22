@@ -130,3 +130,13 @@ extension HTTPURLResponse {
         }
     }
 }
+
+extension Array {
+    func get(_ index: Int) -> Element? {
+        if index < self.count {
+            return self[index]
+        } else {
+            return nil
+        }
+    }
+}

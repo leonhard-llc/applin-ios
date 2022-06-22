@@ -16,10 +16,12 @@
 		36EBC7D0C5B0E04F97D2D510 /* connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCBC4221C06AEE8052C62 /* connection.swift */; };
 		36EBC8B6C68327FF6583229E /* navigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCA718AE3DBD37E0896B5 /* navigation.swift */; };
 		36EBC8C464017332F7DDC833 /* modal_button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCC3CE22617EF9A9D5C19 /* modal_button.swift */; };
+		36EBC8FE4EC18C24AC57EACB /* form.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCE389B3227F90C1CA9B1 /* form.swift */; };
 		36EBC93F79D286970D78A26F /* test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCE3951A4D99DCE27F5C1 /* test.swift */; };
 		36EBC97DAC21DE01062EC1E7 /* checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC3249E4C0129C3AB1202 /* checkbox.swift */; };
 		36EBC9A153BF2E49276AF498 /* cache_file_writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC56645CC4C7C315F910E /* cache_file_writer.swift */; };
 		36EBCB20F9449FB777B26C41 /* util.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC6D4BF5D11D4B8ADE702 /* util.swift */; };
+		36EBCBBC8BC3163E99A8F172 /* form_section.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCE7CF445372318DC66BD /* form_section.swift */; };
 		36EBCBDB00654AB0080C27BB /* default.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCE9C65CC349B368C28E1 /* default.swift */; };
 		36EBCC748B90D90289545196 /* media.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCA1D73CB353801F2FAF5 /* media.swift */; };
 		36EBCE2C234FD617251CFD45 /* page.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC0399B6CB8510C2A1A7C /* page.swift */; };
@@ -85,7 +87,9 @@
 		36EBCBC4221C06AEE8052C62 /* connection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = connection.swift; path = session/connection.swift; sourceTree = "<group>"; };
 		36EBCC3CE22617EF9A9D5C19 /* modal_button.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = modal_button.swift; sourceTree = "<group>"; };
 		36EBCD61AC7C89F3E8F5F7AE /* session_status.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = session_status.swift; path = view/session_status.swift; sourceTree = "<group>"; };
+		36EBCE389B3227F90C1CA9B1 /* form.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = form.swift; sourceTree = "<group>"; };
 		36EBCE3951A4D99DCE27F5C1 /* test.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = test.swift; path = view/test.swift; sourceTree = "<group>"; };
+		36EBCE7CF445372318DC66BD /* form_section.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = form_section.swift; sourceTree = "<group>"; };
 		36EBCE9C65CC349B368C28E1 /* default.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = default.swift; path = session/default.swift; sourceTree = "<group>"; };
 		36EBCF8A9612EC118CF90589 /* action.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = action.swift; path = session/action.swift; sourceTree = "<group>"; };
 		CE2886412807C8C7001CE13E /* default.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = default.json; sourceTree = "<group>"; };
@@ -170,6 +174,8 @@
 				36EBC3249E4C0129C3AB1202 /* checkbox.swift */,
 				36EBCA1D73CB353801F2FAF5 /* media.swift */,
 				36EBCC3CE22617EF9A9D5C19 /* modal_button.swift */,
+				36EBCE389B3227F90C1CA9B1 /* form.swift */,
+				36EBCE7CF445372318DC66BD /* form_section.swift */,
 			);
 			path = widget;
 			sourceTree = "<group>";
@@ -423,6 +429,8 @@
 				36EBC01989EC1917F94B37BE /* widget_cache.swift in Sources */,
 				36EBCC748B90D90289545196 /* media.swift in Sources */,
 				36EBC8C464017332F7DDC833 /* modal_button.swift in Sources */,
+				36EBC8FE4EC18C24AC57EACB /* form.swift in Sources */,
+				36EBCBBC8BC3163E99A8F172 /* form_section.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

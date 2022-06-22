@@ -4,8 +4,8 @@ private enum CacheEntry {
 }
 
 class WidgetCache {
-    private var widgets: [String: CacheEntry] = [:]
-    private var nextWidgets: [String: CacheEntry] = [:]
+    private var form: [FormWidget] = []
+    private var nextForm: [FormWidget] = []
     private var scroll: [ScrollWidget] = []
     private var nextScroll: [ScrollWidget] = []
     private var keyed: [String: CacheEntry] = [:]
@@ -22,8 +22,19 @@ class WidgetCache {
 
     // Non-Keyed Widgets /////////////////////////////////////////////////////
 
+    public func putNextForm(_ widget: FormWidget) {
+        self.nextForm.append(widget)
+    }
+
     public func putNextScroll(_ widget: ScrollWidget) {
         self.nextScroll.append(widget)
+    }
+
+    public func removeForm() -> FormWidget? {
+        if self.form.isEmpty {
+            return nil
+        }
+        return self.form.remove(at: 0)
     }
 
     public func removeScroll() -> ScrollWidget? {

@@ -15,6 +15,10 @@ class SuperviewHelper {
     init() {
     }
 
+    init(constraints: [NSLayoutConstraint]) {
+        self.setConstraints(constraints)
+    }
+
     func deactivateConstraints() {
         NSLayoutConstraint.deactivate(self.constraints)
     }

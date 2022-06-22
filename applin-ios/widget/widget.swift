@@ -18,6 +18,7 @@ enum WidgetData: Equatable, Hashable {
     indirect case column(ColumnData)
     case empty(EmptyData)
     case errorDetails(ErrorDetailsData)
+    case form(FormData)
     indirect case scroll(ScrollData)
     case text(TextData)
 
@@ -33,8 +34,12 @@ enum WidgetData: Equatable, Hashable {
             self = .empty(EmptyData())
         case ErrorDetailsData.TYP:
             self = .errorDetails(ErrorDetailsData())
+        case FormData.TYP:
+            self = try .form(FormData(item, session))
         case ScrollData.TYP:
             self = try .scroll(ScrollData(item, session))
+        case FormSectionData.TYP:
+            self = try .formSection(FormSectionData(item, session))
         case TextData.TYP:
             self = try .text(TextData(item))
         default:
@@ -56,7 +61,11 @@ enum WidgetData: Equatable, Hashable {
             return inner
         case let .errorDetails(inner):
             return inner
+        case let .form(inner):
+            return inner
         case let .scroll(inner):
+            return inner
+        case let .formSection(inner):
             return inner
         case let .text(inner):
             return inner
