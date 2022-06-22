@@ -8,38 +8,22 @@ class WidgetCache {
     private var nextWidgets: [String: CacheEntry] = [:]
     private var scroll: [ScrollWidget] = []
     private var nextScroll: [ScrollWidget] = []
+    private var keyed: [String: CacheEntry] = [:]
+    private var nextKeyed: [String: CacheEntry] = [:]
 
-    public func remove(_ key: String) -> WidgetProto? {
-        switch self.widgets.removeValue(forKey: key) {
-        case nil, .tombstone:
-            return nil
-        case let .ok(widget):
-            for key in widget.keys() {
-                self.widgets.removeValue(forKey: key)
-            }
-            return widget
-        }
+    public func flip() {
+        self.keyed = self.nextKeyed
+        self.nextKeyed = [:]
+        self.scroll = self.nextScroll
+        self.nextScroll = []
+        self.form = self.nextForm
+        self.nextForm = []
     }
 
-    public func remove(_ keys: [String]) -> WidgetProto? {
-        for key in keys {
-            if let widget = self.remove(key) {
-                return widget
-            }
-        }
-        return nil
-    }
+    // Non-Keyed Widgets /////////////////////////////////////////////////////
 
-    public func putNext(_ widget: WidgetProto) {
-        for key in widget.keys() {
-            if self.nextWidgets[key] == nil {
-                self.nextWidgets[key] = .ok(widget)
-            } else {
-                // Two widgets use this key.  Don't use it for any widgets.
-                // We cannot use `self.widgets[key] = nil` since that deletes the entry.
-                self.nextWidgets.updateValue(.tombstone, forKey: key)
-            }
-        }
+    public func putNextScroll(_ widget: ScrollWidget) {
+        self.nextScroll.append(widget)
     }
 
     public func removeScroll() -> ScrollWidget? {
@@ -49,14 +33,38 @@ class WidgetCache {
         return self.scroll.remove(at: 0)
     }
 
-    public func putNextScroll(_ widget: ScrollWidget) {
-        self.nextScroll.append(widget)
+    // Keyed Widgets /////////////////////////////////////////////////////////
+
+    public func putNext(_ widget: WidgetProto) {
+        for key in widget.keys() {
+            if self.nextKeyed[key] == nil {
+                self.nextKeyed[key] = .ok(widget)
+            } else {
+                // Two widgets use this key.  Don't use it for any widgets.
+                // We cannot use `self.widgets[key] = nil` since that deletes the entry.
+                self.nextKeyed.updateValue(.tombstone, forKey: key)
+            }
+        }
     }
 
-    public func flip() {
-        self.widgets = self.nextWidgets
-        self.nextWidgets = [:]
-        self.scroll = self.nextScroll
-        self.nextScroll = []
+    private func removeKeyed(_ key: String) -> WidgetProto? {
+        switch self.keyed.removeValue(forKey: key) {
+        case nil, .tombstone:
+            return nil
+        case let .ok(widget):
+            for key in widget.keys() {
+                self.keyed.removeValue(forKey: key)
+            }
+            return widget
+        }
+    }
+
+    public func remove(_ keys: [String]) -> WidgetProto? {
+        for key in keys {
+            if let widget = self.removeKeyed(key) {
+                return widget
+            }
+        }
+        return nil
     }
 }

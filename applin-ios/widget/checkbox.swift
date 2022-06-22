@@ -27,13 +27,8 @@ struct CheckboxData: Equatable, Hashable, WidgetDataProto {
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        var widget: CheckboxWidget
-        if let cachedWidget = widgetCache.remove(self.keys()) as? CheckboxWidget {
-            widget = cachedWidget
-            widget.data = self
-        } else {
-            widget = CheckboxWidget(self)
-        }
+        let widget = widgetCache.remove(self.keys()) as? CheckboxWidget ?? CheckboxWidget(self)
+        widget.data = self
         widgetCache.putNext(widget)
         return widget.getView(session, widgetCache)
     }
