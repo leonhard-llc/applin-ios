@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct TextData: Equatable, Hashable {
+struct TextData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "text"
     let text: String
 
@@ -17,6 +17,10 @@ struct TextData: Equatable, Hashable {
         let item = JsonItem(TextData.TYP)
         item.text = self.text
         return item
+    }
+
+    func keys() -> [String] {
+        []
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {

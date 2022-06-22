@@ -1,10 +1,15 @@
 import Foundation
 import UIKit
 
-struct ButtonData: Equatable, Hashable {
+struct ButtonData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "button"
     let actions: [ActionData]
     let text: String
+
+    init(_ actions: [ActionData], text: String) {
+        self.actions = actions
+        self.text = text
+    }
 
     init(_ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []

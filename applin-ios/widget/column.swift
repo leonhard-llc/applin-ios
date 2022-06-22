@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ColumnData: Equatable, Hashable {
+struct ColumnData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "column"
     let widgets: [WidgetData]
     let alignment: ApplinHAlignment
@@ -15,13 +15,17 @@ struct ColumnData: Equatable, Hashable {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ColumnData.TYP)
-        item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
+        item.widgets = self.widgets.map({ widgets in widgets.inner().toJsonItem() })
         item.setAlign(self.alignment)
         return item
     }
 
+    func keys() -> [String] {
+        []
+    }
+
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        let subViews = self.widgets.map({ widget in widget.getView(session, widgetCache) })
+        let subViews = self.widgets.map({ widget in widget.inner().getView(session, widgetCache) })
         let view = UIStackView(arrangedSubviews: subViews)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.axis = .vertical

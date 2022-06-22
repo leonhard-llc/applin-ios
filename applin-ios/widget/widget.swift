@@ -5,7 +5,12 @@ protocol WidgetProto {
     func keys() -> [String]
 }
 
-// swiftlint:disable cyclomatic_complexity
+protocol WidgetDataProto {
+    func toJsonItem() -> JsonItem
+    func keys() -> [String]
+    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView
+}
+
 enum WidgetData: Equatable, Hashable {
     case backButton(BackButtonData)
     case button(ButtonData)
@@ -32,45 +37,22 @@ enum WidgetData: Equatable, Hashable {
         }
     }
 
-    // TODO: Use an interface to eliminate this method and others.
-    func toJsonItem() -> JsonItem {
+    func inner() -> WidgetDataProto {
         switch self {
         case let .backButton(inner):
-            return inner.toJsonItem()
+            return inner
         case let .button(inner):
-            return inner.toJsonItem()
+            return inner
         case let .checkbox(inner):
-            return inner.toJsonItem()
+            return inner
         case let .column(inner):
-            return inner.toJsonItem()
+            return inner
         case .empty:
-            return EmptyData.toJsonItem()
+            return EmptyData()
         case let .scroll(inner):
-            return inner.toJsonItem()
+            return inner
         case let .text(inner):
-            return inner.toJsonItem()
-        }
-    }
-
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        switch self {
-        case let .backButton(inner):
-            return ButtonData(inner.actions, text: "Back").getView(session, widgetCache)
-        case let .button(inner):
-            return inner.getView(session, widgetCache)
-        case let .checkbox(inner):
-            return inner.getView(session, widgetCache)
-        case let .column(inner):
-            return inner.getView(session, widgetCache)
-        case .empty:
-            return EmptyData.getView()
-        case let .text(inner):
-            return inner.getView(session, widgetCache)
-        case let .scroll(inner):
-            return inner.getView(session, widgetCache)
-        default:
-            print("widget unimplemented: \(self)")
-            return UIView()
+            return inner
         }
     }
 }

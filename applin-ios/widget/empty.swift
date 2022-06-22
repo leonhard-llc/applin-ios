@@ -1,15 +1,19 @@
 import Foundation
 import UIKit
 
-struct EmptyData: Equatable, Hashable {
+struct EmptyData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "empty"
 
-    static func toJsonItem() -> JsonItem {
-        let item = JsonItem(ColumnData.TYP)
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(EmptyData.TYP)
         return item
     }
 
-    static func getView() -> UIView {
+    func keys() -> [String] {
+        []
+    }
+
+    func getView(_: ApplinSession, _: WidgetCache) -> UIView {
         let view = UIView()
         view.backgroundColor = pastelPink
         return view

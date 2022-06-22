@@ -23,7 +23,7 @@ struct PlainPageData: Equatable {
     func toJsonItem() -> JsonItem {
         let item = JsonItem(PlainPageData.TYP)
         item.title = self.title
-        item.widget = self.widget.toJsonItem()
+        item.widget = self.widget.inner().toJsonItem()
         return item
     }
 }
@@ -52,7 +52,7 @@ class PlainPageController: UIViewController, PageController {
         self.title = newData.title
         self.view.backgroundColor = .systemBackground
         self.helper.removeSubviewsAndConstraints(self.view)
-        let subView = newData.widget.getView(session, widgetCache)
+        let subView = newData.widget.inner().getView(session, widgetCache)
         self.view.addSubview(subView)
         self.helper.setConstraints([
             subView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),

@@ -1,7 +1,8 @@
 import Foundation
 import UIKit
 
-struct CheckboxData: Equatable, Hashable {
+// TODO: Rename to switch.
+struct CheckboxData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "checkbox"
     let id: String
     let initialBool: Bool

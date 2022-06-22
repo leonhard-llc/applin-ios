@@ -1,12 +1,9 @@
 import Foundation
+import UIKit
 
-struct BackButtonData: Equatable, Hashable {
+struct BackButtonData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "back-button"
     let actions: [ActionData]
-
-    init(_ actions: [ActionData], _ session: ApplinSession?) {
-        self.actions = actions
-    }
 
     init(_ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
@@ -16,5 +13,13 @@ struct BackButtonData: Equatable, Hashable {
         let item = JsonItem(BackButtonData.TYP)
         item.actions = self.actions.map({ action in action.toString() })
         return item
+    }
+
+    func keys() -> [String] {
+        ButtonData(actions, text: "Back").keys()
+    }
+
+    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
+        ButtonData(actions, text: "Back").getView(session, widgetCache)
     }
 }

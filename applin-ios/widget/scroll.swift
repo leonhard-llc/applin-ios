@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ScrollData: Equatable, Hashable {
+struct ScrollData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "scroll"
     let widget: WidgetData
 
@@ -11,8 +11,12 @@ struct ScrollData: Equatable, Hashable {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ScrollData.TYP)
-        item.widget = self.widget.toJsonItem()
+        item.widget = self.widget.inner().toJsonItem()
         return item
+    }
+
+    func keys() -> [String] {
+        []
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
@@ -41,7 +45,7 @@ class ScrollWidget {
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         self.helper.removeSubviewsAndConstraints(self.view)
-        let subView = self.data.widget.getView(session, widgetCache)
+        let subView = self.data.widget.inner().getView(session, widgetCache)
         self.view.addSubview(subView)
         self.helper.setConstraints([
             subView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),

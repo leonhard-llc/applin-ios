@@ -38,8 +38,8 @@ struct NavPageData: Equatable {
         let item = JsonItem(NavPageData.TYP)
         item.title = self.title
         item.start = self.start?.toJsonItem()
-        item.end = self.end?.toJsonItem()
-        item.widget = self.widget.toJsonItem()
+        item.end = self.end?.inner().toJsonItem()
+        item.widget = self.widget.inner().toJsonItem()
         return item
     }
 }
@@ -140,7 +140,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         self.view.backgroundColor = .systemBackground
         self.helper.deactivateConstraints()
         self.subView?.removeFromSuperview()
-        let subView = newData.widget.getView(session, widgetCache)
+        let subView = newData.widget.inner().getView(session, widgetCache)
         self.view.addSubview(subView)
         self.subView = subView
         self.helper.setConstraints([
