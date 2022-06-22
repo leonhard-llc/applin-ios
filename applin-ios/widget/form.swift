@@ -73,6 +73,7 @@ struct FormData: Equatable, Hashable, WidgetDataProto {
 class FormCell: UITableViewCell {
     static let cellReuseIdentifier = "FormCell"
     var optHelper: SuperviewHelper?
+    var optPhotoUrl: URL?
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("unimplemented")
@@ -92,12 +93,15 @@ class FormCell: UITableViewCell {
         self.contentConfiguration = content
     }
 
-    func setWidget(_ widget: WidgetData, _ session: ApplinSession, _ widgetCache: WidgetCache) {
+    func setWidget(_ widget: WidgetData,
+                   _ session: ApplinSession,
+                   _ widgetCache: WidgetCache) {
         if let helper = self.optHelper {
             helper.removeSubviewsAndConstraints(self.contentView)
         }
         self.optHelper = nil
         self.accessoryType = .none
+        self.optPhotoUrl = nil
         switch widget {
         case let .text(inner):
             var content = self.defaultContentConfiguration()
@@ -107,7 +111,30 @@ class FormCell: UITableViewCell {
             var content = self.defaultContentConfiguration()
             content.text = inner.text
             content.secondaryText = inner.subText
-            // TODO: Add photo.
+            // TODO: Prevent multiple parallel fetches.
+            if let photoUrl = inner.photoUrl {
+                content.image = UIImage()
+                let height = self.bounds.width / 5
+                content.imageProperties.reservedLayoutSize = CGSize(width: height, height: height)
+                content.imageProperties.maximumSize = CGSize(width: height, height: height)
+                self.optPhotoUrl = photoUrl
+                var contentCopy = content
+                DispatchQueue.global().async { [weak self] in
+                    print("fetching \(photoUrl)")
+                    if let data = try? Data(contentsOf: photoUrl) {
+                        print("processing \(photoUrl)")
+                        if let image = UIImage(data: data) {
+                            contentCopy.image = image
+                            DispatchQueue.main.async {
+                                if self?.optPhotoUrl == photoUrl {
+                                    print("assigning \(photoUrl)")
+                                    self?.contentConfiguration = contentCopy
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             self.contentConfiguration = content
             self.accessoryType = .disclosureIndicator
         default:
@@ -135,7 +162,7 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
         self.data = data
         self.weakSession = session
         self.weakWidgetCache = widgetCache
-        self.tableView = UITableView()
+        self.tableView = UITableView(frame: .zero, style: .grouped)
         super.init()
         self.tableView.translatesAutoresizingMaskIntoConstraints = false
         self.tableView.register(FormCell.self, forCellReuseIdentifier: FormCell.cellReuseIdentifier)
