@@ -97,11 +97,19 @@ class FormCell: UITableViewCell {
             helper.removeSubviewsAndConstraints(self.contentView)
         }
         self.optHelper = nil
+        self.accessoryType = .none
         switch widget {
         case let .text(inner):
             var content = self.defaultContentConfiguration()
             content.text = inner.text
             self.contentConfiguration = content
+        case let .formDetail(inner):
+            var content = self.defaultContentConfiguration()
+            content.text = inner.text
+            content.secondaryText = inner.subText
+            // TODO: Add photo.
+            self.contentConfiguration = content
+            self.accessoryType = .disclosureIndicator
         default:
             let subView = widget.inner().getView(session, widgetCache)
             // subView.clipsToBounds = true
@@ -116,7 +124,7 @@ class FormCell: UITableViewCell {
     }
 }
 
-class FormWidget: NSObject, UITableViewDataSource, WidgetProto {
+class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetProto {
     var data: FormData
     weak var weakSession: ApplinSession?
     weak var weakWidgetCache: WidgetCache?
@@ -132,6 +140,7 @@ class FormWidget: NSObject, UITableViewDataSource, WidgetProto {
         self.tableView.translatesAutoresizingMaskIntoConstraints = false
         self.tableView.register(FormCell.self, forCellReuseIdentifier: FormCell.cellReuseIdentifier)
         self.tableView.dataSource = self
+        self.tableView.delegate = self
     }
 
     func keys() -> [String] {
@@ -172,5 +181,27 @@ class FormWidget: NSObject, UITableViewDataSource, WidgetProto {
         print("tableView cellForRowAt \(indexPath): \(widget)")
         formCell.setWidget(widget, session, widgetCache)
         return formCell
+    }
+
+    // UITableViewDelegate
+
+    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        switch self.data.sections.get(indexPath.section)?.1.get(indexPath.row) {
+        case .formDetail:
+            break
+        default:
+            return nil
+        }
+        return indexPath
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch self.data.sections.get(indexPath.section)?.1.get(indexPath.row) {
+        case let .formDetail(inner):
+            self.weakSession?.doActions(inner.actions)
+        default:
+            break
+        }
+        self.tableView.deselectRow(at: indexPath, animated: false)
     }
 }

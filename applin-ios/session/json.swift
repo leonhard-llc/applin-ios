@@ -103,6 +103,7 @@ class JsonItem: Codable {
     var photoUrl: String?
     var spacing: Float32?
     var start: JsonItem?
+    var subText: String?
     var text: String?
     var title: String?
     var url: String?
@@ -130,6 +131,7 @@ class JsonItem: Codable {
         case photoUrl = "photo-url"
         case spacing
         case start
+        case subText = "sub-text"
         case text
         case title
         case url

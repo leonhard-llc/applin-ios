@@ -19,7 +19,9 @@ enum WidgetData: Equatable, Hashable {
     case empty(EmptyData)
     case errorDetails(ErrorDetailsData)
     case form(FormData)
+    case formDetail(FormDetailData)
     indirect case scroll(ScrollData)
+    case formSection(FormSectionData)
     case text(TextData)
 
     init(_ item: JsonItem, _ session: ApplinSession) throws {
@@ -36,6 +38,8 @@ enum WidgetData: Equatable, Hashable {
             self = .errorDetails(ErrorDetailsData())
         case FormData.TYP:
             self = try .form(FormData(item, session))
+        case FormDetailData.TYP:
+            self = try .formDetail(FormDetailData(item, session))
         case ScrollData.TYP:
             self = try .scroll(ScrollData(item, session))
         case FormSectionData.TYP:
@@ -62,6 +66,8 @@ enum WidgetData: Equatable, Hashable {
         case let .errorDetails(inner):
             return inner
         case let .form(inner):
+            return inner
+        case let .formDetail(inner):
             return inner
         case let .scroll(inner):
             return inner
