@@ -24,7 +24,7 @@ struct ButtonData: Equatable, Hashable, WidgetDataProto {
     }
 
     func keys() -> [String] {
-        ["button:\(self.text)", "button:\(self.actions)"]
+        ["button:\(self.actions)", "button:\(self.text)"]
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
