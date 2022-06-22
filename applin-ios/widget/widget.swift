@@ -16,7 +16,7 @@ enum WidgetData: Equatable, Hashable {
     case button(ButtonData)
     case checkbox(CheckboxData)
     indirect case column(ColumnData)
-    case empty
+    case empty(EmptyData)
     indirect case scroll(ScrollData)
     case text(TextData)
 
@@ -28,6 +28,8 @@ enum WidgetData: Equatable, Hashable {
             self = try .checkbox(CheckboxData(item, session))
         case ColumnData.TYP:
             self = try .column(ColumnData(item, session))
+        case EmptyData.TYP:
+            self = .empty(EmptyData())
         case ScrollData.TYP:
             self = try .scroll(ScrollData(item, session))
         case TextData.TYP:
@@ -47,8 +49,8 @@ enum WidgetData: Equatable, Hashable {
             return inner
         case let .column(inner):
             return inner
-        case .empty:
-            return EmptyData()
+        case let .empty(inner):
+            return inner
         case let .scroll(inner):
             return inner
         case let .text(inner):

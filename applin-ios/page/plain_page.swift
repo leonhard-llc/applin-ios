@@ -3,7 +3,7 @@ import UIKit
 
 struct PlainPageData: Equatable {
     static func blank() -> PlainPageData {
-        PlainPageData(title: "Empty", .empty)
+        PlainPageData(title: "Empty", .empty(EmptyData()))
     }
 
     static let TYP = "plain-page"
