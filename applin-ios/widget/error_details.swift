@@ -1,15 +1,19 @@
-//import Foundation
-//import UIKit
-//
-//struct ApplinErrorDetails: Equatable, Hashable {
-//    static let TYP = "error-details"
-//    let error: String
-//
-//    init(_ session: ApplinSession) {
-//        self.error = session.error ?? "no error"
-//    }
-//
-//    func makeView() -> UIView {
-//        TextData(self.error).makeView()
-//    }
-//}
+import Foundation
+import UIKit
+
+struct ErrorDetailsData: Equatable, Hashable, WidgetDataProto {
+    static let TYP = "error-details"
+
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(ErrorDetailsData.TYP)
+        return item
+    }
+
+    func keys() -> [String] {
+        []
+    }
+
+    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
+        TextData(session.error ?? "no error").getView(session, widgetCache)
+    }
+}
