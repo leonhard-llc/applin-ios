@@ -17,14 +17,6 @@ struct ModalButtonData: Equatable, Hashable {
         self.text = try item.requireText()
     }
 
-    init(_ actions: [ActionData], text: String) {
-        self.actions = actions
-        self.isCancel = false
-        self.isDefault = false
-        self.isDestructive = false
-        self.text = text
-    }
-
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ModalButtonData.TYP)
         item.actions = self.actions.map({ action in action.toString() })

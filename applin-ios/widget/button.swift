@@ -16,11 +16,6 @@ struct ButtonData: Equatable, Hashable, WidgetDataProto {
         self.text = try item.requireText()
     }
 
-    init(_ actions: [ActionData], text: String) {
-        self.actions = actions
-        self.text = text
-    }
-
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ButtonData.TYP)
         item.actions = self.actions.map({ action in action.toString() })
