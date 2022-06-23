@@ -168,6 +168,7 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
         self.tableView.register(FormCell.self, forCellReuseIdentifier: FormCell.cellReuseIdentifier)
         self.tableView.dataSource = self
         self.tableView.delegate = self
+        self.tableView.allowsSelection = true
     }
 
     func keys() -> [String] {
