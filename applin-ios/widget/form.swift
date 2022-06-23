@@ -111,9 +111,12 @@ class FormCell: UITableViewCell {
             var content = self.defaultContentConfiguration()
             content.text = inner.text
             content.secondaryText = inner.subText
-            // TODO: Prevent multiple parallel fetches.
             if let photoUrl = inner.photoUrl {
+                // TODO: Animate spinner.
                 content.image = UIImage()
+                if let spinnerPath = Bundle.main.path(forResource: "spinner", ofType: "gif") {
+                    content.image = UIImage(contentsOfFile: spinnerPath)
+                }
                 let height = self.bounds.width / 5
                 content.imageProperties.reservedLayoutSize = CGSize(width: height, height: height)
                 content.imageProperties.maximumSize = CGSize(width: height, height: height)
@@ -158,7 +161,6 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
     var tableView: UITableView!
 
     init(_ data: FormData, _ session: ApplinSession, _ widgetCache: WidgetCache) {
-        print("FormWidget.init(\(data))")
         self.data = data
         self.weakSession = session
         self.weakWidgetCache = widgetCache
@@ -195,7 +197,6 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        print("tableView cellForRowAt \(indexPath)")
         let tableViewCell = tableView.dequeueReusableCell(withIdentifier: FormCell.cellReuseIdentifier, for: indexPath)
         let formCell = tableViewCell as! FormCell
         guard let session = self.weakSession,
@@ -205,7 +206,6 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
             formCell.error()
             return formCell
         }
-        print("tableView cellForRowAt \(indexPath): \(widget)")
         formCell.setWidget(widget, session, widgetCache)
         return formCell
     }
