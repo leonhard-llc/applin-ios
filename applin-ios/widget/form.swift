@@ -121,17 +121,15 @@ class FormCell: UITableViewCell {
                 content.imageProperties.reservedLayoutSize = CGSize(width: height, height: height)
                 content.imageProperties.maximumSize = CGSize(width: height, height: height)
                 self.optPhotoUrl = photoUrl
-                var contentCopy = content
-                DispatchQueue.global().async { [weak self] in
-                    print("fetching \(photoUrl)")
-                    if let data = try? Data(contentsOf: photoUrl) {
-                        print("processing \(photoUrl)")
+                weak var self2 = self
+                Task.init { [self2, content] in
+                    if let data = try? await session.fetch(photoUrl) {
                         if let image = UIImage(data: data) {
+                            var contentCopy = content
                             contentCopy.image = image
-                            DispatchQueue.main.async {
-                                if self?.optPhotoUrl == photoUrl {
-                                    print("assigning \(photoUrl)")
-                                    self?.contentConfiguration = contentCopy
+                            DispatchQueue.main.async { [contentCopy] in
+                                if self2?.optPhotoUrl == photoUrl {
+                                    self2?.contentConfiguration = contentCopy
                                 }
                             }
                         }

@@ -7,6 +7,9 @@ struct Update: Codable {
     var userError: String?
 }
 
+struct FetchError: Error {
+}
+
 class ApplinSession: ObservableObject {
     let cacheFileWriter: CacheFileWriter
     let connection: ApplinConnection
@@ -159,6 +162,50 @@ class ApplinSession: ObservableObject {
             return false
         }
         return self.applyUpdate(data)
+    }
+
+    func fetch(_ url: URL) async throws -> Data {
+        // TODO: Merge concurrent fetches of the same URL.
+        // TODO: Retry on error.
+        // TODO: When retrying multiple URLs at same server, round-robin the URLs.
+        print("fetch \(url.absoluteString)")
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 10.0 /* seconds */
+        config.timeoutIntervalForResource = 60.0 /* seconds */
+        // TODONT: Don't set the config.urlCache to nil.  We want to use the cache.
+        config.httpShouldSetCookies = true
+        let urlSession = URLSession(configuration: config)
+        defer {
+            urlSession.invalidateAndCancel()
+        }
+        var urlRequest = URLRequest(
+                url: url,
+                cachePolicy: .useProtocolCachePolicy
+        )
+        urlRequest.httpMethod = "GET"
+        let data: Data
+        let httpResponse: HTTPURLResponse
+        do {
+            let (urlData, urlResponse) = try await urlSession.data(for: urlRequest)
+            data = urlData
+            httpResponse = urlResponse as! HTTPURLResponse
+        } catch {
+            print("fetch \(url.absoluteString) transport error: \(error)")
+            throw FetchError()
+        }
+        if !(200...299).contains(httpResponse.statusCode) {
+            if httpResponse.contentTypeBase() == "text/plain",
+               let string = String(data: data, encoding: .utf8) {
+                print("fetch \(url.absoluteString) server error: \(httpResponse.statusCode) "
+                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
+            } else {
+                print("fetch \(url.absoluteString) server error: \(httpResponse.statusCode) "
+                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), "
+                        + "len=\(data.count) \(httpResponse.mimeType ?? "")")
+            }
+            throw FetchError()
+        }
+        return data
     }
 
     func doActionsAsync(_ actions: [ActionData]) async {
