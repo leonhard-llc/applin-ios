@@ -27,6 +27,10 @@ struct ButtonData: Equatable, Hashable, WidgetDataProto {
         ["button:\(self.actions)", "button:\(self.text)"]
     }
 
+    func getTapActions() -> [ActionData]? {
+        self.actions
+    }
+
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         let widget = widgetCache.remove(self.keys()) as? ButtonWidget ?? ButtonWidget(self)
         widget.data = self

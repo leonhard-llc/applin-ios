@@ -13,6 +13,10 @@ struct EmptyData: Equatable, Hashable, WidgetDataProto {
         []
     }
 
+    func getTapActions() -> [ActionData]? {
+        nil
+    }
+
     func getView(_: ApplinSession, _: WidgetCache) -> UIView {
         let view = UIView()
         view.backgroundColor = pastelPink

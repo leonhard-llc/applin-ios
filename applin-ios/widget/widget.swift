@@ -8,6 +8,7 @@ protocol WidgetProto {
 protocol WidgetDataProto {
     func toJsonItem() -> JsonItem
     func keys() -> [String]
+    func getTapActions() -> [ActionData]?
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView
 }
 

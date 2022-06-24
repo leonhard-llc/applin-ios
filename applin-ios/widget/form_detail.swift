@@ -35,6 +35,10 @@ struct FormDetailData: Equatable, Hashable, WidgetDataProto {
         return keys
     }
 
+    func getTapActions() -> [ActionData]? {
+        self.actions
+    }
+
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         let widget = widgetCache.remove(self.keys()) as? FormDetailWidget ?? FormDetailWidget(self)
         widget.data = self

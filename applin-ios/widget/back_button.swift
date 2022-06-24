@@ -19,6 +19,10 @@ struct BackButtonData: Equatable, Hashable, WidgetDataProto {
         ButtonData(actions, text: "Back").keys()
     }
 
+    func getTapActions() -> [ActionData]? {
+        nil
+    }
+
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         ButtonData(actions, text: "Back").getView(session, widgetCache)
     }

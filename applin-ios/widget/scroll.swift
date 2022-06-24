@@ -19,6 +19,10 @@ struct ScrollData: Equatable, Hashable, WidgetDataProto {
         []
     }
 
+    func getTapActions() -> [ActionData]? {
+        nil
+    }
+
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         let widget = widgetCache.removeScroll() ?? ScrollWidget(self)
         widget.data = self

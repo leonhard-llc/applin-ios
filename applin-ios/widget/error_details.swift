@@ -13,6 +13,10 @@ struct ErrorDetailsData: Equatable, Hashable, WidgetDataProto {
         []
     }
 
+    func getTapActions() -> [ActionData]? {
+        nil
+    }
+
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         TextData(session.error ?? "no error").getView(session, widgetCache)
     }

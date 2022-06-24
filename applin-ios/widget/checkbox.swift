@@ -26,6 +26,10 @@ struct CheckboxData: Equatable, Hashable, WidgetDataProto {
         ["checkbox:\(self.id)"]
     }
 
+    func getTapActions() -> [ActionData]? {
+        self.actions
+    }
+
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         let widget = widgetCache.remove(self.keys()) as? CheckboxWidget ?? CheckboxWidget(self)
         widget.data = self

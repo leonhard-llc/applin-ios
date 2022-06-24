@@ -23,6 +23,10 @@ struct TextData: Equatable, Hashable, WidgetDataProto {
         []
     }
 
+    func getTapActions() -> [ActionData]? {
+        nil
+    }
+
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false

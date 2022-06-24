@@ -166,6 +166,7 @@ class ApplinSession: ObservableObject {
 
     func fetch(_ url: URL) async throws -> Data {
         // TODO: Merge concurrent fetches of the same URL.
+        //  https://developer.apple.com/documentation/uikit/views_and_controls/table_views/asynchronously_loading_images_into_table_and_collection_views#3637628
         // TODO: Retry on error.
         // TODO: When retrying multiple URLs at same server, round-robin the URLs.
         print("fetch \(url.absoluteString)")

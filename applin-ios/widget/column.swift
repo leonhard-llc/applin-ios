@@ -24,6 +24,10 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
         []
     }
 
+    func getTapActions() -> [ActionData]? {
+        nil
+    }
+
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         let subViews = self.widgets.map({ widget in widget.inner().getView(session, widgetCache) })
         let view = UIStackView(arrangedSubviews: subViews)

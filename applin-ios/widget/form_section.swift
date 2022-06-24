@@ -27,6 +27,10 @@ struct FormSectionData: Equatable, Hashable, WidgetDataProto {
         []
     }
 
+    func getTapActions() -> [ActionData]? {
+        nil
+    }
+
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         TextData("error: form-section not in form").getView(session, widgetCache)
     }
