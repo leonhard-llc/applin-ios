@@ -20,6 +20,7 @@ enum WidgetData: Equatable, Hashable {
     case empty(EmptyData)
     case errorDetails(ErrorDetailsData)
     case form(FormData)
+    case formButton(FormButtonData)
     case formDetail(FormDetailData)
     indirect case scroll(ScrollData)
     case formSection(FormSectionData)
@@ -39,6 +40,8 @@ enum WidgetData: Equatable, Hashable {
             self = .errorDetails(ErrorDetailsData())
         case FormData.TYP:
             self = try .form(FormData(item, session))
+        case FormButtonData.TYP:
+            self = try .formButton(FormButtonData(item))
         case FormDetailData.TYP:
             self = try .formDetail(FormDetailData(item, session))
         case ScrollData.TYP:
@@ -67,6 +70,8 @@ enum WidgetData: Equatable, Hashable {
         case let .errorDetails(inner):
             return inner
         case let .form(inner):
+            return inner
+        case let .formButton(inner):
             return inner
         case let .formDetail(inner):
             return inner
