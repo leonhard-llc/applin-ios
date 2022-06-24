@@ -182,6 +182,7 @@ This project is not yet usable.  It is not production-ready.
   - [ ] Avoid downloading all pages on new connection, use cached data
   - [X] Connect only when app is active.  Disconnect when in background, after a delay.
   - [ ] Let pages specify "don't connect", "connect automatically" or "poll this RPC on this interval".
+  - [ ] Add pull to refresh <https://stackoverflow.com/questions/26071528/refreshcontrol-with-programatic-uitableview-without-uitableviewcontroller>
 - Save data
   - [X] pages
   - [X] Write pages after 10s delay, to reduce power usage

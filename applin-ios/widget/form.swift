@@ -74,85 +74,150 @@ struct FormData: Equatable, Hashable, WidgetDataProto {
     }
 }
 
-class FormCell: UITableViewCell {
-    static let cellReuseIdentifier = "FormCell"
-    var optHelper: SuperviewHelper?
-    var optPhotoUrl: URL?
-
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("unimplemented")
-    }
+private class ErrorCell: UITableViewCell {
+    static let REUSE_ID = "ErrorCell"
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-    }
-
-    func error() {
-        if let helper = self.optHelper {
-            helper.removeSubviewsAndConstraints(self.contentView)
-        }
-        self.optHelper = nil
         var content = self.defaultContentConfiguration()
         content.text = "error"
         self.contentConfiguration = content
     }
 
-    func setWidget(_ widget: WidgetData,
-                   _ session: ApplinSession,
-                   _ widgetCache: WidgetCache) {
-        if let helper = self.optHelper {
-            helper.removeSubviewsAndConstraints(self.contentView)
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("unimplemented")
+    }
+}
+
+private class DisclosureCell: UITableViewCell {
+    static let REUSE_ID = "DisclosureCell"
+
+    func update(_ text: String) {
+        self.accessoryType = .disclosureIndicator
+        var content = self.defaultContentConfiguration()
+        content.text = text
+        self.contentConfiguration = content
+    }
+}
+
+private class DisclosureSubtextCell: UITableViewCell {
+    static let REUSE_ID = "DisclosureSubtextCell"
+
+    func update(text: String, subText: String) {
+        self.accessoryType = .disclosureIndicator
+        var content = self.defaultContentConfiguration()
+        content.text = text
+        content.secondaryText = subText
+        self.contentConfiguration = content
+    }
+}
+
+private extension UIListContentConfiguration {
+    mutating func addPlaceholderImage(cellWidth: CGFloat) {
+        if let spinnerPath = Bundle.main.path(forResource: "spinner", ofType: "gif") {
+            // TODO: Animate spinner.
+            self.image = UIImage(contentsOfFile: spinnerPath)
+        } else {
+            self.image = UIImage()
         }
-        self.optHelper = nil
-        self.accessoryType = .none
-        self.optPhotoUrl = nil
-        switch widget {
-        case let .text(inner):
-            var content = self.defaultContentConfiguration()
-            content.text = inner.text
-            self.contentConfiguration = content
-        case let .formDetail(inner):
-            var content = self.defaultContentConfiguration()
-            content.text = inner.text
-            content.secondaryText = inner.subText
-            if let photoUrl = inner.photoUrl {
-                // TODO: Animate spinner.
-                content.image = UIImage()
-                if let spinnerPath = Bundle.main.path(forResource: "spinner", ofType: "gif") {
-                    content.image = UIImage(contentsOfFile: spinnerPath)
-                }
-                let height = self.bounds.width / 5
-                content.imageProperties.reservedLayoutSize = CGSize(width: height, height: height)
-                content.imageProperties.maximumSize = CGSize(width: height, height: height)
-                self.optPhotoUrl = photoUrl
-                weak var self2 = self
-                Task.init { [self2, content] in
-                    if let data = try? await session.fetch(photoUrl) {
-                        if let image = UIImage(data: data) {
-                            var contentCopy = content
-                            contentCopy.image = image
-                            DispatchQueue.main.async { [contentCopy] in
-                                if self2?.optPhotoUrl == photoUrl {
-                                    self2?.contentConfiguration = contentCopy
-                                }
-                            }
-                        }
-                    }
+        let height = cellWidth / 5
+        self.imageProperties.reservedLayoutSize = CGSize(width: height, height: height)
+        self.imageProperties.maximumSize = CGSize(width: height, height: height)
+    }
+
+    mutating func loadImage(_ session: ApplinSession, _ url: URL) async throws {
+        let data = try await session.fetch(url)
+        guard let image = UIImage(data: data) else {
+            throw ApplinError.deserializeError("error loading image from \(url.absoluteString)")
+        }
+        self.image = image
+    }
+}
+
+private class DisclosureImageCell: UITableViewCell {
+    static let REUSE_ID = "DisclosureImageCell"
+    var optPhotoUrl: URL?
+
+    func update(_ session: ApplinSession,
+                text: String,
+                photoUrl: URL
+    ) {
+        self.optPhotoUrl = photoUrl
+        self.accessoryType = .disclosureIndicator
+        var content = self.defaultContentConfiguration()
+        content.text = text
+        content.addPlaceholderImage(cellWidth: self.bounds.width)
+        self.contentConfiguration = content
+        Task.init { [content] in
+            var content2 = content
+            try await content2.loadImage(session, photoUrl)
+            DispatchQueue.main.async { [weak self, content2] in
+                if self?.optPhotoUrl == photoUrl {
+                    print("image \(photoUrl)")
+                    self?.contentConfiguration = content2
                 }
             }
-            self.contentConfiguration = content
-            self.accessoryType = .disclosureIndicator
-        default:
-            let subView = widget.inner().getView(session, widgetCache)
-            // subView.clipsToBounds = true
-            self.contentView.addSubview(subView)
-            self.optHelper = SuperviewHelper(constraints: [
-                subView.topAnchor.constraint(equalTo: self.contentView.safeAreaLayoutGuide.topAnchor),
-                subView.bottomAnchor.constraint(lessThanOrEqualTo: self.contentView.safeAreaLayoutGuide.bottomAnchor),
-                subView.leadingAnchor.constraint(equalTo: self.contentView.safeAreaLayoutGuide.leadingAnchor),
-                subView.trailingAnchor.constraint(lessThanOrEqualTo: self.contentView.safeAreaLayoutGuide.trailingAnchor),
-            ])
         }
+    }
+}
+
+private class DisclosureImageSubtextCell: UITableViewCell {
+    static let REUSE_ID = "DisclosureImageSubtextCell"
+    var optPhotoUrl: URL?
+
+    func update(_ session: ApplinSession,
+                text: String,
+                subText: String,
+                photoUrl: URL
+    ) {
+        self.optPhotoUrl = photoUrl
+        self.accessoryType = .disclosureIndicator
+        var content = self.defaultContentConfiguration()
+        content.text = text
+        content.secondaryText = subText
+        content.addPlaceholderImage(cellWidth: self.bounds.width)
+        self.contentConfiguration = content
+        Task.init { [content] in
+            var content2 = content
+            try await content2.loadImage(session, photoUrl)
+            DispatchQueue.main.async { [weak self, content2] in
+                if self?.optPhotoUrl == photoUrl {
+                    print("image \(photoUrl)")
+                    self?.contentConfiguration = content2
+                }
+            }
+        }
+    }
+}
+
+private class TextCell: UITableViewCell {
+    static let REUSE_ID = "TextCell"
+
+    func update(_ text: String) {
+        var content = self.defaultContentConfiguration()
+        content.text = text
+        self.contentConfiguration = content
+    }
+}
+
+private class WidgetCell: UITableViewCell {
+    static let REUSE_ID = "WidgetCell"
+    var optHelper: SuperviewHelper?
+
+    func update(_ session: ApplinSession, _ widgetCache: WidgetCache, _ widget: WidgetData) {
+        if let helper = self.optHelper {
+            helper.removeSubviewsAndConstraints(self.contentView)
+            self.optHelper = nil
+        }
+        let subView = widget.inner().getView(session, widgetCache)
+        // subView.clipsToBounds = true
+        self.contentView.addSubview(subView)
+        self.optHelper = SuperviewHelper(constraints: [
+            subView.topAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.topAnchor),
+            subView.bottomAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.bottomAnchor),
+            subView.leadingAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.leadingAnchor),
+            subView.trailingAnchor.constraint(lessThanOrEqualTo: self.contentView.layoutMarginsGuide.trailingAnchor),
+        ])
     }
 }
 
@@ -166,13 +231,23 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
         self.data = data
         self.weakSession = session
         self.weakWidgetCache = widgetCache
-        self.tableView = UITableView(frame: .zero, style: .grouped)
+        let tableView = UITableView(frame: .zero, style: .grouped)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.register(ErrorCell.self, forCellReuseIdentifier: ErrorCell.REUSE_ID)
+        tableView.register(DisclosureCell.self, forCellReuseIdentifier: DisclosureCell.REUSE_ID)
+        tableView.register(DisclosureSubtextCell.self, forCellReuseIdentifier: DisclosureSubtextCell.REUSE_ID)
+        tableView.register(DisclosureImageCell.self, forCellReuseIdentifier: DisclosureImageCell.REUSE_ID)
+        tableView.register(DisclosureImageSubtextCell.self, forCellReuseIdentifier: DisclosureImageSubtextCell.REUSE_ID)
+        tableView.register(TextCell.self, forCellReuseIdentifier: TextCell.REUSE_ID)
+        tableView.register(WidgetCell.self, forCellReuseIdentifier: WidgetCell.REUSE_ID)
+        // tableView.allowsSelection = true
+        // tableView.allowsMultipleSelection = false
+        // tableView.selectionFollowsFocus = true
+        // tableView.isUserInteractionEnabled = true
+        self.tableView = tableView
         super.init()
-        self.tableView.translatesAutoresizingMaskIntoConstraints = false
-        self.tableView.register(FormCell.self, forCellReuseIdentifier: FormCell.cellReuseIdentifier)
         self.tableView.dataSource = self
         self.tableView.delegate = self
-        self.tableView.allowsSelection = true
     }
 
     func keys() -> [String] {
@@ -180,7 +255,6 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
     }
 
     func getView(_: ApplinSession, _: WidgetCache) -> UIView {
-        // Apple's docs omit this.
         self.tableView.reloadData()
         return self.tableView
     }
@@ -199,39 +273,67 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
         self.data.sections.get(section)?.1.count ?? 0
     }
 
+    private func getWidget(_ indexPath: IndexPath) -> WidgetData? {
+        self.data.sections.get(indexPath.section)?.1.get(indexPath.row)
+    }
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let tableViewCell = tableView.dequeueReusableCell(withIdentifier: FormCell.cellReuseIdentifier, for: indexPath)
-        let formCell = tableViewCell as! FormCell
+        print("form cellForRowAt\(indexPath.section).\(indexPath.row)")
         guard let session = self.weakSession,
               let widgetCache = self.weakWidgetCache,
-              let widget = self.data.sections.get(indexPath.section)?.1.get(indexPath.row)
+              let widget = self.getWidget(indexPath)
         else {
-            formCell.error()
-            return formCell
+            return tableView.dequeueReusableCell(withIdentifier: ErrorCell.REUSE_ID, for: indexPath)
         }
-        formCell.setWidget(widget, session, widgetCache)
-        return formCell
+        switch widget {
+        case let .text(data):
+            let cell = tableView.dequeueReusableCell(withIdentifier: TextCell.REUSE_ID, for: indexPath) as! TextCell
+            cell.update(data.text)
+            return cell
+        case let .formDetail(data):
+            switch (data.subText, data.photoUrl) {
+            case (.none, .none):
+                let cell = tableView.dequeueReusableCell(
+                        withIdentifier: DisclosureCell.REUSE_ID, for: indexPath) as! DisclosureCell
+                cell.update(data.text)
+                return cell
+            case let (.some(subText), .none):
+                let cell = tableView.dequeueReusableCell(
+                        withIdentifier: DisclosureSubtextCell.REUSE_ID, for: indexPath) as! DisclosureSubtextCell
+                cell.update(text: data.text, subText: subText)
+                return cell
+            case let (.none, .some(photoUrl)):
+                let cell = tableView.dequeueReusableCell(
+                        withIdentifier: DisclosureImageCell.REUSE_ID, for: indexPath) as! DisclosureImageCell
+                cell.update(session, text: data.text, photoUrl: photoUrl)
+                return cell
+            case let (.some(subText), .some(photoUrl)):
+                let cell = tableView.dequeueReusableCell(
+                        withIdentifier: DisclosureImageSubtextCell.REUSE_ID, for: indexPath) as! DisclosureImageSubtextCell
+                cell.update(session, text: data.text, subText: subText, photoUrl: photoUrl)
+                return cell
+            }
+        default:
+            let cell = tableView.dequeueReusableCell(
+                    withIdentifier: WidgetCell.REUSE_ID, for: indexPath) as! WidgetCell
+            cell.update(session, widgetCache, widget)
+            return cell
+        }
     }
 
     // UITableViewDelegate
 
-    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
-        switch self.data.sections.get(indexPath.section)?.1.get(indexPath.row) {
-        case .formDetail:
-            break
-        default:
-            return nil
-        }
-        return indexPath
+    func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
+        let result = self.getWidget(indexPath)?.inner().getTapActions() != nil
+        print("form shouldHighlightRowAt \(indexPath.section).\(indexPath.row) \(result)")
+        return result
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch self.data.sections.get(indexPath.section)?.1.get(indexPath.row) {
-        case let .formDetail(inner):
-            self.weakSession?.doActions(inner.actions)
-        default:
-            break
+        print("form didSelectRowAt \(indexPath.section).\(indexPath.row)")
+        if let actions = self.getWidget(indexPath)?.inner().getTapActions() {
+            self.weakSession?.doActions(actions)
+            self.tableView.deselectRow(at: indexPath, animated: false)
         }
-        self.tableView.deselectRow(at: indexPath, animated: false)
     }
 }

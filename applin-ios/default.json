@@ -6,12 +6,64 @@
       "typ": "form",
       "widgets": [
         {
+          "typ": "text",
+          "text": "Example form-text"
+        },
+        {
+          "typ": "form-detail",
+          "actions": [
+            "push:/example-alert1"
+          ],
+          "text": "Example form-detail"
+        },
+        {
+          "typ": "form-detail",
+          "actions": [
+            "push:/example-alert1"
+          ],
+          "text": "Example form-detail",
+          "sub-text": "with sub-text"
+        },
+        {
           "typ": "form-detail",
           "actions": [
             "push:/example-alert1"
           ],
           "photo-url": "https://plchldr.co/i/150x150?bg=ffccff&fc=000001",
-          "text": "Detail 1"
+          "text": "Example form-detail"
+        },
+        {
+          "typ": "form-detail",
+          "actions": [
+            "push:/example-alert1"
+          ],
+          "photo-url": "https://plchldr.co/i/150x150?bg=ffccff&fc=000001",
+          "text": "Example form-detail",
+          "sub-text": "with sub-text"
+        },
+        {
+          "typ": "form-button",
+          "actions": [
+            "push:/example-alert1"
+          ],
+          "text": "Example form-button"
+        },
+        {
+          "typ": "column",
+          "widgets": [
+            {
+              "typ": "text",
+              "text": "Example cell with other kinds of widgets"
+            },
+            {
+              "typ": "text",
+              "text": "aaa"
+            },
+            {
+              "typ": "text",
+              "text": "bbb"
+            }
+          ]
         }
       ]
     }
