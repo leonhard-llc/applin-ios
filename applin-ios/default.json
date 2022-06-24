@@ -3,24 +3,34 @@
     "typ": "plain-page",
     "title": "Home",
     "widget": {
+      "typ": "form",
+      "widgets": [
+        {
+          "typ": "form-detail",
+          "actions": [
+            "push:/example-alert1"
+          ],
+          "photo-url": "https://plchldr.co/i/150x150?bg=ffccff&fc=000001",
+          "text": "Detail 1"
+        }
+      ]
+    }
+  },
+  "/page1": {
+    "typ": "nav-page",
+    "title": "Page 1",
+    "widget": {
       "typ": "column",
       "widgets": [
         {
           "typ": "text",
-          "text": "Hello"
+          "text": "Hello!"
         },
         {
           "typ": "button",
-          "text": "Page 1",
+          "text": "Example Alert 2",
           "actions": [
-            "push:/page1"
-          ]
-        },
-        {
-          "typ": "button",
-          "text": "Example Alert 1",
-          "actions": [
-            "push:/example-alert1"
+            "push:/example-alert2"
           ]
         }
       ]
@@ -53,6 +63,15 @@
     "title": "Example Alert 2",
     "text": "Hello again",
     "widgets": [
+      {
+        "typ": "modal-button",
+        "text": "Pop2",
+        "actions": [
+          "pop",
+          "pop"
+        ],
+        "destructive": true
+      },
       {
         "typ": "modal-button",
         "text": "OK",
