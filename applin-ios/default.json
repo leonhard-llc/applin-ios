@@ -147,11 +147,8 @@
   "/applin-network-error-modal": {
     "typ": "alert-modal",
     "title": "Connection Problem",
+    "text": "Could not contact server.  Check your connection and try again.",
     "widgets": [
-      {
-        "typ": "text",
-        "text": "Could not contact server.  Check your connection and try again."
-      },
       {
         "typ": "button",
         "text": "Details",
@@ -179,11 +176,8 @@
   "/applin-rpc-error-modal": {
     "typ": "alert-modal",
     "title": "Error",
+    "text": "Problem talking to server.  Please try again or update the app.",
     "widgets": [
-      {
-        "typ": "text",
-        "text": "Problem talking to server.  Please try again or update the app."
-      },
       {
         "typ": "button",
         "text": "Details",

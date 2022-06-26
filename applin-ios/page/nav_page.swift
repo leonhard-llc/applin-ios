@@ -1,17 +1,23 @@
 import Foundation
 import UIKit
 
+enum StartEnum: Equatable {
+    case backButton(BackButtonData)
+    case defaultBackButton
+    case empty
+}
+
 struct NavPageData: Equatable {
     static let TYP = "nav-page"
     let title: String
-    let start: BackButtonData?
+    let start: StartEnum
     let end: WidgetData?
     let widget: WidgetData
 
     init(
             title: String,
             widget: WidgetData,
-            start: BackButtonData? = nil,
+            start: StartEnum = .defaultBackButton,
             end: WidgetData? = nil
     ) {
         self.title = title
@@ -23,10 +29,12 @@ struct NavPageData: Equatable {
     init(_ item: JsonItem, _ session: ApplinSession) throws {
         self.title = try item.requireTitle()
         switch try item.optStart(session) {
+        case let .backButton(inner):
+            self.start = .backButton(inner)
         case .none:
-            self.start = nil
-        case let .backButton(start):
-            self.start = start
+            self.start = .defaultBackButton
+        case .empty:
+            self.start = .empty
         case let .some(other):
             throw ApplinError.deserializeError("bad \(item.typ).start: \(other)")
         }
@@ -37,7 +45,14 @@ struct NavPageData: Equatable {
     func toJsonItem() -> JsonItem {
         let item = JsonItem(NavPageData.TYP)
         item.title = self.title
-        item.start = self.start?.toJsonItem()
+        switch self.start {
+        case let .backButton(inner):
+            item.start = inner.toJsonItem()
+        case .defaultBackButton:
+            break
+        case .empty:
+            item.start = EmptyData().toJsonItem()
+        }
         item.end = self.end?.inner().toJsonItem()
         item.widget = self.widget.inner().toJsonItem()
         return item
@@ -50,6 +65,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     var data: NavPageData?
     var hasPrevPage: Bool = false
     var navBar: UINavigationBar
+    var optOriginalBackButton: UIBarButtonItem?
     var subView: UIView?
     let helper = SuperviewHelper()
 
@@ -80,10 +96,15 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         if self.navController?.topPageController() !== self {
             return
         }
-        if let start = self.data?.start {
-            self.session?.doActions(start.actions)
-        } else {
+        switch self.data?.start {
+        case .none:
+            break
+        case let .backButton(inner):
+            self.session?.doActions(inner.actions)
+        case .defaultBackButton:
             self.session?.pop()
+        case .empty:
+            break
         }
     }
 
@@ -117,7 +138,16 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     }
 
     func allowBackSwipe() -> Bool {
-        self.data?.start == nil
+        switch self.data?.start {
+        case .none:
+            return false
+        case .backButton:
+            return false
+        case .defaultBackButton:
+            return true
+        case .empty:
+            return false
+        }
     }
 
     func update(
@@ -126,18 +156,41 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             _ newData: NavPageData,
             hasPrevPage: Bool
     ) {
-        self.hasPrevPage = hasPrevPage
-        if hasPrevPage {
-            self.navBar.items = [UINavigationItem(title: "Back"), self.navigationItem]
-        } else {
-            self.navBar.items = [self.navigationItem]
-        }
-        if newData == self.data {
+        if newData == self.data && self.hasPrevPage == hasPrevPage {
             return
         }
         self.data = newData
+        self.hasPrevPage = hasPrevPage
         self.title = newData.title
         self.view.backgroundColor = .systemBackground
+
+        if let originalBackButton = self.optOriginalBackButton {
+            self.navBar.backItem?.backBarButtonItem = originalBackButton
+            self.optOriginalBackButton = nil
+        }
+        self.navigationItem.hidesBackButton = false
+        switch newData.start {
+        case let .backButton(inner):
+            if inner.actions.isEmpty {
+                self.navBar.items = [UINavigationItem(title: "Back"), self.navigationItem]
+                let backButton = UIBarButtonItem(title: "Back")
+                backButton.isEnabled = false
+                self.optOriginalBackButton = self.navBar.backItem?.backBarButtonItem
+                self.navBar.backItem?.backBarButtonItem = backButton
+            } else {
+                self.navBar.items = [UINavigationItem(title: "Back"), self.navigationItem]
+            }
+        case .defaultBackButton:
+            if hasPrevPage {
+                self.navBar.items = [UINavigationItem(title: "Back"), self.navigationItem]
+            } else {
+                self.navBar.items = [self.navigationItem]
+            }
+        case .empty:
+            self.navigationItem.hidesBackButton = true
+            self.navBar.items = [self.navigationItem]
+        }
+
         self.helper.deactivateConstraints()
         self.subView?.removeFromSuperview()
         let subView = newData.widget.inner().getView(session, widgetCache)

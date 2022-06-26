@@ -28,6 +28,8 @@ enum WidgetData: Equatable, Hashable {
 
     init(_ item: JsonItem, _ session: ApplinSession) throws {
         switch item.typ {
+        case BackButtonData.TYP:
+            self = try .backButton(BackButtonData(item))
         case ButtonData.TYP:
             self = try .button(ButtonData(item))
         case CheckboxData.TYP:
