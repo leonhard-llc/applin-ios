@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 
+// TODO: Display disabled button with disabled mode.
 struct ButtonData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "button"
     let actions: [ActionData]

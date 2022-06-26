@@ -23,7 +23,7 @@ struct FormData: Equatable, Hashable, WidgetDataProto {
                     self.sections.append((nil, unnamedSection))
                     unnamedSection = []
                 }
-                self.sections.append((sectionData.title, sectionData.widgets))
+                self.sections.append((sectionData.optTitle, sectionData.widgets))
             default:
                 unnamedSection.append(widget)
             }
@@ -89,6 +89,7 @@ private class ErrorCell: UITableViewCell {
     }
 }
 
+// TODO: Show disabled with disabled color.
 private class DisclosureCell: UITableViewCell {
     static let REUSE_ID = "DisclosureCell"
 
@@ -278,7 +279,7 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        print("form cellForRowAt\(indexPath.section).\(indexPath.row)")
+        // print("form cellForRowAt \(indexPath.section).\(indexPath.row)")
         guard let session = self.weakSession,
               let widgetCache = self.weakWidgetCache,
               let widget = self.getWidget(indexPath)
@@ -325,12 +326,12 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
 
     func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
         let result = self.getWidget(indexPath)?.inner().getTapActions() != nil
-        print("form shouldHighlightRowAt \(indexPath.section).\(indexPath.row) \(result)")
+        // print("form shouldHighlightRowAt \(indexPath.section).\(indexPath.row) \(result)")
         return result
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("form didSelectRowAt \(indexPath.section).\(indexPath.row)")
+        // print("form didSelectRowAt \(indexPath.section).\(indexPath.row)")
         if let actions = self.getWidget(indexPath)?.inner().getTapActions() {
             self.weakSession?.doActions(actions)
             self.tableView.deselectRow(at: indexPath, animated: false)

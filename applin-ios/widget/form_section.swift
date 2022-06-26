@@ -3,22 +3,22 @@ import UIKit
 
 struct FormSectionData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "form-section"
-    let title: String
+    let optTitle: String?
     let widgets: [WidgetData]
 
-    init(_ title: String, _ widgets: [WidgetData]) {
-        self.title = title
+    init(_ title: String?, _ widgets: [WidgetData]) {
+        self.optTitle = title
         self.widgets = widgets
     }
 
     init(_ item: JsonItem, _ session: ApplinSession) throws {
-        self.title = try item.requireTitle()
+        self.optTitle = item.title
         self.widgets = try item.optWidgets(session) ?? []
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(FormSectionData.TYP)
-        item.title = self.title
+        item.title = self.optTitle
         item.widgets = self.widgets.map({ widgets in widgets.inner().toJsonItem() })
         return item
     }

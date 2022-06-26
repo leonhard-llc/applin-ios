@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 
+// TODO: When dismissing demo drawer modal, find out why the drawer disappears, appears, and then disappears.
 enum ModalKind: String {
     case alert
     case drawer

@@ -169,6 +169,8 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
             for modal in node.modals {
                 if prevViewController.presentedViewController !== modal.controller {
                     modal.controller.dismiss(animated: false)
+                    // TODO: Fix crash when presenting same modal twice.
+                    // 2022-06-25 21:43:42.747611-0700 applin-ios[12718:253743] *** Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'Application tried to present modally a view controller <UIAlertController: 0x7fdf88828200> that is already being presented by <UIAlertController: 0x7fdf8580f800>.'
                     prevViewController.present(modal.controller, animated: true)
                 }
                 prevViewController = modal.controller

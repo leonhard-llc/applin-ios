@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 
+// TODO: Show disabled buttons with disabled style.
 struct FormButtonData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "form-button"
     let actions: [ActionData]
