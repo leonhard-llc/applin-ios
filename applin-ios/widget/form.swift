@@ -232,7 +232,7 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
         self.data = data
         self.weakSession = session
         self.weakWidgetCache = widgetCache
-        let tableView = UITableView(frame: .zero, style: .grouped)
+        let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(ErrorCell.self, forCellReuseIdentifier: ErrorCell.REUSE_ID)
         tableView.register(DisclosureCell.self, forCellReuseIdentifier: DisclosureCell.REUSE_ID)
@@ -241,6 +241,7 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
         tableView.register(DisclosureImageSubtextCell.self, forCellReuseIdentifier: DisclosureImageSubtextCell.REUSE_ID)
         tableView.register(TextCell.self, forCellReuseIdentifier: TextCell.REUSE_ID)
         tableView.register(WidgetCell.self, forCellReuseIdentifier: WidgetCell.REUSE_ID)
+        tableView.contentInsetAdjustmentBehavior = .never // Only works for UITableView.Style.plain.
         // tableView.allowsSelection = true
         // tableView.allowsMultipleSelection = false
         // tableView.selectionFollowsFocus = true
@@ -273,6 +274,15 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         self.data.sections.get(section)?.1.count ?? 0
     }
+
+    // This does not remove the top padding for UITableView.Style.grouped.
+    // func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    //     if section == 0 {
+    //         return 0.0
+    //     } else {
+    //         return UITableView.automaticDimension
+    //     }
+    // }
 
     private func getWidget(_ indexPath: IndexPath) -> WidgetData? {
         self.data.sections.get(indexPath.section)?.1.get(indexPath.row)
