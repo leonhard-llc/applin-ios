@@ -7,26 +7,29 @@ struct CacheFileContents: Codable {
 
 func readCacheFile(dataDirPath: String, _ session: ApplinSession) async {
     let path = dataDirPath + "/" + CacheFileWriter.cacheFileName
-    print("CacheFile read \(path)")
+    if !(await fileExists(path: path)) {
+        print("cache not found")
+        return
+    }
     let bytes: Data
     do {
         bytes = try await readFile(path: path)
     } catch {
-        print("CacheFile error reading \(path): \(error)")
+        print("error reading cache: \(error)")
         return
     }
     let contents: CacheFileContents
     do {
         contents = try decodeJson(bytes)
     } catch {
-        print("CacheFile error decoding \(path): \(error)")
+        print("error decoding cache: \(error)")
         return
     }
     for (key, item) in contents.pages ?? [:] {
         do {
             session.pages[key] = try PageData(item, session)
         } catch {
-            print("CacheFile error loading cached key '\(key)': \(error)")
+            print("error loading cached key '\(key)': \(error)")
         }
     }
     session.setStack(contents.stack ?? [])
@@ -42,11 +45,11 @@ class CacheFileWriter {
 
     public init(dataDirPath: String) {
         self.dataDirPath = dataDirPath
-        print("CacheFileWriter \(dataDirPath)")
+        // print("CacheFileWriter \(dataDirPath)")
     }
 
     func writeCacheFile(_ session: ApplinSession) async throws {
-        print("CacheFileWriter write")
+        print("write cache")
         var contents = CacheFileContents()
         contents.pages = session.pages.mapValues({ page in page.inner().toJsonItem() })
         contents.stack = session.stack
@@ -80,7 +83,7 @@ class CacheFileWriter {
                     try await self.writeCacheFile(session)
                     return
                 } catch {
-                    print("CacheFileWriter write error: \(error)")
+                    print("error writing cache: \(error)")
                     await sleep(ms: 60_000)
                 }
             }
