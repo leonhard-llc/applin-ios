@@ -48,7 +48,7 @@ class CacheFileWriter {
     func writeCacheFile(_ session: ApplinSession) async throws {
         print("CacheFileWriter write")
         var contents = CacheFileContents()
-        contents.pages = session.pages.mapValues({ page in page.toJsonItem() })
+        contents.pages = session.pages.mapValues({ page in page.inner().toJsonItem() })
         contents.stack = session.stack
         let bytes = try encodeJson(contents)
         let path = dataDirPath + "/" + CacheFileWriter.cacheFileName

@@ -1,15 +1,55 @@
 import Foundation
 
+enum ConnectionMode: Equatable, Comparable {
+    case disconnect
+    case pollSeconds(UInt32)
+    case stream
+
+    init(_ stream: Bool?, _ pollSeconds: UInt32?) {
+        if stream == true {
+            self = .stream
+        } else {
+            let seconds = pollSeconds ?? 0
+            if seconds > 0 {
+                self = .pollSeconds(seconds)
+            } else {
+                self = .disconnect
+            }
+        }
+    }
+
+    func getStream() -> Bool? {
+        switch self {
+        case .stream:
+            return true
+        default:
+            return nil
+        }
+    }
+
+    func getPollSeconds() -> UInt32? {
+        switch self {
+        case .stream, .disconnect:
+            return nil
+        case let .pollSeconds(seconds):
+            return seconds
+        }
+    }
+}
+
 enum ConnectionState {
     case disconnected, connecting, connectError, serverError, connected
 }
 
 class ApplinConnection {
+    var paused: Bool = true
     var state: ConnectionState = .disconnected
-    private var task: Task<(), Never>?
+    private var connectTask: Task<(), Never>?
+    private var pollTask: Task<(), Never>?
+    private var pollSeconds: UInt32 = 1
     private var running: Bool = false
 
-    func connectOnce(_ session: ApplinSession) async throws {
+    private func connectOnce(_ session: ApplinSession) async throws {
         print("ApplinConnection connect")
         let config = URLSessionConfiguration.default
         config.urlCache = nil
@@ -29,7 +69,7 @@ class ApplinConnection {
         // If we're going to spend that code, then let's make it good.
         // Let's make an URLSession extension with an asyncEventStream() method that returns
         // whole Server-Sent Events.
-        let url = session.url
+        let url = session.url.appendingPathComponent("stream")
         let (asyncBytes, response) = try await urlSession.bytes(from: url)
         let httpResponse = response as! HTTPURLResponse
         if httpResponse.statusCode != 200 {
@@ -49,7 +89,7 @@ class ApplinConnection {
         }
         if httpResponse.contentTypeBase() != "text/event-stream" {
             self.state = .serverError
-            print("ApplinConnection server sent unexpected content-type: \" \(httpResponse.mimeType ?? "")\"")
+            print("ApplinConnection server sent unexpected content-type: \"\(httpResponse.mimeType ?? "")\"")
             return
         }
         self.state = .connected
@@ -77,39 +117,118 @@ class ApplinConnection {
         print("ApplinConnection disconnected")
     }
 
-    public func start(_ session: ApplinSession) {
-        if self.task != nil {
+    private func connect(_ session: ApplinSession) async {
+        print("ApplinConnection connect")
+        while self.running {
+            await sleep(ms: 1_000)
+        }
+        defer {
+            self.running = false
+        }
+        self.running = true
+        while !Task.isCancelled {
+            do {
+                try await self.connectOnce(session)
+            } catch let error as NSError where error.code == -1004 /* Could not connect to the server */ {
+                self.state = .connectError
+            } catch {
+                // TODO: Show error to user on startup.
+                self.state = .connectError
+                print("ApplinConnection error: \(error)")
+            }
+            await sleep(ms: 5_000)
+        }
+        print("ApplinConnection stop connect")
+    }
+
+    private func startConnect(_ session: ApplinSession) {
+        if self.paused || self.connectTask != nil {
             return
         }
-        self.task = Task(priority: .medium) {
-            print("ApplinConnection start")
-            while self.running {
-                await sleep(ms: 1_000)
-            }
-            defer {
-                self.running = false
-            }
-            self.running = true
-            while !Task.isCancelled {
-                do {
-                    try await self.connectOnce(session)
-                } catch let error as NSError where error.code == -1004 /* Could not connect to the server */ {
-                    self.state = .connectError
-                } catch {
-                    // TODO: Show error to user on startup.
-                    self.state = .connectError
-                    print("ApplinConnection error: \(error)")
-                }
-                await sleep(ms: 5_000)
-            }
-            print("ApplinConnection stop")
+        self.connectTask = Task(priority: .medium) {
+            await self.connect(session)
         }
     }
 
-    public func stop() {
-        if let task = self.task {
-            task.cancel()
-            self.task = nil
+    private func stopConnect() {
+        self.connectTask?.cancel()
+        self.connectTask = nil
+    }
+
+    private func poll(_ session: ApplinSession) async {
+        print("ApplinConnection poll")
+        while self.running {
+            await sleep(ms: 1_000)
         }
+        defer {
+            self.running = false
+        }
+        self.running = true
+        while !Task.isCancelled {
+            do {
+                if await session.rpc(path: "/", method: "GET") {
+                    try await Task.sleep(nanoseconds: UInt64(max(self.pollSeconds, 1)) * 1_000_000_000)
+                    continue
+                }
+                self.state = .connectError
+            } catch is CancellationError {
+                self.state = .disconnected
+                continue
+            } catch let error as NSError where error.code == -1004 /* Could not connect to the server */ {
+                self.state = .connectError
+            } catch {
+                // TODO: Show error to user on startup.
+                self.state = .connectError
+                print("ApplinConnection error: \(error)")
+            }
+            await sleep(ms: 5_000)
+        }
+        print("ApplinConnection stop poll")
+    }
+
+    private func startPoll(_ session: ApplinSession) {
+        if self.paused || self.pollTask != nil {
+            return
+        }
+        self.pollTask = Task(priority: .medium) {
+            await self.poll(session)
+        }
+    }
+
+    private func stopPoll() {
+        self.pollTask?.cancel()
+        self.pollTask = nil
+    }
+
+    func setMode(_ session: ApplinSession, _ mode: ConnectionMode) {
+        print("mode=\(mode)")
+        if self.paused {
+            return
+        }
+        switch mode {
+        case .disconnect:
+            self.stopConnect()
+            self.stopPoll()
+        case let .pollSeconds(seconds):
+            self.pollSeconds = seconds
+            self.stopConnect()
+            self.startPoll(session)
+        case .stream:
+            self.stopPoll()
+            self.startConnect(session)
+        }
+    }
+
+    func pause() {
+        print("pause")
+        self.paused = true
+        self.stopConnect()
+        self.stopPoll()
+    }
+
+    func unpause(_ session: ApplinSession, _ mode: ConnectionMode) {
+        print("unpause mode=\(mode)")
+        self.paused = false
+        self.setMode(session, mode)
     }
 }

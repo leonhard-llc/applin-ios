@@ -18,6 +18,7 @@ class ApplinSession: ObservableObject {
     var error: String?
     var pages: [String: PageData] = [:]
     var stack: [String] = ["/"]
+    var connectionMode: ConnectionMode = .disconnect
 
     init(_ cacheFileWriter: CacheFileWriter,
          _ connection: ApplinConnection,
@@ -30,6 +31,14 @@ class ApplinSession: ObservableObject {
         self.connection = connection
         self.nav = nav
         self.url = url
+    }
+
+    public func pause() {
+        self.connection.pause()
+    }
+
+    public func unpause() {
+        self.connection.unpause(self, self.connectionMode)
     }
 
     public func updateNav() {
@@ -49,6 +58,8 @@ class ApplinSession: ObservableObject {
                     ))
             return (key, page)
         })
+        self.connectionMode = entries.map({ (_, data) in data.inner().connectionMode }).max() ?? .disconnect
+        self.connection.setMode(self, self.connectionMode)
         DispatchQueue.main.async {
             self.nav?.setStackPages(self, entries)
         }
@@ -83,9 +94,11 @@ class ApplinSession: ObservableObject {
     }
 
     func applyUpdate(_ data: Data) -> Bool {
+        // TODO: Support null 'pages' entries.  Run Applin's dynamic_page example.
         let update: Update
         do {
             update = try decodeJson(data)
+            print("update \(update)")
         } catch {
             print("error decoding update: \(error)")
             return false
@@ -109,12 +122,13 @@ class ApplinSession: ObservableObject {
         return true
     }
 
-    func rpc(path: String) async -> Bool {
+    func rpc(path: String, method: String) async -> Bool {
         print("rpc \(path)")
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 10.0 /* seconds */
         config.timeoutIntervalForResource = 60.0 /* seconds */
         config.urlCache = nil
+        config.httpCookieAcceptPolicy = .always
         config.httpShouldSetCookies = true
         let urlSession = URLSession(configuration: config)
         defer {
@@ -126,7 +140,7 @@ class ApplinSession: ObservableObject {
                 url: url,
                 cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
         )
-        urlRequest.httpMethod = "POST"
+        urlRequest.httpMethod = method
         // urlRequest.httpBody = try! encodeJson(jsonRequest)
         urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
         let data: Data
@@ -233,7 +247,7 @@ class ApplinSession: ObservableObject {
                 self.push(pageKey: key)
             case let .rpc(path):
                 print("Rpc(\(path))")
-                let result = await self.rpc(path: path)
+                let result = await self.rpc(path: path, method: "POST")
                 if !result {
                     break loop
                 }

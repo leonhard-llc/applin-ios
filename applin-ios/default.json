@@ -1,6 +1,7 @@
 {
   "/": {
     "typ": "plain-page",
+    "poll-seconds": 5,
     "title": "Home",
     "widget": {
       "typ": "form",
@@ -150,21 +151,21 @@
     "text": "Could not contact server.  Check your connection and try again.",
     "widgets": [
       {
-        "typ": "button",
+        "typ": "modal-button",
         "text": "Details",
         "actions": [
           "push:/applin-error-details"
         ]
       },
       {
-        "typ": "button",
+        "typ": "modal-button",
         "text": "Status",
         "actions": [
           "push:/applin-server-status"
         ]
       },
       {
-        "typ": "button",
+        "typ": "modal-button",
         "text": "OK",
         "actions": [
           "pop"
@@ -179,35 +180,35 @@
     "text": "Problem talking to server.  Please try again or update the app.",
     "widgets": [
       {
-        "typ": "button",
+        "typ": "modal-button",
         "text": "Details",
         "actions": [
           "push:/applin-error-details"
         ]
       },
       {
-        "typ": "button",
+        "typ": "modal-button",
         "text": "Status",
         "actions": [
           "push:/applin-server-status"
         ]
       },
       {
-        "typ": "button",
+        "typ": "modal-button",
         "text": "Contact Support",
         "actions": [
           "push:/applin-contact-support-modal"
         ]
       },
       {
-        "typ": "button",
+        "typ": "modal-button",
         "text": "Update",
         "actions": [
           "launch-url:itms-apps://itunes.apple.com/app/id00000000000"
         ]
       },
       {
-        "typ": "button",
+        "typ": "modal-button",
         "text": "OK",
         "actions": [
           "pop"

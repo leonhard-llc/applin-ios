@@ -16,14 +16,16 @@ enum ModalKind: String {
     }
 }
 
-struct ModalData: Equatable {
+struct ModalData: Equatable, PageDataProto {
+    let connectionMode: ConnectionMode
     let kind: ModalKind
-    let typ: String
-    let title: String
     let text: String?
+    let title: String
+    let typ: String
     let widgets: [ModalButtonData]
 
     init(_ kind: ModalKind, title: String, text: String?, _ widgets: [ModalButtonData]) {
+        self.connectionMode = .disconnect
         self.kind = kind
         self.typ = kind.typ()
         self.title = title
@@ -32,10 +34,11 @@ struct ModalData: Equatable {
     }
 
     init(_ kind: ModalKind, _ item: JsonItem, _ session: ApplinSession) throws {
+        self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.kind = kind
-        self.typ = kind.typ()
-        self.title = try item.requireTitle()
         self.text = item.text
+        self.title = try item.requireTitle()
+        self.typ = kind.typ()
         var widgets: [ModalButtonData] = []
         guard let items = item.widgets else {
             throw ApplinError.deserializeError("\(self.typ).widgets is empty")
@@ -53,8 +56,10 @@ struct ModalData: Equatable {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(self.kind.typ())
-        item.title = self.title
+        item.pollSeconds = self.connectionMode.getPollSeconds()
+        item.stream = self.connectionMode.getStream()
         item.text = self.text
+        item.title = self.title
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
     }

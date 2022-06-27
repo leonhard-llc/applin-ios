@@ -1,27 +1,32 @@
 import Foundation
 import UIKit
 
-struct PlainPageData: Equatable {
+struct PlainPageData: Equatable, PageDataProto {
     static func blank() -> PlainPageData {
         PlainPageData(title: "Empty", .empty(EmptyData()))
     }
 
     static let TYP = "plain-page"
+    let connectionMode: ConnectionMode
     let title: String?
     let widget: WidgetData
 
     init(title: String?, _ widget: WidgetData) {
+        self.connectionMode = .disconnect
         self.title = title
         self.widget = widget
     }
 
     init(_ item: JsonItem, _ session: ApplinSession) throws {
+        self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.title = item.title
         self.widget = try item.requireWidget(session)
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(PlainPageData.TYP)
+        item.pollSeconds = self.connectionMode.getPollSeconds()
+        item.stream = self.connectionMode.getStream()
         item.title = self.title
         item.widget = self.widget.inner().toJsonItem()
         return item

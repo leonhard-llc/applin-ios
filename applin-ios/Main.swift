@@ -33,8 +33,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 await readDefaultData(self.session)
                 try createDir(dataDirPath)
                 await readCacheFile(dataDirPath: self.dataDirPath, self.session)
-                self.connection.start(self.session)
                 self.session.updateNav()
+                self.session.unpause()
             } catch {
                 print("startup error: \(error)")
             }
@@ -44,12 +44,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         print("active")
-        self.connection.start(self.session)
+        self.session.unpause()
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         print("background")
-        self.connection.stop()
+        self.session.pause()
         self.cacheFileWriter.stop()
     }
 }

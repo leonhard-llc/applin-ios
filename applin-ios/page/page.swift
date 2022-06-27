@@ -6,6 +6,11 @@ protocol PageController: UIViewController {
     func allowBackSwipe() -> Bool
 }
 
+protocol PageDataProto {
+    var connectionMode: ConnectionMode { get }
+    func toJsonItem() -> JsonItem
+}
+
 enum PageData: Equatable {
     case modal(ModalData)
     case navPage(NavPageData)
@@ -37,14 +42,14 @@ enum PageData: Equatable {
         }
     }
 
-    func toJsonItem() -> JsonItem {
+    func inner() -> PageDataProto {
         switch self {
         case let .modal(inner):
-            return inner.toJsonItem()
+            return inner
         case let .navPage(inner):
-            return inner.toJsonItem()
+            return inner
         case let .plainPage(inner):
-            return inner.toJsonItem()
+            return inner
         }
     }
 }

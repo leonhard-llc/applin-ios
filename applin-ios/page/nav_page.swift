@@ -7,11 +7,12 @@ enum StartEnum: Equatable {
     case empty
 }
 
-struct NavPageData: Equatable {
+struct NavPageData: Equatable, PageDataProto {
     static let TYP = "nav-page"
-    let title: String
-    let start: StartEnum
+    let connectionMode: ConnectionMode
     let end: WidgetData?
+    let start: StartEnum
+    let title: String
     let widget: WidgetData
 
     init(
@@ -20,6 +21,7 @@ struct NavPageData: Equatable {
             start: StartEnum = .defaultBackButton,
             end: WidgetData? = nil
     ) {
+        self.connectionMode = .disconnect
         self.title = title
         self.start = start
         self.end = end
@@ -27,6 +29,8 @@ struct NavPageData: Equatable {
     }
 
     init(_ item: JsonItem, _ session: ApplinSession) throws {
+        self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
+        self.end = try item.optEnd(session)
         self.title = try item.requireTitle()
         switch try item.optStart(session) {
         case let .backButton(inner):
@@ -38,12 +42,14 @@ struct NavPageData: Equatable {
         case let .some(other):
             throw ApplinError.deserializeError("bad \(item.typ).start: \(other)")
         }
-        self.end = try item.optEnd(session)
         self.widget = try item.requireWidget(session)
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(NavPageData.TYP)
+        item.end = self.end?.inner().toJsonItem()
+        item.pollSeconds = self.connectionMode.getPollSeconds()
+        item.stream = self.connectionMode.getStream()
         item.title = self.title
         switch self.start {
         case let .backButton(inner):
@@ -53,7 +59,6 @@ struct NavPageData: Equatable {
         case .empty:
             item.start = EmptyData().toJsonItem()
         }
-        item.end = self.end?.inner().toJsonItem()
         item.widget = self.widget.inner().toJsonItem()
         return item
     }
