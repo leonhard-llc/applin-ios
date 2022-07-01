@@ -66,6 +66,7 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
     init() {
         super.init(rootViewController: LoadingPage())
         self.setNavigationBarHidden(true, animated: false)
+        self.view.backgroundColor = .systemBackground
         self.interactivePopGestureRecognizer?.delegate = self
         // self.navigationBar.delegate = self // <-- This crashes
         // with "NSInternalInconsistencyException: Cannot manually set the delegate
