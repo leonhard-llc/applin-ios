@@ -89,6 +89,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         self.navBar.translatesAutoresizingMaskIntoConstraints = false
         super.init(nibName: nil, bundle: nil)
         self.navBar.delegate = self
+        self.view.backgroundColor = .systemBackground
         self.view.addSubview(self.navBar)
     }
 
@@ -167,7 +168,6 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         self.data = newData
         self.hasPrevPage = hasPrevPage
         self.title = newData.title
-        self.view.backgroundColor = .systemBackground
 
         if let originalBackButton = self.optOriginalBackButton {
             self.navBar.backItem?.backBarButtonItem = originalBackButton

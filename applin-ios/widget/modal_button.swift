@@ -26,20 +26,22 @@ struct ModalButtonData: Equatable, Hashable {
         return item
     }
 
-    func toAlertAction(_ session: ApplinSession) -> UIAlertAction {
-        let style: UIAlertAction.Style
+    func style() -> UIAlertAction.Style {
         if self.isCancel {
-            style = .cancel
+            return .cancel
         } else if self.isDestructive {
-            style = .destructive
+            return .destructive
         } else {
-            style = .default
+            return .default
         }
+    }
+
+    func toAlertAction(_ session: ApplinSession) -> UIAlertAction {
         let handler = { [weak session] (_: UIAlertAction) in
             print("modal-button actions")
             session?.doActions(self.actions)
         }
-        let action = UIAlertAction(title: self.text, style: style, handler: handler)
+        let action = UIAlertAction(title: self.text, style: self.style(), handler: handler)
         action.isEnabled = !self.actions.isEmpty
         return action
     }

@@ -2,8 +2,8 @@ import Foundation
 import UIKit
 
 protocol PageController: UIViewController {
-    func isModal() -> Bool
     func allowBackSwipe() -> Bool
+    func isModal() -> Bool
 }
 
 protocol PageDataProto {
