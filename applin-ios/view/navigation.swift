@@ -7,13 +7,34 @@ protocol ModalDelegate: AnyObject {
 
 class AlertController: UIAlertController {
     weak var delegate: ModalDelegate?
+    var animated = false
 
     func setAnimated(_ animated: Bool) {
-        UIView.setAnimationsEnabled(animated)
+        self.animated = animated
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if !self.animated {
+            UIView.setAnimationsEnabled(false)
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        UIView.setAnimationsEnabled(true)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if !self.animated {
+            UIView.setAnimationsEnabled(false)
+        }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
+        UIView.setAnimationsEnabled(true)
         self.delegate?.modalDismissed()
     }
 
