@@ -30,10 +30,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window!.makeKeyAndVisible()
         Task(priority: .high) {
             do {
+                self.session.pauseUpdateNav = true
+                defer {
+                    self.session.pauseUpdateNav = false
+                    self.session.updateNav()
+                }
                 await readDefaultData(self.session)
                 try createDir(dataDirPath)
                 await readCacheFile(dataDirPath: self.dataDirPath, self.session)
-                self.session.updateNav()
                 self.session.unpause()
             } catch {
                 print("startup error: \(error)")

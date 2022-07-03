@@ -20,6 +20,7 @@ class ApplinSession: ObservableObject {
     var pages: [String: PageData] = [:]
     var stack: [String] = ["/"]
     var connectionMode: ConnectionMode = .disconnect
+    var pauseUpdateNav: Bool = false
 
     init(_ cacheFileWriter: CacheFileWriter,
          _ connection: ApplinConnection,
@@ -44,6 +45,10 @@ class ApplinSession: ObservableObject {
 
     public func updateNav() {
         print("updateNav \(self.stack)")
+        if self.pauseUpdateNav {
+            print("updateNav paused")
+            return
+        }
         if self.stack.isEmpty {
             self.stack = ["/"]
             print("updateNav \(self.stack)")
@@ -110,8 +115,9 @@ class ApplinSession: ObservableObject {
         if let newPages = update.pages {
             for (key, item) in newPages {
                 do {
-                    self.pages[key] = try PageData(item, self)
-                    print("updated key \(key)")
+                    let data = try PageData(item, self)
+                    self.pages[key] = data
+                    print("updated key \(key) \(data)")
                 } catch {
                     print("ERROR: error processing updated key '\(key)': \(error)")
                 }
@@ -225,7 +231,11 @@ class ApplinSession: ObservableObject {
     }
 
     @MainActor func doActionsAsync(_ actions: [ActionData]) async {
-        // TODO: Call updateNav once at the end, to reduce racing.
+        self.pauseUpdateNav = true
+        defer {
+            self.pauseUpdateNav = false
+            self.updateNav()
+        }
         loop: for action in actions {
             switch action {
             case let .copyToClipboard(string):
