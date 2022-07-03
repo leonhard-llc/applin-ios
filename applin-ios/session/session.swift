@@ -224,7 +224,7 @@ class ApplinSession: ObservableObject {
         return data
     }
 
-    func doActionsAsync(_ actions: [ActionData]) async {
+    @MainActor func doActionsAsync(_ actions: [ActionData]) async {
         // TODO: Call updateNav once at the end, to reduce racing.
         loop: for action in actions {
             switch action {
@@ -249,7 +249,13 @@ class ApplinSession: ObservableObject {
                 self.push(pageKey: key)
             case let .rpc(path):
                 print("Rpc(\(path))")
+                self.nav?.setWorking("Working")
+                defer {
+                    self.nav?.setWorking(nil)
+                }
+                let stopwatch = Stopwatch()
                 let result = await self.rpc(path: path, method: "POST")
+                await stopwatch.waitUntil(seconds: 1.0)
                 if !result {
                     break loop
                 }

@@ -148,3 +148,23 @@ extension Array {
 //        self.value = value
 //    }
 // }
+
+struct Stopwatch {
+    let start: Date
+
+    init() {
+        self.start = Date.now
+    }
+
+    func waitUntil(seconds: Double) async {
+        let elapsed = self.start.distance(to: Date.now)
+        if elapsed < 1.0 {
+            let secondsToWait = 1.0 - elapsed
+            let nanoSecondsToWait = secondsToWait * 1_000_000_000
+            do {
+                try await Task.sleep(nanoseconds: UInt64(nanoSecondsToWait))
+            } catch {
+            }
+        }
+    }
+}

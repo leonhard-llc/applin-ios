@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 protocol ModalDelegate: AnyObject {
-    func modalDismissed(modal: UIViewController)
+    func modalDismissed()
 }
 
 class AlertController: UIAlertController {
@@ -14,7 +14,7 @@ class AlertController: UIAlertController {
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        self.delegate?.modalDismissed(modal: self)
+        self.delegate?.modalDismissed()
     }
 
     // TODONT: Don't add a constructor.
@@ -61,6 +61,7 @@ private struct Entry {
 class NavigationController: UINavigationController, ModalDelegate, UIGestureRecognizerDelegate {
     private var entries: [Entry] = []
     private var modals: [UIViewController] = []
+    private var working: UIViewController?
 
     init() {
         super.init(rootViewController: LoadingPage())
@@ -83,14 +84,26 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         return result
     }
 
-    func presentTopModal() {
-        if let modal = self.modals.last {
-            self.present(modal, animated: false)
+    private func presentCorrectModal() {
+        if let modal = self.working ?? self.modals.last {
+            if self.presentedViewController === modal {
+                return
+            } else {
+                if let presented = self.presentedViewController {
+                    presented.dismiss(animated: false) {
+                        self.presentCorrectModal()
+                    }
+                } else {
+                    self.present(modal, animated: false)
+                }
+            }
+        } else {
+            self.presentedViewController?.dismiss(animated: false)
         }
     }
 
-    func modalDismissed(modal: UIViewController) {
-        self.presentTopModal()
+    func modalDismissed() {
+        self.presentCorrectModal()
     }
 
     private func removeEntry(_ key: String) -> Entry? {
@@ -99,6 +112,16 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         } else {
             return nil
         }
+    }
+
+    func setWorking(_ text: String?) {
+        print("setWorking '\(text ?? "nil")'")
+        if let text = text {
+            self.working = WorkingView(text: text)
+        } else {
+            self.working = nil
+        }
+        self.presentCorrectModal()
     }
 
     func setStackPages(_ session: ApplinSession, _ newPages: [(String, PageData)]) async {
@@ -147,7 +170,7 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
                 self.entries.compactMap({ entry in entry.controller }),
                 animated: animated
         )
-        self.presentTopModal()
+        self.presentCorrectModal()
     }
 
     public func topPageController() -> PageController? {
