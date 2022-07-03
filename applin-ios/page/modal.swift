@@ -41,7 +41,7 @@ struct ModalData: Equatable, PageDataProto {
         self.widgets = widgets
     }
 
-    init(_ kind: ModalKind, _ item: JsonItem, _ session: ApplinSession) throws {
+    init(_ kind: ModalKind, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.kind = kind
         self.text = item.text
@@ -71,64 +71,14 @@ struct ModalData: Equatable, PageDataProto {
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
     }
-}
 
-class AlertController: UIAlertController {
-    var animate: Bool = true
-
-    override func dismiss(animated flag: Bool, completion: (() -> ())?) {
-        print("AlertController dismiss")
-        completion?()
-        super.dismiss(animated: flag, completion: nil)
+    func toAlert(_ session: ApplinSession) -> AlertController {
+        let alert = AlertController(title: self.title, message: self.text, preferredStyle: self.kind.style())
+        for widget in self.widgets {
+            alert.addAction(widget.toAlertAction(session))
+        }
+        return alert
     }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        UIView.setAnimationsEnabled(self.animate)
-        self.animate = true
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        UIView.setAnimationsEnabled(true)
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        UIView.setAnimationsEnabled(self.animate)
-        self.animate = true
-    }
-
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        UIView.setAnimationsEnabled(true)
-    }
-
-    // TODONT: Don't add a constructor.
-    //         Our constructor cannot call the "convenience" constructor which is
-    //         the only known way to properly initialize the class.
-    // let preferredStyleOverride: UIAlertController.Style
-    // // https://stackoverflow.com/a/45895513
-    // override var preferredStyle: UIAlertController.Style {
-    //     return self.preferredStyleOverride
-    // }
-    // init(title: String?, message: String?, preferredStyle: UIAlertController.Style) {
-    //     self.preferredStyleOverride = preferredStyle
-    //     // After calling this constructor, the class will throw
-    //     // "Unable to simultaneously satisfy constraints" errors and display
-    //     // the dialog with maximum height.  Strangely, displaying a second
-    //     // dialog causes the one underneath to display properly.
-    //     super.init(nibName: nil, bundle: nil)
-    //     self.title = title
-    //     self.message = message
-    // }
-
-    // TODONT: Don't try to intercept `dismiss` calls because it doesn't work.
-    //         UIViewController does not call this when a button is tapped.
-    // override func dismiss(animated flag: Bool, completion: (() -> ())?) {
-    //     print("dismiss")
-    //     super.dismiss(animated: flag, completion: completion)
-    // }
 }
 
 // TODONT: Don't make each page controller present the modals above it.
@@ -144,67 +94,70 @@ class AlertController: UIAlertController {
 //    This means that displaying multiple modals requires a long slow dance of
 //    display, wait for the modal to show, then display.
 //    Coding this to work reliably is very challenging.  I gave up.
-
-class ModalPageController: UIViewController, PageController {
-    var data: ModalData?
-    var toPresent: AlertController?
-    var presented: AlertController?
-    var visible = false
-
-    func isModal() -> Bool {
-        true
-    }
-
-    func allowBackSwipe() -> Bool {
-        false
-    }
-
-    func update(_ session: ApplinSession, _ data: ModalData, isTop: Bool) {
-        print("modal update isTop=\(isTop) \(data)")
-        self.view.backgroundColor = .systemBackground // pastelPeach.withAlphaComponent(0.5)
-        if isTop {
-            if self.presented == nil {
-                let alert = AlertController(title: data.title, message: data.text, preferredStyle: data.kind.style())
-                for widget in data.widgets {
-                    alert.addAction(widget.toAlertAction(session))
-                }
-                if self.visible {
-                    print("modal present animated=false")
-                    self.present(alert, animated: false)
-                    self.presented = alert
-                } else {
-                    print("modal postpone present")
-                    self.toPresent = alert
-                }
-            } else {
-                print("postponing update to top modal")
-            }
-        } else {
-            print("modal dismiss")
-            self.data = data
-            self.title = data.title
-            self.toPresent = nil
-            self.presented?.dismiss(animated: false, completion: {})
-            self.presented = nil
-        }
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        self.visible = true
-        if let alert = self.toPresent {
-            print("modal present animated=true")
-            self.toPresent = nil
-            self.present(alert, animated: true)
-            self.presented = alert
-        }
-        super.viewDidAppear(animated)
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        self.visible = false
-        super.viewWillDisappear(animated)
-    }
-}
+//
+// class ModalPageController: UIViewController, PageController {
+//    var data: ModalData?
+//    var toPresent: AlertController?
+//    var presented: AlertController?
+//    var visible = false
+//
+//    func isModal() -> Bool {
+//        true
+//    }
+//
+//    func allowBackSwipe() -> Bool {
+//        false
+//    }
+//
+//    func update(_ session: ApplinSession, _ data: ModalData, isTop: Bool) {
+//        print("modal update isTop=\(isTop) \(data)")
+//        self.view.backgroundColor = .systemBackground // pastelPeach.withAlphaComponent(0.5)
+//        if isTop {
+//            if (self.presented == nil) || !(self.presented?.isBeingPresented ?? false) {
+//                let alert = AlertController(title: data.title, message: data.text, preferredStyle: data.kind.style())
+//                for widget in data.widgets {
+//                    alert.addAction(widget.toAlertAction(session))
+//                }
+//                if self.visible {
+//                    print("modal present animated=false")
+//                    self.present(alert, animated: false)
+//                    self.presented = alert
+//                } else {
+//                    print("modal postpone present")
+//                    self.toPresent = alert
+//                }
+//            } else {
+//                print("postponing update to top modal")
+//            }
+//        } else {
+//            print("modal dismiss")
+//            self.data = data
+//            self.title = data.title
+//            self.toPresent = nil
+//            self.presented?.dismiss(animated: false, completion: {})
+//            self.presented = nil
+//        }
+//    }
+//
+//    override func viewDidAppear(_ animated: Bool) {
+//        self.visible = true
+//        if let alert = self.toPresent {
+//            print("modal present animated=true")
+//            self.toPresent = nil
+//            alert.setAnimated(true)
+//            self.present(alert, animated: true) {
+//                alert.setAnimated(false)
+//            }
+//            self.presented = alert
+//        }
+//        super.viewDidAppear(animated)
+//    }
+//
+//    override func viewWillDisappear(_ animated: Bool) {
+//        self.visible = false
+//        super.viewWillDisappear(animated)
+//    }
+// }
 
 // TODONT: Don't try to add the UIAlertController as a child view controller.
 //         It will display properly, but will not call button handlers.

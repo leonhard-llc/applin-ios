@@ -1,6 +1,49 @@
 import Foundation
 import UIKit
 
+protocol ModalDelegate: AnyObject {
+    func modalDismissed(modal: UIViewController)
+}
+
+class AlertController: UIAlertController {
+    weak var delegate: ModalDelegate?
+
+    func setAnimated(_ animated: Bool) {
+        UIView.setAnimationsEnabled(animated)
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        self.delegate?.modalDismissed(modal: self)
+    }
+
+    // TODONT: Don't add a constructor.
+    //         Our constructor cannot call the "convenience" constructor which is
+    //         the only known way to properly initialize the class.
+    // let preferredStyleOverride: UIAlertController.Style
+    // // https://stackoverflow.com/a/45895513
+    // override var preferredStyle: UIAlertController.Style {
+    //     return self.preferredStyleOverride
+    // }
+    // init(title: String?, message: String?, preferredStyle: UIAlertController.Style) {
+    //     self.preferredStyleOverride = preferredStyle
+    //     // After calling this constructor, the class will throw
+    //     // "Unable to simultaneously satisfy constraints" errors and display
+    //     // the dialog with maximum height.  Strangely, displaying a second
+    //     // dialog causes the one underneath to display properly.
+    //     super.init(nibName: nil, bundle: nil)
+    //     self.title = title
+    //     self.message = message
+    // }
+
+    // TODONT: Don't try to intercept `dismiss` calls because it doesn't work.
+    //         UIViewController does not call this when a button is tapped.
+    // override func dismiss(animated flag: Bool, completion: (() -> ())?) {
+    //     print("dismiss")
+    //     super.dismiss(animated: flag, completion: completion)
+    // }
+}
+
 private struct Entry {
     let key: String
     let data: PageData
@@ -15,8 +58,9 @@ private struct Entry {
     }
 }
 
-class NavigationController: UINavigationController, UIGestureRecognizerDelegate {
+class NavigationController: UINavigationController, ModalDelegate, UIGestureRecognizerDelegate {
     private var entries: [Entry] = []
+    private var modals: [UIViewController] = []
 
     init() {
         super.init(rootViewController: LoadingPage())
@@ -39,6 +83,16 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
         return result
     }
 
+    func presentTopModal() {
+        if let modal = self.modals.last {
+            self.present(modal, animated: false)
+        }
+    }
+
+    func modalDismissed(modal: UIViewController) {
+        self.presentTopModal()
+    }
+
     private func removeEntry(_ key: String) -> Entry? {
         if let n = self.entries.firstIndex(where: { entry in entry.key == key }) {
             return self.entries.remove(at: n)
@@ -47,28 +101,30 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
         }
     }
 
-    func setStackPages(_ session: ApplinSession, _ newPages: [(String, PageData)]) {
+    func setStackPages(_ session: ApplinSession, _ newPages: [(String, PageData)]) async {
         print("setStackPages")
         let appJustStarted = self.entries.isEmpty
         let topEntry: Entry? = self.entries.last
         precondition(!newPages.isEmpty)
         var newEntries: [Entry] = []
-        let lastPageIndex = newPages.count - 1
-        for (n, (key, pageData)) in newPages.enumerated() {
+        var newModals: [UIViewController] = []
+        for (key, pageData) in newPages {
             let hasPrevPage = !newEntries.isEmpty
             switch pageData {
             case let .modal(data):
-                let entry = self.removeEntry(key)
-                let ctl = entry?.controller as? ModalPageController ?? ModalPageController()
-                ctl.update(session, data, isTop: n == lastPageIndex)
-                newEntries.append(Entry(key, pageData, ctl, nil))
+                let alert = data.toAlert(session)
+                alert.delegate = self
+                alert.setAnimated(false)
+                newModals.append(alert)
             case let .navPage(data):
+                newModals = []
                 let entry = self.removeEntry(key)
                 let ctl = entry?.controller as? NavPageController ?? NavPageController(self, session)
                 let cache = entry?.cache ?? WidgetCache()
                 ctl.update(session, cache, data, hasPrevPage: hasPrevPage)
                 newEntries.append(Entry(key, pageData, ctl, cache))
             case let .plainPage(data):
+                newModals = []
                 let entry = self.removeEntry(key)
                 let ctl = entry?.controller as? PlainPageController ?? PlainPageController()
                 let cache = entry?.cache ?? WidgetCache()
@@ -76,25 +132,22 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
                 newEntries.append(Entry(key, pageData, ctl, cache))
             }
         }
-        let topIsModal = topEntry?.controller.isModal() ?? false
-        let topPopped = self.entries.contains(where: { entry in entry.controller === topEntry?.controller })
+        self.modals = [] // So modalDismissed delegate func will not present any modals.
+        // Prevent error "setViewControllers:animated: called on
+        // <applin_ios.NavigationController> while an existing transition
+        // or presentation is occurring; the navigation stack will not be
+        // updated."
+        await self.presentedViewController?.dismissAsync(animated: false)
+        self.modals = newModals
         self.entries = newEntries
         let newTopEntry = self.entries.last
         let changedTopPage = topEntry?.controller !== newTopEntry?.controller
-        if topIsModal && !changedTopPage {
-            // Prevent warning "setViewControllers:animated: called on
-            // <applin_ios.NavigationController> while an existing transition
-            // or presentation is occurring; the navigation stack will not be
-            // updated."
-            print("skipping calling setViewControllers() because a modal is visible")
-        } else {
-            let newTopIsModal = newTopEntry?.controller.isModal() ?? false
-            let animated = (changedTopPage && !newTopIsModal) && !(topIsModal && topPopped) && !appJustStarted
-            self.setViewControllers(
-                    self.entries.compactMap({ entry in entry.controller }),
-                    animated: animated
-            )
-        }
+        let animated = changedTopPage && !appJustStarted
+        self.setViewControllers(
+                self.entries.compactMap({ entry in entry.controller }),
+                animated: animated
+        )
+        self.presentTopModal()
     }
 
     public func topPageController() -> PageController? {

@@ -49,3 +49,13 @@ extension UIControl {
         self.addAction(UIAction(handler: handler), for: event)
     }
 }
+
+extension UIViewController {
+    func dismissAsync(animated: Bool) async {
+        await withCheckedContinuation() { continuation in
+            self.dismiss(animated: animated) {
+                continuation.resume()
+            }
+        }
+    }
+}

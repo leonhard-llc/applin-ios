@@ -30,9 +30,9 @@ enum PageData: Equatable {
     init(_ item: JsonItem, _ session: ApplinSession) throws {
         switch item.typ {
         case ModalKind.alert.typ():
-            self = try .modal(ModalData(.alert, item, session))
+            self = try .modal(ModalData(.alert, item))
         case ModalKind.drawer.typ():
-            self = try .modal(ModalData(.drawer, item, session))
+            self = try .modal(ModalData(.drawer, item))
         case NavPageData.TYP:
             self = try .navPage(NavPageData(item, session))
         case PlainPageData.TYP:

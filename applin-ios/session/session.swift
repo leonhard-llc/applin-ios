@@ -10,6 +10,7 @@ struct Update: Codable {
 struct FetchError: Error {
 }
 
+// TODO: Prevent racing between applyUpdate(), rpc(), and doActionsAsync().
 class ApplinSession: ObservableObject {
     let cacheFileWriter: CacheFileWriter
     let connection: ApplinConnection
@@ -60,8 +61,8 @@ class ApplinSession: ObservableObject {
         })
         self.connectionMode = entries.map({ (_, data) in data.inner().connectionMode }).max() ?? .disconnect
         self.connection.setMode(self, self.connectionMode)
-        DispatchQueue.main.async {
-            self.nav?.setStackPages(self, entries)
+        Task {
+            await self.nav?.setStackPages(self, entries)
         }
     }
 
@@ -224,6 +225,7 @@ class ApplinSession: ObservableObject {
     }
 
     func doActionsAsync(_ actions: [ActionData]) async {
+        // TODO: Call updateNav once at the end, to reduce racing.
         loop: for action in actions {
             switch action {
             case let .copyToClipboard(string):
