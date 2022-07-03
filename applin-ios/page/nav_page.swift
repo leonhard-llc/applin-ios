@@ -132,7 +132,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     // when the view is removed from the view (isMovingFromParent=true).
     override func viewDidDisappear(_ animated: Bool) {
         // NOTE: UIKit on iOS 15 does not set self.isBeingDismissed=true like the docs claim.
-        print("NavPageController viewDidDisappear isMovingFromParent=\(self.isMovingFromParent)")
+        print("NavPageController '\(self.title ?? "")' viewDidDisappear isMovingFromParent=\(self.isMovingFromParent)")
         if self.isMovingFromParent {
             self.back()
         }

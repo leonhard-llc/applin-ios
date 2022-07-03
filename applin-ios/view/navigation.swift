@@ -100,7 +100,7 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
     }
 
     public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        let result = !(self.entries.last?.controller.allowBackSwipe() ?? false)
+        let result = self.entries.last?.controller.allowBackSwipe() ?? false
         print("allowBackSwipe \(result)")
         return result
     }
@@ -177,10 +177,10 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
             }
         }
         self.modals = [] // So modalDismissed delegate func will not present any modals.
-        // Prevent error "setViewControllers:animated: called on
-        // <applin_ios.NavigationController> while an existing transition
-        // or presentation is occurring; the navigation stack will not be
-        // updated."
+        // Dismiss any presented view to prevent error
+        // "setViewControllers:animated: called on <applin_ios.NavigationController>
+        // while an existing transition or presentation is occurring;
+        // the navigation stack will not be updated."
         await self.presentedViewController?.dismissAsync(animated: false)
         self.modals = newModals
         self.entries = newEntries
