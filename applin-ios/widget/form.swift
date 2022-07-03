@@ -93,10 +93,11 @@ private class ErrorCell: UITableViewCell {
 private class DisclosureCell: UITableViewCell {
     static let REUSE_ID = "DisclosureCell"
 
-    func update(_ text: String) {
+    func update(_ text: String, enabled: Bool) {
         self.accessoryType = .disclosureIndicator
         var content = self.defaultContentConfiguration()
         content.text = text
+        content.textProperties.color = enabled ? .label : .placeholderText
         self.contentConfiguration = content
     }
 }
@@ -104,11 +105,13 @@ private class DisclosureCell: UITableViewCell {
 private class DisclosureSubtextCell: UITableViewCell {
     static let REUSE_ID = "DisclosureSubtextCell"
 
-    func update(text: String, subText: String) {
+    func update(text: String, subText: String, enabled: Bool) {
         self.accessoryType = .disclosureIndicator
         var content = self.defaultContentConfiguration()
         content.text = text
         content.secondaryText = subText
+        content.textProperties.color = enabled ? .label : .placeholderText
+        content.secondaryTextProperties.color = enabled ? .label : .placeholderText
         self.contentConfiguration = content
     }
 }
@@ -141,12 +144,14 @@ private class DisclosureImageCell: UITableViewCell {
 
     func update(_ session: ApplinSession,
                 text: String,
-                photoUrl: URL
+                photoUrl: URL,
+                enabled: Bool
     ) {
         self.optPhotoUrl = photoUrl
         self.accessoryType = .disclosureIndicator
         var content = self.defaultContentConfiguration()
         content.text = text
+        content.textProperties.color = enabled ? .label : .placeholderText
         content.addPlaceholderImage(cellWidth: self.bounds.width)
         self.contentConfiguration = content
         Task.init { [content] in
@@ -169,13 +174,16 @@ private class DisclosureImageSubtextCell: UITableViewCell {
     func update(_ session: ApplinSession,
                 text: String,
                 subText: String,
-                photoUrl: URL
+                photoUrl: URL,
+                enabled: Bool
     ) {
         self.optPhotoUrl = photoUrl
         self.accessoryType = .disclosureIndicator
         var content = self.defaultContentConfiguration()
         content.text = text
         content.secondaryText = subText
+        content.textProperties.color = enabled ? .label : .placeholderText
+        content.secondaryTextProperties.color = enabled ? .label : .placeholderText
         content.addPlaceholderImage(cellWidth: self.bounds.width)
         self.contentConfiguration = content
         Task.init { [content] in
@@ -306,22 +314,22 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
             case (.none, .none):
                 let cell = tableView.dequeueReusableCell(
                         withIdentifier: DisclosureCell.REUSE_ID, for: indexPath) as! DisclosureCell
-                cell.update(data.text)
+                cell.update(data.text, enabled: !data.actions.isEmpty)
                 return cell
             case let (.some(subText), .none):
                 let cell = tableView.dequeueReusableCell(
                         withIdentifier: DisclosureSubtextCell.REUSE_ID, for: indexPath) as! DisclosureSubtextCell
-                cell.update(text: data.text, subText: subText)
+                cell.update(text: data.text, subText: subText, enabled: !data.actions.isEmpty)
                 return cell
             case let (.none, .some(photoUrl)):
                 let cell = tableView.dequeueReusableCell(
                         withIdentifier: DisclosureImageCell.REUSE_ID, for: indexPath) as! DisclosureImageCell
-                cell.update(session, text: data.text, photoUrl: photoUrl)
+                cell.update(session, text: data.text, photoUrl: photoUrl, enabled: !data.actions.isEmpty)
                 return cell
             case let (.some(subText), .some(photoUrl)):
                 let cell = tableView.dequeueReusableCell(
                         withIdentifier: DisclosureImageSubtextCell.REUSE_ID, for: indexPath) as! DisclosureImageSubtextCell
-                cell.update(session, text: data.text, subText: subText, photoUrl: photoUrl)
+                cell.update(session, text: data.text, subText: subText, photoUrl: photoUrl, enabled: !data.actions.isEmpty)
                 return cell
             }
         default:

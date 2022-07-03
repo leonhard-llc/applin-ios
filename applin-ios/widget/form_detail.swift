@@ -36,7 +36,10 @@ struct FormDetailData: Equatable, Hashable, WidgetDataProto {
     }
 
     func getTapActions() -> [ActionData]? {
-        self.actions
+        if self.actions.isEmpty {
+            return nil
+        }
+        return self.actions
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
@@ -76,6 +79,7 @@ class FormDetailWidget: WidgetProto {
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         self.session = session
         self.button.setTitle("\(self.data.text) 〉", for: .normal)
+        self.button.isEnabled = !self.data.actions.isEmpty
         return self.button
     }
 }
