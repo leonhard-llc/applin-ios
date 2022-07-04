@@ -261,6 +261,7 @@ class ApplinSession: ObservableObject {
                 let stopwatch = Stopwatch()
                 do {
                     try await self.rpc(path: path, method: "POST")
+                    await stopwatch.waitUntil(seconds: 1.0)
                 } catch {
                     print(error)
                     switch error as? ApplinError {
