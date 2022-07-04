@@ -99,19 +99,19 @@ class ApplinSession: ObservableObject {
         self.updateNav()
     }
 
-    func applyUpdate(_ data: Data) -> Bool {
+    func applyUpdate(_ data: Data) throws {
         // TODO: Support null 'pages' entries.  Run Applin's dynamic_page example.
         let update: Update
         do {
             update = try decodeJson(data)
             print("update \(update)")
         } catch {
-            print("error decoding update: \(error)")
-            return false
+            throw ApplinError.serverError("error decoding update: \(error)")
         }
         if let newStack = update.stack {
             self.stack = newStack
         }
+        var err: String?
         if let newPages = update.pages {
             for (key, item) in newPages {
                 do {
@@ -119,17 +119,20 @@ class ApplinSession: ObservableObject {
                     self.pages[key] = data
                     print("updated key \(key) \(data)")
                 } catch {
-                    print("ERROR: error processing updated key '\(key)': \(error)")
+                    err = "error processing updated key '\(key)': \(error)"
+                    print(err!)
                 }
             }
+        }
+        if let err = err {
+            throw ApplinError.serverError(err)
         }
         // TODO: Handle user_error.
         self.cacheFileWriter.scheduleWrite(self)
         self.updateNav()
-        return true
     }
 
-    func rpc(path: String, method: String) async -> Bool {
+    func rpc(path: String, method: String) async throws {
         print("rpc \(path)")
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 10.0 /* seconds */
@@ -157,32 +160,24 @@ class ApplinSession: ObservableObject {
             data = urlData
             httpResponse = urlResponse as! HTTPURLResponse
         } catch {
-            print("rpc \(path) transport error: \(error)")
-            // TODO: Push error modal
-            return false
+            throw ApplinError.networkError("rpc \(path) transport error: \(error)")
         }
         if !(200...299).contains(httpResponse.statusCode) {
-            if httpResponse.contentTypeBase() == "text/plain",
-               let string = String(data: data, encoding: .utf8) {
-                print("rpc \(path) server error: \(httpResponse.statusCode) "
+            if httpResponse.contentTypeBase() == "text/plain", let string = String(data: data, encoding: .utf8) {
+                throw ApplinError.serverError("rpc \(path) server error: \(httpResponse.statusCode) "
                         + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
             } else {
-                print("rpc \(path) server error: \(httpResponse.statusCode) "
+                throw ApplinError.serverError("rpc \(path) server error: \(httpResponse.statusCode) "
                         + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), "
                         + "len=\(data.count) \(httpResponse.mimeType ?? "")")
             }
-            // TODO: Save error
-            // TODO: Push error modal
-            return false
         }
         let contentTypeBase = httpResponse.contentTypeBase()
         if contentTypeBase != "application/json" {
-            print("rpc \(path) server response content-type is not 'application/json': '\(contentTypeBase ?? "")'")
-            // TODO: Save error
-            // TODO: Push error modal
-            return false
+            throw ApplinError.serverError(
+                    "rpc \(path) server response content-type is not 'application/json': '\(contentTypeBase ?? "")'")
         }
-        return self.applyUpdate(data)
+        try self.applyUpdate(data)
     }
 
     func fetch(_ url: URL) async throws -> Data {
@@ -264,9 +259,25 @@ class ApplinSession: ObservableObject {
                     self.nav?.setWorking(nil)
                 }
                 let stopwatch = Stopwatch()
-                let result = await self.rpc(path: path, method: "POST")
-                await stopwatch.waitUntil(seconds: 1.0)
-                if !result {
+                do {
+                    try await self.rpc(path: path, method: "POST")
+                } catch {
+                    print(error)
+                    switch error as? ApplinError {
+                    case nil:
+                        self.error = "Unexpected exception: \(error)"
+                        await stopwatch.waitUntil(seconds: 1.0)
+                        self.push(pageKey: "/applin-error-details")
+                    case let .deserializeError(msg), let .networkError(msg), let .serverError(msg):
+                        self.error = msg
+                        await stopwatch.waitUntil(seconds: 1.0)
+                        self.push(pageKey: "/applin-error-details")
+                    case let .userError(msg):
+                        self.error = msg
+                        await stopwatch.waitUntil(seconds: 1.0)
+                        // TODO: Display a simple alert.
+                        self.push(pageKey: "/applin-error-details")
+                    }
                     break loop
                 }
             }

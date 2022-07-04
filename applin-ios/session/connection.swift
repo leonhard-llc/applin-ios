@@ -112,7 +112,7 @@ class ApplinConnection {
                 continue
             }
             let data = parts[1].data(using: .utf8)!
-            _ = session.applyUpdate(data)
+            try session.applyUpdate(data)
         }
         print("ApplinConnection disconnected")
     }
@@ -166,14 +166,12 @@ class ApplinConnection {
         self.running = true
         while !Task.isCancelled {
             do {
-                if await session.rpc(path: "/", method: "GET") {
-                    try await Task.sleep(nanoseconds: UInt64(max(self.pollSeconds, 1)) * 1_000_000_000)
-                    continue
-                }
-                self.state = .connectError
+                try await session.rpc(path: "/", method: "GET")
+                try await Task.sleep(nanoseconds: UInt64(max(self.pollSeconds, 1)) * 1_000_000_000)
+                continue
             } catch is CancellationError {
                 self.state = .disconnected
-                continue
+                break
             } catch let error as NSError where error.code == -1004 /* Could not connect to the server */ {
                 self.state = .connectError
             } catch {
