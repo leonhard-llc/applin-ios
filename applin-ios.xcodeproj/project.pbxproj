@@ -19,6 +19,7 @@
 		36EBC8C464017332F7DDC833 /* modal_button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCC3CE22617EF9A9D5C19 /* modal_button.swift */; };
 		36EBC8FE4EC18C24AC57EACB /* form.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCE389B3227F90C1CA9B1 /* form.swift */; };
 		36EBC93F79D286970D78A26F /* test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCE3951A4D99DCE27F5C1 /* test.swift */; };
+		36EBC95C7C6D0E2BEDB78235 /* form_error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC49B2A28E23E7556A4ED /* form_error.swift */; };
 		36EBC97DAC21DE01062EC1E7 /* checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC3249E4C0129C3AB1202 /* checkbox.swift */; };
 		36EBC9A153BF2E49276AF498 /* cache_file_writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC56645CC4C7C315F910E /* cache_file_writer.swift */; };
 		36EBCB20F9449FB777B26C41 /* util.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC6D4BF5D11D4B8ADE702 /* util.swift */; };
@@ -78,6 +79,7 @@
 		36EBC1102FD4EB74F74929C5 /* error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = error.swift; path = session/error.swift; sourceTree = "<group>"; };
 		36EBC3249E4C0129C3AB1202 /* checkbox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = checkbox.swift; sourceTree = "<group>"; };
 		36EBC39B5482FA2A03BADB89 /* json.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = json.swift; path = session/json.swift; sourceTree = "<group>"; };
+		36EBC49B2A28E23E7556A4ED /* form_error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = form_error.swift; sourceTree = "<group>"; };
 		36EBC4E77A1484333D5882F0 /* loading.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = loading.swift; path = view/loading.swift; sourceTree = "<group>"; };
 		36EBC5430B831FFCC6098B08 /* .swiftlint.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		36EBC56645CC4C7C315F910E /* cache_file_writer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = cache_file_writer.swift; path = session/cache_file_writer.swift; sourceTree = "<group>"; };
@@ -183,6 +185,7 @@
 				36EBCE389B3227F90C1CA9B1 /* form.swift */,
 				36EBCE7CF445372318DC66BD /* form_section.swift */,
 				36EBC960F01F9A285F600570 /* form_button.swift */,
+				36EBC49B2A28E23E7556A4ED /* form_error.swift */,
 			);
 			path = widget;
 			sourceTree = "<group>";
@@ -443,6 +446,7 @@
 				36EBCBBC8BC3163E99A8F172 /* form_section.swift in Sources */,
 				36EBC1693A9EC7BB3155AE5B /* form_button.swift in Sources */,
 				36EBCBB707583C8BCF42C938 /* working.swift in Sources */,
+				36EBC95C7C6D0E2BEDB78235 /* form_error.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
