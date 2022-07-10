@@ -1,9 +1,9 @@
 import Foundation
 
 enum ConnectionMode: Equatable, Comparable {
-    case disconnect
-    case pollSeconds(UInt32)
     case stream
+    case pollSeconds(UInt32)
+    case disconnect
 
     init(_ stream: Bool?, _ pollSeconds: UInt32?) {
         if stream == true {

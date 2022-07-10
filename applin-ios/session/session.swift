@@ -64,7 +64,7 @@ class ApplinSession: ObservableObject {
                     ))
             return (key, page)
         })
-        self.connectionMode = entries.map({ (_, data) in data.inner().connectionMode }).max() ?? .disconnect
+        self.connectionMode = entries.map({ (_, data) in data.inner().connectionMode }).min() ?? .disconnect
         self.connection.setMode(self, self.connectionMode)
         Task {
             await self.nav?.setStackPages(self, entries)
