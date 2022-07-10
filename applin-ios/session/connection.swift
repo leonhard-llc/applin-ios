@@ -8,13 +8,16 @@ enum ConnectionMode: Equatable, Comparable {
     init(_ stream: Bool?, _ pollSeconds: UInt32?) {
         if stream == true {
             self = .stream
-        } else {
-            let seconds = pollSeconds ?? 0
-            if seconds > 0 {
-                self = .pollSeconds(seconds)
-            } else {
-                self = .disconnect
-            }
+            return
+        }
+        switch pollSeconds {
+        case .none:
+            self = .disconnect
+        case let .some(seconds) where seconds == 0:
+            print("WARNING: Ignoring pollSeconds=0")
+            self = .disconnect
+        case let .some(seconds):
+            self = .pollSeconds(seconds)
         }
     }
 
