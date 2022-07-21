@@ -6,6 +6,7 @@ struct CacheFileContents: Codable {
 }
 
 func readCacheFile(dataDirPath: String, _ session: ApplinSession) async {
+    print("readCacheFile")
     let path = dataDirPath + "/" + CacheFileWriter.cacheFileName
     if !(await fileExists(path: path)) {
         print("cache not found")
