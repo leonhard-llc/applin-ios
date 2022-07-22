@@ -10,6 +10,14 @@ struct Update: Codable {
 struct FetchError: Error {
 }
 
+enum Var {
+    case Bool(Bool)
+    // case String(String)
+    // case Int(Int64)
+    // case Float(Double)
+    // case EpochSeconds(UInt64)
+}
+
 // TODO: Prevent racing between applyUpdate(), rpc(), and doActionsAsync().
 class ApplinSession: ObservableObject {
     let cacheFileWriter: CacheFileWriter
@@ -19,6 +27,7 @@ class ApplinSession: ObservableObject {
     var error: String?
     var pages: [String: PageData] = [:]
     var stack: [String] = ["/"]
+    var vars: [String: Var] = [:]
     var connectionMode: ConnectionMode = .disconnect
     var pauseUpdateNav: Bool = false
 
@@ -68,6 +77,7 @@ class ApplinSession: ObservableObject {
         self.connection.setMode(self, self.connectionMode)
         Task {
             await self.nav?.setStackPages(self, entries)
+            // TODO: Fix bug where poll gets updates but they aren't visible until user scrolls.
         }
     }
 
@@ -97,6 +107,22 @@ class ApplinSession: ObservableObject {
         }
         print("stack=\(self.stack)")
         self.updateNav()
+    }
+
+    func setBoolVar(_ name: String, value: Bool) {
+        self.vars[name] = .Bool(value)
+    }
+
+    func getBoolVar(_ name: String) -> Bool? {
+        switch self.vars[name] {
+        case .none:
+            return nil
+        case let .some(.Bool(value)):
+            return value
+        case let .some(other):
+            print("WARNING tried to read variable \(name) as bool but it is: \(other)")
+            return nil
+        }
     }
 
     func applyUpdate(_ data: Data) throws {
