@@ -27,23 +27,26 @@ enum ModalKind: String {
 struct ModalData: Equatable, PageDataProto {
     let connectionMode: ConnectionMode
     let kind: ModalKind
+    let pageKey: String
     let text: String?
     let title: String
     let typ: String
     let widgets: [ModalButtonData]
 
-    init(_ kind: ModalKind, title: String, text: String?, _ widgets: [ModalButtonData]) {
+    init(pageKey: String, _ kind: ModalKind, title: String, text: String?, _ widgets: [ModalButtonData]) {
         self.connectionMode = .disconnect
         self.kind = kind
+        self.pageKey = pageKey
         self.typ = kind.typ()
         self.title = title
         self.text = text
         self.widgets = widgets
     }
 
-    init(_ kind: ModalKind, _ item: JsonItem) throws {
+    init(pageKey: String, _ kind: ModalKind, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.kind = kind
+        self.pageKey = pageKey
         self.text = item.text
         self.title = try item.requireTitle()
         self.typ = kind.typ()
@@ -75,9 +78,13 @@ struct ModalData: Equatable, PageDataProto {
     func toAlert(_ session: ApplinSession) -> AlertController {
         let alert = AlertController(title: self.title, message: self.text, preferredStyle: self.kind.style())
         for widget in self.widgets {
-            alert.addAction(widget.toAlertAction(session))
+            alert.addAction(widget.toAlertAction(session, pageKey: self.pageKey))
         }
         return alert
+    }
+
+    func vars() -> [(String, Var)] {
+        []
     }
 }
 

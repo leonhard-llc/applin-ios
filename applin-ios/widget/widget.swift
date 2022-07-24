@@ -10,6 +10,7 @@ protocol WidgetDataProto {
     func keys() -> [String]
     func getTapActions() -> [ActionData]?
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView
+    func vars() -> [(String, Var)]
 }
 
 enum WidgetData: Equatable, Hashable {
@@ -27,32 +28,32 @@ enum WidgetData: Equatable, Hashable {
     case formSection(FormSectionData)
     case text(TextData)
 
-    init(_ item: JsonItem, _ session: ApplinSession) throws {
+    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
         case BackButtonData.TYP:
-            self = try .backButton(BackButtonData(item))
+            self = try .backButton(BackButtonData(pageKey: pageKey, item))
         case ButtonData.TYP:
-            self = try .button(ButtonData(item))
+            self = try .button(ButtonData(pageKey: pageKey, item))
         case ColumnData.TYP:
-            self = try .column(ColumnData(item, session))
+            self = try .column(ColumnData(session, pageKey: pageKey, item))
         case EmptyData.TYP:
             self = .empty(EmptyData())
         case ErrorDetailsData.TYP:
             self = .errorDetails(ErrorDetailsData())
         case FormData.TYP:
-            self = try .form(FormData(item, session))
+            self = try .form(FormData(session, pageKey: pageKey, item))
         case FormCheckboxData.TYP:
-            self = try .formCheckbox(FormCheckboxData(item))
+            self = try .formCheckbox(FormCheckboxData(pageKey: pageKey, item))
         case FormButtonData.TYP:
-            self = try .formButton(FormButtonData(item))
+            self = try .formButton(FormButtonData(pageKey: pageKey, item))
         case FormDetailData.TYP:
-            self = try .formDetail(FormDetailData(item, session))
+            self = try .formDetail(FormDetailData(session, pageKey: pageKey, item))
         case FormErrorData.TYP:
-            self = try .formError(FormErrorData(item, session))
+            self = try .formError(FormErrorData(session, item))
         case ScrollData.TYP:
-            self = try .scroll(ScrollData(item, session))
+            self = try .scroll(ScrollData(session, pageKey: pageKey, item))
         case FormSectionData.TYP:
-            self = try .formSection(FormSectionData(item, session))
+            self = try .formSection(FormSectionData(session, pageKey: pageKey, item))
         case TextData.TYP:
             self = try .text(TextData(item))
         default:

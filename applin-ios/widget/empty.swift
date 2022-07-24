@@ -23,4 +23,8 @@ struct EmptyData: Equatable, Hashable, WidgetDataProto {
         view.backgroundColor = pastelPink
         return view
     }
+
+    func vars() -> [(String, Var)] {
+        []
+    }
 }

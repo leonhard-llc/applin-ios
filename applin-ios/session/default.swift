@@ -11,7 +11,7 @@ func readDefaultData(_ session: ApplinSession) async {
     }
     for (key, item) in itemMap {
         do {
-            session.pages[key] = try PageData(item, session)
+            session.pages[key] = try PageData(session, pageKey: key, item)
         } catch {
             print("readDefaultData error loading default.json key '\(key)': \(error)")
         }

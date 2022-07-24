@@ -9,6 +9,7 @@ protocol PageController: UIViewController {
 protocol PageDataProto {
     var connectionMode: ConnectionMode { get }
     func toJsonItem() -> JsonItem
+    func vars() -> [(String, Var)]
 }
 
 enum PageData: Equatable {
@@ -16,8 +17,9 @@ enum PageData: Equatable {
     case navPage(NavPageData)
     case plainPage(PlainPageData)
 
-    static func notFound() -> PageData {
+    static func notFound(pageKey: String) -> PageData {
         .navPage(NavPageData(
+                pageKey: pageKey,
                 title: "Not Found",
                 widget: .text(TextData("Page not found."))
         ))
@@ -27,16 +29,16 @@ enum PageData: Equatable {
         .plainPage(PlainPageData.blank())
     }
 
-    init(_ item: JsonItem, _ session: ApplinSession) throws {
+    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
         case ModalKind.alert.typ():
-            self = try .modal(ModalData(.alert, item))
+            self = try .modal(ModalData(pageKey: pageKey, .alert, item))
         case ModalKind.drawer.typ():
-            self = try .modal(ModalData(.drawer, item))
+            self = try .modal(ModalData(pageKey: pageKey, .drawer, item))
         case NavPageData.TYP:
-            self = try .navPage(NavPageData(item, session))
+            self = try .navPage(NavPageData(session, pageKey: pageKey, item))
         case PlainPageData.TYP:
-            self = try .plainPage(PlainPageData(item, session))
+            self = try .plainPage(PlainPageData(session, pageKey: pageKey, item))
         default:
             throw ApplinError.deserializeError("unexpected page 'typ' value: \(item.typ)")
         }

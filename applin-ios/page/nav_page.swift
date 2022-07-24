@@ -11,28 +11,31 @@ struct NavPageData: Equatable, PageDataProto {
     static let TYP = "nav-page"
     let connectionMode: ConnectionMode
     let end: WidgetData?
+    let pageKey: String
     let start: StartEnum
     let title: String
     let widget: WidgetData
 
     init(
+            pageKey: String,
             title: String,
             widget: WidgetData,
             start: StartEnum = .defaultBackButton,
             end: WidgetData? = nil
     ) {
         self.connectionMode = .disconnect
-        self.title = title
-        self.start = start
         self.end = end
+        self.pageKey = pageKey
+        self.start = start
+        self.title = title
         self.widget = widget
     }
 
-    init(_ item: JsonItem, _ session: ApplinSession) throws {
+    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
-        self.end = try item.optEnd(session)
-        self.title = try item.requireTitle()
-        switch try item.optStart(session) {
+        self.end = try item.optEnd(session, pageKey: pageKey)
+        self.pageKey = pageKey
+        switch try item.optStart(session, pageKey: pageKey) {
         case let .backButton(inner):
             self.start = .backButton(inner)
         case .none:
@@ -42,7 +45,8 @@ struct NavPageData: Equatable, PageDataProto {
         case let .some(other):
             throw ApplinError.deserializeError("bad \(item.typ).start: \(other)")
         }
-        self.widget = try item.requireWidget(session)
+        self.title = try item.requireTitle()
+        self.widget = try item.requireWidget(session, pageKey: pageKey)
     }
 
     func toJsonItem() -> JsonItem {
@@ -61,6 +65,10 @@ struct NavPageData: Equatable, PageDataProto {
         }
         item.widget = self.widget.inner().toJsonItem()
         return item
+    }
+
+    func vars() -> [(String, Var)] {
+        self.widget.inner().vars()
     }
 }
 
@@ -102,11 +110,12 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         if self.navController?.topPageController() !== self {
             return
         }
-        switch self.data?.start {
-        case .none:
-            break
+        guard let data = self.data else {
+            return
+        }
+        switch data.start {
         case let .backButton(inner):
-            self.session?.doActions(inner.actions)
+            self.session?.doActions(pageKey: data.pageKey, inner.actions)
         case .defaultBackButton:
             self.session?.pop()
         case .empty:

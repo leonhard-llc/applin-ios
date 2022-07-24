@@ -4,7 +4,7 @@ struct FormErrorData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "form-error"
     let text: String
 
-    init(_ item: JsonItem, _ session: ApplinSession) throws {
+    init(_ session: ApplinSession, _ item: JsonItem) throws {
         self.text = try item.requireText()
     }
 
@@ -51,5 +51,9 @@ struct FormErrorData: Equatable, Hashable, WidgetDataProto {
             label.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor),
         ])
         return view
+    }
+
+    func vars() -> [(String, Var)] {
+        []
     }
 }

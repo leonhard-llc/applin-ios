@@ -169,7 +169,7 @@ class ApplinConnection {
         self.running = true
         while !Task.isCancelled {
             do {
-                try await session.rpc(path: "/", method: "GET")
+                try await session.rpc(pageKey: nil, path: "/", method: "GET")
                 try await Task.sleep(nanoseconds: UInt64(max(self.pollSeconds, 1)) * 1_000_000_000)
                 continue
             } catch is CancellationError {

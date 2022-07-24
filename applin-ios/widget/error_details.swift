@@ -20,4 +20,8 @@ struct ErrorDetailsData: Equatable, Hashable, WidgetDataProto {
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         TextData(session.error ?? "no error").getView(session, widgetCache)
     }
+
+    func vars() -> [(String, Var)] {
+        []
+    }
 }

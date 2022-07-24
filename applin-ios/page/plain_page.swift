@@ -17,10 +17,10 @@ struct PlainPageData: Equatable, PageDataProto {
         self.widget = widget
     }
 
-    init(_ item: JsonItem, _ session: ApplinSession) throws {
+    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.title = item.title
-        self.widget = try item.requireWidget(session)
+        self.widget = try item.requireWidget(session, pageKey: pageKey)
     }
 
     func toJsonItem() -> JsonItem {
@@ -30,6 +30,10 @@ struct PlainPageData: Equatable, PageDataProto {
         item.title = self.title
         item.widget = self.widget.inner().toJsonItem()
         return item
+    }
+
+    func vars() -> [(String, Var)] {
+        self.widget.inner().vars()
     }
 }
 

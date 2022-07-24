@@ -7,8 +7,8 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
     let alignment: ApplinHAlignment
     let spacing: Float32
 
-    init(_ item: JsonItem, _ session: ApplinSession) throws {
-        self.widgets = try item.optWidgets(session) ?? []
+    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
+        self.widgets = try item.optWidgets(session, pageKey: pageKey) ?? []
         self.alignment = item.optAlign() ?? .start
         self.spacing = item.spacing ?? Float32(UIStackView.spacingUseDefault)
     }
@@ -44,5 +44,9 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
         }
         view.spacing = CGFloat(self.spacing)
         return view
+    }
+
+    func vars() -> [(String, Var)] {
+        self.widgets.flatMap({ widget in widget.inner().vars() })
     }
 }

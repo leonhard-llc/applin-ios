@@ -4,9 +4,11 @@ import UIKit
 struct BackButtonData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "back-button"
     let actions: [ActionData]
+    let pageKey: String
 
-    init(_ item: JsonItem) throws {
+    init(pageKey: String, _ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
+        self.pageKey = pageKey
     }
 
     func toJsonItem() -> JsonItem {
@@ -16,7 +18,7 @@ struct BackButtonData: Equatable, Hashable, WidgetDataProto {
     }
 
     func keys() -> [String] {
-        ButtonData(actions, text: "Back").keys()
+        ButtonData(pageKey: self.pageKey, actions, text: "Back").keys()
     }
 
     func getTapActions() -> [ActionData]? {
@@ -24,6 +26,10 @@ struct BackButtonData: Equatable, Hashable, WidgetDataProto {
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        ButtonData(actions, text: "Back").getView(session, widgetCache)
+        ButtonData(pageKey: self.pageKey, actions, text: "Back").getView(session, widgetCache)
+    }
+
+    func vars() -> [(String, Var)] {
+        []
     }
 }

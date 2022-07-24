@@ -5,8 +5,8 @@ struct ScrollData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "scroll"
     let widget: WidgetData
 
-    init(_ item: JsonItem, _ session: ApplinSession) throws {
-        self.widget = try item.requireWidget(session)
+    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
+        self.widget = try item.requireWidget(session, pageKey: pageKey)
     }
 
     func toJsonItem() -> JsonItem {
@@ -28,6 +28,10 @@ struct ScrollData: Equatable, Hashable, WidgetDataProto {
         widget.data = self
         widgetCache.putNextScroll(widget)
         return widget.getView(session, widgetCache)
+    }
+
+    func vars() -> [(String, Var)] {
+        self.widget.inner().vars()
     }
 }
 

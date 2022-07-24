@@ -4,12 +4,14 @@ import UIKit
 struct FormDetailData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "form-detail"
     let actions: [ActionData]
+    let pageKey: String
     let photoUrl: URL?
     let subText: String?
     let text: String
 
-    init(_ item: JsonItem, _ session: ApplinSession) throws {
+    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
+        self.pageKey = pageKey
         self.photoUrl = try item.optPhotoUrl(session)
         self.subText = item.subText
         self.text = try item.requireText()
@@ -48,6 +50,10 @@ struct FormDetailData: Equatable, Hashable, WidgetDataProto {
         widgetCache.putNext(widget)
         return widget.getView(session, widgetCache)
     }
+
+    func vars() -> [(String, Var)] {
+        []
+    }
 }
 
 class FormDetailWidget: WidgetProto {
@@ -73,7 +79,7 @@ class FormDetailWidget: WidgetProto {
 
     func doActions() {
         print("form-detail actions")
-        self.session?.doActions(self.data.actions)
+        self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {

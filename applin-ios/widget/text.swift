@@ -52,4 +52,8 @@ struct TextData: Equatable, Hashable, WidgetDataProto {
         ])
         return container
     }
+
+    func vars() -> [(String, Var)] {
+        []
+    }
 }

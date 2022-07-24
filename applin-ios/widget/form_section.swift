@@ -11,9 +11,9 @@ struct FormSectionData: Equatable, Hashable, WidgetDataProto {
         self.widgets = widgets
     }
 
-    init(_ item: JsonItem, _ session: ApplinSession) throws {
+    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         self.optTitle = item.title
-        self.widgets = try item.optWidgets(session) ?? []
+        self.widgets = try item.optWidgets(session, pageKey: pageKey) ?? []
     }
 
     func toJsonItem() -> JsonItem {
@@ -33,5 +33,10 @@ struct FormSectionData: Equatable, Hashable, WidgetDataProto {
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         TextData("error: form-section not in form").getView(session, widgetCache)
+    }
+
+    func vars() -> [(String, Var)] {
+        print("WARN form-section not in form")
+        return []
     }
 }

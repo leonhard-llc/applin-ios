@@ -11,11 +11,20 @@ struct FetchError: Error {
 }
 
 enum Var {
-    case Bool(Bool)
-    case String(String)
+    case boolean(Bool)
+    case string(String)
     // case Int(Int64)
     // case Float(Double)
     // case EpochSeconds(UInt64)
+
+    func toJson() -> JSON {
+        switch self {
+        case let .boolean(value):
+            return .boolean(value)
+        case let .string(value):
+            return .string(value)
+        }
+    }
 }
 
 // TODO: Prevent racing between applyUpdate(), rpc(), and doActionsAsync().
@@ -67,6 +76,7 @@ class ApplinSession: ObservableObject {
                     self.pages[key]
                             ?? self.pages["/applin-page-not-found"]
                             ?? .navPage(NavPageData(
+                            pageKey: key,
                             title: "Not Found",
                             // TODO: Center the text.
                             widget: .text(TextData("Page not found."))
@@ -115,9 +125,9 @@ class ApplinSession: ObservableObject {
             self.vars.removeValue(forKey: name)
             return
         }
-        let newVar: Var = .Bool(value)
+        let newVar: Var = .boolean(value)
         switch self.vars[name] {
-        case .none, .Bool:
+        case .none, .boolean:
             break
         case let .some(oldVar):
             print("WARN setVar changed var type: \(name): \(oldVar) -> \(newVar)")
@@ -131,7 +141,7 @@ class ApplinSession: ObservableObject {
         switch self.vars[name] {
         case .none:
             return nil
-        case let .some(.Bool(value)):
+        case let .some(.boolean(value)):
             return value
         case let .some(other):
             print("WARNING tried to read variable \(name) as bool but it is: \(other)")
@@ -155,7 +165,7 @@ class ApplinSession: ObservableObject {
         if let newPages = update.pages {
             for (key, item) in newPages {
                 do {
-                    let data = try PageData(item, self)
+                    let data = try PageData(self, pageKey: key, item)
                     self.pages[key] = data
                     print("updated key \(key) \(data)")
                 } catch {
@@ -172,7 +182,7 @@ class ApplinSession: ObservableObject {
         self.updateNav()
     }
 
-    func rpc(path: String, method: String) async throws {
+    func rpc(pageKey optPageKey: String?, path: String, method: String) async throws {
         print("rpc \(path)")
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 10.0 /* seconds */
@@ -191,8 +201,22 @@ class ApplinSession: ObservableObject {
                 cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
         )
         urlRequest.httpMethod = method
-        // urlRequest.httpBody = try! encodeJson(jsonRequest)
-        urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
+        if let pageKey = optPageKey {
+            urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
+            var reqObj: [String: JSON] = [:]
+            if let pageData = self.pages[pageKey] {
+                for (name, initialValue) in pageData.inner().vars() {
+                    reqObj[name] = (self.vars[name] ?? initialValue).toJson()
+                }
+            } else {
+                // TODO: Prevent this.
+                print("WARN rpc for missing page '\(pageKey)', not including any variables")
+            }
+            urlRequest.httpBody = try! encodeJson(reqObj)
+            if let bodyString = String(data: urlRequest.httpBody!, encoding: .utf8) {
+                print("DEBUG request body: \(bodyString)")
+            }
+        }
         let data: Data
         let httpResponse: HTTPURLResponse
         do {
@@ -265,7 +289,7 @@ class ApplinSession: ObservableObject {
         return data
     }
 
-    @MainActor func doActionsAsync(_ actions: [ActionData]) async -> Bool {
+    @MainActor func doActionsAsync(pageKey: String, _ actions: [ActionData]) async -> Bool {
         self.pauseUpdateNav = true
         defer {
             self.pauseUpdateNav = false
@@ -298,7 +322,7 @@ class ApplinSession: ObservableObject {
                 }
                 let stopwatch = Stopwatch()
                 do {
-                    try await self.rpc(path: path, method: "POST")
+                    try await self.rpc(pageKey: pageKey, path: path, method: "POST")
                     await stopwatch.waitUntil(seconds: 1.0)
                 } catch {
                     print(error)
@@ -324,9 +348,9 @@ class ApplinSession: ObservableObject {
         return true
     }
 
-    func doActions(_ actions: [ActionData]) {
+    func doActions(pageKey: String, _ actions: [ActionData]) {
         Task {
-            await self.doActionsAsync(actions)
+            await self.doActionsAsync(pageKey: pageKey, actions)
         }
     }
 }

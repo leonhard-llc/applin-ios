@@ -4,15 +4,18 @@ import UIKit
 struct FormButtonData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "form-button"
     let actions: [ActionData]
+    let pageKey: String
     let text: String
 
-    init(_ actions: [ActionData], text: String) {
+    init(pageKey: String, _ actions: [ActionData], text: String) {
         self.actions = actions
+        self.pageKey = pageKey
         self.text = text
     }
 
-    init(_ item: JsonItem) throws {
+    init(pageKey: String, _ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
+        self.pageKey = pageKey
         self.text = try item.requireText()
     }
 
@@ -40,6 +43,10 @@ struct FormButtonData: Equatable, Hashable, WidgetDataProto {
         widgetCache.putNext(widget)
         return widget.getView(session, widgetCache)
     }
+
+    func vars() -> [(String, Var)] {
+        []
+    }
 }
 
 class FormButtonWidget: WidgetProto {
@@ -64,7 +71,7 @@ class FormButtonWidget: WidgetProto {
 
     func doActions() {
         print("form-button actions")
-        self.session?.doActions(self.data.actions)
+        self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {

@@ -29,14 +29,14 @@ func readCacheFile(dataDirPath: String, _ session: ApplinSession) async {
         return
     }
     for (name, value) in contents.boolVars ?? [:] {
-        session.vars[name] = .Bool(value)
+        session.vars[name] = .boolean(value)
     }
     for (name, value) in contents.stringVars ?? [:] {
-        session.vars[name] = .String(value)
+        session.vars[name] = .string(value)
     }
     for (key, item) in contents.pages ?? [:] {
         do {
-            session.pages[key] = try PageData(item, session)
+            session.pages[key] = try PageData(session, pageKey: key, item)
         } catch {
             print("error loading cached key '\(key)': \(error)")
         }
@@ -61,14 +61,14 @@ class CacheFileWriter {
         print("write cache")
         var contents = CacheFileContents()
         contents.boolVars = session.vars.compactMapValues({ v in
-            if case let .Bool(value) = v {
+            if case let .boolean(value) = v {
                 return value
             } else {
                 return nil
             }
         })
         contents.stringVars = session.vars.compactMapValues({ v in
-            if case let .String(value) = v {
+            if case let .string(value) = v {
                 return value
             } else {
                 return nil

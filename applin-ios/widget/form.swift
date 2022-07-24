@@ -10,10 +10,12 @@ struct FormData: Equatable, Hashable, WidgetDataProto {
     }
 
     static let TYP = "form"
+    let pageKey: String
     var sections: [(String?, [WidgetData])]
 
-    init(_ item: JsonItem, _ session: ApplinSession) throws {
-        let widgets = try item.optWidgets(session) ?? []
+    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
+        self.pageKey = pageKey
+        let widgets = try item.optWidgets(session, pageKey: pageKey) ?? []
         self.sections = []
         var unnamedSection: [WidgetData] = []
         for widget in widgets {
@@ -58,7 +60,7 @@ struct FormData: Equatable, Hashable, WidgetDataProto {
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        let widget = widgetCache.removeForm() ?? FormWidget(self, session, widgetCache)
+        let widget = widgetCache.removeForm() ?? FormWidget(session, widgetCache, self.pageKey, self)
         widget.data = self
         widgetCache.putNextForm(widget)
         return widget.getView(session, widgetCache)
@@ -71,6 +73,14 @@ struct FormData: Equatable, Hashable, WidgetDataProto {
             hasher.combine(section.0)
             hasher.combine(section.1)
         }
+    }
+
+    func vars() -> [(String, Var)] {
+        self.sections.flatMap({ section in
+            section.1.flatMap({ widget in
+                widget.inner().vars()
+            })
+        })
     }
 }
 
@@ -231,15 +241,17 @@ private class WidgetCell: UITableViewCell {
 }
 
 class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetProto {
-    var data: FormData
     weak var weakSession: ApplinSession?
     weak var weakWidgetCache: WidgetCache?
+    let pageKey: String
+    var data: FormData
     var tableView: UITableView!
 
-    init(_ data: FormData, _ session: ApplinSession, _ widgetCache: WidgetCache) {
-        self.data = data
+    init(_ session: ApplinSession, _ widgetCache: WidgetCache, _ pageKey: String, _ data: FormData) {
+        self.pageKey = pageKey
         self.weakSession = session
         self.weakWidgetCache = widgetCache
+        self.data = data
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(ErrorCell.self, forCellReuseIdentifier: ErrorCell.REUSE_ID)
@@ -351,7 +363,7 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // print("form didSelectRowAt \(indexPath.section).\(indexPath.row)")
         if let actions = self.getWidget(indexPath)?.inner().getTapActions() {
-            self.weakSession?.doActions(actions)
+            self.weakSession?.doActions(pageKey: self.pageKey, actions)
             self.tableView.deselectRow(at: indexPath, animated: false)
         }
     }
