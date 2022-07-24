@@ -3,36 +3,29 @@ import UIKit
 
 struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "form-checkbox"
-    let id: String
-    let initiallyChecked: Bool
+    let initialBool: Bool?
     let rpc: String?
     let text: String
-
-    init(id: String, text: String, initiallyChecked: Bool = false, rpc: String? = nil) {
-        self.id = id
-        self.initiallyChecked = initiallyChecked
-        self.rpc = rpc
-        self.text = text
-    }
+    let varName: String
 
     init(_ item: JsonItem) throws {
-        self.id = try item.requireId()
-        self.initiallyChecked = item.initialBool ?? false
+        self.initialBool = item.initialBool
         self.rpc = item.rpc
         self.text = try item.requireText()
+        self.varName = try item.requireVar()
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(FormCheckboxData.TYP)
-        item.id = self.id
-        item.initialBool = self.initiallyChecked ? true : nil
+        item.initialBool = self.initialBool
         item.rpc = self.rpc
         item.text = self.text
+        item.varName = self.varName
         return item
     }
 
     func keys() -> [String] {
-        ["form-checkbox:\(self.id)"]
+        ["form-checkbox:\(self.varName)"]
     }
 
     func getTapActions() -> [ActionData]? {

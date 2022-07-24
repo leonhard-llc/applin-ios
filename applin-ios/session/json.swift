@@ -109,6 +109,7 @@ class JsonItem: Codable {
     var text: String?
     var title: String?
     var url: String?
+    var varName: String?
     var widget: JsonItem?
     var widgets: [JsonItem]?
     var width: Float32?
@@ -139,6 +140,7 @@ class JsonItem: Codable {
         case text
         case title
         case url
+        case varName = "var"
         case widget
         case widgets
         case width
@@ -452,5 +454,12 @@ class JsonItem: Codable {
             return try values.map({ value in try WidgetData(value, session) })
         }
         throw ApplinError.deserializeError("missing \(self.typ).widgets")
+    }
+
+    func requireVar() throws -> String {
+        if let value = self.varName {
+            return value
+        }
+        throw ApplinError.deserializeError("missing \(self.typ).var")
     }
 }
