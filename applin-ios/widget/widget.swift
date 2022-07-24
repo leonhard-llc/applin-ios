@@ -15,7 +15,6 @@ protocol WidgetDataProto {
 enum WidgetData: Equatable, Hashable {
     case backButton(BackButtonData)
     case button(ButtonData)
-    case checkbox(CheckboxData)
     indirect case column(ColumnData)
     case empty(EmptyData)
     case errorDetails(ErrorDetailsData)
@@ -34,8 +33,6 @@ enum WidgetData: Equatable, Hashable {
             self = try .backButton(BackButtonData(item))
         case ButtonData.TYP:
             self = try .button(ButtonData(item))
-        case CheckboxData.TYP:
-            self = try .checkbox(CheckboxData(item, session))
         case ColumnData.TYP:
             self = try .column(ColumnData(item, session))
         case EmptyData.TYP:
@@ -68,8 +65,6 @@ enum WidgetData: Equatable, Hashable {
         case let .backButton(inner):
             return inner
         case let .button(inner):
-            return inner
-        case let .checkbox(inner):
             return inner
         case let .column(inner):
             return inner
