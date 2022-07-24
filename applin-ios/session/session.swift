@@ -119,6 +119,7 @@ class ApplinSession: ObservableObject {
         }
         print("setVar \(name)=\(newVar)")
         self.vars[name] = newVar
+        self.cacheFileWriter.scheduleWrite(self)
     }
 
     func getBoolVar(_ name: String) -> Bool? {

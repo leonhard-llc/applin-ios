@@ -1,6 +1,8 @@
 import Foundation
 
 struct CacheFileContents: Codable {
+    var boolVars: [String: Bool]?
+    var stringVars: [String: String]?
     var pages: [String: JsonItem]?
     var stack: [String]?
 }
@@ -25,6 +27,12 @@ func readCacheFile(dataDirPath: String, _ session: ApplinSession) async {
     } catch {
         print("error decoding cache: \(error)")
         return
+    }
+    for (name, value) in contents.boolVars ?? [:] {
+        session.vars[name] = .Bool(value)
+    }
+    for (name, value) in contents.stringVars ?? [:] {
+        session.vars[name] = .String(value)
     }
     for (key, item) in contents.pages ?? [:] {
         do {
@@ -52,6 +60,20 @@ class CacheFileWriter {
     func writeCacheFile(_ session: ApplinSession) async throws {
         print("write cache")
         var contents = CacheFileContents()
+        contents.boolVars = session.vars.compactMapValues({ v in
+            if case let .Bool(value) = v {
+                return value
+            } else {
+                return nil
+            }
+        })
+        contents.stringVars = session.vars.compactMapValues({ v in
+            if case let .String(value) = v {
+                return value
+            } else {
+                return nil
+            }
+        })
         contents.pages = session.pages.mapValues({ page in page.inner().toJsonItem() })
         contents.stack = session.stack
         let bytes = try encodeJson(contents)
