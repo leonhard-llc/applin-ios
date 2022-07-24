@@ -45,8 +45,6 @@ struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
 }
 
 class FormCheckboxWidget: WidgetProto {
-    // TODO: Show as checkbox
-    // TODO: Set initial state
     // TODO: Save state in page-level VarCache
     // TODO: Send variable data with RPC
     // TODO: Decide how to handle updates to initial state.
@@ -69,7 +67,6 @@ class FormCheckboxWidget: WidgetProto {
         self.button.translatesAutoresizingMaskIntoConstraints = false
         self.button.setImage(self.unchecked, for: .normal)
         self.button.setImage(self.checked, for: .highlighted)
-        self.button.setImage(self.checked, for: .selected)
     }
 
     func keys() -> [String] {
@@ -84,6 +81,11 @@ class FormCheckboxWidget: WidgetProto {
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         self.session = session
         self.button.setTitle(" " + self.data.text, for: .normal)
+        if self.data.initialBool ?? false {
+            self.button.setImage(self.checked, for: .normal)
+        } else {
+            self.button.setImage(self.unchecked, for: .normal)
+        }
         return self.button
     }
 }
