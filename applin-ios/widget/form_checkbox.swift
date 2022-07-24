@@ -45,9 +45,7 @@ struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
 }
 
 class FormCheckboxWidget: WidgetProto {
-    // TODO: Save state in page-level VarCache
     // TODO: Send variable data with RPC
-    // TODO: Decide how to handle updates to initial state.
     let checked: UIImage
     let unchecked: UIImage
     var data: FormCheckboxData
@@ -56,16 +54,25 @@ class FormCheckboxWidget: WidgetProto {
 
     init(_ data: FormCheckboxData) {
         print("FormCheckboxWidget.init(\(data))")
-        self.unchecked = UIImage(systemName: "square")!
         self.checked = UIImage(systemName: "checkmark.square.fill")!
+        self.unchecked = UIImage(systemName: "square")!
         self.data = data
-        let action = UIAction(title: "uninitialized", handler: { [weak self] _ in
-            print("form-button UIAction")
-            self?.doActions()
+        // For unknown reasons, when the handler takes `[weak self]`, the first
+        // checkbox on the page gets self set to 'nil'.  The strange work
+        // around is to bind `weak self` before creating the handler.
+        weak var weakSelf: FormCheckboxWidget? = self
+        let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
+            if let self2 = weakSelf {
+                print("FormCheckboxWidget(\(self2.data.varName)).action")
+                Task {
+                    await self2.doActions()
+                }
+            } else {
+                print("FormCheckboxWidget(nil).action")
+            }
         })
         self.button = UIButton(type: .system, primaryAction: action)
         self.button.translatesAutoresizingMaskIntoConstraints = false
-        self.button.setImage(self.unchecked, for: .normal)
         self.button.setImage(self.checked, for: .highlighted)
     }
 
@@ -73,19 +80,45 @@ class FormCheckboxWidget: WidgetProto {
         self.data.keys()
     }
 
-    func doActions() {
-        print("form-button actions")
-        self.session?.doActions(self.data.getTapActions() ?? [])
+    func setImage(_ checked: Bool) {
+        if checked {
+            self.button.setImage(self.checked, for: .normal)
+        } else {
+            self.button.setImage(self.unchecked, for: .normal)
+        }
+
+    }
+
+    func getChecked() -> Bool {
+        self.session?.getBoolVar(self.data.varName) ?? self.data.initialBool ?? false
+    }
+
+    func setChecked(_ checked: Bool) {
+        self.session?.setBoolVar(self.data.varName, value: checked)
+        self.setImage(checked)
+    }
+
+    @MainActor func doActions() async {
+        guard let session = self.session else {
+            print("WARN FormCheckboxWidget(\(self.data.varName)).doActions session is nil")
+            return
+        }
+        print("FormCheckboxWidget(\(self.data.varName)).doActions")
+        let oldValue = self.getChecked()
+        let newValue = !oldValue
+        self.setChecked(newValue)
+        if let rpc = self.data.rpc {
+            let ok = await session.doActionsAsync([.rpc(rpc)])
+            if !ok {
+                self.setChecked(oldValue)
+            }
+        }
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         self.session = session
         self.button.setTitle(" " + self.data.text, for: .normal)
-        if self.data.initialBool ?? false {
-            self.button.setImage(self.checked, for: .normal)
-        } else {
-            self.button.setImage(self.unchecked, for: .normal)
-        }
+        self.setImage(self.getChecked())
         return self.button
     }
 }

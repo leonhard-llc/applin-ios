@@ -102,6 +102,7 @@ class JsonItem: Codable {
     var minWidth: Float32?
     var photoUrl: String?
     var pollSeconds: UInt32?
+    var rpc: String?
     var spacing: Float32?
     var start: JsonItem?
     var stream: Bool?
@@ -133,6 +134,7 @@ class JsonItem: Codable {
         case minWidth = "min-width"
         case photoUrl = "photo-url"
         case pollSeconds = "poll-seconds"
+        case rpc
         case spacing
         case start
         case stream

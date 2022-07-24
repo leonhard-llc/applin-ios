@@ -12,7 +12,7 @@ struct FetchError: Error {
 
 enum Var {
     case Bool(Bool)
-    // case String(String)
+    case String(String)
     // case Int(Int64)
     // case Float(Double)
     // case EpochSeconds(UInt64)
@@ -110,7 +110,15 @@ class ApplinSession: ObservableObject {
     }
 
     func setBoolVar(_ name: String, value: Bool) {
-        self.vars[name] = .Bool(value)
+        let newVar: Var = .Bool(value)
+        switch self.vars[name] {
+        case .none, .Bool:
+            break
+        case let .some(oldVar):
+            print("WARN setVar changed var type: \(name): \(oldVar) -> \(newVar)")
+        }
+        print("setVar \(name)=\(newVar)")
+        self.vars[name] = newVar
     }
 
     func getBoolVar(_ name: String) -> Bool? {
@@ -251,7 +259,7 @@ class ApplinSession: ObservableObject {
         return data
     }
 
-    @MainActor func doActionsAsync(_ actions: [ActionData]) async {
+    @MainActor func doActionsAsync(_ actions: [ActionData]) async -> Bool {
         self.pauseUpdateNav = true
         defer {
             self.pauseUpdateNav = false
@@ -260,26 +268,24 @@ class ApplinSession: ObservableObject {
         loop: for action in actions {
             switch action {
             case let .copyToClipboard(string):
-                print("CopyToClipboard(\(string))")
+                print("copyToClipboard(\(string))")
                 UIPasteboard.general.string = string
             case let .launchUrl(url):
-                print("LaunchUrl(\(url))")
-                // TODO
-                print("unimplemented")
+                // TODO: Implement launch-url action
+                print("launchUrl(\(url)) unimplemented")
             case .logout:
-                print("Logout")
-                // TODO
-                print("unimplemented")
+                // TODO: Implement Logout
+                print("logout unimplemented")
             case .nothing:
-                print("Nothing")
+                print("nothing")
             case .pop:
-                print("Pop")
+                print("pop")
                 self.pop()
             case let .push(key):
-                print("Push(\(key))")
+                print("push(\(key))")
                 self.push(pageKey: key)
             case let .rpc(path):
-                print("Rpc(\(path))")
+                print("rpc(\(path))")
                 self.nav?.setWorking("Working")
                 defer {
                     self.nav?.setWorking(nil)
@@ -305,10 +311,11 @@ class ApplinSession: ObservableObject {
                         // TODO: Display a simple alert.
                         self.push(pageKey: "/applin-error-details")
                     }
-                    break loop
+                    return false
                 }
             }
         }
+        return true
     }
 
     func doActions(_ actions: [ActionData]) {
