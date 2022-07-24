@@ -109,7 +109,12 @@ class ApplinSession: ObservableObject {
         self.updateNav()
     }
 
-    func setBoolVar(_ name: String, value: Bool) {
+    func setBoolVar(_ name: String, _ optValue: Bool?) {
+        guard let value = optValue else {
+            print("setVar \(name)=nil")
+            self.vars.removeValue(forKey: name)
+            return
+        }
         let newVar: Var = .Bool(value)
         switch self.vars[name] {
         case .none, .Bool:

@@ -80,8 +80,8 @@ class FormCheckboxWidget: WidgetProto {
         self.data.keys()
     }
 
-    func setImage(_ checked: Bool) {
-        if checked {
+    func updateImage() {
+        if self.getChecked() {
             self.button.setImage(self.checked, for: .normal)
         } else {
             self.button.setImage(self.unchecked, for: .normal)
@@ -93,9 +93,9 @@ class FormCheckboxWidget: WidgetProto {
         self.session?.getBoolVar(self.data.varName) ?? self.data.initialBool ?? false
     }
 
-    func setChecked(_ checked: Bool) {
-        self.session?.setBoolVar(self.data.varName, value: checked)
-        self.setImage(checked)
+    func setChecked(_ checked: Bool?) {
+        self.session?.setBoolVar(self.data.varName, checked)
+        self.updateImage()
     }
 
     @MainActor func doActions() async {
@@ -104,13 +104,12 @@ class FormCheckboxWidget: WidgetProto {
             return
         }
         print("FormCheckboxWidget(\(self.data.varName)).doActions")
-        let oldValue = self.getChecked()
-        let newValue = !oldValue
-        self.setChecked(newValue)
+        let oldBoolVar = self.session?.getBoolVar(self.data.varName)
+        self.setChecked(!self.getChecked())
         if let rpc = self.data.rpc {
             let ok = await session.doActionsAsync([.rpc(rpc)])
             if !ok {
-                self.setChecked(oldValue)
+                self.setChecked(oldBoolVar)
             }
         }
     }
@@ -118,7 +117,7 @@ class FormCheckboxWidget: WidgetProto {
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         self.session = session
         self.button.setTitle(" " + self.data.text, for: .normal)
-        self.setImage(self.getChecked())
+        self.updateImage()
         return self.button
     }
 }
