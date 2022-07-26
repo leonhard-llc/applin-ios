@@ -5,6 +5,7 @@ struct Update: Codable {
     var pages: [String: JsonItem]?
     var stack: [String]?
     var userError: String?
+    var vars: [String: JSON]?
 }
 
 struct FetchError: Error {
@@ -174,11 +175,21 @@ class ApplinSession: ObservableObject {
                 }
             }
         }
+        // TODO: Handle user_error.
+        self.cacheFileWriter.scheduleWrite(self)
+        if let vars = update.vars {
+            for (name, jsonValue) in vars {
+                switch jsonValue {
+                case let .boolean(value):
+                    self.setBoolVar(name, value)
+                default:
+                    print("WARN ignoring var from server \(name)=\(jsonValue)")
+                }
+            }
+        }
         if let err = err {
             throw ApplinError.serverError(err)
         }
-        // TODO: Handle user_error.
-        self.cacheFileWriter.scheduleWrite(self)
         self.updateNav()
     }
 
@@ -237,6 +248,9 @@ class ApplinSession: ObservableObject {
             }
         }
         let contentTypeBase = httpResponse.contentTypeBase()
+        if let bodyString = String(data: data, encoding: .utf8) {
+            print("DEBUG response body \(contentTypeBase ?? ""): \(bodyString)")
+        }
         if contentTypeBase != "application/json" {
             throw ApplinError.serverError(
                     "rpc \(path) server response content-type is not 'application/json': '\(contentTypeBase ?? "")'")

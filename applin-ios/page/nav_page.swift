@@ -171,9 +171,6 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             _ newData: NavPageData,
             hasPrevPage: Bool
     ) {
-        if newData == self.data && self.hasPrevPage == hasPrevPage {
-            return
-        }
         self.data = newData
         self.hasPrevPage = hasPrevPage
         self.title = newData.title
