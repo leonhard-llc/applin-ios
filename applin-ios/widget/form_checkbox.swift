@@ -56,6 +56,7 @@ struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
 
 class FormCheckboxWidget: WidgetProto {
     // TODO: Move this into a new UITableViewCell subclass in form.swift, for consistency.
+    // TODO: Make whole label readable when it is too long.
     let checked: UIImage
     let unchecked: UIImage
     let pageKey: String
