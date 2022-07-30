@@ -55,8 +55,6 @@ struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
 }
 
 class FormCheckboxWidget: WidgetProto {
-    // TODO: Move this into a new UITableViewCell subclass in form.swift, for consistency.
-    // TODO: Make whole label readable when it is too long.
     let checked: UIImage
     let unchecked: UIImage
     let pageKey: String
@@ -84,7 +82,9 @@ class FormCheckboxWidget: WidgetProto {
                 print("FormCheckboxWidget(nil).action")
             }
         })
-        self.button = UIButton(type: .system, primaryAction: action)
+        var config = UIButton.Configuration.borderless()
+        config.imagePadding = 8.0
+        self.button = UIButton(configuration: config, primaryAction: action)
         self.button.translatesAutoresizingMaskIntoConstraints = false
         self.button.setImage(self.checked, for: .highlighted)
     }
@@ -129,7 +129,7 @@ class FormCheckboxWidget: WidgetProto {
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         self.session = session
-        self.button.setTitle(" " + self.data.text, for: .normal)
+        self.button.setTitle(self.data.text, for: .normal)
         self.updateImage()
         return self.button
     }

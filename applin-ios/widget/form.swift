@@ -362,7 +362,7 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // print("form didSelectRowAt \(indexPath.section).\(indexPath.row)")
-        guard let session = self.weakSession, let widgetCache = self.weakWidgetCache else {
+        guard let widgetCache = self.weakWidgetCache else {
             return
         }
         switch self.getWidget(indexPath) {
