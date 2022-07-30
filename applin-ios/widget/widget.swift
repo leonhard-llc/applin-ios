@@ -9,6 +9,7 @@ protocol WidgetDataProto {
     func toJsonItem() -> JsonItem
     func keys() -> [String]
     func getTapActions() -> [ActionData]?
+    // TODO: Clarify method name to make it clear that this updates the cache, putting the widget into "next".
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView
     func vars() -> [(String, Var)]
 }

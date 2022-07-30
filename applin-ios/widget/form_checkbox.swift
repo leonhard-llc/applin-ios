@@ -38,6 +38,10 @@ struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
         }
     }
 
+    func getWidget(_ widgetCache: WidgetCache) -> FormCheckboxWidget? {
+        widgetCache.get(self.keys()) as? FormCheckboxWidget
+    }
+
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
         let widget = widgetCache.remove(self.keys()) as? FormCheckboxWidget ?? FormCheckboxWidget(self.pageKey, self)
         widget.data = self
@@ -51,7 +55,7 @@ struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
 }
 
 class FormCheckboxWidget: WidgetProto {
-    // TODO: Send variable data with RPC
+    // TODO: Move this into a new UITableViewCell subclass in form.swift, for consistency.
     let checked: UIImage
     let unchecked: UIImage
     let pageKey: String

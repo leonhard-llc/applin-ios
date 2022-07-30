@@ -362,9 +362,25 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // print("form didSelectRowAt \(indexPath.section).\(indexPath.row)")
-        if let actions = self.getWidget(indexPath)?.inner().getTapActions() {
-            self.weakSession?.doActions(pageKey: self.pageKey, actions)
-            self.tableView.deselectRow(at: indexPath, animated: false)
+        guard let session = self.weakSession, let widgetCache = self.weakWidgetCache else {
+            return
         }
+        switch self.getWidget(indexPath) {
+        case .none:
+            break
+        case let .some(.formCheckbox(data)):
+            if let widget = data.getWidget(widgetCache) {
+                Task {
+                    await widget.doActions()
+                }
+            } else {
+                print("WARN FormCheckbox widget not found")
+            }
+        case let .some(widget):
+            if let actions = widget.inner().getTapActions() {
+                self.weakSession?.doActions(pageKey: self.pageKey, actions)
+            }
+        }
+        self.tableView.deselectRow(at: indexPath, animated: false)
     }
 }

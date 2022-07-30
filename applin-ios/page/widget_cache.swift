@@ -70,6 +70,20 @@ class WidgetCache {
         }
     }
 
+    public func get(_ keys: [String]) -> WidgetProto? {
+        for key in keys {
+            if case let .ok(widget) = self.keyed[key] {
+                return widget
+            }
+        }
+        for key in keys {
+            if case let .ok(widget) = self.nextKeyed[key] {
+                return widget
+            }
+        }
+        return nil
+    }
+
     public func remove(_ keys: [String]) -> WidgetProto? {
         for key in keys {
             if let widget = self.removeKeyed(key) {
