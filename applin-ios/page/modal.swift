@@ -188,7 +188,7 @@ struct ModalData: Equatable, PageDataProto {
 //        self.title = data.title
 //        self.helper.removeSubviewsAndConstraints(self.view)
 //
-//        self.view.backgroundColor = pastelPeach.withAlphaComponent(0.5)
+//        // self.view.backgroundColor = pastelPeach.withAlphaComponent(0.5)
 //        self.alert = nil
 //        self.alert = AlertController(title: data.title, message: data.text, preferredStyle: data.kind.style())
 //        for widget in data.widgets {

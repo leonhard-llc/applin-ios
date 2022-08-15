@@ -20,7 +20,7 @@ struct EmptyData: Equatable, Hashable, WidgetDataProto {
     func getView(_: ApplinSession, _: WidgetCache) -> UIView {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = pastelPink
+        // view.backgroundColor = pastelPink
         return view
     }
 

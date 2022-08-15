@@ -34,7 +34,7 @@ struct TextData: Equatable, Hashable, WidgetDataProto {
         label.numberOfLines = 0
         label.text = self.text
         label.textAlignment = .left
-        label.backgroundColor = pastelYellow
+        // label.backgroundColor = pastelYellow
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(label)

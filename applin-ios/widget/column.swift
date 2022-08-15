@@ -33,7 +33,7 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
         let view = UIStackView(arrangedSubviews: subViews)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.axis = .vertical
-        view.backgroundColor = pastelPink
+        // view.backgroundColor = pastelPink
         switch self.alignment {
         case .center:
             view.alignment = .center
