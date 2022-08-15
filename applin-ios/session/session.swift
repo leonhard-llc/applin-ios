@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 struct Update: Codable {
-    var pages: [String: JsonItem]?
+    var pages: [String: JsonItem?]?
     var stack: [String]?
     var userError: String?
     var vars: [String: JSON]?
@@ -29,6 +29,7 @@ enum Var {
 }
 
 // TODO: Prevent racing between applyUpdate(), rpc(), and doActionsAsync().
+
 class ApplinSession: ObservableObject {
     let cacheFileWriter: CacheFileWriter
     let connection: ApplinConnection
@@ -151,7 +152,6 @@ class ApplinSession: ObservableObject {
     }
 
     func applyUpdate(_ data: Data) throws {
-        // TODO: Support null 'pages' entries.  Run Applin's dynamic_page example.
         let update: Update
         do {
             update = try decodeJson(data)
@@ -164,14 +164,19 @@ class ApplinSession: ObservableObject {
         }
         var err: String?
         if let newPages = update.pages {
-            for (key, item) in newPages {
-                do {
-                    let data = try PageData(self, pageKey: key, item)
-                    self.pages[key] = data
-                    print("updated key \(key) \(data)")
-                } catch {
-                    err = "error processing updated key '\(key)': \(error)"
-                    print(err!)
+            for (key, optItem) in newPages {
+                if let item = optItem {
+                    do {
+                        let data = try PageData(self, pageKey: key, item)
+                        self.pages[key] = data
+                        print("updated key \(key) \(data)")
+                    } catch {
+                        err = "error processing updated key '\(key)': \(error)"
+                        print(err!)
+                    }
+                } else {
+                    self.pages.removeValue(forKey: key)
+                    print("removed key \(key)")
                 }
             }
         }
