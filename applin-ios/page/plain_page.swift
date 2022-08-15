@@ -70,5 +70,6 @@ class PlainPageController: UIViewController, PageController {
             subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
         ])
         widgetCache.flip()
+        subView.setNeedsDisplay()
     }
 }

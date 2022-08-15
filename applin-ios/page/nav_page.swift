@@ -123,22 +123,22 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         }
     }
 
-    // Called when the user taps the Back button.
+    /// Called when the user taps the Back button.
     func navigationBar(_ navigationBar: UINavigationBar, shouldPop item: UINavigationItem) -> Bool {
         print("navigationBar shouldPop=\(item)")
         self.back()
         return false  // UINavigationBar should not remove NavigationItem objects.
     }
 
-    // Called when the user presses the Back button,
-    // or long-presses the Back button and taps Back from the popup menu.
+    /// Called when the user presses the Back button,
+    /// or long-presses the Back button and taps Back from the popup menu.
     func navigationBar(_ navigationBar: UINavigationBar, didPop item: UINavigationItem) {
         print("navigationBar didPop=\(item)")
         self.back()
     }
 
-    // Called when the view gets covered by another view (isMovingFromParent=false) or
-    // when the view is removed from the view (isMovingFromParent=true).
+    /// Called when the view gets covered by another view (isMovingFromParent=false) or
+    /// when the view is removed from the view (isMovingFromParent=true).
     override func viewDidDisappear(_ animated: Bool) {
         // NOTE: UIKit on iOS 15 does not set self.isBeingDismissed=true like the docs claim.
         print("NavPageController '\(self.title ?? "")' viewDidDisappear isMovingFromParent=\(self.isMovingFromParent)")
@@ -217,5 +217,6 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
         ])
         widgetCache.flip()
+        subView.setNeedsDisplay()
     }
 }

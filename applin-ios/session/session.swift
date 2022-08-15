@@ -89,7 +89,6 @@ class ApplinSession: ObservableObject {
         self.connection.setMode(self, self.connectionMode)
         Task {
             await self.nav?.setStackPages(self, entries)
-            // TODO: Fix bug where poll gets updates but they aren't visible until user scrolls.
         }
     }
 
