@@ -243,19 +243,46 @@ private class WidgetCell: UITableViewCell {
     }
 }
 
+class KeyboardAvoidingTableView: UITableView {
+    // https://www.hackingwithswift.com/example-code/uikit/how-to-adjust-a-uiscrollview-to-fit-the-keyboard
+    override init(frame: CGRect, style: UITableView.Style) {
+        super.init(frame: frame, style: style)
+        let notificationCenter = NotificationCenter.default
+        notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    @objc func adjustForKeyboard(notification: Notification) {
+        guard let frameNsValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else {
+            return
+        }
+        let relativeFrame = self.convert(frameNsValue.cgRectValue, from: self.window)
+        print("adjustForKeyboard frameNsValue=\(frameNsValue), relativeFrame=\(relativeFrame)")
+        if notification.name == UIResponder.keyboardWillHideNotification {
+            self.contentInset = .zero
+        } else {
+            self.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: relativeFrame.height - self.safeAreaInsets.bottom, right: 0)
+        }
+    }
+}
+
 class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetProto {
     weak var weakSession: ApplinSession?
     weak var weakCache: WidgetCache?
     let pageKey: String
     var data: FormData
-    var tableView: UITableView!
+    var tableView: KeyboardAvoidingTableView!
 
     init(_ session: ApplinSession, _ cache: WidgetCache, _ pageKey: String, _ data: FormData) {
         self.pageKey = pageKey
         self.weakSession = session
         self.weakCache = cache
         self.data = data
-        let tableView = UITableView(frame: .zero, style: .plain)
+        let tableView = KeyboardAvoidingTableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(ErrorCell.self, forCellReuseIdentifier: ErrorCell.REUSE_ID)
         tableView.register(DisclosureCell.self, forCellReuseIdentifier: DisclosureCell.REUSE_ID)
@@ -265,6 +292,7 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
         tableView.register(TextCell.self, forCellReuseIdentifier: TextCell.REUSE_ID)
         tableView.register(WidgetCell.self, forCellReuseIdentifier: WidgetCell.REUSE_ID)
         tableView.contentInsetAdjustmentBehavior = .never // Only works for UITableView.Style.plain.
+        tableView.keyboardDismissMode = .interactive
         // tableView.allowsSelection = true
         // tableView.allowsMultipleSelection = false
         // tableView.selectionFollowsFocus = true

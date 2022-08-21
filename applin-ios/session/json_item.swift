@@ -2,6 +2,19 @@
 
 import Foundation
 
+enum ApplinAllow {
+    case all
+    case ascii
+    case email
+    case numbers
+    case tel
+}
+
+enum ApplinAutoCapitalize {
+    case names
+    case sentences
+}
+
 enum ApplinDimension: Equatable, Hashable {
     case value(Float32)
     case range(Float32?, Float32?)
@@ -86,18 +99,26 @@ class JsonItem: Codable {
     var typ: String
     var actions: [String]?
     var align: String?
+    var allow: String?
+    var autoCapitalize: String?
     var cache: Bool?
+    var checkRpc: String?
     // TODO: Split this into separate horizontal and vertical fields.
     var disposition: String?
     var end: JsonItem?
     var height: Float32?
     var id: String?
     var initialBool: Bool?
+    var initialString: String?
     var isCancel: Bool?
     var isDefault: Bool?
     var isDestructive: Bool?
+    var label: String?
+    var maxChars: UInt32?
     var maxHeight: Float32?
+    var maxLines: UInt32?
     var maxWidth: Float32?
+    var minChars: UInt32?
     var minHeight: Float32?
     var minWidth: Float32?
     var photoUrl: String?
@@ -119,17 +140,25 @@ class JsonItem: Codable {
         case typ
         case actions
         case align
+        case allow
+        case autoCapitalize = "auto-capitalize"
         case cache
+        case checkRpc = "check-rpc"
         case disposition
         case end
         case height
         case id
         case initialBool = "initial-bool"
+        case initialString = "initial-string"
         case isCancel = "is-cancel"
         case isDefault = "is-default"
         case isDestructive = "is-destructive"
+        case label
+        case maxChars = "max-chars"
+        case maxLines = "max-lines"
         case maxHeight = "max-height"
         case maxWidth = "max-width"
+        case minChars = "min-chars"
         case minHeight = "min-height"
         case minWidth = "min-width"
         case photoUrl = "photo-url"
@@ -266,6 +295,68 @@ class JsonItem: Codable {
         }
     }
 
+    func optAllow() -> ApplinAllow? {
+        switch self.allow {
+        case "all":
+            return .all
+        case "ascii":
+            return .ascii
+        case "email":
+            return .email
+        case "numbers":
+            return .numbers
+        case "tel":
+            return .tel
+        case nil:
+            return nil
+        default:
+            print("bad \(self.typ).allow: \(self.allow ?? "")")
+            return nil
+        }
+    }
+
+    func setAllow(_ value: ApplinAllow?) {
+        switch value {
+        case .none:
+            self.allow = nil
+        case .some(.all):
+            self.allow = "all"
+        case .some(.ascii):
+            self.allow = "ascii"
+        case .some(.email):
+            self.allow = "email"
+        case .some(.numbers):
+            self.allow = "numbers"
+        case .some(.tel):
+            self.allow = "tel"
+        }
+    }
+
+    func optAutoCapitalize() -> ApplinAutoCapitalize? {
+        switch self.autoCapitalize {
+        case "names":
+            return .names
+        case "sentences":
+            return .sentences
+        case nil:
+            return nil
+        default:
+            print("bad \(self.typ).auto-capitalize: \(self.autoCapitalize ?? "")")
+            return nil
+        }
+    }
+
+    func setAutoCapitalize(_ value: ApplinAutoCapitalize?) {
+        switch value {
+        case .none:
+            self.autoCapitalize = nil
+        case .some(.names):
+            self.autoCapitalize = "names"
+        case .some(.sentences):
+            self.autoCapitalize = "sentences"
+        }
+    }
+
     func setDisposition(_ value: ApplinDisposition) {
         switch value {
         case .cover:
@@ -305,6 +396,13 @@ class JsonItem: Codable {
             return value
         }
         throw ApplinError.deserializeError("missing \(self.typ).id")
+    }
+
+    func requireLabel() throws -> String {
+        if let value = self.label {
+            return value
+        }
+        throw ApplinError.deserializeError("missing \(self.typ).label")
     }
 
     func getMinMaxHeight() -> (Float32?, Float32?) {
