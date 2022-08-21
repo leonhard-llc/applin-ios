@@ -3,13 +3,36 @@ private enum CacheEntry {
     case ok(WidgetProto)
 }
 
-class WidgetCache {
+class WidgetCache: CustomStringConvertible {
     private var form: [FormWidget] = []
     private var nextForm: [FormWidget] = []
     private var scroll: [ScrollWidget] = []
     private var nextScroll: [ScrollWidget] = []
     private var keyed: [String: CacheEntry] = [:]
     private var nextKeyed: [String: CacheEntry] = [:]
+
+    public var description: String {
+        var parts: [String] = []
+        if !self.form.isEmpty {
+            parts.append("form=\(self.form)")
+        }
+        if !self.nextForm.isEmpty {
+            parts.append("nextForm=\(self.nextForm)")
+        }
+        if !self.scroll.isEmpty {
+            parts.append("scroll=\(self.scroll)")
+        }
+        if !self.nextScroll.isEmpty {
+            parts.append("nextScroll=\(self.nextScroll)")
+        }
+        if !self.keyed.isEmpty {
+            parts.append("keyed=\(self.keyed)")
+        }
+        if !self.nextKeyed.isEmpty {
+            parts.append("nextKeyed=\(self.nextKeyed)")
+        }
+        return "WidgetCache(" + parts.joined(separator: ",") + ")"
+    }
 
     public func flip() {
         self.keyed = self.nextKeyed
