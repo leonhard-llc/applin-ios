@@ -30,8 +30,8 @@ struct BackButtonData: Equatable, Hashable, WidgetDataProto {
         session.doActions(pageKey: self.pageKey, self.actions)
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        ButtonData(pageKey: self.pageKey, actions, text: "Back").getView(session, widgetCache)
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
+        return TextData("ERROR: back-button not in nav-page").getView(session, cache)
     }
 
     func vars() -> [(String, Var)] {

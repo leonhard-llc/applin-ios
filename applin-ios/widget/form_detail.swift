@@ -45,48 +45,11 @@ struct FormDetailData: Equatable, Hashable, WidgetDataProto {
         session.doActions(pageKey: self.pageKey, self.actions)
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        let widget = widgetCache.remove(self.keys()) as? FormDetailWidget ?? FormDetailWidget(self)
-        widget.data = self
-        widgetCache.putNext(widget)
-        return widget.getView(session, widgetCache)
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
+        return TextData("ERROR: form-detail not in form").getView(session, cache)
     }
 
     func vars() -> [(String, Var)] {
         []
-    }
-}
-
-class FormDetailWidget: WidgetProto {
-    var data: FormDetailData
-    var button: UIButton!
-    weak var session: ApplinSession?
-
-    init(_ data: FormDetailData) {
-        print("DetailCellWidget.init(\(data))")
-        self.data = data
-        let handler = { [weak self] (_: UIAction) in
-            print("form-detail UIAction")
-            self?.doActions()
-        }
-        let action = UIAction(title: "uninitialized", handler: handler)
-        self.button = UIButton(type: .system, primaryAction: action)
-        self.button.translatesAutoresizingMaskIntoConstraints = false
-    }
-
-    func keys() -> [String] {
-        self.data.keys()
-    }
-
-    func doActions() {
-        print("form-detail actions")
-        self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
-    }
-
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        self.session = session
-        self.button.setTitle("\(self.data.text) 〉", for: .normal)
-        self.button.isEnabled = !self.data.actions.isEmpty
-        return self.button
     }
 }
