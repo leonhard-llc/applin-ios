@@ -31,8 +31,8 @@ struct FormSectionData: Equatable, Hashable, WidgetDataProto {
         nil
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        TextData("error: form-section not in form").getView(session, widgetCache)
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
+        TextData("error: form-section not in form").getView(session, cache)
     }
 
     func vars() -> [(String, Var)] {

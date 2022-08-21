@@ -27,7 +27,7 @@ struct TextData: Equatable, Hashable, WidgetDataProto {
         nil
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.preferredFont(forTextStyle: .body)

@@ -38,11 +38,11 @@ struct ButtonData: Equatable, Hashable, WidgetDataProto {
         return self.actions
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        let widget = widgetCache.remove(self.keys()) as? ButtonWidget ?? ButtonWidget(self)
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
+        let widget = cache.remove(self.keys()) as? ButtonWidget ?? ButtonWidget(self)
         widget.data = self
-        widgetCache.putNext(widget)
-        return widget.getView(session, widgetCache)
+        cache.putNext(widget)
+        return widget.getView(session)
     }
 
     func vars() -> [(String, Var)] {

@@ -17,8 +17,8 @@ struct ErrorDetailsData: Equatable, Hashable, WidgetDataProto {
         nil
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        TextData(session.error ?? "no error").getView(session, widgetCache)
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
+        TextData(session.error ?? "no error").getView(session, cache)
     }
 
     func vars() -> [(String, Var)] {

@@ -42,11 +42,11 @@ struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
         widgetCache.get(self.keys()) as? FormCheckboxWidget
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        let widget = widgetCache.remove(self.keys()) as? FormCheckboxWidget ?? FormCheckboxWidget(self.pageKey, self)
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
+        let widget = cache.remove(self.keys()) as? FormCheckboxWidget ?? FormCheckboxWidget(self.pageKey, self)
         widget.data = self
-        widgetCache.putNext(widget)
-        return widget.getView(session, widgetCache)
+        cache.putNext(widget)
+        return widget.getView(session)
     }
 
     func vars() -> [(String, Var)] {
@@ -127,7 +127,7 @@ class FormCheckboxWidget: WidgetProto {
         }
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
+    func getView(_ session: ApplinSession) -> UIView {
         self.session = session
         self.button.setTitle(self.data.text, for: .normal)
         self.updateImage()

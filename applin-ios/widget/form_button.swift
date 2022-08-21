@@ -37,11 +37,11 @@ struct FormButtonData: Equatable, Hashable, WidgetDataProto {
         return self.actions
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        let widget = widgetCache.remove(self.keys()) as? FormButtonWidget ?? FormButtonWidget(self)
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
+        let widget = cache.remove(self.keys()) as? FormButtonWidget ?? FormButtonWidget(self)
         widget.data = self
-        widgetCache.putNext(widget)
-        return widget.getView(session, widgetCache)
+        cache.putNext(widget)
+        return widget.getView(session)
     }
 
     func vars() -> [(String, Var)] {
@@ -74,7 +74,7 @@ class FormButtonWidget: WidgetProto {
         self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
+    func getView(_ session: ApplinSession) -> UIView {
         self.session = session
         self.button.setTitle(self.data.text, for: .normal)
         self.button.isEnabled = !self.data.actions.isEmpty

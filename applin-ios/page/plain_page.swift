@@ -51,7 +51,7 @@ class PlainPageController: UIViewController, PageController {
 
     func update(
             _ session: ApplinSession,
-            _ widgetCache: WidgetCache,
+            _ cache: WidgetCache,
             _ newData: PlainPageData
     ) {
         if newData == self.data {
@@ -61,7 +61,7 @@ class PlainPageController: UIViewController, PageController {
         self.title = newData.title
         self.view.backgroundColor = .systemBackground
         self.helper.removeSubviewsAndConstraints(self.view)
-        let subView = newData.widget.inner().getView(session, widgetCache)
+        let subView = newData.widget.inner().getView(session, cache)
         self.view.addSubview(subView)
         self.helper.setConstraints([
             subView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
@@ -69,7 +69,7 @@ class PlainPageController: UIViewController, PageController {
             subView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
             subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
         ])
-        widgetCache.flip()
+        cache.flip()
         subView.setNeedsDisplay()
     }
 }

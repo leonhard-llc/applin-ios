@@ -28,17 +28,17 @@
 //        ["media:\(self.url)"]
 //    }
 //
-//    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
+//    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
 //        var mediaWidget: MediaWidget
-//        switch widgetCache.remove(self.keys()) {
+//        switch cache.remove(self.keys()) {
 //        case let widget as MediaWidget:
 //            mediaWidget = widget
 //            mediaWidget.data = self
 //        default:
 //            mediaWidget = MediaWidget(self)
 //        }
-//        widgetCache.putNext(mediaWidget)
-//        return mediaWidget.getView(session, widgetCache)
+//        cache.putNext(mediaWidget)
+//        return mediaWidget.getView(session, cache)
 //    }
 //}
 //
@@ -57,7 +57,7 @@
 //        self.data.keys()
 //    }
 //
-//    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
+//    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
 //        self.session = session
 //        self.subViewController.rootView = AnyView(self.data)
 //        return self.subViewController

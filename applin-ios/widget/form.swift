@@ -59,11 +59,11 @@ struct FormData: Equatable, Hashable, WidgetDataProto {
         nil
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        let widget = widgetCache.removeForm() ?? FormWidget(session, widgetCache, self.pageKey, self)
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
+        let widget = cache.removeForm() ?? FormWidget(session, cache, self.pageKey, self)
         widget.data = self
-        widgetCache.putNextForm(widget)
-        return widget.getView(session, widgetCache)
+        cache.putNextForm(widget)
+        return widget.getView()
     }
 
     // This is needed because Swift tuples are not Equatable even if their fields are.
@@ -223,12 +223,12 @@ private class WidgetCell: UITableViewCell {
     static let REUSE_ID = "WidgetCell"
     var optHelper: SuperviewHelper?
 
-    func update(_ session: ApplinSession, _ widgetCache: WidgetCache, _ widget: WidgetData) {
+    func update(_ session: ApplinSession, _ cache: WidgetCache, _ widget: WidgetData) {
         if let helper = self.optHelper {
             helper.removeSubviewsAndConstraints(self.contentView)
             self.optHelper = nil
         }
-        let subView = widget.inner().getView(session, widgetCache)
+        let subView = widget.inner().getView(session, cache)
         // subView.clipsToBounds = true
         self.contentView.addSubview(subView)
         self.optHelper = SuperviewHelper(constraints: [
@@ -242,15 +242,15 @@ private class WidgetCell: UITableViewCell {
 
 class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetProto {
     weak var weakSession: ApplinSession?
-    weak var weakWidgetCache: WidgetCache?
+    weak var weakCache: WidgetCache?
     let pageKey: String
     var data: FormData
     var tableView: UITableView!
 
-    init(_ session: ApplinSession, _ widgetCache: WidgetCache, _ pageKey: String, _ data: FormData) {
+    init(_ session: ApplinSession, _ cache: WidgetCache, _ pageKey: String, _ data: FormData) {
         self.pageKey = pageKey
         self.weakSession = session
-        self.weakWidgetCache = widgetCache
+        self.weakCache = cache
         self.data = data
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -276,7 +276,7 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
         self.data.keys()
     }
 
-    func getView(_: ApplinSession, _: WidgetCache) -> UIView {
+    func getView() -> UIView {
         self.tableView.reloadData()
         return self.tableView
     }
@@ -311,7 +311,7 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // print("form cellForRowAt \(indexPath.section).\(indexPath.row)")
         guard let session = self.weakSession,
-              let widgetCache = self.weakWidgetCache,
+              let cache = self.weakCache,
               let widget = self.getWidget(indexPath)
         else {
             return tableView.dequeueReusableCell(withIdentifier: ErrorCell.REUSE_ID, for: indexPath)
@@ -347,7 +347,7 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
         default:
             let cell = tableView.dequeueReusableCell(
                     withIdentifier: WidgetCell.REUSE_ID, for: indexPath) as! WidgetCell
-            cell.update(session, widgetCache, widget)
+            cell.update(session, cache, widget)
             return cell
         }
     }

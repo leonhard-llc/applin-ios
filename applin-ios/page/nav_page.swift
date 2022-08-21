@@ -130,7 +130,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         return false  // UINavigationBar should not remove NavigationItem objects.
     }
 
-    /// Called when the user presses the Back button,
+    /// Called when the user taps the Back button,
     /// or long-presses the Back button and taps Back from the popup menu.
     func navigationBar(_ navigationBar: UINavigationBar, didPop item: UINavigationItem) {
         print("navigationBar didPop=\(item)")
@@ -167,7 +167,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
 
     func update(
             _ session: ApplinSession,
-            _ widgetCache: WidgetCache,
+            _ cache: WidgetCache,
             _ newData: NavPageData,
             hasPrevPage: Bool
     ) {
@@ -204,7 +204,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
 
         self.helper.deactivateConstraints()
         self.subView?.removeFromSuperview()
-        let subView = newData.widget.inner().getView(session, widgetCache)
+        let subView = newData.widget.inner().getView(session, cache)
         self.view.addSubview(subView)
         self.subView = subView
         self.helper.setConstraints([
@@ -216,7 +216,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             subView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
             subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
         ])
-        widgetCache.flip()
+        cache.flip()
         subView.setNeedsDisplay()
     }
 }

@@ -28,8 +28,8 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
         nil
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        let subViews = self.widgets.map({ widget in widget.inner().getView(session, widgetCache) })
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
+        let subViews = self.widgets.map({ widget in widget.inner().getView(session, cache) })
         let view = UIStackView(arrangedSubviews: subViews)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.axis = .vertical

@@ -22,7 +22,7 @@ struct FormErrorData: Equatable, Hashable, WidgetDataProto {
         nil
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         let image = UIImage(systemName: "exclamationmark.circle")

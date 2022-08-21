@@ -23,11 +23,11 @@ struct ScrollData: Equatable, Hashable, WidgetDataProto {
         nil
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
-        let widget = widgetCache.removeScroll() ?? ScrollWidget(self)
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
+        let widget = cache.removeScroll() ?? ScrollWidget(self)
         widget.data = self
-        widgetCache.putNextScroll(widget)
-        return widget.getView(session, widgetCache)
+        cache.putNextScroll(widget)
+        return widget.getView(session, cache)
     }
 
     func vars() -> [(String, Var)] {
@@ -46,9 +46,9 @@ class ScrollWidget {
         self.view.translatesAutoresizingMaskIntoConstraints = false
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
+    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
         self.helper.removeSubviewsAndConstraints(self.view)
-        let subView = self.data.widget.inner().getView(session, widgetCache)
+        let subView = self.data.widget.inner().getView(session, cache)
         self.view.addSubview(subView)
         self.helper.setConstraints([
             subView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
