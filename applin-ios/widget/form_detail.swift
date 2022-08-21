@@ -37,11 +37,12 @@ struct FormDetailData: Equatable, Hashable, WidgetDataProto {
         return keys
     }
 
-    func getTapActions() -> [ActionData]? {
-        if self.actions.isEmpty {
-            return nil
-        }
-        return self.actions
+    func canTap() -> Bool {
+        true
+    }
+
+    func tap(_ session: ApplinSession, _ cache: WidgetCache) {
+        session.doActions(pageKey: self.pageKey, self.actions)
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {

@@ -30,11 +30,14 @@ struct FormButtonData: Equatable, Hashable, WidgetDataProto {
         ["form-button:\(self.actions)", "form-button:\(self.text)"]
     }
 
-    func getTapActions() -> [ActionData]? {
-        if self.actions.isEmpty {
-            return nil
+    func canTap() -> Bool {
+        true
+    }
+
+    func tap(_ session: ApplinSession, _ cache: WidgetCache) {
+        if let widget = cache.get(self.keys()) as? FormButtonWidget {
+            widget.tap()
         }
-        return self.actions
     }
 
     func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
@@ -57,9 +60,10 @@ class FormButtonWidget: WidgetProto {
     init(_ data: FormButtonData) {
         print("FormButtonWidget.init(\(data))")
         self.data = data
-        let action = UIAction(title: "uninitialized", handler: { [weak self] _ in
+        weak var weakSelf: FormButtonWidget? = self
+        let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
             print("form-button UIAction")
-            self?.doActions()
+            weakSelf?.tap()
         })
         self.button = UIButton(type: .system, primaryAction: action)
         self.button.translatesAutoresizingMaskIntoConstraints = false
@@ -69,7 +73,7 @@ class FormButtonWidget: WidgetProto {
         self.data.keys()
     }
 
-    func doActions() {
+    func tap() {
         print("form-button actions")
         self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
     }

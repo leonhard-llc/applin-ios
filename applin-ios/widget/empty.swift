@@ -13,8 +13,11 @@ struct EmptyData: Equatable, Hashable, WidgetDataProto {
         []
     }
 
-    func getTapActions() -> [ActionData]? {
-        nil
+    func canTap() -> Bool {
+        false
+    }
+
+    func tap(_ session: ApplinSession, _ cache: WidgetCache) {
     }
 
     func getView(_: ApplinSession, _: WidgetCache) -> UIView {

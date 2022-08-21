@@ -24,8 +24,11 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
         []
     }
 
-    func getTapActions() -> [ActionData]? {
-        nil
+    func canTap() -> Bool {
+        false
+    }
+
+    func tap(_ session: ApplinSession, _ cache: WidgetCache) {
     }
 
     func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {

@@ -30,16 +30,14 @@ struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
         ["form-checkbox:\(self.varName)"]
     }
 
-    func getTapActions() -> [ActionData]? {
-        if let rpc = self.rpc {
-            return [ActionData.rpc(rpc)]
-        } else {
-            return nil
-        }
+    func canTap() -> Bool {
+        true
     }
 
-    func getWidget(_ widgetCache: WidgetCache) -> FormCheckboxWidget? {
-        widgetCache.get(self.keys()) as? FormCheckboxWidget
+    func tap(_ session: ApplinSession, _ cache: WidgetCache) {
+        if let widget = cache.get(self.keys()) as? FormCheckboxWidget {
+            widget.tap()
+        }
     }
 
     func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
@@ -73,14 +71,8 @@ class FormCheckboxWidget: WidgetProto {
         // around is to bind `weak self` before creating the handler.
         weak var weakSelf: FormCheckboxWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
-            if let self2 = weakSelf {
-                print("FormCheckboxWidget(\(self2.data.varName)).action")
-                Task {
-                    await self2.doActions()
-                }
-            } else {
-                print("FormCheckboxWidget(nil).action")
-            }
+            print("FormCheckboxWidget(\(weakSelf?.data.varName ?? "nil")).action")
+            weakSelf?.tap()
         })
         var config = UIButton.Configuration.borderless()
         config.imagePadding = 8.0
@@ -111,18 +103,20 @@ class FormCheckboxWidget: WidgetProto {
         self.updateImage()
     }
 
-    @MainActor func doActions() async {
+    func tap() {
         guard let session = self.session else {
             print("WARN FormCheckboxWidget(\(self.data.varName)).doActions session is nil")
             return
         }
-        print("FormCheckboxWidget(\(self.data.varName)).doActions")
-        let oldBoolVar = self.session?.getBoolVar(self.data.varName)
-        self.setChecked(!self.getChecked())
-        if let rpc = self.data.rpc {
-            let ok = await session.doActionsAsync(pageKey: self.pageKey, [.rpc(rpc)])
-            if !ok {
-                self.setChecked(oldBoolVar)
+        Task { @MainActor in
+            print("FormCheckboxWidget(\(self.data.varName)).doActions")
+            let oldBoolVar = session.getBoolVar(self.data.varName)
+            self.setChecked(!self.getChecked())
+            if let rpc = self.data.rpc {
+                let ok = await session.doActionsAsync(pageKey: self.pageKey, [.rpc(rpc)])
+                if !ok {
+                    self.setChecked(oldBoolVar)
+                }
             }
         }
     }

@@ -31,11 +31,14 @@ struct ButtonData: Equatable, Hashable, WidgetDataProto {
         ["button:\(self.actions)", "button:\(self.text)"]
     }
 
-    func getTapActions() -> [ActionData]? {
-        if self.actions.isEmpty {
-            return nil
+    func canTap() -> Bool {
+        true
+    }
+
+    func tap(_ session: ApplinSession, _ cache: WidgetCache) {
+        if let widget = cache.get(self.keys()) as? ButtonWidget {
+            widget.tap()
         }
-        return self.actions
     }
 
     func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
@@ -58,9 +61,10 @@ class ButtonWidget: WidgetProto {
     init(_ data: ButtonData) {
         print("ButtonWidget.init(\(data))")
         self.data = data
-        let action = UIAction(title: "uninitialized", handler: { [weak self] _ in
+        weak var weakSelf: ButtonWidget? = self
+        let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
             print("button UIAction")
-            self?.doActions()
+            weakSelf?.tap()
         })
         self.button = UIButton(type: .system, primaryAction: action)
         self.button.translatesAutoresizingMaskIntoConstraints = false
@@ -70,12 +74,12 @@ class ButtonWidget: WidgetProto {
         self.data.keys()
     }
 
-    func doActions() {
+    func tap() {
         print("button actions")
         self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
     }
 
-    func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {
+    func getView(_ session: ApplinSession) -> UIView {
         self.session = session
         self.button.setTitle(self.data.text, for: .normal)
         self.button.isEnabled = !self.data.actions.isEmpty

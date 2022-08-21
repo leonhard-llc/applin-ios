@@ -18,11 +18,16 @@ struct BackButtonData: Equatable, Hashable, WidgetDataProto {
     }
 
     func keys() -> [String] {
-        ButtonData(pageKey: self.pageKey, actions, text: "Back").keys()
+        []
     }
 
-    func getTapActions() -> [ActionData]? {
-        nil
+    func canTap() -> Bool {
+        true
+    }
+
+    func tap(_ session: ApplinSession, _ cache: WidgetCache) {
+        print("back-button tap")
+        session.doActions(pageKey: self.pageKey, self.actions)
     }
 
     func getView(_ session: ApplinSession, _ widgetCache: WidgetCache) -> UIView {

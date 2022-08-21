@@ -74,7 +74,8 @@ struct NavPageData: Equatable, PageDataProto {
 
 class NavPageController: UIViewController, UINavigationBarDelegate, PageController {
     weak var navController: NavigationController?
-    weak var session: ApplinSession?
+    weak var weakSession: ApplinSession?
+    weak var weakCache: WidgetCache?
     var data: NavPageData?
     var hasPrevPage: Bool = false
     var navBar: UINavigationBar
@@ -82,9 +83,10 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     var subView: UIView?
     let helper = SuperviewHelper()
 
-    init(_ navController: NavigationController, _ session: ApplinSession) {
+    init(_ navController: NavigationController, _ session: ApplinSession, _ cache: WidgetCache) {
         self.navController = navController
-        self.session = session
+        self.weakSession = session
+        self.weakCache = cache
         // PlainPageController cannot do self.navigationItem.navBarHidden = true,
         // because Apple didn't add support for that.
         // Instead, we must show/hide UINavigationController's navbar whenever the top
@@ -115,9 +117,12 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         }
         switch data.start {
         case let .backButton(inner):
-            self.session?.doActions(pageKey: data.pageKey, inner.actions)
+            if let session = self.weakSession, let cache = self.weakCache {
+                print("back inner.tap()")
+                inner.tap(session, cache)
+            }
         case .defaultBackButton:
-            self.session?.pop()
+            self.weakSession?.pop()
         case .empty:
             break
         }

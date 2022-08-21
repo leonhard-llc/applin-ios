@@ -55,8 +55,11 @@ struct FormData: Equatable, Hashable, WidgetDataProto {
         []
     }
 
-    func getTapActions() -> [ActionData]? {
-        nil
+    func canTap() -> Bool {
+        false
+    }
+
+    func tap(_ session: ApplinSession, _ cache: WidgetCache) {
     }
 
     func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
@@ -164,7 +167,7 @@ private class DisclosureImageCell: UITableViewCell {
         content.textProperties.color = enabled ? .label : .placeholderText
         content.addPlaceholderImage(cellWidth: self.bounds.width)
         self.contentConfiguration = content
-        Task.init { [content] in
+        Task { [content] in
             var content2 = content
             try await content2.loadImage(session, photoUrl)
             DispatchQueue.main.async { [weak self, content2] in
@@ -196,7 +199,7 @@ private class DisclosureImageSubtextCell: UITableViewCell {
         content.secondaryTextProperties.color = enabled ? .label : .placeholderText
         content.addPlaceholderImage(cellWidth: self.bounds.width)
         self.contentConfiguration = content
-        Task.init { [content] in
+        Task { [content] in
             var content2 = content
             try await content2.loadImage(session, photoUrl)
             DispatchQueue.main.async { [weak self, content2] in
@@ -355,31 +358,15 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
     // UITableViewDelegate
 
     func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
-        let result = self.getWidget(indexPath)?.inner().getTapActions() != nil
-        // print("form shouldHighlightRowAt \(indexPath.section).\(indexPath.row) \(result)")
-        return result
+        self.getWidget(indexPath)?.inner().canTap() ?? false
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // print("form didSelectRowAt \(indexPath.section).\(indexPath.row)")
-        guard let widgetCache = self.weakWidgetCache else {
-            return
-        }
-        switch self.getWidget(indexPath) {
-        case .none:
-            break
-        case let .some(.formCheckbox(data)):
-            if let widget = data.getWidget(widgetCache) {
-                Task {
-                    await widget.doActions()
-                }
-            } else {
-                print("WARN FormCheckbox widget not found")
-            }
-        case let .some(widget):
-            if let actions = widget.inner().getTapActions() {
-                self.weakSession?.doActions(pageKey: self.pageKey, actions)
-            }
+        if let inner = self.getWidget(indexPath)?.inner(),
+           let session = self.weakSession,
+           let cache = self.weakCache {
+            inner.tap(session, cache)
         }
         self.tableView.deselectRow(at: indexPath, animated: false)
     }

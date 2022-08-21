@@ -69,9 +69,9 @@ private struct Entry {
     let key: String
     let data: PageData
     let controller: PageController
-    let cache: WidgetCache?
+    let cache: WidgetCache
 
-    init(_ key: String, _ data: PageData, _ controller: PageController, _ cache: WidgetCache?) {
+    init(_ key: String, _ data: PageData, _ controller: PageController, _ cache: WidgetCache) {
         self.key = key
         self.data = data
         self.controller = controller
@@ -163,15 +163,15 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
             case let .navPage(data):
                 newModals = []
                 let entry = self.removeEntry(key)
-                let ctl = entry?.controller as? NavPageController ?? NavPageController(self, session)
                 let cache = entry?.cache ?? WidgetCache()
+                let ctl = entry?.controller as? NavPageController ?? NavPageController(self, session, cache)
                 ctl.update(session, cache, data, hasPrevPage: hasPrevPage)
                 newEntries.append(Entry(key, pageData, ctl, cache))
             case let .plainPage(data):
                 newModals = []
                 let entry = self.removeEntry(key)
-                let ctl = entry?.controller as? PlainPageController ?? PlainPageController()
                 let cache = entry?.cache ?? WidgetCache()
+                let ctl = entry?.controller as? PlainPageController ?? PlainPageController()
                 ctl.update(session, cache, data)
                 newEntries.append(Entry(key, pageData, ctl, cache))
             }
