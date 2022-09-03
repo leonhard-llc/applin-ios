@@ -64,7 +64,7 @@ struct FormData: Equatable, Hashable, WidgetDataProto {
 
     func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
         let widget = cache.removeForm() ?? FormWidget(session, cache, self.pageKey, self)
-        widget.data = self
+        widget.dataSource.update(self)
         cache.putNextForm(widget)
         return widget.getView()
     }
@@ -224,22 +224,21 @@ private class TextCell: UITableViewCell {
 
 private class WidgetCell: UITableViewCell {
     static let REUSE_ID = "WidgetCell"
-    var optHelper: SuperviewHelper?
+    let helper = SuperviewHelper()
 
-    func update(_ session: ApplinSession, _ cache: WidgetCache, _ widget: WidgetData) {
-        if let helper = self.optHelper {
+    func update(_ session: ApplinSession, _ cache: WidgetCache, _ widgetData: WidgetData) {
+        let subView = widgetData.inner().getView(session, cache)
+        if subView.superview != self.contentView {
             helper.removeSubviewsAndConstraints(self.contentView)
-            self.optHelper = nil
+            self.contentView.addSubview(subView)
+            // subView.clipsToBounds = true
+            self.helper.setConstraints([
+                subView.topAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.topAnchor),
+                subView.bottomAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.bottomAnchor),
+                subView.leadingAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.leadingAnchor),
+                subView.trailingAnchor.constraint(lessThanOrEqualTo: self.contentView.layoutMarginsGuide.trailingAnchor),
+            ])
         }
-        let subView = widget.inner().getView(session, cache)
-        // subView.clipsToBounds = true
-        self.contentView.addSubview(subView)
-        self.optHelper = SuperviewHelper(constraints: [
-            subView.topAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.topAnchor),
-            subView.bottomAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.bottomAnchor),
-            subView.leadingAnchor.constraint(equalTo: self.contentView.layoutMarginsGuide.leadingAnchor),
-            subView.trailingAnchor.constraint(lessThanOrEqualTo: self.contentView.layoutMarginsGuide.trailingAnchor),
-        ])
     }
 }
 
@@ -270,84 +269,45 @@ class KeyboardAvoidingTableView: UITableView {
     }
 }
 
-class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetProto {
+// This class exists to work around "'self' used before 'super.init' call" in
+
+// sub-class of UITableViewDiffableDataSource.
+// Apple's engineers didn't give a fuck when they made this API. :(
+// To whoever made this API:
+//  - Fuck you for not documenting how to actually use this API!
+//  - Fuck you for making the API so shitty that I have to make THREE CLASSES,
+//    one subclass, and implement two protocols just to use it,
+//    and maintain this complicated code!
+//  - Fuck you for making me waste days just to use your shitty widget!
+//  - Fuck you for not making this stuff composable!
+//  - Fuck you for not documenting keyboard show/hide behavior and how to
+//    handle it properly!
+//  - I'm making Applin so people can make apps without dealing with your shit.
+//    Fuck you!
+class InnerDataSource {
     weak var weakSession: ApplinSession?
     weak var weakCache: WidgetCache?
-    let pageKey: String
     var data: FormData
-    var tableView: KeyboardAvoidingTableView!
 
-    init(_ session: ApplinSession, _ cache: WidgetCache, _ pageKey: String, _ data: FormData) {
-        self.pageKey = pageKey
+    init(_ session: ApplinSession, _ cache: WidgetCache, _ data: FormData) {
         self.weakSession = session
         self.weakCache = cache
         self.data = data
-        let tableView = KeyboardAvoidingTableView(frame: .zero, style: .plain)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.register(ErrorCell.self, forCellReuseIdentifier: ErrorCell.REUSE_ID)
-        tableView.register(DisclosureCell.self, forCellReuseIdentifier: DisclosureCell.REUSE_ID)
-        tableView.register(DisclosureSubtextCell.self, forCellReuseIdentifier: DisclosureSubtextCell.REUSE_ID)
-        tableView.register(DisclosureImageCell.self, forCellReuseIdentifier: DisclosureImageCell.REUSE_ID)
-        tableView.register(DisclosureImageSubtextCell.self, forCellReuseIdentifier: DisclosureImageSubtextCell.REUSE_ID)
-        tableView.register(TextCell.self, forCellReuseIdentifier: TextCell.REUSE_ID)
-        tableView.register(WidgetCell.self, forCellReuseIdentifier: WidgetCell.REUSE_ID)
-        tableView.contentInsetAdjustmentBehavior = .never // Only works for UITableView.Style.plain.
-        tableView.keyboardDismissMode = .interactive
-        // tableView.allowsSelection = true
-        // tableView.allowsMultipleSelection = false
-        // tableView.selectionFollowsFocus = true
-        // tableView.isUserInteractionEnabled = true
-        self.tableView = tableView
-        super.init()
-        self.tableView.dataSource = self
-        self.tableView.delegate = self
     }
 
-    func keys() -> [String] {
-        self.data.keys()
-    }
-
-    func getView() -> UIView {
-        self.tableView.reloadData()
-        return self.tableView
-    }
-
-    // UITableViewDataSource
-
-    func numberOfSections(in tableView: UITableView) -> Int {
-        self.data.sections.count
-    }
-
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        self.data.sections.get(section)?.0
-    }
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        self.data.sections.get(section)?.1.count ?? 0
-    }
-
-    // This does not remove the top padding for UITableView.Style.grouped.
-    // func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-    //     if section == 0 {
-    //         return 0.0
-    //     } else {
-    //         return UITableView.automaticDimension
-    //     }
-    // }
-
-    private func getWidget(_ indexPath: IndexPath) -> WidgetData? {
+    func getWidgetData(_ indexPath: IndexPath) -> WidgetData? {
         self.data.sections.get(indexPath.section)?.1.get(indexPath.row)
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func getCell(_ tableView: UITableView, _ indexPath: IndexPath, _ id: String) -> UITableViewCell {
         // print("form cellForRowAt \(indexPath.section).\(indexPath.row)")
         guard let session = self.weakSession,
               let cache = self.weakCache,
-              let widget = self.getWidget(indexPath)
+              let widgetData = self.getWidgetData(indexPath)
         else {
             return tableView.dequeueReusableCell(withIdentifier: ErrorCell.REUSE_ID, for: indexPath)
         }
-        switch widget {
+        switch widgetData {
         case let .text(data):
             let cell = tableView.dequeueReusableCell(withIdentifier: TextCell.REUSE_ID, for: indexPath) as! TextCell
             cell.update(data.text)
@@ -378,22 +338,136 @@ class FormWidget: NSObject, UITableViewDataSource, UITableViewDelegate, WidgetPr
         default:
             let cell = tableView.dequeueReusableCell(
                     withIdentifier: WidgetCell.REUSE_ID, for: indexPath) as! WidgetCell
-            cell.update(session, cache, widget)
+            cell.update(session, cache, widgetData)
             return cell
         }
+    }
+}
+
+// We must subclass UITableViewDiffableDataSource because otherwise
+
+// there is no way to specify section headers.
+// The Apple engineers who designed this API did a poor job, and a worse job on the docs. :(
+class FormWidgetDataSource: UITableViewDiffableDataSource<String, String> {
+    var inner: InnerDataSource
+
+    init(_ session: ApplinSession, _ cache: WidgetCache, _ tableView: UITableView, _ data: FormData) {
+        let inner = InnerDataSource(session, cache, data)
+        weak var weakInner = inner
+        self.inner = inner
+        super.init(tableView: tableView) {
+            (tableView: UITableView, indexPath: IndexPath, itemIdentifier: String) -> UITableViewCell? in
+            if let inner = weakInner {
+                return inner.getCell(tableView, indexPath, itemIdentifier)
+            } else {
+                return nil
+            }
+        }
+    }
+
+    func update(_ newData: FormData) {
+        // https://developer.apple.com/documentation/uikit/uitableviewdiffabledatasource
+        // https://developer.apple.com/documentation/uikit/nsdiffabledatasourcesnapshot
+        self.inner.data = newData
+        var snapshot = NSDiffableDataSourceSnapshot<String, String>()
+        var unnamedSectionCount = 0
+
+        func nextUnnamedSectionName() -> String {
+            unnamedSectionCount += 1
+            return "applin-unnamed-section-\(unnamedSectionCount)"
+        }
+
+        for (optSectionName, widgetDatas) in self.inner.data.sections {
+            let sectionName = optSectionName ?? nextUnnamedSectionName()
+            snapshot.appendSections([sectionName])
+            var generatedKeyCount = 0
+
+            func nextGeneratedKey() -> String {
+                generatedKeyCount += 1
+                return "\(sectionName)-\(generatedKeyCount)"
+            }
+
+            snapshot.appendItems(widgetDatas.map() { widgetData in
+                widgetData.inner().keys().first ?? nextGeneratedKey()
+            })
+        }
+        self.apply(snapshot)
+    }
+
+    // UITableViewDataSource
+
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        self.inner.data.sections.count
+    }
+
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        self.inner.data.sections.get(section)?.0
+    }
+
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        self.inner.data.sections.get(section)?.1.count ?? 0
+    }
+
+    // This does not remove the top padding for UITableView.Style.grouped.
+
+    // func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    //     if section == 0 {
+    //         return 0.0
+    //     } else {
+    //         return UITableView.automaticDimension
+    //     }
+    // }
+}
+
+class FormWidget: NSObject, UITableViewDelegate, WidgetProto {
+    let pageKey: String
+    var dataSource: FormWidgetDataSource!
+    var tableView: KeyboardAvoidingTableView!
+
+    init(_ session: ApplinSession, _ cache: WidgetCache, _ pageKey: String, _ data: FormData) {
+        self.pageKey = pageKey
+        let tableView = KeyboardAvoidingTableView(frame: .zero, style: .plain)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.register(ErrorCell.self, forCellReuseIdentifier: ErrorCell.REUSE_ID)
+        tableView.register(DisclosureCell.self, forCellReuseIdentifier: DisclosureCell.REUSE_ID)
+        tableView.register(DisclosureSubtextCell.self, forCellReuseIdentifier: DisclosureSubtextCell.REUSE_ID)
+        tableView.register(DisclosureImageCell.self, forCellReuseIdentifier: DisclosureImageCell.REUSE_ID)
+        tableView.register(DisclosureImageSubtextCell.self, forCellReuseIdentifier: DisclosureImageSubtextCell.REUSE_ID)
+        tableView.register(TextCell.self, forCellReuseIdentifier: TextCell.REUSE_ID)
+        tableView.register(WidgetCell.self, forCellReuseIdentifier: WidgetCell.REUSE_ID)
+        tableView.contentInsetAdjustmentBehavior = .never // Only works for UITableView.Style.plain.
+        tableView.keyboardDismissMode = .interactive
+        // tableView.allowsSelection = true
+        // tableView.allowsMultipleSelection = false
+        // tableView.selectionFollowsFocus = true
+        // tableView.isUserInteractionEnabled = true
+        self.dataSource = FormWidgetDataSource(session, cache, tableView, data)
+        // tableView.dataSource = dataSource
+        self.tableView = tableView
+        super.init()
+        self.tableView.delegate = self
+        self.dataSource.update(data)
+    }
+
+    func keys() -> [String] {
+        self.dataSource.inner.data.keys()
+    }
+
+    func getView() -> UIView {
+        return self.tableView
     }
 
     // UITableViewDelegate
 
     func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
-        self.getWidget(indexPath)?.inner().canTap() ?? false
+        self.dataSource.inner.getWidgetData(indexPath)?.inner().canTap() ?? false
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // print("form didSelectRowAt \(indexPath.section).\(indexPath.row)")
-        if let inner = self.getWidget(indexPath)?.inner(),
-           let session = self.weakSession,
-           let cache = self.weakCache {
+        if let inner = self.dataSource.inner.getWidgetData(indexPath)?.inner(),
+           let session = self.dataSource.inner.weakSession,
+           let cache = self.dataSource.inner.weakCache {
             inner.tap(session, cache)
         }
         self.tableView.deselectRow(at: indexPath, animated: false)

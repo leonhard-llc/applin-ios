@@ -23,11 +23,15 @@ class SuperviewHelper {
         NSLayoutConstraint.deactivate(self.constraints)
     }
 
-    func removeSubviewsAndConstraints(_ view: UIView) {
-        self.deactivateConstraints()
+    func removeSubviews(_ view: UIView) {
         for subView in view.subviews {
             subView.removeFromSuperview()
         }
+    }
+
+    func removeSubviewsAndConstraints(_ view: UIView) {
+        self.deactivateConstraints()
+        self.removeSubviews(view)
     }
 
     func setConstraints(_ constraints: [NSLayoutConstraint]) {
