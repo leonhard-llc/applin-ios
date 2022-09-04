@@ -24,87 +24,127 @@ This project is not yet usable.  It is not production-ready.
     - [X] custom back button actions
     - [ ] Use name of previous page, not "Back"
     - [ ] Swipe to go back with custom back button
-  - `plain-page`
+    - [X] `stream` bool
+    - [X] `poll-seconds`
+  - [X] `plain-page`
+  - `alert-modal`, `drawer-modal`
     - [X] `title`
-    - [X] `widget`
-  - `alert-modal`, `info-modal`, `question-modal`
-    - [ ] `title`
-    - [ ] `widgets`
-  - `markdown-page`
+    - [X] `text`
+    - [X] `widgets` (only `modal-button` are allowed)
+  - `media-page`
     - [ ] `title`
     - [ ] `url`
     - [ ] `cache` boolean
 - Widgets
-  - [ ] Preserve widget data across page updates
+  - [X] Preserve widget data across page updates
   - [ ] Preserve widget data across app launches
     - <https://developer.apple.com/documentation/uikit/view_controllers/preserving_your_app_s_ui_across_launches>
   - `back-button`
     - [X] `actions`
     - [ ] Use name of previous page, not "Back"
   - `button`
-    - [ ] `text`
-    - [ ] `actions`, `actions-android`, `actions-ios`
-    - [ ] `is-default`
-    - [ ] `is-destructive`
-  - `button-cell`
-    - [ ] `text`
-    - [ ] `actions`, `actions-android`, `actions-ios`
-    - [ ] `is-destructive`
-  - `checkbox`
-    - [ ] `id`
-    - [ ] `initial-value`
-    - [ ] `actions`
-  - `checkbox-cell`
-    - [ ] `text`
-    - [ ] `initial-value`
-    - [ ] `actions`
+    - [X] `text`
+    - [X] `actions`
+    - [ ] `actions-ios`
   - `column`
-    - [ ] `spacing`
-    - [ ] `widgets`
-    - [ ] `alignment`: `top`, `center`, `bottom`
-  - `detail-cell`
-    - [ ] `text`
-    - [ ] `image-url`
-    - [ ] `actions`
+    - [X] `align`: `start`, `center`, `end`
+    - [X] `spacing`
+    - [X] `widgets`
   - [X] `empty`
-  - [ ] `error-cell`
-  - [ ] `error-details`
+  - [X] `error-details`
+  - `form`
+    - [X] `widgets`
+  - `form-button`
+    - [X] `text`
+    - [X] `actions`
+    - [ ] `actions-ios`
+  - `form-checkbox`
+    - [X] `initial-bool`
+    - [X] `rpc`
+    - [X] `text`
+    - [X] `var`
+  - `form-detail`
+    - [X] `actions`
+    - [X] `photo-url`
+      - [ ] animated loading placeholder
+      - [ ] retry
+    - [X] `sub-text`
+    - [X] `text`
+  - `form-error`
+    - [X] `text`
+  - `form-section`
+    - [X] `text`
+    - [X] `widgets`
+  - `form-textfield`
+    - [ ] `allow`: `ascii`, `email`, `numbers`, `tel`
+    - [ ] `auto-capitalize`: `names`, `sentences`
+    - [ ] `check-rpc`
+    - [ ] `initial-string`
+    - [ ] `label`
+    - [ ] `max-chars`
+    - [ ] `max-lines`
+    - [ ] `min-chars`
+    - [ ] `var`
   - [ ] `expand` with `min-height`, `min-width`, `max-height`, `max-width`, `widget`
   - [ ] `expand.alignment`: `top-start`, `top-center`, `top-end`, `center-start`, `center`, `center-end`, `bottom-start`, `bottom-center`, `bottom-end`
   - [ ] `date-picker`
   - [ ] `date-time-picker`
   - `horizontal-scroll`
     - [ ] `widget`
-  - [ ] `icon` with `id`, `height`, `width`, `alignment`
   - `image`
+    - [ ] `icon`
     - [ ] `url`
+    - [ ] `alpha` 0-1.0
+    - [ ] `color`: #rrggbb
     - [ ] dimensions
     - [ ] `disposition`: `cover`, `fit`, `stretch`
-    - [ ] `image` zoom
-    - [ ] retry load failure
-  - [ ] `image-picker` camera
-  - [ ] `image-picker` photo
-  - [ ] `image-picker` upload
-  - [ ] `image-picker` crop, resize, and rotate
-  - [ ] `markdown`
-  - [ ] `picker`
-  - [ ] `radio-button`
-  - [ ] `row` with `spacing`, `widgets`
-  - [ ] `row.alignment`: `start`, `center`, `end`
-  - [ ] `row` item sizing: unconstrained, fixed-width, max-width, min-width
-  - [ ] `row` spacing: Make `Spacer` fixed size, and use `Wide` & `Tall` for expanded spacing.
-  - [ ] `row` wrapping
+    - [ ] animated loading placeholder
+    - [ ] retry
+    - [ ] zoom
+    - [ ] cache
+  - [ ] `media`
+    - [ ] `url`
+    - [ ] `cache` bool
+  - `modal-button`
+    - [X] `text`
+    - [X] `actions`
+    - [ ] `actions-ios`
+    - [X] `is-cancel`
+    - [X] `is-default`
+    - [X] `is-destructive`
+  - `single-option`
+    - [ ] `style`
+      - [ ] `radio`
+      - [ ] `wheel`
+      - [ ] `menu`
+    - [ ] `initial-id`
+    - [ ] `label`
+    - [ ] `options` list of `option`
+    - [ ] `var`
+  - `option`
+    - [ ] `label`
+    - [ ] `id` string
+  - `row`
+    - [ ] `align`: `top`, `center`, `bottom`
+    - [ ] `spacing`
+    - [ ] `widgets`
+    - [ ] `wrap` bool
   - `scroll`
-    - [ ] `widget`
-  - [ ] `spacer`
-  - [ ] `table`
-  - [ ] `tall` with `alignment`, `min-height`, `max-height`, `widget`
+    - [X] `widget`
+  - `table`
+    - [ ] headers: `[string]`
+    - [ ] cells: `[[widget]]`
   - `text`
     - [X] `text`
     - [ ] `text` should not show markdown-formatting
-  - [ ] `text-cell`
-  - [ ] `time-picker`
-  - [ ] `wide` with `alignment`, `min-width`, `max-width`, `widget`
+    - [ ] `scale` float
+    - [ ] `overflow`: `wrap`, `ellipsis`
+  - `date-time-picker`
+    - [ ] `granularity-seconds`
+    - [ ] `min-epoch-seconds`
+    - [ ] `max-epoch-seconds`
+    - [ ] `epoch-seconds-var`
+    - [ ] `timezone-var`
 - Actions:
   - `copy-to-clipboard`
     - [X] implement
@@ -117,20 +157,34 @@ This project is not yet usable.  It is not production-ready.
     - <https://developer.apple.com/documentation/foundation/urlsession/1411479-reset>
   - [X] `pop`
   - [X] `push:PAGE_KEY`
+  - [ ] `reload-media` action
   - `rpc:/PATH`
     - [X] call server
     - [X] send cookies, receive & save cookies
     - [ ] send page stack to server
-    - [ ] send page variables to server, `rpc:/PATH,ARG1,ARG2`
+    - [X] send page variables to server in JSON request body
     - [ ] Ephemeral client data, to allow an RPC to include data from multiple pages
     - [ ] Option to automatically perform RPC when data changes, after a delay
     - [ ] Prevent overlapping RPCs or actions
-    - [ ] Show modal to prevent race between user changing widgets and server changing UI in RPC response
+    - [X] Show "working" modal to prevent race between user changing widgets and server changing UI in RPC response
     - [X] response can update pages
     - [ ] response can update stack
+    - [ ] show network error dialog
+    - [X] show server error dialog
     - [ ] show user error dialog
-    - [ ] show client error dialog
-    - [ ] show server error dialog
+  - `pick-photo` action
+    - [ ] `upload-url`
+    - [ ] `aspect-ratio` float, width / height
+    - [ ] `max-bytes`
+    - [ ] `max-height`
+    - [ ] `max-width`
+    - [ ] `min-height`
+    - [ ] `min-width`
+    - [ ] convert to JPEG
+    - [ ] preserve metadata
+    - [ ] zoom
+    - [ ] rotate
+  - [ ] `take-photo` action
 - Style
   - Pick one:
     - Each widget gets values from the style subsystem
@@ -181,13 +235,12 @@ This project is not yet usable.  It is not production-ready.
   - [ ] Always apply diffs from connection and RPCs in correct order.
   - [ ] Avoid downloading all pages on new connection, use cached data
   - [X] Connect only when app is active.  Disconnect when in background, after a delay.
-  - [ ] Let pages specify "don't connect", "connect automatically" or "poll this RPC on this interval".
+  - [X] Let pages specify "don't connect", "connect automatically" or "poll this RPC on this interval".
   - [ ] Add pull to refresh <https://stackoverflow.com/questions/26071528/refreshcontrol-with-programatic-uitableview-without-uitableviewcontroller>
 - Save data
   - [X] pages
   - [X] Write pages after 10s delay, to reduce power usage
   - [X] stack
-  - [ ] downloaded images
   - [X] cookies
 - Notifications
   - [ ] action to request notifications
@@ -195,6 +248,7 @@ This project is not yet usable.  It is not production-ready.
   - [ ] Tap a notification to open the target page
   - [ ] Display received notifications while using app
 - Logging
+  - [ ] Replace `print` calls with proper logging: <https://developer.apple.com/documentation/os/logging>
   - [ ] gzip
   - [ ] log crashes
   - [ ] log JSON
@@ -202,21 +256,14 @@ This project is not yet usable.  It is not production-ready.
   - [ ] max file size bytes
   - [ ] max file interval seconds
   - [ ] upload url
-- Test coverage
-  - [ ] 1%
-  - [ ] 50%
-  - [ ] 80%
-  - [ ] 95%
+- Test coverage: ??
 - Integration tests
-  - [ ] cookie & logout
-  - [ ] 
 - [X] Load `default.json` on startup
 - Respond to memory pressure warnings
   <https://developer.apple.com/documentation/uikit/app_and_environment/managing_your_app_s_life_cycle/responding_to_memory_warnings>
-  - Release non-visible images
-  - Write cache since app may get terminated
+  - [ ] Release non-visible images
+  - [ ] Write cache since app may get terminated
 - [ ] Download media in background task
   - <https://www.avanderlee.com/swift/urlsession-common-pitfalls-with-background-download-upload-tasks/>
 - [ ] Reduce memory usage of pages that are not visible.
 - [ ] Warn when two widgets use the same 'id'.
-- [ ] Replace `print` calls with proper logging: <https://developer.apple.com/documentation/os/logging>
