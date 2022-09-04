@@ -370,6 +370,34 @@ class FormWidgetDataSource: UITableViewDiffableDataSource<String, String> {
         // https://developer.apple.com/documentation/uikit/nsdiffabledatasourcesnapshot
         self.inner.data = newData
         var snapshot = NSDiffableDataSourceSnapshot<String, String>()
+        // Add unique IDs to snapshot to prevent NSInternalInconsistencyException
+        // "Fatal: supplied item identifiers are not unique. Duplicate identifiers"
+        var sectionIds: Dictionary<String, Int> = Dictionary()
+
+        func makeUniqueSectionId(_ id: String) -> String {
+            if var count = sectionIds[id] {
+                count += 1
+                sectionIds[id] = count
+                return "applin-\(count)-\(id)"
+            } else {
+                sectionIds[id] = 0
+                return id
+            }
+        }
+
+        var widgetIds: Dictionary<String, Int> = Dictionary()
+
+        func makeUniqueWidgetId(sectionId: String, _ id: String) -> String {
+            if var count = widgetIds[id] {
+                count += 1
+                widgetIds[id] = count
+                return "applin-\(sectionId)-\(count)-\(id)"
+            } else {
+                widgetIds[id] = 0
+                return id
+            }
+        }
+
         var unnamedSectionCount = 0
 
         func nextUnnamedSectionName() -> String {
@@ -378,17 +406,18 @@ class FormWidgetDataSource: UITableViewDiffableDataSource<String, String> {
         }
 
         for (optSectionName, widgetDatas) in self.inner.data.sections {
-            let sectionName = optSectionName ?? nextUnnamedSectionName()
-            snapshot.appendSections([sectionName])
+            let sectionId = makeUniqueSectionId(optSectionName ?? nextUnnamedSectionName())
+            snapshot.appendSections([sectionId])
             var generatedKeyCount = 0
 
             func nextGeneratedKey() -> String {
                 generatedKeyCount += 1
-                return "\(sectionName)-\(generatedKeyCount)"
+                return "\(sectionId)-\(generatedKeyCount)"
             }
 
             snapshot.appendItems(widgetDatas.map() { widgetData in
-                widgetData.inner().keys().first ?? nextGeneratedKey()
+
+                makeUniqueWidgetId(sectionId: sectionId, widgetData.inner().keys().first ?? nextGeneratedKey())
             })
         }
         self.apply(snapshot)
