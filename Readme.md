@@ -79,12 +79,12 @@ This project is not yet usable.  It is not production-ready.
     - [ ] `allow`: `ascii`, `email`, `numbers`, `tel`
     - [ ] `auto-capitalize`: `names`, `sentences`
     - [ ] `check-rpc`
-    - [ ] `initial-string`
+    - [X] `initial-string`
     - [ ] `label`
     - [ ] `max-chars`
     - [ ] `max-lines`
     - [ ] `min-chars`
-    - [ ] `var`
+    - [X] `var`
   - [ ] `expand` with `min-height`, `min-width`, `max-height`, `max-width`, `widget`
   - [ ] `expand.alignment`: `top-start`, `top-center`, `top-end`, `center-start`, `center`, `center-end`, `bottom-start`, `bottom-center`, `bottom-end`
   - [ ] `date-picker`

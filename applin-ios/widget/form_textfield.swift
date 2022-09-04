@@ -1,8 +1,6 @@
 import Foundation
 import UIKit
 
-// TODO: Finish.
-
 struct FormTextfieldData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "form-textfield"
     let allow: ApplinAllow
@@ -127,7 +125,7 @@ class FormTextfieldWidget: NSObject, UITextFieldDelegate, WidgetProto {
 
         self.textfield = UITextField()
         self.textfield.translatesAutoresizingMaskIntoConstraints = false
-        self.textfield.text = "Hello"
+
         self.textfield.borderStyle = .roundedRect
         self.stack.addArrangedSubview(self.textfield)
 
@@ -138,6 +136,7 @@ class FormTextfieldWidget: NSObject, UITextFieldDelegate, WidgetProto {
         self.errorMessage = "Error1"
         super.init()
         self.textfield.delegate = self
+        self.textfield.text = self.session?.getStringVar(self.data.varName) ?? self.data.initialString ?? ""
         self.update()
     }
 

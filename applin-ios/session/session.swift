@@ -150,6 +150,18 @@ class ApplinSession: ObservableObject {
         }
     }
 
+    func getStringVar(_ name: String) -> String? {
+        switch self.vars[name] {
+        case .none:
+            return nil
+        case let .some(.string(value)):
+            return value
+        case let .some(other):
+            print("WARNING tried to read variable \(name) as string but it is: \(other)")
+            return nil
+        }
+    }
+
     func applyUpdate(_ data: Data) throws {
         let update: Update
         do {
