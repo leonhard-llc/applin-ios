@@ -51,7 +51,7 @@ struct FormTextfieldData: Equatable, Hashable, WidgetDataProto {
 
     func tap(_ session: ApplinSession, _ cache: WidgetCache) {
         if let widget = cache.get(self.keys()) as? FormTextfieldWidget {
-            widget.textfield.becomeFirstResponder()
+            widget.textview.becomeFirstResponder()
         }
     }
 
@@ -67,17 +67,15 @@ struct FormTextfieldData: Equatable, Hashable, WidgetDataProto {
     }
 }
 
-class FormTextfieldWidget: NSObject, UITextFieldDelegate, WidgetProto {
+class FormTextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
     static let errorImage = UIImage(systemName: "exclamationmark.circle")
     let stack: UIStackView
     //let stackWidthConstraint: NSLayoutConstraint
     let label: UILabel
-    let textfield: UITextField
+    let textview: UITextView
     let errorStack: UIStackView
     let errorImageView: UIImageView
     let errorLabel: UILabel
-    let defaultBorderColor: CGColor?
-    let defaultBorderWidth: CGFloat
     let pageKey: String
     var data: FormTextfieldData
     var errorMessage: String?
@@ -123,20 +121,17 @@ class FormTextfieldWidget: NSObject, UITextFieldDelegate, WidgetProto {
         self.errorLabel.numberOfLines = 0
         self.errorStack.addArrangedSubview(self.errorLabel)
 
-        self.textfield = UITextField()
-        self.textfield.translatesAutoresizingMaskIntoConstraints = false
+        self.textview = UITextView()
+        self.textview.translatesAutoresizingMaskIntoConstraints = false
+        self.textview.isScrollEnabled = false // Resize to fit text.
+        self.stack.addArrangedSubview(self.textview)
 
-        self.textfield.borderStyle = .roundedRect
-        self.stack.addArrangedSubview(self.textfield)
-
-        self.defaultBorderColor = self.textfield.layer.borderColor
-        self.defaultBorderWidth = self.textfield.layer.borderWidth
         self.pageKey = pageKey
         self.data = data
         self.errorMessage = "Error1"
         super.init()
-        self.textfield.delegate = self
-        self.textfield.text = self.session?.getStringVar(self.data.varName) ?? self.data.initialString ?? ""
+        self.textview.delegate = self
+        self.textview.text = self.session?.getStringVar(self.data.varName) ?? self.data.initialString ?? ""
         self.update()
     }
 
@@ -145,42 +140,41 @@ class FormTextfieldWidget: NSObject, UITextFieldDelegate, WidgetProto {
     }
 
     func update() {
-        print("update")
         self.label.text = self.data.label
         switch self.data.allow {
         case .all:
-            self.textfield.keyboardType = .default
+            self.textview.keyboardType = .default
         case .ascii:
-            self.textfield.keyboardType = .default
+            self.textview.keyboardType = .default
         case .email:
-            self.textfield.keyboardType = .emailAddress
+            self.textview.keyboardType = .emailAddress
         case .numbers:
-            self.textfield.keyboardType = .numberPad
+            self.textview.keyboardType = .numberPad
         case .tel:
-            self.textfield.keyboardType = .phonePad
+            self.textview.keyboardType = .phonePad
         }
         switch self.data.autoCapitalize {
         case .names:
-            self.textfield.autocapitalizationType = .words
+            self.textview.autocapitalizationType = .words
         case .sentences:
-            self.textfield.autocapitalizationType = .sentences
+            self.textview.autocapitalizationType = .sentences
         case .none:
-            self.textfield.autocapitalizationType = .none
+            self.textview.autocapitalizationType = .none
         }
         if self.data.maxLines == 1 {
-            self.textfield.clearButtonMode = .always
         } else {
-            self.textfield.clearButtonMode = .never
         }
         if let errorMessage = self.errorMessage {
-            self.textfield.layer.borderColor = UIColor.systemRed.cgColor
-            self.textfield.layer.borderWidth = 2.0
+            self.textview.layer.borderColor = UIColor.systemRed.cgColor
+            self.textview.layer.borderWidth = 2.0
+            self.textview.layer.cornerRadius = 0.0
             self.errorImageView.isHidden = false
             self.errorLabel.text = errorMessage
             self.errorLabel.isHidden = false
         } else {
-            self.textfield.layer.borderColor = self.defaultBorderColor
-            self.textfield.layer.borderWidth = self.defaultBorderWidth
+            self.textview.layer.borderColor = UIColor.systemGray4.cgColor
+            self.textview.layer.borderWidth = 1.0
+            self.textview.layer.cornerRadius = 4.0
             self.errorImageView.isHidden = true
             self.errorLabel.isHidden = true
             self.errorLabel.text = nil
@@ -193,6 +187,54 @@ class FormTextfieldWidget: NSObject, UITextFieldDelegate, WidgetProto {
         return self.stack
     }
 
-    // UITextFieldDelegate
+    func adjustHeightInSuperviews() {
+        // Look for superview UITableView widgets and make them recalculate heights of visible cells.
+        var optView: UIView? = self.textview.superview
+        while let view = optView {
+            if let tableView = view as? UITableView {
+                //tableView.updateConstraints()
+                UIView.setAnimationsEnabled(false)
+                tableView.beginUpdates()
+                tableView.endUpdates()
+                UIView.setAnimationsEnabled(true)
+            }
+            optView = view.superview
+        }
+    }
 
+    func scrollCaretIntoView() {
+        // Look for superview UITableView widgets and make them scroll the caret into view.
+        var caretRect = CGRect.zero
+        if let textPosition = self.textview.selectedTextRange?.end {
+            caretRect = self.textview.caretRect(for: textPosition)
+        }
+        caretRect.origin.y -= 10.0
+        caretRect.size.height += 20.0
+        var subView: UIView = self.textview
+        var optView: UIView? = self.textview.superview
+        while let view = optView {
+            caretRect = view.convert(caretRect, from: subView)
+            if let tableView = view as? UIScrollView {
+                tableView.scrollRectToVisible(caretRect, animated: false)
+            }
+            subView = view
+            optView = view.superview
+        }
+    }
+
+    // UITextViewDelegate
+
+    func textViewDidChange(_: UITextView) {
+        print("textViewDidChange")
+        self.adjustHeightInSuperviews()
+    }
+
+    func textViewDidChangeSelection(_: UITextView) {
+        print("textViewDidChangeSelection")
+        Task {
+            // Let the UITableView resize first.
+            await sleep(ms: 100)
+            self.scrollCaretIntoView()
+        }
+    }
 }

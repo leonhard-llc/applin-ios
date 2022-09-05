@@ -85,6 +85,7 @@ This project is not yet usable.  It is not production-ready.
     - [ ] `max-lines`
     - [ ] `min-chars`
     - [X] `var`
+    - [ ] clear button
   - [ ] `expand` with `min-height`, `min-width`, `max-height`, `max-width`, `widget`
   - [ ] `expand.alignment`: `top-start`, `top-center`, `top-end`, `center-start`, `center`, `center-end`, `bottom-start`, `bottom-center`, `bottom-end`
   - [ ] `date-picker`
