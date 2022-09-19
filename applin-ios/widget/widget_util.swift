@@ -40,6 +40,28 @@ class SuperviewHelper {
     }
 }
 
+class SingleViewContainerHelper {
+    private weak var superView: UIView?
+    private weak var subView: UIView?
+    private var constraints: [NSLayoutConstraint] = []
+
+    init(superView: UIView) {
+        self.superView = superView
+    }
+
+    func update(_ newSubView: UIView, _ constraintsFn: () -> [NSLayoutConstraint]) {
+        if newSubView == self.subView {
+            return
+        }
+        NSLayoutConstraint.deactivate(self.constraints)
+        self.subView?.removeFromSuperview()
+        superView!.addSubview(newSubView)
+        self.subView = newSubView
+        self.constraints = constraintsFn()
+        NSLayoutConstraint.activate(self.constraints)
+    }
+}
+
 extension NSLayoutConstraint {
     func withPriority(_ priority: UILayoutPriority) -> NSLayoutConstraint {
         self.priority = priority

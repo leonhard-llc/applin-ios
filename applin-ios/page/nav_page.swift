@@ -76,12 +76,12 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     weak var navController: NavigationController?
     weak var weakSession: ApplinSession?
     weak var weakCache: WidgetCache?
+    var helper: SingleViewContainerHelper!
     var data: NavPageData?
     var hasPrevPage: Bool = false
     var navBar: UINavigationBar
     var optOriginalBackButton: UIBarButtonItem?
     var subView: UIView?
-    let helper = SuperviewHelper()
 
     init(_ navController: NavigationController, _ session: ApplinSession, _ cache: WidgetCache) {
         self.navController = navController
@@ -101,6 +101,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         self.navBar.delegate = self
         self.view.backgroundColor = .systemBackground
         self.view.addSubview(self.navBar)
+        self.helper = SingleViewContainerHelper(superView: self.view)
     }
 
     required init?(coder: NSCoder) {
@@ -207,13 +208,9 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             self.navBar.items = [self.navigationItem]
         }
         let subView = newData.widget.inner().getView(session, cache)
-        cache.flip()
-        if self.subView != subView {
-            self.helper.deactivateConstraints()
-            self.subView?.removeFromSuperview()
-            self.view.addSubview(subView)
-            self.subView = subView
-            self.helper.setConstraints([
+        self.helper.update(subView) {
+            // subView.setNeedsDisplay()
+            [
                 self.navBar.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
                 self.navBar.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
                 self.navBar.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
@@ -221,8 +218,8 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
                 subView.bottomAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.bottomAnchor),
                 subView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
                 subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
-            ])
-            subView.setNeedsDisplay()
+            ]
         }
+        cache.flip()
     }
 }

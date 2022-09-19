@@ -39,7 +39,16 @@ struct PlainPageData: Equatable, PageDataProto {
 
 class PlainPageController: UIViewController, PageController {
     var data: PlainPageData?
-    let helper = SuperviewHelper()
+    var helper: SingleViewContainerHelper!
+
+    init() {
+        super.init(nibName: nil, bundle: nil)
+        self.helper = SingleViewContainerHelper(superView: self.view)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("unimplemented")
+    }
 
     func isModal() -> Bool {
         false
@@ -60,16 +69,16 @@ class PlainPageController: UIViewController, PageController {
         self.data = newData
         self.title = newData.title
         self.view.backgroundColor = .systemBackground
-        self.helper.removeSubviewsAndConstraints(self.view)
         let subView = newData.widget.inner().getView(session, cache)
-        self.view.addSubview(subView)
-        self.helper.setConstraints([
-            subView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-            subView.bottomAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.bottomAnchor),
-            subView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
-            subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
-        ])
+        self.helper.update(subView) {
+            // subView.setNeedsDisplay()
+            [
+                subView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+                subView.bottomAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.bottomAnchor),
+                subView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
+                subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+            ]
+        }
         cache.flip()
-        subView.setNeedsDisplay()
     }
 }
