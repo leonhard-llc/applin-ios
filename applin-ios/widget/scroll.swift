@@ -27,10 +27,10 @@ struct ScrollData: Equatable, Hashable, WidgetDataProto {
     }
 
     func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
-        let widget = cache.removeScroll() ?? ScrollWidget(self)
-        widget.data = self
+        let widget = cache.removeScroll() ?? ScrollWidget()
+        widget.update(session, cache, self)
         cache.putNextScroll(widget)
-        return widget.getView(session, cache)
+        return widget.view
     }
 
     func vars() -> [(String, Var)] {
@@ -39,26 +39,26 @@ struct ScrollData: Equatable, Hashable, WidgetDataProto {
 }
 
 class ScrollWidget {
-    var data: ScrollData
     let view: UIScrollView
-    let helper = SuperviewHelper()
+    private var data: ScrollData!
+    private let helper: SingleViewContainerHelper
 
-    init(_ data: ScrollData) {
-        self.data = data
+    init() {
         self.view = UIScrollView()
         self.view.translatesAutoresizingMaskIntoConstraints = false
+        self.helper = SingleViewContainerHelper(superView: self.view)
     }
 
-    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
-        self.helper.removeSubviewsAndConstraints(self.view)
+    func update(_ session: ApplinSession, _ cache: WidgetCache, _ data: ScrollData) {
+        self.data = data
         let subView = self.data.widget.inner().getView(session, cache)
-        self.view.addSubview(subView)
-        self.helper.setConstraints([
-            subView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-            subView.bottomAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.bottomAnchor),
-            subView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
-            subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
-        ])
-        return self.view
+        self.helper.update(subView) {
+            [
+                subView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+                subView.bottomAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.bottomAnchor),
+                subView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
+                subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+            ]
+        }
     }
 }
