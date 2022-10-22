@@ -13,6 +13,9 @@ To use:
      The default error modal has "Status" and "Contact Support" buttons which open those pages.
 5. Use standard processes to build and test your app
 
+## License
+This project will use the [Brandeis-2023 licnese](https://github.com/mleonhard/brandeis-license).
+
 ## Development Progress
 
 This project is not yet usable.  It is not production-ready.
