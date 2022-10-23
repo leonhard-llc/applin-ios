@@ -141,6 +141,10 @@ extension Array {
     }
 }
 
+// Lets us throw strings as exceptions.
+extension String: Error {
+}
+
 // class Weak<T: AnyObject> {
 //    weak var value: T?
 //
