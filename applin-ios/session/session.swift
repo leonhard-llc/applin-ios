@@ -31,8 +31,8 @@ enum Var {
 // TODO: Prevent racing between applyUpdate(), rpc(), and doActionsAsync().
 
 class ApplinSession: ObservableObject {
-    let cacheFileWriter: CacheFileWriter
-    let connection: ApplinConnection
+    let cacheFileWriter: CacheFileWriter?
+    let connection: ApplinConnection?
     weak var nav: NavigationController?
     let url: URL
     var error: String?
@@ -42,9 +42,9 @@ class ApplinSession: ObservableObject {
     var connectionMode: ConnectionMode = .disconnect
     var pauseUpdateNav: Bool = false
 
-    init(_ cacheFileWriter: CacheFileWriter,
-         _ connection: ApplinConnection,
-         _ nav: NavigationController,
+    init(_ cacheFileWriter: CacheFileWriter?,
+         _ connection: ApplinConnection?,
+         _ nav: NavigationController?,
          _ url: URL
     ) {
         print("ApplinSession \(url)")
@@ -56,11 +56,11 @@ class ApplinSession: ObservableObject {
     }
 
     public func pause() {
-        self.connection.pause()
+        self.connection?.pause()
     }
 
     public func unpause() {
-        self.connection.unpause(self, self.connectionMode)
+        self.connection?.unpause(self, self.connectionMode)
     }
 
     public func updateNav() {
@@ -86,7 +86,7 @@ class ApplinSession: ObservableObject {
             return (key, page)
         })
         self.connectionMode = entries.map({ (_, data) in data.inner().connectionMode }).min() ?? .disconnect
-        self.connection.setMode(self, self.connectionMode)
+        self.connection?.setMode(self, self.connectionMode)
         Task {
             await self.nav?.setStackPages(self, entries)
         }
@@ -135,7 +135,7 @@ class ApplinSession: ObservableObject {
         }
         print("setVar \(name)=\(newVar)")
         self.vars[name] = newVar
-        self.cacheFileWriter.scheduleWrite(self)
+        self.cacheFileWriter?.scheduleWrite(self)
     }
 
     func getBoolVar(_ name: String) -> Bool? {
@@ -192,7 +192,7 @@ class ApplinSession: ObservableObject {
             }
         }
         // TODO: Handle user_error.
-        self.cacheFileWriter.scheduleWrite(self)
+        self.cacheFileWriter?.scheduleWrite(self)
         if let vars = update.vars {
             for (name, jsonValue) in vars {
                 switch jsonValue {

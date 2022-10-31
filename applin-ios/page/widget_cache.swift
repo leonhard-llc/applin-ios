@@ -1,7 +1,7 @@
 import UIKit
 
 private class UpdaterNode {
-    static func update(_ session: ApplinSession, _ cache: WidgetCache, _ data: WidgetData) -> UIView {
+    static func update(_ session: ApplinSession, _ cache: WidgetCache, _ data: WidgetData) -> WidgetProto {
         let root = UpdaterNode(data)
         root.getSomeWidgets(session, cache, data) { data in
             if data.inner().priority() == .focusable {
@@ -18,7 +18,7 @@ private class UpdaterNode {
             true
         }
         root.updateNodeAndSubs(session, cache, data)
-        return root.widget!.getView()
+        return root.widget!
     }
 
     // TODONT: Don't store WidgetData, since that would take O(n^2) memory and O(n^3) time.
@@ -132,9 +132,9 @@ class WidgetCache: CustomStringConvertible {
         }
     }
 
-    public func updateAll(_ session: ApplinSession, _ data: WidgetData) -> UIView {
-        let view = UpdaterNode.update(session, self, data)
+    public func updateAll(_ session: ApplinSession, _ data: WidgetData) -> WidgetProto {
+        let rootWidget = UpdaterNode.update(session, self, data)
         self.removeStaleAndChangeFreshToStale()
-        return view
+        return rootWidget
     }
 }

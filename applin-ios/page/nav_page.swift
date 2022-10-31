@@ -207,7 +207,8 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             self.navigationItem.hidesBackButton = true
             self.navBar.items = [self.navigationItem]
         }
-        let subView = cache.updateAll(session, newData.widget)
+        let widget = cache.updateAll(session, newData.widget)
+        let subView = widget.getView()
         self.helper.update(subView) {
             // subView.setNeedsDisplay()
             [

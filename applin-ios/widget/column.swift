@@ -17,6 +17,12 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
         self.spacing = item.spacing ?? 0.0
     }
 
+    init(_ widgets: [WidgetData], _ alignment: ApplinHAlignment, spacing: Float32) {
+        self.widgets = widgets
+        self.alignment = alignment
+        self.spacing = spacing
+    }
+
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ColumnData.TYP)
         item.widgets = self.widgets.map({ widgets in widgets.inner().toJsonItem() })

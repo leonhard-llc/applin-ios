@@ -69,7 +69,8 @@ class PlainPageController: UIViewController, PageController {
         self.data = newData
         self.title = newData.title
         self.view.backgroundColor = .systemBackground
-        let subView = cache.updateAll(session, newData.widget)
+        let widget = cache.updateAll(session, newData.widget)
+        let subView = widget.getView()
         self.helper.update(subView) {
             // subView.setNeedsDisplay()
             [
