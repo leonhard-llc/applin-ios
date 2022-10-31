@@ -20,7 +20,7 @@ struct PlainPageData: Equatable, PageDataProto {
     init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.title = item.title
-        self.widget = try item.requireWidget(session, pageKey: pageKey)
+        self.widget = try item.requireWidget(pageKey: pageKey)
     }
 
     func toJsonItem() -> JsonItem {
@@ -69,7 +69,7 @@ class PlainPageController: UIViewController, PageController {
         self.data = newData
         self.title = newData.title
         self.view.backgroundColor = .systemBackground
-        let subView = newData.widget.inner().getView(session, cache)
+        let subView = cache.updateAll(session, newData.widget)
         self.helper.update(subView) {
             // subView.setNeedsDisplay()
             [
@@ -79,6 +79,5 @@ class PlainPageController: UIViewController, PageController {
                 subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
             ]
         }
-        cache.flip()
     }
 }

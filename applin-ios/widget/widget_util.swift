@@ -9,36 +9,16 @@ let pastelMint = UIColor(hue: 171.0 / 360.0, saturation: 0.36, brightness: 0.93,
 let pastelGreen = UIColor(hue: 144.0 / 360.0, saturation: 0.41, brightness: 0.96, alpha: 1.0)
 let pastelYellowGreen = UIColor(hue: 66.0 / 360.0, saturation: 0.66, brightness: 0.91, alpha: 1.0)
 
-class SuperviewHelper {
+class ConstraintSet {
     private var constraints: [NSLayoutConstraint] = []
 
-    init() {
-    }
-
-    init(constraints: [NSLayoutConstraint]) {
-        self.setConstraints(constraints)
-    }
-
-    func deactivateConstraints() {
+    func set(_ constraints: [NSLayoutConstraint]) {
         NSLayoutConstraint.deactivate(self.constraints)
-    }
-
-    func removeSubviews(_ view: UIView) {
-        for subView in view.subviews {
-            subView.removeFromSuperview()
-        }
-    }
-
-    func removeSubviewsAndConstraints(_ view: UIView) {
-        self.deactivateConstraints()
-        self.removeSubviews(view)
-    }
-
-    func setConstraints(_ constraints: [NSLayoutConstraint]) {
         self.constraints = constraints
         NSLayoutConstraint.activate(self.constraints)
     }
 }
+
 
 class SingleViewContainerHelper {
     private weak var superView: UIView?
@@ -50,12 +30,15 @@ class SingleViewContainerHelper {
     }
 
     func update(_ newSubView: UIView, _ constraintsFn: () -> [NSLayoutConstraint]) {
+        guard let superView = self.superView else {
+            return
+        }
         if newSubView == self.subView {
             return
         }
         NSLayoutConstraint.deactivate(self.constraints)
         self.subView?.removeFromSuperview()
-        superView!.addSubview(newSubView)
+        superView.addSubview(newSubView)
         self.subView = newSubView
         self.constraints = constraintsFn()
         NSLayoutConstraint.activate(self.constraints)

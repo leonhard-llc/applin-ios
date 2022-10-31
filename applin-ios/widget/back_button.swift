@@ -21,20 +21,41 @@ struct BackButtonData: Equatable, Hashable, WidgetDataProto {
         []
     }
 
-    func canTap() -> Bool {
-        true
+    func subs() -> [WidgetData] {
+        []
+    }
+
+    func vars() -> [(String, Var)] {
+        []
+    }
+
+    func priority() -> WidgetPriority {
+        .stateless
+    }
+
+    func widgetClass() -> AnyClass {
+        BackButtonWidget.self
+    }
+
+    func widget() -> WidgetProto {
+        BackButtonWidget()
     }
 
     func tap(_ session: ApplinSession, _ cache: WidgetCache) {
         print("back-button tap")
         session.doActions(pageKey: self.pageKey, self.actions)
     }
+}
 
-    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
-        return TextData("ERROR: back-button not in nav-page").getView(session, cache)
+class BackButtonWidget: WidgetProto {
+    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+        false
     }
 
-    func vars() -> [(String, Var)] {
-        []
+    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
+    }
+
+    func getView() -> UIView {
+        UIView()
     }
 }

@@ -33,9 +33,9 @@ struct NavPageData: Equatable, PageDataProto {
 
     init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
-        self.end = try item.optEnd(session, pageKey: pageKey)
+        self.end = try item.optEnd(pageKey: pageKey)
         self.pageKey = pageKey
-        switch try item.optStart(session, pageKey: pageKey) {
+        switch try item.optStart(pageKey: pageKey) {
         case let .backButton(inner):
             self.start = .backButton(inner)
         case .none:
@@ -46,7 +46,7 @@ struct NavPageData: Equatable, PageDataProto {
             throw ApplinError.deserializeError("bad \(item.typ).start: \(other)")
         }
         self.title = try item.requireTitle()
-        self.widget = try item.requireWidget(session, pageKey: pageKey)
+        self.widget = try item.requireWidget(pageKey: pageKey)
     }
 
     func toJsonItem() -> JsonItem {
@@ -207,7 +207,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             self.navigationItem.hidesBackButton = true
             self.navBar.items = [self.navigationItem]
         }
-        let subView = newData.widget.inner().getView(session, cache)
+        let subView = cache.updateAll(session, newData.widget)
         self.helper.update(subView) {
             // subView.setNeedsDisplay()
             [
@@ -220,6 +220,5 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
                 subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
             ]
         }
-        cache.flip()
     }
 }

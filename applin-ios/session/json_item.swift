@@ -384,9 +384,9 @@ class JsonItem: Codable {
         }
     }
 
-    func optEnd(_ session: ApplinSession, pageKey: String) throws -> WidgetData? {
+    func optEnd(pageKey: String) throws -> WidgetData? {
         if let item = self.end {
-            return try WidgetData(session, pageKey: pageKey, item)
+            return try WidgetData(pageKey: pageKey, item)
         }
         return nil
     }
@@ -507,9 +507,9 @@ class JsonItem: Codable {
         return nil
     }
 
-    func optStart(_ session: ApplinSession, pageKey: String) throws -> WidgetData? {
+    func optStart(pageKey: String) throws -> WidgetData? {
         if let item = self.start {
-            return try WidgetData(session, pageKey: pageKey, item)
+            return try WidgetData(pageKey: pageKey, item)
         }
         return nil
     }
@@ -538,20 +538,20 @@ class JsonItem: Codable {
         throw ApplinError.deserializeError("missing \(self.typ).url")
     }
 
-    func requireWidget(_ session: ApplinSession, pageKey: String) throws -> WidgetData {
+    func requireWidget(pageKey: String) throws -> WidgetData {
         if let value = self.widget {
-            return try WidgetData(session, pageKey: pageKey, value)
+            return try WidgetData(pageKey: pageKey, value)
         }
         throw ApplinError.deserializeError("missing \(self.typ).widget")
     }
 
-    func optWidgets(_ session: ApplinSession, pageKey: String) throws -> [WidgetData]? {
-        try self.widgets?.map({ value in try WidgetData(session, pageKey: pageKey, value) })
+    func optWidgets(pageKey: String) throws -> [WidgetData]? {
+        try self.widgets?.map({ value in try WidgetData(pageKey: pageKey, value) })
     }
 
-    func requireWidgets(_ session: ApplinSession, pageKey: String) throws -> [WidgetData] {
+    func requireWidgets(pageKey: String) throws -> [WidgetData] {
         if let values = self.widgets {
-            return try values.map({ value in try WidgetData(session, pageKey: pageKey, value) })
+            return try values.map({ value in try WidgetData(pageKey: pageKey, value) })
         }
         throw ApplinError.deserializeError("missing \(self.typ).widgets")
     }
