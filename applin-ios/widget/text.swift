@@ -20,7 +20,7 @@ struct TextData: Equatable, Hashable, WidgetDataProto {
     }
 
     func keys() -> [String] {
-        []
+        ["text:\(self.text)"]
     }
 
     func priority() -> WidgetPriority {

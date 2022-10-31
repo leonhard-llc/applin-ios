@@ -31,7 +31,7 @@ class WidgetCacheTests: XCTestCase {
         let label2b = column2.view.subviews[1].subviews.first as! UILabel
         XCTAssert(label1 !== label2a)
         XCTAssertEqual(label2a.text, "t2")
-        XCTAssert(label1 !== label2b)
+        XCTAssert(label1 === label2b)
         XCTAssertEqual(label2b.text, "t1")
     }
 
