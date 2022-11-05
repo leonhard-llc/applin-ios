@@ -28,7 +28,7 @@ enum WidgetData: Equatable, Hashable {
     //case button(ButtonData)
     indirect case column(ColumnData)
     case empty(EmptyData)
-    //case errorDetails(ErrorDetailsData)
+    case errorDetails(ErrorDetailsData)
     //case form(FormData)
     //case formButton(FormButtonData)
     //case formCheckbox(FormCheckboxData)
@@ -52,8 +52,8 @@ enum WidgetData: Equatable, Hashable {
             self = try .column(ColumnData(pageKey: pageKey, item))
         case EmptyData.TYP:
             self = .empty(EmptyData())
-                //case ErrorDetailsData.TYP:
-                //    self = .errorDetails(ErrorDetailsData())
+        case ErrorDetailsData.TYP:
+            self = .errorDetails(ErrorDetailsData())
                 //case FormData.TYP:
                 //    self = try .form(FormData(pageKey: pageKey, item))
                 //case FormCheckboxData.TYP:
@@ -91,8 +91,8 @@ enum WidgetData: Equatable, Hashable {
             return inner
         case let .empty(inner):
             return inner
-                //case let .errorDetails(inner):
-                //    return inner
+        case let .errorDetails(inner):
+            return inner
                 //case let .form(inner):
                 //    return inner
                 //case let .formButton(inner):
