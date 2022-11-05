@@ -19,7 +19,6 @@ class ConstraintSet {
     }
 }
 
-
 class SingleViewContainerHelper {
     private weak var superView: UIView?
     private weak var subView: UIView?

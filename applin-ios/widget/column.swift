@@ -65,7 +65,7 @@ class ColumnWidget: WidgetProto {
     init(_ data: ColumnData) {
         self.view = UIStackView()
         self.view.translatesAutoresizingMaskIntoConstraints = false
-        self.view.backgroundColor = pastelLavender
+        //self.view.backgroundColor = pastelLavender
         self.update(data, [])
     }
 

@@ -73,7 +73,6 @@ class TextWidget: WidgetProto {
         ])
     }
 
-
     func getView() -> UIView {
         self.container
     }

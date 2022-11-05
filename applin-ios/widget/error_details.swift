@@ -67,6 +67,6 @@ class ErrorDetailsWidget: WidgetProto {
         guard case .errorDetails = data else {
             throw "Expected .errorDetails got: \(data)"
         }
-        self.label.text = session.error ?? ""
+        self.label.text = session.error ?? "NO ERROR"
     }
 }

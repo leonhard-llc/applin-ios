@@ -25,7 +25,7 @@ protocol WidgetDataProto {
 
 enum WidgetData: Equatable, Hashable {
     case backButton(BackButtonData)
-    //case button(ButtonData)
+    case button(ButtonData)
     indirect case column(ColumnData)
     case empty(EmptyData)
     case errorDetails(ErrorDetailsData)
@@ -44,10 +44,10 @@ enum WidgetData: Equatable, Hashable {
 
     init(pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
-                //case BackButtonData.TYP:
-                //    self = try .backButton(BackButtonData(pageKey: pageKey, item))
-                //case ButtonData.TYP:
-                //    self = try .button(ButtonData(pageKey: pageKey, item))
+        case BackButtonData.TYP:
+            self = try .backButton(BackButtonData(pageKey: pageKey, item))
+        case ButtonData.TYP:
+            self = try .button(ButtonData(pageKey: pageKey, item))
         case ColumnData.TYP:
             self = try .column(ColumnData(pageKey: pageKey, item))
         case EmptyData.TYP:
@@ -85,8 +85,8 @@ enum WidgetData: Equatable, Hashable {
         switch self {
         case let .backButton(inner):
             return inner
-                //case let .button(inner):
-                //    return inner
+        case let .button(inner):
+            return inner
         case let .column(inner):
             return inner
         case let .empty(inner):
