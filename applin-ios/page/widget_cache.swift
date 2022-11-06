@@ -14,6 +14,9 @@ private class UpdaterNode {
         root.getSomeWidgets(session, cache, data) { data in
             data.inner().priority() == .focusable
         }
+        root.getSomeWidgets(session, cache, data) { data in
+            data.inner().priority() == .stateful
+        }
         root.getSomeWidgets(session, cache, data) { _ in
             true
         }
