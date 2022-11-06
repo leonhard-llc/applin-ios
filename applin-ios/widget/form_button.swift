@@ -30,21 +30,20 @@ struct FormButtonData: Equatable, Hashable, WidgetDataProto {
         ["form-button:\(self.actions)", "form-button:\(self.text)"]
     }
 
-    func canTap() -> Bool {
-        true
+    func priority() -> WidgetPriority {
+        .focusable
     }
 
-    func tap(_ session: ApplinSession, _ cache: WidgetCache) {
-        if let widget = cache.get(self.keys()) as? FormButtonWidget {
-            widget.tap()
-        }
+    func subs() -> [WidgetData] {
+        []
     }
 
-    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
-        let widget = cache.remove(self.keys()) as? FormButtonWidget ?? FormButtonWidget(self)
-        widget.data = self
-        cache.putNext(widget)
-        return widget.getView(session)
+    func widgetClass() -> AnyClass {
+        FormButtonWidget.self
+    }
+
+    func widget() -> WidgetProto {
+        FormButtonWidget(self)
     }
 
     func vars() -> [(String, Var)] {
@@ -55,6 +54,7 @@ struct FormButtonData: Equatable, Hashable, WidgetDataProto {
 class FormButtonWidget: WidgetProto {
     var data: FormButtonData
     var button: UIButton!
+    var container: UIView!
     weak var session: ApplinSession?
 
     init(_ data: FormButtonData) {
@@ -62,26 +62,53 @@ class FormButtonWidget: WidgetProto {
         self.data = data
         weak var weakSelf: FormButtonWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
-            print("form-button UIAction")
+            print("form-button \(String(describing: data.text)) UIAction")
             weakSelf?.tap()
         })
-        self.button = UIButton(type: .system, primaryAction: action)
+        self.button = UIButton(type: .custom, primaryAction: action)
         self.button.translatesAutoresizingMaskIntoConstraints = false
-    }
-
-    func keys() -> [String] {
-        self.data.keys()
+        self.button.backgroundColor = pastelGreen
+        self.button.setTitleColor(.systemBlue, for: .normal)
+        self.button.setTitleColor(.systemGray, for: .focused)
+        self.button.setTitleColor(.systemGray, for: .selected)
+        self.button.setTitleColor(.systemGray, for: .highlighted)
+        self.button.setTitleColor(.systemGray, for: .disabled)
+        self.container = UIView()
+        self.container.translatesAutoresizingMaskIntoConstraints = false
+        self.container.backgroundColor = pastelBlue
+        self.container.addSubview(self.button)
+        NSLayoutConstraint.activate([
+            self.container.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+            self.container.heightAnchor.constraint(greaterThanOrEqualToConstant: FORM_CELL_HEIGHT),
+            self.container.leftAnchor.constraint(lessThanOrEqualTo: self.button.leftAnchor),
+            self.button.rightAnchor.constraint(lessThanOrEqualTo: self.container.rightAnchor),
+            self.container.topAnchor.constraint(lessThanOrEqualTo: self.button.topAnchor),
+            self.button.bottomAnchor.constraint(lessThanOrEqualTo: self.button.bottomAnchor),
+            self.button.centerXAnchor.constraint(equalTo: self.container.centerXAnchor),
+            self.button.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
+        ])
     }
 
     func tap() {
-        print("form-button actions")
+        print("form-button \(String(describing: data.text)) tap")
         self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
     }
 
-    func getView(_ session: ApplinSession) -> UIView {
+    func getView() -> UIView {
+        self.container
+    }
+
+    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+        self.button.isFocused
+    }
+
+    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
+        guard case let .formButton(formButtonData) = data else {
+            throw "Expected .formButton got: \(data)"
+        }
+        self.data = formButtonData
         self.session = session
-        self.button.setTitle(self.data.text, for: .normal)
+        self.button.setTitle("  \(formButtonData.text)  ", for: .normal)
         self.button.isEnabled = !self.data.actions.isEmpty
-        return self.button
     }
 }

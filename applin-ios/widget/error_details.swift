@@ -47,6 +47,7 @@ class ErrorDetailsWidget: WidgetProto {
         self.container = UIView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
         self.container.addSubview(label)
+        //self.container.backgroundColor = pastelYellow
         NSLayoutConstraint.activate([
             self.label.leadingAnchor.constraint(equalTo: self.container.leadingAnchor, constant: 8.0),
             self.label.trailingAnchor.constraint(equalTo: self.container.trailingAnchor, constant: -8.0),

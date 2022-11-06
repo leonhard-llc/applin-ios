@@ -46,14 +46,13 @@ struct ButtonData: Equatable, Hashable, WidgetDataProto {
 }
 
 class ButtonWidget: WidgetProto {
-    var actions: [ActionData] = []
-    var pageKey: String = ""
+    var data: ButtonData
     var button: UIButton!
     weak var session: ApplinSession?
 
     init(_ data: ButtonData) {
         print("ButtonWidget.init(\(data))")
-        self.actions = data.actions
+        self.data = data
         weak var weakSelf: ButtonWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
             print("button UIAction")
@@ -73,7 +72,7 @@ class ButtonWidget: WidgetProto {
 
     func tap() {
         print("button actions")
-        self.session?.doActions(pageKey: self.pageKey, self.actions)
+        self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
     }
 
     func getView() -> UIView {
@@ -88,11 +87,10 @@ class ButtonWidget: WidgetProto {
         guard case let .button(buttonData) = data else {
             throw "Expected .button got: \(data)"
         }
+        self.data = buttonData
         self.session = session
         self.button.setTitle("  \(buttonData.text)  ", for: .normal)
-        self.actions = buttonData.actions
-        self.button.isEnabled = !self.actions.isEmpty
-        self.button.layer.borderColor = self.actions.isEmpty ? UIColor.systemGray.cgColor : UIColor.tintColor.cgColor
+        self.button.isEnabled = !self.data.actions.isEmpty
+        self.button.layer.borderColor = self.data.actions.isEmpty ? UIColor.systemGray.cgColor : UIColor.tintColor.cgColor
     }
 }
-

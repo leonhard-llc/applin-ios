@@ -1,6 +1,8 @@
 import Foundation
 import UIKit
 
+let FORM_CELL_HEIGHT = 44.0
+
 enum WidgetPriority {
     case focusable
     case stateful
@@ -30,7 +32,7 @@ enum WidgetData: Equatable, Hashable {
     case empty(EmptyData)
     case errorDetails(ErrorDetailsData)
     //case form(FormData)
-    //case formButton(FormButtonData)
+    case formButton(FormButtonData)
     //case formCheckbox(FormCheckboxData)
     //case formDetail(FormDetailData)
     //case formError(FormErrorData)
@@ -58,8 +60,8 @@ enum WidgetData: Equatable, Hashable {
                 //    self = try .form(FormData(pageKey: pageKey, item))
                 //case FormCheckboxData.TYP:
                 //    self = try .formCheckbox(FormCheckboxData(pageKey: pageKey, item))
-                //case FormButtonData.TYP:
-                //    self = try .formButton(FormButtonData(pageKey: pageKey, item))
+        case FormButtonData.TYP:
+            self = try .formButton(FormButtonData(pageKey: pageKey, item))
                 //case FormDetailData.TYP:
                 //    self = try .formDetail(FormDetailData(pageKey: pageKey, item))
                 //case FormErrorData.TYP:
@@ -95,8 +97,8 @@ enum WidgetData: Equatable, Hashable {
             return inner
                 //case let .form(inner):
                 //    return inner
-                //case let .formButton(inner):
-                //    return inner
+        case let .formButton(inner):
+            return inner
                 //case let .formCheckbox(inner):
                 //    return inner
                 //case let .formDetail(inner):
