@@ -1,24 +1,24 @@
 import Foundation
 import UIKit
 
-struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
-    static let TYP = "form-checkbox"
+struct CheckboxData: Equatable, Hashable, WidgetDataProto {
+    static let TYP = "checkbox"
     let pageKey: String
     let initialBool: Bool?
     let rpc: String?
-    let text: String
+    let text: String?
     let varName: String
 
     init(pageKey: String, _ item: JsonItem) throws {
         self.pageKey = pageKey
         self.initialBool = item.initialBool
         self.rpc = item.rpc
-        self.text = try item.requireText()
+        self.text = item.text
         self.varName = try item.requireVar()
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(FormCheckboxData.TYP)
+        let item = JsonItem(CheckboxData.TYP)
         item.initialBool = self.initialBool
         item.rpc = self.rpc
         item.text = self.text
@@ -27,7 +27,7 @@ struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
     }
 
     func keys() -> [String] {
-        ["form-checkbox:\(self.varName)"]
+        ["checkbox:\(self.varName)"]
     }
 
     func priority() -> WidgetPriority {
@@ -39,11 +39,11 @@ struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
     }
 
     func widgetClass() -> AnyClass {
-        FormCheckboxWidget.self
+        CheckboxWidget.self
     }
 
     func widget() -> WidgetProto {
-        FormCheckboxWidget(self)
+        CheckboxWidget(self)
     }
 
     func vars() -> [(String, Var)] {
@@ -51,24 +51,24 @@ struct FormCheckboxData: Equatable, Hashable, WidgetDataProto {
     }
 }
 
-class FormCheckboxWidget: WidgetProto {
+class CheckboxWidget: WidgetProto {
     let checked: UIImage
     let unchecked: UIImage
-    var data: FormCheckboxData
+    var data: CheckboxData
     var button: UIButton!
     weak var session: ApplinSession?
 
-    init(_ data: FormCheckboxData) {
-        print("FormCheckboxWidget.init(\(data))")
+    init(_ data: CheckboxData) {
+        print("CheckboxWidget.init(\(data))")
         self.checked = UIImage(systemName: "checkmark.square.fill")!
         self.unchecked = UIImage(systemName: "square")!
         self.data = data
         // For unknown reasons, when the handler takes `[weak self]`, the first
         // checkbox on the page gets self set to 'nil'.  The strange work
         // around is to bind `weak self` before creating the handler.
-        weak var weakSelf: FormCheckboxWidget? = self
+        weak var weakSelf: CheckboxWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
-            print("FormCheckboxWidget(\(weakSelf?.data.varName ?? "nil")) UIAction")
+            print("CheckboxWidget(\(weakSelf?.data.varName ?? "nil")) UIAction")
             weakSelf?.tap()
         })
         var config = UIButton.Configuration.borderless()
@@ -105,11 +105,11 @@ class FormCheckboxWidget: WidgetProto {
 
     func tap() {
         guard let session = self.session else {
-            print("WARN FormCheckboxWidget(\(self.data.varName)).tap session is nil")
+            print("WARN CheckboxWidget(\(self.data.varName)).tap session is nil")
             return
         }
         Task { @MainActor in
-            print("FormCheckboxWidget(\(self.data.varName)).tap")
+            print("CheckboxWidget(\(self.data.varName)).tap")
             let oldBoolVar = session.getBoolVar(self.data.varName)
             self.setChecked(!self.getChecked())
             if let rpc = self.data.rpc {
@@ -122,10 +122,10 @@ class FormCheckboxWidget: WidgetProto {
     }
 
     func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case let .formCheckbox(formCheckboxData) = data else {
-            throw "Expected .formCheckbox got: \(data)"
+        guard case let .checkbox(checkboxData) = data else {
+            throw "Expected .checkbox got: \(data)"
         }
-        self.data = formCheckboxData
+        self.data = checkboxData
         self.session = session
         self.button.setTitle(self.data.text, for: .normal)
         self.updateImage()
