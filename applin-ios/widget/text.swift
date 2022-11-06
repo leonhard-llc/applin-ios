@@ -49,6 +49,7 @@ class TextWidget: WidgetProto {
     let container: UIView
 
     init() {
+        print("TextWidget.init()")
         self.label = UILabel()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.font = UIFont.preferredFont(forTextStyle: .body)

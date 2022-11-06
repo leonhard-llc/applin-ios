@@ -35,16 +35,16 @@ enum WidgetData: Equatable, Hashable {
     case errorDetails(ErrorDetailsData)
     //case form(FormData)
     case formButton(FormButtonData)
-    //case formDetail(FormDetailData)
     //case formSection(FormSectionData)
     //case formTextfield(FormTextfieldData)
+    case navButton(NavButtonData)
     case textfield(TextfieldData)
     indirect case scroll(ScrollData)
     case text(TextData)
 
     // TODO(mleonhard) Try to remove pageKey param.
 
-    init(pageKey: String, _ item: JsonItem) throws {
+    init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
         case BackButtonData.TYP:
             self = try .backButton(BackButtonData(pageKey: pageKey, item))
@@ -53,7 +53,7 @@ enum WidgetData: Equatable, Hashable {
         case CheckboxData.TYP:
             self = try .checkbox(CheckboxData(pageKey: pageKey, item))
         case ColumnData.TYP:
-            self = try .column(ColumnData(pageKey: pageKey, item))
+            self = try .column(ColumnData(session, pageKey: pageKey, item))
         case EmptyData.TYP:
             self = .empty(EmptyData())
         case ErrorTextData.TYP:
@@ -64,16 +64,16 @@ enum WidgetData: Equatable, Hashable {
                 //    self = try .form(FormData(pageKey: pageKey, item))
         case FormButtonData.TYP:
             self = try .formButton(FormButtonData(pageKey: pageKey, item))
-                //case FormDetailData.TYP:
-                //    self = try .formDetail(FormDetailData(pageKey: pageKey, item))
                 //case FormSectionData.TYP:
                 //    self = try .formSection(FormSectionData(pageKey: pageKey, item))
                 //case FormTextfieldData.TYP:
                 //    self = try .formTextfield(FormTextfieldData(pageKey: pageKey, item))
+        case NavButtonData.TYP:
+            self = try .navButton(NavButtonData(session, pageKey: pageKey, item))
         case TextfieldData.TYP:
             self = try .textfield(TextfieldData(pageKey: pageKey, item))
         case ScrollData.TYP:
-            self = try .scroll(ScrollData(pageKey: pageKey, item))
+            self = try .scroll(ScrollData(session, pageKey: pageKey, item))
         case TextData.TYP:
             self = try .text(TextData(item))
         default:
@@ -103,12 +103,12 @@ enum WidgetData: Equatable, Hashable {
                 //    return inner
         case let .formButton(inner):
             return inner
-                //case let .formDetail(inner):
-                //    return inner
                 //case let .formSection(inner):
                 //    return inner
                 //case let .formTextField(inner):
                 //    return inner
+        case let .navButton(inner):
+            return inner
         case let .textfield(inner):
             return inner
         case let .scroll(inner):

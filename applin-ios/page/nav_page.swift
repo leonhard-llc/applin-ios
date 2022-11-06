@@ -33,9 +33,9 @@ struct NavPageData: Equatable, PageDataProto {
 
     init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
-        self.end = try item.optEnd(pageKey: pageKey)
+        self.end = try item.optEnd(session, pageKey: pageKey)
         self.pageKey = pageKey
-        switch try item.optStart(pageKey: pageKey) {
+        switch try item.optStart(session, pageKey: pageKey) {
         case let .backButton(inner):
             self.start = .backButton(inner)
         case .none:
@@ -46,7 +46,7 @@ struct NavPageData: Equatable, PageDataProto {
             throw ApplinError.deserializeError("bad \(item.typ).start: \(other)")
         }
         self.title = try item.requireTitle()
-        self.widget = try item.requireWidget(pageKey: pageKey)
+        self.widget = try item.requireWidget(session, pageKey: pageKey)
     }
 
     func toJsonItem() -> JsonItem {

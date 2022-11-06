@@ -11,8 +11,8 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
     let alignment: ApplinHAlignment
     let spacing: Float32
 
-    init(pageKey: String, _ item: JsonItem) throws {
-        self.widgets = try item.optWidgets(pageKey: pageKey) ?? []
+    init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
+        self.widgets = try item.optWidgets(session, pageKey: pageKey) ?? []
         self.alignment = item.optAlign() ?? .start
         self.spacing = item.spacing ?? 0.0
     }
