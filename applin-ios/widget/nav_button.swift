@@ -74,7 +74,6 @@ class NavButtonWidget: WidgetProto {
         self.data = data
         self.container = TappableView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
-        self.container.backgroundColorOnTouch = .systemGray6
         NSLayoutConstraint.activate([
             self.container.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
         ])

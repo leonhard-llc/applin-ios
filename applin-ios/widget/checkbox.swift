@@ -52,6 +52,7 @@ struct CheckboxData: Equatable, Hashable, WidgetDataProto {
 }
 
 class CheckboxWidget: WidgetProto {
+    var container: TappableView
     let checked: UIImage
     let unchecked: UIImage
     var data: CheckboxData
@@ -60,6 +61,9 @@ class CheckboxWidget: WidgetProto {
 
     init(_ data: CheckboxData) {
         print("CheckboxWidget.init(\(data))")
+        self.container = TappableView()
+        self.container.translatesAutoresizingMaskIntoConstraints = false
+
         self.checked = UIImage(systemName: "checkmark.square.fill")!
         self.unchecked = UIImage(systemName: "square")!
         self.data = data
@@ -76,10 +80,23 @@ class CheckboxWidget: WidgetProto {
         self.button = UIButton(configuration: config, primaryAction: action)
         self.button.translatesAutoresizingMaskIntoConstraints = false
         self.button.setImage(self.checked, for: .highlighted)
+        self.container.addSubview(self.button)
+        self.container.onTap = { [weak self] in
+            self?.tap()
+        }
+
+        NSLayoutConstraint.activate([
+            self.container.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+            self.button.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
+            self.button.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor),
+            self.button.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor),
+            self.button.leftAnchor.constraint(equalTo: self.container.leftAnchor),
+            self.button.rightAnchor.constraint(lessThanOrEqualTo: self.container.rightAnchor),
+        ])
     }
 
     func getView() -> UIView {
-        self.button
+        self.container
     }
 
     func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {

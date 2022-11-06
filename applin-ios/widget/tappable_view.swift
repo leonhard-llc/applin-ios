@@ -3,14 +3,13 @@ import UIKit
 
 /// A view that changes its background to `backgroundColorOnTouch` when touched.
 class TappableView: UIView {
-    var backgroundColorOnTouch: UIColor?
     var isPressed = false
     var onTap: (() -> Void)?
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         print("TouchShowingView.touchesBegan")
         super.touchesBegan(touches, with: event)
-        self.backgroundColor = self.backgroundColorOnTouch
+        self.backgroundColor = .systemGray6
         self.isPressed = true
     }
 

@@ -35,6 +35,11 @@ class WidgetCacheTests: XCTestCase {
         XCTAssertEqual(label2b.text, "t1")
     }
 
+    // TODO(mleonhard) Test stateful widget updates.
+
+    // TODO(mleonhard) Test focusable widget updates.
+    // TODO(mleonhard) Test matching order: focused, focusable, stateful, stateless.
+
     func testPerformanceExample() throws {
         // This is an example of a performance test case.
         self.measure {
