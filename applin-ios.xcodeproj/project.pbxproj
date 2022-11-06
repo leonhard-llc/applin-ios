@@ -22,7 +22,7 @@
 		36EBC8C464017332F7DDC833 /* modal_button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCC3CE22617EF9A9D5C19 /* modal_button.swift */; };
 		36EBC8FE4EC18C24AC57EACB /* form.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCE389B3227F90C1CA9B1 /* form.swift */; };
 		36EBC93F79D286970D78A26F /* test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCE3951A4D99DCE27F5C1 /* test.swift */; };
-		36EBC95C7C6D0E2BEDB78235 /* form_error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC49B2A28E23E7556A4ED /* form_error.swift */; };
+		36EBC95C7C6D0E2BEDB78235 /* error_text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC49B2A28E23E7556A4ED /* error_text.swift */; };
 		36EBC9A153BF2E49276AF498 /* cache_file_writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC56645CC4C7C315F910E /* cache_file_writer.swift */; };
 		36EBCA840F70B82AF3B17697 /* widget_cache_test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC8629F4380E1C84057A9 /* widget_cache_test.swift */; };
 		36EBCAC3EA38CC8A1194222C /* form_textfield.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC0016E79660C86334A20 /* form_textfield.swift */; };
@@ -83,7 +83,7 @@
 		36EBC0399B6CB8510C2A1A7C /* page.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = page.swift; sourceTree = "<group>"; };
 		36EBC1102FD4EB74F74929C5 /* error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = error.swift; path = session/error.swift; sourceTree = "<group>"; };
 		36EBC39B5482FA2A03BADB89 /* json_item.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = json_item.swift; path = session/json_item.swift; sourceTree = "<group>"; };
-		36EBC49B2A28E23E7556A4ED /* form_error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = form_error.swift; sourceTree = "<group>"; };
+		36EBC49B2A28E23E7556A4ED /* error_text.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = error_text.swift; sourceTree = "<group>"; };
 		36EBC4E77A1484333D5882F0 /* loading.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = loading.swift; path = view/loading.swift; sourceTree = "<group>"; };
 		36EBC5430B831FFCC6098B08 /* .swiftlint.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		36EBC56645CC4C7C315F910E /* cache_file_writer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = cache_file_writer.swift; path = session/cache_file_writer.swift; sourceTree = "<group>"; };
@@ -190,7 +190,7 @@
 				36EBCE7CF445372318DC66BD /* form_section.swift */,
 				36EBC6C3A01FADBD0060FDB8 /* checkbox.swift */,
 				36EBC960F01F9A285F600570 /* form_button.swift */,
-				36EBC49B2A28E23E7556A4ED /* form_error.swift */,
+				36EBC49B2A28E23E7556A4ED /* error_text.swift */,
 				36EBC0016E79660C86334A20 /* form_textfield.swift */,
 				36EBC028E3CC54EA8CE9C422 /* textfield.swift */,
 			);
@@ -454,7 +454,7 @@
 				36EBC1693A9EC7BB3155AE5B /* form_button.swift in Sources */,
 				36EBC79A9E124AC5E23319AC /* checkbox.swift in Sources */,
 				36EBCBB707583C8BCF42C938 /* working.swift in Sources */,
-				36EBC95C7C6D0E2BEDB78235 /* form_error.swift in Sources */,
+				36EBC95C7C6D0E2BEDB78235 /* error_text.swift in Sources */,
 				36EBC2553991FA4D2629998E /* json.swift in Sources */,
 				36EBCAC3EA38CC8A1194222C /* form_textfield.swift in Sources */,
 				36EBC894DAA57B20493F7BF5 /* textfield.swift in Sources */,

@@ -31,11 +31,11 @@ enum WidgetData: Equatable, Hashable {
     case checkbox(CheckboxData)
     indirect case column(ColumnData)
     case empty(EmptyData)
+    case errorText(ErrorTextData)
     case errorDetails(ErrorDetailsData)
     //case form(FormData)
     case formButton(FormButtonData)
     //case formDetail(FormDetailData)
-    //case formError(FormErrorData)
     //case formSection(FormSectionData)
     //case formTextfield(FormTextfieldData)
     case textfield(TextfieldData)
@@ -56,6 +56,8 @@ enum WidgetData: Equatable, Hashable {
             self = try .column(ColumnData(pageKey: pageKey, item))
         case EmptyData.TYP:
             self = .empty(EmptyData())
+        case ErrorTextData.TYP:
+            self = try .errorText(ErrorTextData(item))
         case ErrorDetailsData.TYP:
             self = .errorDetails(ErrorDetailsData())
                 //case FormData.TYP:
@@ -64,8 +66,6 @@ enum WidgetData: Equatable, Hashable {
             self = try .formButton(FormButtonData(pageKey: pageKey, item))
                 //case FormDetailData.TYP:
                 //    self = try .formDetail(FormDetailData(pageKey: pageKey, item))
-                //case FormErrorData.TYP:
-                //    self = try .formError(FormErrorData(item))
                 //case FormSectionData.TYP:
                 //    self = try .formSection(FormSectionData(pageKey: pageKey, item))
                 //case FormTextfieldData.TYP:
@@ -95,6 +95,8 @@ enum WidgetData: Equatable, Hashable {
             return inner
         case let .empty(inner):
             return inner
+        case let .errorText(inner):
+            return inner
         case let .errorDetails(inner):
             return inner
                 //case let .form(inner):
@@ -102,8 +104,6 @@ enum WidgetData: Equatable, Hashable {
         case let .formButton(inner):
             return inner
                 //case let .formDetail(inner):
-                //    return inner
-                //case let .formError(inner):
                 //    return inner
                 //case let .formSection(inner):
                 //    return inner
