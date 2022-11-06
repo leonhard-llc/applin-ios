@@ -5,18 +5,20 @@ import UIKit
 class TappableView: UIView {
     var isPressed = false
     var onTap: (() -> Void)?
+    private var originalBackgroundColor: UIColor?
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        print("TouchShowingView.touchesBegan")
+        //print("TouchShowingView.touchesBegan")
         super.touchesBegan(touches, with: event)
+        self.originalBackgroundColor = self.backgroundColor
         self.backgroundColor = .systemGray6
         self.isPressed = true
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        print("TouchShowingView.touchesEnded")
+        //print("TouchShowingView.touchesEnded")
         super.touchesEnded(touches, with: event)
-        self.backgroundColor = nil
+        self.backgroundColor = self.originalBackgroundColor
         self.isPressed = false
         if let onTap = self.onTap {
             onTap()
@@ -26,7 +28,7 @@ class TappableView: UIView {
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         print("TouchShowingView.touchesCancelled")
         super.touchesEnded(touches, with: event)
-        self.backgroundColor = nil
+        self.backgroundColor = self.originalBackgroundColor
         self.isPressed = false
     }
 }
