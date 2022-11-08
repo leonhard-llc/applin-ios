@@ -1,11 +1,11 @@
 import Foundation
 import UIKit
 
-struct ErrorDetailsData: Equatable, Hashable, WidgetDataProto {
-    static let TYP = "error-details"
+struct ApplinLastErrorTextData: Equatable, Hashable, WidgetDataProto {
+    static let TYP = "applin-last-error-text"
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(ErrorDetailsData.TYP)
+        let item = JsonItem(ApplinLastErrorTextData.TYP)
         return item
     }
 
@@ -22,11 +22,11 @@ struct ErrorDetailsData: Equatable, Hashable, WidgetDataProto {
     }
 
     func widgetClass() -> AnyClass {
-        ErrorDetailsWidget.self
+        ApplinLastErrorTextWidget.self
     }
 
     func widget() -> WidgetProto {
-        ErrorDetailsWidget()
+        ApplinLastErrorTextWidget()
     }
 
     func vars() -> [(String, Var)] {
@@ -34,11 +34,12 @@ struct ErrorDetailsData: Equatable, Hashable, WidgetDataProto {
     }
 }
 
-class ErrorDetailsWidget: WidgetProto {
+class ApplinLastErrorTextWidget: WidgetProto {
     let label: UILabel
     let container: UIView
 
     init() {
+        print("ApplinLastErrorTextWidget.init")
         self.label = UILabel()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.font = UIFont.preferredFont(forTextStyle: .body)
@@ -65,9 +66,9 @@ class ErrorDetailsWidget: WidgetProto {
     }
 
     func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case .errorDetails = data else {
-            throw "Expected .errorDetails got: \(data)"
+        guard case .applinLastErrorText = data else {
+            throw "Expected .applinLastErrorText got: \(data)"
         }
-        self.label.text = session.error ?? "NO ERROR"
+        self.label.text = session.error ?? "Error details not found."
     }
 }

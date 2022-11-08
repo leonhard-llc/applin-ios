@@ -26,13 +26,13 @@ protocol WidgetDataProto {
 }
 
 enum WidgetData: Equatable, Hashable {
+    case applinLastErrorText(ApplinLastErrorTextData)
     case backButton(BackButtonData)
     case button(ButtonData)
     case checkbox(CheckboxData)
     indirect case column(ColumnData)
     case empty(EmptyData)
     case errorText(ErrorTextData)
-    case errorDetails(ErrorDetailsData)
     //case form(FormData)
     case formButton(FormButtonData)
     //case formSection(FormSectionData)
@@ -46,6 +46,8 @@ enum WidgetData: Equatable, Hashable {
 
     init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
+        case ApplinLastErrorTextData.TYP:
+            self = .applinLastErrorText(ApplinLastErrorTextData())
         case BackButtonData.TYP:
             self = try .backButton(BackButtonData(pageKey: pageKey, item))
         case ButtonData.TYP:
@@ -58,8 +60,6 @@ enum WidgetData: Equatable, Hashable {
             self = .empty(EmptyData())
         case ErrorTextData.TYP:
             self = try .errorText(ErrorTextData(item))
-        case ErrorDetailsData.TYP:
-            self = .errorDetails(ErrorDetailsData())
                 //case FormData.TYP:
                 //    self = try .form(FormData(pageKey: pageKey, item))
         case FormButtonData.TYP:
@@ -85,6 +85,8 @@ enum WidgetData: Equatable, Hashable {
 
     func inner() -> WidgetDataProto {
         switch self {
+        case let .applinLastErrorText(inner):
+            return inner
         case let .backButton(inner):
             return inner
         case let .button(inner):
@@ -96,8 +98,6 @@ enum WidgetData: Equatable, Hashable {
         case let .empty(inner):
             return inner
         case let .errorText(inner):
-            return inner
-        case let .errorDetails(inner):
             return inner
                 //case let .form(inner):
                 //    return inner

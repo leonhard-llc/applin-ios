@@ -19,7 +19,7 @@
     "widget": {
       "typ": "scroll",
       "widget": {
-        "typ": "error-details"
+        "typ": "applin-last-error-text"
       }
     }
   },
