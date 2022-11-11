@@ -45,20 +45,21 @@ struct TextData: Equatable, Hashable, WidgetDataProto {
 }
 
 class TextWidget: WidgetProto {
-    let label: UILabel
     let container: UIView
+    let label: UILabel
 
     init() {
         print("TextWidget.init()")
+        self.container = UIView()
+        self.container.translatesAutoresizingMaskIntoConstraints = false
+
         self.label = UILabel()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.font = UIFont.preferredFont(forTextStyle: .body)
         self.label.numberOfLines = 0
         self.label.text = ""
         self.label.textAlignment = .left
-        label.backgroundColor = pastelYellow
-        self.container = UIView()
-        self.container.translatesAutoresizingMaskIntoConstraints = false
+        //self.label.backgroundColor = pastelYellow
         self.container.addSubview(label)
         // None of these work.  The docs lie:
         // https://developer.apple.com/documentation/uikit/uiview/positioning_content_within_layout_margins

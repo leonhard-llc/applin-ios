@@ -21,6 +21,9 @@ func readCacheFile(dataDirPath: String, _ session: ApplinSession) async {
         print("error reading cache: \(error)")
         return
     }
+    //print("cache file contents: ")
+    //FileHandle.standardOutput.write(bytes)
+    //print("")
     let contents: CacheFileContents
     do {
         contents = try decodeJson(bytes)

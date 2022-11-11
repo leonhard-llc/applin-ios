@@ -1,10 +1,6 @@
 import Foundation
 import UIKit
 
-// TODONT(mleonhard) Don't use UITableView since it is incapable of updating widgets
-
-// without making them lose focus and dismiss the keyboard.
-
 struct ColumnData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "column"
     let widgets: [WidgetData]
@@ -51,30 +47,25 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
     }
 
     func widget() -> WidgetProto {
-        ColumnWidget(self)
+        ColumnWidget()
     }
 }
 
 class ColumnWidget: WidgetProto {
-    // TODONT: Don't use UIStackView because its API is very difficult to use for dynamic updates.
-    let stackView: UIView
-    var alignment: ApplinHAlignment = .start
-    var spacing: Float32 = 0
-    var constraints = ConstraintSet()
+    let columnView: ColumnView
 
-    init(_ data: ColumnData) {
-        self.stackView = UIStackView()
-        self.stackView.translatesAutoresizingMaskIntoConstraints = false
-        //self.stackView.backgroundColor = pastelLavender
+    init() {
+        self.columnView = ColumnView()
+        self.columnView.translatesAutoresizingMaskIntoConstraints = false
+        //self.columnView.backgroundColor = pastelLavender
         NSLayoutConstraint.activate([
-            self.stackView.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
-            self.stackView.heightAnchor.constraint(equalToConstant: 0.0).withPriority(.defaultLow),
+            self.columnView.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+            self.columnView.heightAnchor.constraint(equalToConstant: 0.0).withPriority(.defaultLow),
         ])
-        self.update(data, [])
     }
 
     func getView() -> UIView {
-        self.stackView
+        self.columnView
     }
 
     func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
@@ -85,52 +76,13 @@ class ColumnWidget: WidgetProto {
         guard case let .column(columnData) = data else {
             throw "Expected .column got: \(data)"
         }
-        self.update(columnData, subs)
-    }
-
-    func update(_ data: ColumnData, _ subs: [WidgetProto]) {
-        self.alignment = data.alignment
-        self.spacing = data.spacing
-        let newViews: [UIView] = subs.map { widget in
-            widget.getView()
-        }
-        let newViewsSet = Set(newViews)
-        let viewsToRemove: [UIView] = self.stackView.subviews.filter({ v in newViewsSet.contains(v) })
-        for viewToRemove in viewsToRemove {
-            viewToRemove.removeFromSuperview()
-        }
-        for newView in newViews {
-            self.stackView.addSubview(newView)
-        }
-        var newConstraints: [NSLayoutConstraint] = []
-        // Top
-        if let first = newViews.first {
-            newConstraints.append(first.topAnchor.constraint(equalTo: self.stackView.topAnchor))
-        }
-        // Between
-        for (n, a) in newViews.dropLast(1).enumerated() {
-            let b = newViews[n + 1]
-            newConstraints.append(b.topAnchor.constraint(equalTo: a.bottomAnchor, constant: CGFloat(self.spacing)))
-        }
-        // Bottom
-        if let last = newViews.last {
-            newConstraints.append(last.bottomAnchor.constraint(equalTo: self.stackView.bottomAnchor))
-        }
-        // Left, Right, and Alignment
-        for view in newViews {
-            switch self.alignment {
-            case .start:
-                newConstraints.append(view.leftAnchor.constraint(equalTo: self.stackView.leftAnchor))
-                newConstraints.append(view.rightAnchor.constraint(lessThanOrEqualTo: self.stackView.rightAnchor))
-            case .center:
-                newConstraints.append(view.leftAnchor.constraint(greaterThanOrEqualTo: self.stackView.leftAnchor))
-                newConstraints.append(view.centerXAnchor.constraint(equalTo: self.stackView.centerXAnchor))
-                newConstraints.append(view.rightAnchor.constraint(lessThanOrEqualTo: self.stackView.rightAnchor))
-            case .end:
-                newConstraints.append(view.leftAnchor.constraint(greaterThanOrEqualTo: self.stackView.leftAnchor))
-                newConstraints.append(view.rightAnchor.constraint(equalTo: self.stackView.rightAnchor))
-            }
-        }
-        self.constraints.set(newConstraints)
+        self.columnView.update(
+                columnData.alignment,
+                separator: nil,
+                spacing: columnData.spacing,
+                subviews: subs.map { widget in
+                    widget.getView()
+                }
+        )
     }
 }
