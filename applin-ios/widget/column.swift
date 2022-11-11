@@ -57,20 +57,24 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
 
 class ColumnWidget: WidgetProto {
     // TODONT: Don't use UIStackView because its API is very difficult to use for dynamic updates.
-    let view: UIView
+    let stackView: UIView
     var alignment: ApplinHAlignment = .start
     var spacing: Float32 = 0
     var constraints = ConstraintSet()
 
     init(_ data: ColumnData) {
-        self.view = UIStackView()
-        self.view.translatesAutoresizingMaskIntoConstraints = false
-        //self.view.backgroundColor = pastelLavender
+        self.stackView = UIStackView()
+        self.stackView.translatesAutoresizingMaskIntoConstraints = false
+        //self.stackView.backgroundColor = pastelLavender
+        NSLayoutConstraint.activate([
+            self.stackView.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+            self.stackView.heightAnchor.constraint(equalToConstant: 0.0).withPriority(.defaultLow),
+        ])
         self.update(data, [])
     }
 
     func getView() -> UIView {
-        self.view
+        self.stackView
     }
 
     func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
@@ -91,18 +95,17 @@ class ColumnWidget: WidgetProto {
             widget.getView()
         }
         let newViewsSet = Set(newViews)
-        let viewsToRemove: [UIView] = self.view.subviews.filter({ v in newViewsSet.contains(v) })
+        let viewsToRemove: [UIView] = self.stackView.subviews.filter({ v in newViewsSet.contains(v) })
         for viewToRemove in viewsToRemove {
             viewToRemove.removeFromSuperview()
         }
         for newView in newViews {
-            self.view.addSubview(newView)
+            self.stackView.addSubview(newView)
         }
         var newConstraints: [NSLayoutConstraint] = []
-        newConstraints.reserveCapacity(3 * newViews.count + 1)
         // Top
         if let first = newViews.first {
-            newConstraints.append(first.topAnchor.constraint(equalTo: self.view.topAnchor))
+            newConstraints.append(first.topAnchor.constraint(equalTo: self.stackView.topAnchor))
         }
         // Between
         for (n, a) in newViews.dropLast(1).enumerated() {
@@ -111,21 +114,21 @@ class ColumnWidget: WidgetProto {
         }
         // Bottom
         if let last = newViews.last {
-            newConstraints.append(last.bottomAnchor.constraint(equalTo: self.view.bottomAnchor))
+            newConstraints.append(last.bottomAnchor.constraint(equalTo: self.stackView.bottomAnchor))
         }
         // Left, Right, and Alignment
         for view in newViews {
             switch self.alignment {
             case .start:
-                newConstraints.append(view.leftAnchor.constraint(equalTo: self.view.leftAnchor))
-                newConstraints.append(view.rightAnchor.constraint(lessThanOrEqualTo: self.view.rightAnchor))
+                newConstraints.append(view.leftAnchor.constraint(equalTo: self.stackView.leftAnchor))
+                newConstraints.append(view.rightAnchor.constraint(lessThanOrEqualTo: self.stackView.rightAnchor))
             case .center:
-                newConstraints.append(view.leftAnchor.constraint(greaterThanOrEqualTo: self.view.leftAnchor))
-                newConstraints.append(view.centerXAnchor.constraint(equalTo: self.view.centerXAnchor))
-                newConstraints.append(view.rightAnchor.constraint(lessThanOrEqualTo: self.view.rightAnchor))
+                newConstraints.append(view.leftAnchor.constraint(greaterThanOrEqualTo: self.stackView.leftAnchor))
+                newConstraints.append(view.centerXAnchor.constraint(equalTo: self.stackView.centerXAnchor))
+                newConstraints.append(view.rightAnchor.constraint(lessThanOrEqualTo: self.stackView.rightAnchor))
             case .end:
-                newConstraints.append(view.leftAnchor.constraint(greaterThanOrEqualTo: self.view.leftAnchor))
-                newConstraints.append(view.rightAnchor.constraint(equalTo: self.view.rightAnchor))
+                newConstraints.append(view.leftAnchor.constraint(greaterThanOrEqualTo: self.stackView.leftAnchor))
+                newConstraints.append(view.rightAnchor.constraint(equalTo: self.stackView.rightAnchor))
             }
         }
         self.constraints.set(newConstraints)

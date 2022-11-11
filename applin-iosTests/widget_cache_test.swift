@@ -20,15 +20,15 @@ class WidgetCacheTests: XCTestCase {
                 session,
                 .column(ColumnData([.text(TextData("t1"))], .start, spacing: 0.0))
         ) as! ColumnWidget
-        let label1 = column1.view.subviews.first!.subviews.first! as! UILabel
+        let label1 = column1.stackView.subviews.first!.subviews.first! as! UILabel
         XCTAssertEqual(label1.text, "t1")
         let column2 = cache.updateAll(
                 session,
                 .column(ColumnData([.text(TextData("t2")), .text(TextData("t1"))], .start, spacing: 0.0))
         ) as! ColumnWidget
         XCTAssert(column1 !== column2)
-        let label2a = column2.view.subviews[0].subviews.first as! UILabel
-        let label2b = column2.view.subviews[1].subviews.first as! UILabel
+        let label2a = column2.stackView.subviews[0].subviews.first as! UILabel
+        let label2b = column2.stackView.subviews[1].subviews.first as! UILabel
         XCTAssert(label1 !== label2a)
         XCTAssertEqual(label2a.text, "t2")
         XCTAssert(label1 === label2b)
