@@ -78,7 +78,7 @@ class FormButtonWidget: WidgetProto {
         })
         self.button = UIButton(type: .custom, primaryAction: action)
         self.button.translatesAutoresizingMaskIntoConstraints = false
-        //self.button.backgroundColor = pastelGreen
+        self.button.backgroundColor = pastelGreen
         self.button.setTitleColor(.systemBlue, for: .normal)
         self.button.setTitleColor(.systemGray, for: .focused)
         self.button.setTitleColor(.systemGray, for: .selected)

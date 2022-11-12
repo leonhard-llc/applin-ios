@@ -1,6 +1,7 @@
 // swiftlint:disable file_length
 
 import Foundation
+import UIKit
 
 enum ApplinAllow {
     case all
@@ -8,11 +9,35 @@ enum ApplinAllow {
     case email
     case numbers
     case tel
+
+    func keyboardType() -> UIKeyboardType {
+        switch self {
+        case .all:
+            return .default
+        case .ascii:
+            return .default
+        case .email:
+            return .emailAddress
+        case .numbers:
+            return .numberPad
+        case .tel:
+            return .phonePad
+        }
+    }
 }
 
 enum ApplinAutoCapitalize {
     case names
     case sentences
+
+    func textAutocapitalizationType() -> UITextAutocapitalizationType {
+        switch self {
+        case .names:
+            return .words
+        case .sentences:
+            return .sentences
+        }
+    }
 }
 
 enum ApplinDimension: Equatable, Hashable {

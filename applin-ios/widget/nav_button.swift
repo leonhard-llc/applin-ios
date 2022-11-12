@@ -103,6 +103,9 @@ class NavButtonWidget: WidgetProto {
         self.container.onTap = { [weak self] in
             self?.tap()
         }
+        // TODO: Support image.
+        // TODO: Support sub-text.
+        // TODO: Support badge and number badge.
     }
 
     func getView() -> UIView {

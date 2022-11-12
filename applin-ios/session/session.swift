@@ -120,22 +120,37 @@ class ApplinSession: ObservableObject {
         self.updateNav()
     }
 
-    func setBoolVar(_ name: String, _ optValue: Bool?) {
+    func setVar(_ name: String, _ optValue: Var?) {
         guard let value = optValue else {
             print("setVar \(name)=nil")
             self.vars.removeValue(forKey: name)
             return
         }
-        let newVar: Var = .boolean(value)
-        switch self.vars[name] {
-        case .none, .boolean:
+        switch (self.vars[name], value) {
+        case (.none, _), (.boolean, .boolean), (.string, .string):
             break
-        case let .some(oldVar):
-            print("WARN setVar changed var type: \(name): \(oldVar) -> \(newVar)")
+        default:
+            print("WARN setVar changed var type: \(name): \(String(describing: self.vars[name])) -> \(value)")
         }
-        print("setVar \(name)=\(newVar)")
-        self.vars[name] = newVar
+        print("setVar \(name)=\(value)")
+        self.vars[name] = value
         self.cacheFileWriter?.scheduleWrite(self)
+    }
+
+    func setBoolVar(_ name: String, _ optValue: Bool?) {
+        if let value = optValue {
+            self.setVar(name, .boolean(value))
+        } else {
+            self.setVar(name, nil)
+        }
+    }
+
+    func setStringVar(_ name: String, _ optValue: String?) {
+        if let value = optValue {
+            self.setVar(name, .string(value))
+        } else {
+            self.setVar(name, nil)
+        }
     }
 
     func getBoolVar(_ name: String) -> Bool? {

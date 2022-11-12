@@ -66,9 +66,11 @@ class TextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
     let constraints = ConstraintSet()
     var initialized = false
     weak var session: ApplinSession?
+    var data: TextfieldData
 
     init(_ data: TextfieldData) {
         print("TextfieldWidget.init(\(data))")
+        self.data = data
         // TODONT: Don't use a UIView and layout with constraints.  Text fields scrolled into view
         //         will ignore their width constraint.  Use a UIStackView instead.
         self.textview = UITextView()
@@ -103,29 +105,18 @@ class TextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
         default:
             NSLayoutConstraint.activate([self.textview.heightAnchor.constraint(greaterThanOrEqualToConstant: 40)])
         }
-        switch data.allow {
-        case .all:
-            self.textview.keyboardType = .default
-        case .ascii:
-            self.textview.keyboardType = .default
-        case .email:
-            self.textview.keyboardType = .emailAddress
-        case .numbers:
-            self.textview.keyboardType = .numberPad
-        case .tel:
-            self.textview.keyboardType = .phonePad
-        }
-        switch data.autoCapitalize {
-        case .names:
-            self.textview.autocapitalizationType = .words
-        case .sentences:
-            self.textview.autocapitalizationType = .sentences
-        case nil:
-            self.textview.autocapitalizationType = .none
-        }
+        self.textview.keyboardType = data.allow.keyboardType()
+        self.textview.autocapitalizationType = data.autoCapitalize?.textAutocapitalizationType() ?? .none
         self.textview.layer.borderColor = UIColor.systemGray4.cgColor
         self.textview.layer.borderWidth = 1.0
         self.textview.layer.cornerRadius = 4.0
         self.textview.reloadInputViews()
+    }
+
+    // UITextViewDelegate
+
+    func textViewDidChange(_: UITextView) {
+        //print("textViewDidChange")
+        self.session?.setStringVar(self.data.varName, self.textview.text.isEmpty ? nil : self.textview.text)
     }
 }
