@@ -77,7 +77,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
         self.textview.translatesAutoresizingMaskIntoConstraints = false
         self.textview.isScrollEnabled = false // Resize to fit text.
         self.textview.font = UIFont.systemFont(ofSize: 20)
-        NSLayoutConstraint.activate([self.textview.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow)])
+        NSLayoutConstraint.activate([self.textview.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultHigh)])
         super.init()
         self.textview.delegate = self
     }

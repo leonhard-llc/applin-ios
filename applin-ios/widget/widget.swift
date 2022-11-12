@@ -36,7 +36,7 @@ enum WidgetData: Equatable, Hashable {
     case form(FormData)
     case formButton(FormButtonData)
     case formSection(FormSectionData)
-    //case formTextfield(FormTextfieldData)
+    case formTextfield(FormTextfieldData)
     case navButton(NavButtonData)
     case textfield(TextfieldData)
     indirect case scroll(ScrollData)
@@ -66,8 +66,8 @@ enum WidgetData: Equatable, Hashable {
             self = try .formButton(FormButtonData(pageKey: pageKey, item))
         case FormSectionData.TYP:
             self = try .formSection(FormSectionData(session, pageKey: pageKey, item))
-                //case FormTextfieldData.TYP:
-                //    self = try .formTextfield(FormTextfieldData(pageKey: pageKey, item))
+        case FormTextfieldData.TYP:
+            self = try .formTextfield(FormTextfieldData(pageKey: pageKey, item))
         case NavButtonData.TYP:
             self = try .navButton(NavButtonData(session, pageKey: pageKey, item))
         case TextfieldData.TYP:
@@ -105,8 +105,8 @@ enum WidgetData: Equatable, Hashable {
             return inner
         case let .formSection(inner):
             return inner
-                //case let .formTextField(inner):
-                //    return inner
+        case let .formTextfield(inner):
+            return inner
         case let .navButton(inner):
             return inner
         case let .textfield(inner):

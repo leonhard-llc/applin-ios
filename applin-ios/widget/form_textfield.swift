@@ -3,238 +3,163 @@ import UIKit
 
 struct FormTextfieldData: Equatable, Hashable, WidgetDataProto {
     static let TYP = "form-textfield"
-    let allow: ApplinAllow
-    let autoCapitalize: ApplinAutoCapitalize?
     let checkRpc: String?
-    let initialString: String?
     let label: String
-    let maxChars: UInt32?
-    let maxLines: UInt32?
-    let minChars: UInt32?
     let pageKey: String
-    let varName: String
+    let textfieldData: TextfieldData
 
     init(pageKey: String, _ item: JsonItem) throws {
-        self.allow = item.optAllow() ?? .all
-        self.autoCapitalize = item.optAutoCapitalize()
         self.checkRpc = item.checkRpc
-        self.initialString = item.initialString
         self.label = try item.requireLabel()
-        self.maxChars = item.maxChars
-        self.maxLines = item.maxLines
-        self.minChars = item.minChars
         self.pageKey = pageKey
-        self.varName = try item.requireVar()
+        self.textfieldData = try TextfieldData(pageKey: pageKey, item)
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(FormTextfieldData.TYP)
-        item.setAllow(self.allow)
-        item.setAutoCapitalize(self.autoCapitalize)
+        let item = self.textfieldData.toJsonItem()
+        item.typ = FormTextfieldData.TYP
         item.checkRpc = self.checkRpc
-        item.initialString = self.initialString
         item.label = self.label
-        item.maxChars = self.maxChars
-        item.maxLines = self.maxLines
-        item.minChars = self.minChars
-        item.varName = self.varName
         return item
     }
 
     func keys() -> [String] {
-        ["form-textfield:\(self.varName)"]
+        ["form-textfield:\(self.textfieldData.varName)"]
     }
 
-    func canTap() -> Bool {
-        true
+    func priority() -> WidgetPriority {
+        .focusable
     }
 
-    func tap(_ session: ApplinSession, _ cache: WidgetCache) {
-        if let widget = cache.get(self.keys()) as? FormTextfieldWidget {
-            widget.textview.becomeFirstResponder()
-        }
+    func subs() -> [WidgetData] {
+        []
     }
 
-    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
-        let widget = cache.remove(self.keys()) as? FormTextfieldWidget ?? FormTextfieldWidget(self.pageKey, self)
-        widget.data = self
-        cache.putNext(widget)
-        return widget.getView(session)
+    func widgetClass() -> AnyClass {
+        FormTextfieldWidget.self
+    }
+
+    func widget() -> WidgetProto {
+        FormTextfieldWidget(self)
     }
 
     func vars() -> [(String, Var)] {
-        [(self.varName, .string(self.initialString ?? ""))]
+        [(self.textfieldData.varName, .string(self.textfieldData.initialString ?? ""))]
     }
 }
 
-class FormTextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
+class FormTextfieldWidget: WidgetProto {
     static let errorImage = UIImage(systemName: "exclamationmark.circle")
-    let stack: UIStackView
-    //let stackWidthConstraint: NSLayoutConstraint
+    let container: TappableView
     let label: UILabel
-    let textview: UITextView
-    let errorStack: UIStackView
+    let textfieldWidget: TextfieldWidget
     let errorImageView: UIImageView
     let errorLabel: UILabel
-    let pageKey: String
+    let constraintSet = ConstraintSet()
     var data: FormTextfieldData
-    var errorMessage: String?
     weak var session: ApplinSession?
+    var errorMessage: String?
 
-    init(_ pageKey: String, _ data: FormTextfieldData) {
+    init(_ data: FormTextfieldData) {
         print("FormTextfieldWidget.init(\(data))")
-        // TODONT: Don't use a UIView and layout with constraints.  Text fields scrolled into view
-        //         will ignore their width constraint.  Use a UIStackView instead.
-        self.stack = UIStackView()
-        self.stack.translatesAutoresizingMaskIntoConstraints = false
-        self.stack.axis = .vertical
-        self.stack.alignment = .fill
-        self.stack.spacing = 4.0
-        self.stack.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultHigh).isActive = true
+        self.container = TappableView()
+        self.container.translatesAutoresizingMaskIntoConstraints = false
+        //self.container.backgroundColor = pastelPink
 
         self.label = UILabel()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.lineBreakMode = .byWordWrapping
         self.label.numberOfLines = 0
-        self.stack.addArrangedSubview(label)
-
-        self.errorStack = UIStackView()
-        self.errorStack.translatesAutoresizingMaskIntoConstraints = false
-        self.errorStack.axis = .horizontal
-        self.errorStack.alignment = .center
-        self.errorStack.spacing = 4.0
-        self.stack.addArrangedSubview(self.errorStack)
+        self.container.addSubview(label)
 
         self.errorImageView = UIImageView(image: Self.errorImage)
         self.errorImageView.translatesAutoresizingMaskIntoConstraints = false
         self.errorImageView.tintColor = .systemRed
-        // TODONT: Don't try to size the image by setting its frame size.  The image will
-        //         randomly ignore this and get stretched.  Use constraints instead.
-        self.errorImageView.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        self.errorImageView.widthAnchor.constraint(equalTo: self.errorImageView.heightAnchor).isActive = true
-        self.errorStack.addArrangedSubview(self.errorImageView)
+        self.container.addSubview(self.errorImageView)
 
         self.errorLabel = UILabel()
         self.errorLabel.translatesAutoresizingMaskIntoConstraints = false
-        self.errorLabel.text = errorMessage
         self.errorLabel.lineBreakMode = .byWordWrapping
         self.errorLabel.numberOfLines = 0
-        self.errorStack.addArrangedSubview(self.errorLabel)
+        self.container.addSubview(self.errorLabel)
 
-        self.textview = UITextView()
-        self.textview.translatesAutoresizingMaskIntoConstraints = false
-        self.textview.isScrollEnabled = false // Resize to fit text.
-        self.stack.addArrangedSubview(self.textview)
+        self.textfieldWidget = TextfieldWidget(data.textfieldData)
+        let textfield = self.textfieldWidget.getView()
+        self.container.addSubview(textfield)
 
-        self.pageKey = pageKey
+        NSLayoutConstraint.activate([
+            self.container.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+
+            self.label.topAnchor.constraint(equalTo: self.container.topAnchor, constant: 8.0),
+            self.label.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 8.0),
+            self.label.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -8.0),
+
+            // TODONT: Don't try to size the image by setting its frame size.  The image will
+            //         randomly ignore this and get stretched.  Use constraints instead.
+            self.errorImageView.heightAnchor.constraint(equalToConstant: 30),
+            self.errorImageView.widthAnchor.constraint(equalTo: self.errorImageView.heightAnchor),
+
+            textfield.topAnchor.constraint(greaterThanOrEqualTo: self.label.bottomAnchor, constant: 4.0),
+            textfield.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 4.0),
+            textfield.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -4.0),
+            textfield.bottomAnchor.constraint(equalTo: self.container.bottomAnchor, constant: -4.0),
+        ])
+
         self.data = data
-        self.errorMessage = "Error1"
-        super.init()
-        self.textview.delegate = self
-        self.textview.text = self.session?.getStringVar(self.data.varName) ?? self.data.initialString ?? ""
-        self.update()
+        //self.errorMessage = "Error1"
+        self.container.onTap = { [weak self] in
+            self?.textfieldWidget.getView().becomeFirstResponder()
+        }
+        // TODO(mleonhard) Register onChanged callback and do checkRpc.
     }
 
     func keys() -> [String] {
         self.data.keys()
     }
 
-    func update() {
+    func getView() -> UIView {
+        self.container
+    }
+
+    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+        self.textfieldWidget.getView().isFocused
+    }
+
+    func update(_ session: ApplinSession, _ widgetData: WidgetData, _ subs: [WidgetProto]) throws {
+        guard case let .formTextfield(data) = widgetData else {
+            throw "Expected .text got: \(widgetData)"
+        }
+        self.data = data
+        self.session = session
         self.label.text = self.data.label
-        switch self.data.allow {
-        case .all:
-            self.textview.keyboardType = .default
-        case .ascii:
-            self.textview.keyboardType = .default
-        case .email:
-            self.textview.keyboardType = .emailAddress
-        case .numbers:
-            self.textview.keyboardType = .numberPad
-        case .tel:
-            self.textview.keyboardType = .phonePad
-        }
-        switch self.data.autoCapitalize {
-        case .names:
-            self.textview.autocapitalizationType = .words
-        case .sentences:
-            self.textview.autocapitalizationType = .sentences
-        case .none:
-            self.textview.autocapitalizationType = .none
-        }
-        if self.data.maxLines == 1 {
-        } else {
-        }
+        try self.textfieldWidget.update(session, .textfield(self.data.textfieldData), [])
+        let textfield = self.textfieldWidget.getView()
         if let errorMessage = self.errorMessage {
-            self.textview.layer.borderColor = UIColor.systemRed.cgColor
-            self.textview.layer.borderWidth = 2.0
-            self.textview.layer.cornerRadius = 0.0
             self.errorImageView.isHidden = false
-            self.errorLabel.text = errorMessage
             self.errorLabel.isHidden = false
+            self.errorLabel.text = errorMessage
+            constraintSet.set([
+                self.errorImageView.topAnchor.constraint(greaterThanOrEqualTo: self.label.bottomAnchor, constant: 4.0),
+                self.errorImageView.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 4.0),
+                self.errorImageView.bottomAnchor.constraint(lessThanOrEqualTo: textfield.topAnchor, constant: -4.0),
+
+                self.errorLabel.topAnchor.constraint(greaterThanOrEqualTo: self.label.bottomAnchor, constant: 4.0),
+                self.errorLabel.leftAnchor.constraint(equalTo: self.errorImageView.rightAnchor, constant: 4.0),
+                self.errorLabel.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -4.0),
+                self.errorLabel.centerYAnchor.constraint(equalTo: self.errorImageView.centerYAnchor),
+                self.errorLabel.bottomAnchor.constraint(lessThanOrEqualTo: textfield.topAnchor, constant: -4.0),
+            ])
+            textfield.layer.borderColor = UIColor.systemRed.cgColor
+            textfield.layer.borderWidth = 2.0
+            textfield.layer.cornerRadius = 0.0
         } else {
-            self.textview.layer.borderColor = UIColor.systemGray4.cgColor
-            self.textview.layer.borderWidth = 1.0
-            self.textview.layer.cornerRadius = 4.0
             self.errorImageView.isHidden = true
             self.errorLabel.isHidden = true
             self.errorLabel.text = nil
-        }
-    }
-
-    func getView(_ session: ApplinSession) -> UIView {
-        self.session = session
-        self.update()
-        return self.stack
-    }
-
-    func adjustHeightInSuperviews() {
-        // Look for superview UITableView widgets and make them recalculate heights of visible cells.
-        var optView: UIView? = self.textview.superview
-        while let view = optView {
-            if let tableView = view as? UITableView {
-                //tableView.updateConstraints()
-                UIView.setAnimationsEnabled(false)
-                tableView.beginUpdates()
-                tableView.endUpdates()
-                UIView.setAnimationsEnabled(true)
-            }
-            optView = view.superview
-        }
-    }
-
-    func scrollCaretIntoView() {
-        // Look for superview UITableView widgets and make them scroll the caret into view.
-        var caretRect = CGRect.zero
-        if let textPosition = self.textview.selectedTextRange?.end {
-            caretRect = self.textview.caretRect(for: textPosition)
-        }
-        caretRect.origin.y -= 10.0
-        caretRect.size.height += 20.0
-        var subView: UIView = self.textview
-        var optView: UIView? = self.textview.superview
-        while let view = optView {
-            caretRect = view.convert(caretRect, from: subView)
-            if let tableView = view as? UIScrollView {
-                tableView.scrollRectToVisible(caretRect, animated: false)
-            }
-            subView = view
-            optView = view.superview
-        }
-    }
-
-    // UITextViewDelegate
-
-    func textViewDidChange(_: UITextView) {
-        print("textViewDidChange")
-        self.adjustHeightInSuperviews()
-    }
-
-    func textViewDidChangeSelection(_: UITextView) {
-        print("textViewDidChangeSelection")
-        Task {
-            // Let the UITableView resize first.
-            await sleep(ms: 100)
-            self.scrollCaretIntoView()
+            constraintSet.set([])
+            textfield.layer.borderColor = UIColor.systemGray4.cgColor
+            textfield.layer.borderWidth = 1.0
+            textfield.layer.cornerRadius = 4.0
         }
     }
 }
