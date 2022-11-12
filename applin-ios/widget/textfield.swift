@@ -62,6 +62,9 @@ struct TextfieldData: Equatable, Hashable, WidgetDataProto {
 }
 
 class TextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
+    static let BORDER_COLOR: UIColor = UIColor.label
+    static let BORDER_WIDTH: CGFloat = 0.7
+    static let CORNER_RADIUS: CGFloat = 10.0
     let textview: UITextView
     let constraints = ConstraintSet()
     var initialized = false
@@ -80,6 +83,11 @@ class TextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
         NSLayoutConstraint.activate([self.textview.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultHigh)])
         super.init()
         self.textview.delegate = self
+        self.textview.layer.borderColor = Self.BORDER_COLOR.cgColor
+        self.textview.layer.borderWidth = Self.BORDER_WIDTH
+        self.textview.layer.cornerRadius = Self.CORNER_RADIUS
+        // A tinted rectangle looks better, but has lower contrast:
+        //self.textview.layer.backgroundColor = UIColor.systemGray6.cgColor
     }
 
     func getView() -> UIView {

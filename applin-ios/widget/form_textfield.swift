@@ -150,16 +150,16 @@ class FormTextfieldWidget: WidgetProto {
                 self.errorLabel.bottomAnchor.constraint(lessThanOrEqualTo: textfield.topAnchor, constant: -4.0),
             ])
             textfield.layer.borderColor = UIColor.systemRed.cgColor
-            textfield.layer.borderWidth = 2.0
+            textfield.layer.borderWidth = TextfieldWidget.BORDER_WIDTH * 2.0
             textfield.layer.cornerRadius = 0.0
         } else {
             self.errorImageView.isHidden = true
             self.errorLabel.isHidden = true
             self.errorLabel.text = nil
             constraintSet.set([])
-            textfield.layer.borderColor = UIColor.systemGray4.cgColor
-            textfield.layer.borderWidth = 1.0
-            textfield.layer.cornerRadius = 4.0
+            textfield.layer.borderColor = TextfieldWidget.BORDER_COLOR.cgColor
+            textfield.layer.borderWidth = TextfieldWidget.BORDER_WIDTH
+            textfield.layer.cornerRadius = TextfieldWidget.CORNER_RADIUS
         }
     }
 }

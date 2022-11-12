@@ -84,7 +84,7 @@ class ColumnView: UIView {
             for (n, a) in self.orderedSubviews.dropLast(1).enumerated() {
                 let b = self.orderedSubviews[n + 1]
                 let y = (a.frame.maxY + b.frame.minY) / 2.0
-                print("ColumnView.draw (\(left), \(y)) -> (\(right), \(y))")
+                //print("ColumnView.draw (\(left), \(y)) -> (\(right), \(y))")
                 ctx.move(to: CGPoint(x: left, y: y))
                 ctx.addLine(to: CGPoint(x: right, y: y))
             }
