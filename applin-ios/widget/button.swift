@@ -13,6 +13,12 @@ struct ButtonSpec: Equatable, Hashable {
         self.text = try item.requireText()
     }
 
+    init(pageKey: String, text: String, actions: [ActionData] = []) {
+        self.pageKey = pageKey
+        self.text = text
+        self.actions = actions
+    }
+
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ButtonSpec.TYP)
         item.actions = self.actions.map({ action in action.toString() })

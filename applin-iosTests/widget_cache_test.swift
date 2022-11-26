@@ -6,11 +6,11 @@ class WidgetCacheTests: XCTestCase {
     func testSimple() throws {
         let session = ApplinSession(nil, nil, nil, URL(string: "https://test1/")!)
         let cache = WidgetCache()
-        let widget1 = cache.updateAll(session, Spec(.text(TextSpec("t1")))) as! TextWidget
-        XCTAssertEqual(widget1.label.text, "t1")
-        let widget2 = cache.updateAll(session, Spec(.text(TextSpec("t2")))) as! TextWidget
+        let widget1 = cache.updateAll(session, Spec(.button(ButtonSpec(pageKey: "page1", text: "b1")))) as! ButtonWidget
+        XCTAssertEqual(widget1.button.currentTitle, "  b1  ")
+        let widget2 = cache.updateAll(session, Spec(.button(ButtonSpec(pageKey: "page1", text: "b2")))) as! ButtonWidget
         XCTAssert(widget1 === widget2)
-        XCTAssertEqual(widget2.label.text, "t2")
+        XCTAssertEqual(widget2.button.currentTitle, "  b2  ")
     }
 
     func testStateless() throws {
