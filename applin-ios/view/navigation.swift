@@ -67,11 +67,11 @@ class AlertController: UIAlertController {
 
 private struct Entry {
     let key: String
-    let data: PageData
+    let data: PageSpec
     let controller: PageController
     let cache: WidgetCache
 
-    init(_ key: String, _ data: PageData, _ controller: PageController, _ cache: WidgetCache) {
+    init(_ key: String, _ data: PageSpec, _ controller: PageController, _ cache: WidgetCache) {
         self.key = key
         self.data = data
         self.controller = controller
@@ -145,7 +145,7 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         self.presentCorrectModal()
     }
 
-    func setStackPages(_ session: ApplinSession, _ newPages: [(String, PageData)]) async {
+    func setStackPages(_ session: ApplinSession, _ newPages: [(String, PageSpec)]) async {
         print("setStackPages")
         let appJustStarted = self.entries.isEmpty
         let topEntry: Entry? = self.entries.last

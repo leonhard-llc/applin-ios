@@ -6,7 +6,7 @@ protocol PageController: UIViewController {
     func isModal() -> Bool
 }
 
-enum PageData: Equatable {
+enum PageSpec: Equatable {
     case modal(ModalData)
     case navPage(NavPageData)
     case plainPage(PlainPageData)
@@ -49,7 +49,7 @@ enum PageData: Equatable {
             return inner.toJsonItem()
         }
     }
-    
+
     func vars() -> [(String, Var)] {
         switch self {
         case let .modal(inner):
