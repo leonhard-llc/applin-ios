@@ -18,6 +18,7 @@ class ColumnView: UIView {
     }
 
     convenience init() {
+        print("ColumnView.init")
         self.init(frame: CGRect.zero)
     }
 
@@ -34,9 +35,11 @@ class ColumnView: UIView {
         let subviewsSet = Set(subviews)
         let viewsToRemove: [UIView] = self.subviews.filter({ v in subviewsSet.contains(v) })
         for viewToRemove in viewsToRemove {
+            print("ColumnView.update remove \(viewToRemove)")
             viewToRemove.removeFromSuperview()
         }
         for newView in subviews {
+            print("ColumnView.update add \(newView)")
             self.addSubview(newView)
         }
         var newConstraints: [NSLayoutConstraint] = []
