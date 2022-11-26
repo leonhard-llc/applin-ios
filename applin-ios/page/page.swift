@@ -3,7 +3,8 @@ import UIKit
 
 protocol PageController: UIViewController {
     func allowBackSwipe() -> Bool
-    func isModal() -> Bool
+    func klass() -> AnyClass
+    func update(_ session: ApplinSession, _ cache: WidgetCache, _ newPageSpec: PageSpec, hasPrevPage: Bool)
 }
 
 enum PageSpec: Equatable {
@@ -36,6 +37,30 @@ enum PageSpec: Equatable {
             case let .plainPage(inner):
                 return inner.connectionMode
             }
+        }
+    }
+
+    func controllerClass() -> AnyClass {
+        switch self {
+        case .modal:
+            print("FATAL: PageSpec.controllerClass() called on \(self)")
+            abort() // This should never happen.
+        case let .navPage(inner):
+            return inner.controllerClass()
+        case let .plainPage(inner):
+            return inner.controllerClass()
+        }
+    }
+
+    func newController(_ navController: NavigationController?, _ session: ApplinSession?, _ cache: WidgetCache) -> PageController {
+        switch self {
+        case .modal:
+            print("FATAL: PageSpec.newController() called on \(self)")
+            abort() // This should never happen.
+        case let .navPage(inner):
+            return inner.newController(navController, session, cache)
+        case let .plainPage(inner):
+            return inner.newController()
         }
     }
 

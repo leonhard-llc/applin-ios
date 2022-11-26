@@ -19,6 +19,14 @@ struct PlainPageSpec: Equatable {
         self.widget = try item.requireWidget(session, pageKey: pageKey)
     }
 
+    func controllerClass() -> AnyClass {
+        PlainPageController.self
+    }
+
+    func newController() -> PageController {
+        PlainPageController()
+    }
+
     func toJsonItem() -> JsonItem {
         let item = JsonItem(PlainPageSpec.TYP)
         item.pollSeconds = self.connectionMode.getPollSeconds()
@@ -46,26 +54,27 @@ class PlainPageController: UIViewController, PageController {
         fatalError("unimplemented")
     }
 
-    func isModal() -> Bool {
-        false
-    }
+    // Implement PageController -----------------
 
     func allowBackSwipe() -> Bool {
         true
     }
 
-    func update(
-            _ session: ApplinSession,
-            _ cache: WidgetCache,
-            _ newSpec: PlainPageSpec
-    ) {
-        if newSpec == self.spec {
+    func klass() -> AnyClass {
+        PlainPageController.self
+    }
+
+    func update(_ session: ApplinSession, _ cache: WidgetCache, _ newPageSpec: PageSpec, hasPrevPage: Bool) {
+        guard case let .plainPage(plainPageSpec) = newPageSpec else {
+            print("FATAL: PlainPageController.update() called with newPageSpec=\(newPageSpec)")
+            abort()
+        }
+        if self.spec == plainPageSpec {
             return
         }
-        self.spec = newSpec
-        self.title = newSpec.title
+        self.title = plainPageSpec.title
         self.view.backgroundColor = .systemBackground
-        let widget = cache.updateAll(session, newSpec.widget)
+        let widget = cache.updateAll(session, plainPageSpec.widget)
         let subView = widget.getView()
         self.helper.update(subView) {
             // subView.setNeedsDisplay()

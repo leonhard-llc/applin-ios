@@ -108,10 +108,6 @@ struct ModalSpec: Equatable {
 //    var presented: AlertController?
 //    var visible = false
 //
-//    func isModal() -> Bool {
-//        true
-//    }
-//
 //    func allowBackSwipe() -> Bool {
 //        false
 //    }
@@ -173,7 +169,6 @@ struct ModalSpec: Equatable {
 //    var alert: AlertController?
 //    let helper = SuperviewHelper()
 //
-//    func isModal() -> Bool { true }
 //    func allowBackSwipe() -> Bool { false }
 //
 //    func update(_ session: ApplinSession, _ spec: ModalSpec, hasNextPage: Bool) {

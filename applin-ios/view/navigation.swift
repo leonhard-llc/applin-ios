@@ -65,21 +65,21 @@ class AlertController: UIAlertController {
     // }
 }
 
-private struct Entry {
-    let key: String
-    let pageSpec: PageSpec
-    let controller: PageController
-    let cache: WidgetCache
-
-    init(_ key: String, _ pageSpec: PageSpec, _ controller: PageController, _ cache: WidgetCache) {
-        self.key = key
-        self.pageSpec = pageSpec
-        self.controller = controller
-        self.cache = cache
-    }
-}
-
 class NavigationController: UINavigationController, ModalDelegate, UIGestureRecognizerDelegate {
+    private struct Entry {
+        let key: String
+        let pageSpec: PageSpec
+        let controller: PageController
+        let cache: WidgetCache
+
+        init(_ key: String, _ pageSpec: PageSpec, _ controller: PageController, _ cache: WidgetCache) {
+            self.key = key
+            self.pageSpec = pageSpec
+            self.controller = controller
+            self.cache = cache
+        }
+    }
+
     private var entries: [Entry] = []
     private var modals: [UIViewController] = []
     private var working: UIViewController?
@@ -154,25 +154,27 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         var newModals: [UIViewController] = []
         for (key, pageSpec) in newPages {
             let hasPrevPage = !newEntries.isEmpty
-            switch pageSpec {
-            case let .modal(modalSpec):
+            if case let .modal(modalSpec) = pageSpec {
                 let alert = modalSpec.toAlert(session)
                 alert.delegate = self
                 alert.setAnimated(false)
                 newModals.append(alert)
-            case let .navPage(navPageSpec):
+            } else {
                 newModals = []
-                let entry = self.removeEntry(key)
-                let cache = entry?.cache ?? WidgetCache()
-                let ctl = entry?.controller as? NavPageController ?? NavPageController(self, session, cache)
-                ctl.update(session, cache, navPageSpec, hasPrevPage: hasPrevPage)
-                newEntries.append(Entry(key, pageSpec, ctl, cache))
-            case let .plainPage(plainPageSpec):
-                newModals = []
-                let entry = self.removeEntry(key)
-                let cache = entry?.cache ?? WidgetCache()
-                let ctl = entry?.controller as? PlainPageController ?? PlainPageController()
-                ctl.update(session, cache, plainPageSpec)
+                var ctl: PageController
+                var cache: WidgetCache
+                if let entry = self.removeEntry(key) {
+                    cache = entry.cache
+                    if entry.controller.klass() == pageSpec.controllerClass() {
+                        ctl = entry.controller
+                    } else {
+                        ctl = pageSpec.newController(self, session, entry.cache)
+                    }
+                } else {
+                    cache = WidgetCache()
+                    ctl = pageSpec.newController(self, session, cache)
+                }
+                ctl.update(session, cache, pageSpec, hasPrevPage: hasPrevPage)
                 newEntries.append(Entry(key, pageSpec, ctl, cache))
             }
         }
@@ -187,10 +189,16 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         let newTopEntry = self.entries.last
         let changedTopPage = topEntry?.controller !== newTopEntry?.controller
         let animated = changedTopPage && !appJustStarted
-        self.setViewControllers(
-                self.entries.compactMap({ entry in entry.controller }),
-                animated: animated
-        )
+        // TODO(mleonhard) See if this is causing the keyboard to hide.
+        //self.setViewControllers(
+        //        self.entries.compactMap({ entry in entry.controller }),
+        //        animated: animated
+        //)
+        let newViewControllers = self.entries.compactMap({ entry in entry.controller })
+        if self.viewControllers != newViewControllers {
+            print("setViewControllers")
+            self.setViewControllers(newViewControllers, animated: animated)
+        }
         self.presentCorrectModal()
     }
 

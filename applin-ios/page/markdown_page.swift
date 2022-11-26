@@ -152,10 +152,6 @@
 //class MarkdownPageController: UIHostingController<AnyView>, PageController {
 //    var spec: MarkdownPageSpec?
 //
-//    func isModal() -> Bool {
-//        false
-//    }
-//
 //    func allowBackSwipe() -> Bool {
 //        true
 //    }
