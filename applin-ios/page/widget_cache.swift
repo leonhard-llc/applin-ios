@@ -3,19 +3,19 @@ import UIKit
 private class UpdaterNode {
     static func update(_ session: ApplinSession, _ cache: WidgetCache, _ spec: Spec) -> Widget {
         let root = UpdaterNode(spec)
-        root.getSomeWidgets(session, cache, spec) { data in
-            if data.priority() == .focusable {
-                if let widget = cache.findStale(data) {
+        root.getSomeWidgets(session, cache, spec) { spec in
+            if spec.priority() == .focusable {
+                if let widget = cache.findStale(spec) {
                     return widget.isFocused()
                 }
             }
             return false
         }
-        root.getSomeWidgets(session, cache, spec) { data in
-            data.priority() == .focusable
+        root.getSomeWidgets(session, cache, spec) { spec in
+            spec.priority() == .focusable
         }
-        root.getSomeWidgets(session, cache, spec) { data in
-            data.priority() == .stateful
+        root.getSomeWidgets(session, cache, spec) { spec in
+            spec.priority() == .stateful
         }
         root.getSomeWidgets(session, cache, spec) { _ in
             true
@@ -24,21 +24,19 @@ private class UpdaterNode {
         return root.widget!
     }
 
-    // TODONT: Don't store WidgetData, since that would take O(n^2) memory and O(n^3) time.
-
     private let subNodes: [UpdaterNode]
     private var widget: Widget?
 
     init(_ spec: Spec) {
         // TODO: Add keys for focused subs.
-        self.subNodes = spec.subs().map({ subData in UpdaterNode(subData) })
+        self.subNodes = spec.subs().map({ subSpec in UpdaterNode(subSpec) })
     }
 
     func getSomeWidgets(_ session: ApplinSession, _ cache: WidgetCache, _ spec: Spec, _ shouldGetViewFn: (Spec) -> Bool) {
         var isASubBuilt = false
-        for (n, subData) in spec.subs().enumerated() {
+        for (n, subSpec) in spec.subs().enumerated() {
             let subNode = self.subNodes[n]
-            subNode.getSomeWidgets(session, cache, subData, shouldGetViewFn)
+            subNode.getSomeWidgets(session, cache, subSpec, shouldGetViewFn)
             isASubBuilt = isASubBuilt || subNode.widget != nil
         }
         if self.widget == nil && (isASubBuilt || shouldGetViewFn(spec)) {
@@ -47,9 +45,9 @@ private class UpdaterNode {
     }
 
     func updateNodeAndSubs(_ session: ApplinSession, _ cache: WidgetCache, _ spec: Spec) {
-        for (n, subData) in spec.subs().enumerated() {
+        for (n, subSpec) in spec.subs().enumerated() {
             let subNode = self.subNodes[n]
-            subNode.updateNodeAndSubs(session, cache, subData)
+            subNode.updateNodeAndSubs(session, cache, subSpec)
         }
         if self.widget == nil {
             self.widget = cache.getOrMake(spec)

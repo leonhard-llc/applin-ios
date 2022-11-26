@@ -36,7 +36,7 @@ class ApplinSession: ObservableObject {
     weak var nav: NavigationController?
     let url: URL
     var error: String?
-    var pages: [String: PageData] = [:]
+    var pages: [String: PageSpec] = [:]
     var stack: [String] = ["/"]
     var vars: [String: Var] = [:]
     var connectionMode: ConnectionMode = .disconnect
@@ -73,11 +73,11 @@ class ApplinSession: ObservableObject {
             self.stack = ["/"]
             print("updateNav \(self.stack)")
         }
-        let entries = self.stack.map({ key -> (String, PageData) in
+        let entries = self.stack.map({ key -> (String, PageSpec) in
             let page =
                     self.pages[key]
                             ?? self.pages["/applin-page-not-found"]
-                            ?? .navPage(NavPageData(
+                            ?? .navPage(NavPageSpec(
                             pageKey: key,
                             title: "Not Found",
                             // TODO: Center the text.
@@ -85,7 +85,7 @@ class ApplinSession: ObservableObject {
                     ))
             return (key, page)
         })
-        self.connectionMode = entries.map({ (_, data) in data.connectionMode }).min() ?? .disconnect
+        self.connectionMode = entries.map({ (_, pageSpec) in pageSpec.connectionMode }).min() ?? .disconnect
         self.connection?.setMode(self, self.connectionMode)
         Task {
             await self.nav?.setStackPages(self, entries)
@@ -193,9 +193,9 @@ class ApplinSession: ObservableObject {
             for (key, optItem) in newPages {
                 if let item = optItem {
                     do {
-                        let data = try PageData(self, pageKey: key, item)
-                        self.pages[key] = data
-                        print("updated key \(key) \(data)")
+                        let pageSpec = try PageSpec(self, pageKey: key, item)
+                        self.pages[key] = pageSpec
+                        print("updated key \(key) \(pageSpec)")
                     } catch {
                         err = "error processing updated key '\(key)': \(error)"
                         print(err!)
@@ -246,8 +246,8 @@ class ApplinSession: ObservableObject {
         if let pageKey = optPageKey {
             urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
             var reqObj: [String: JSON] = [:]
-            if let pageData = self.pages[pageKey] {
-                for (name, initialValue) in pageData.vars() {
+            if let pageSpec = self.pages[pageKey] {
+                for (name, initialValue) in pageSpec.vars() {
                     reqObj[name] = (self.vars[name] ?? initialValue).toJson()
                 }
             } else {
@@ -334,7 +334,7 @@ class ApplinSession: ObservableObject {
         return data
     }
 
-    @MainActor func doActionsAsync(pageKey: String, _ actions: [ActionData]) async -> Bool {
+    @MainActor func doActionsAsync(pageKey: String, _ actions: [ActionSpec]) async -> Bool {
         self.pauseUpdateNav = true
         defer {
             self.pauseUpdateNav = false
@@ -393,7 +393,7 @@ class ApplinSession: ObservableObject {
         return true
     }
 
-    func doActions(pageKey: String, _ actions: [ActionData]) {
+    func doActions(pageKey: String, _ actions: [ActionSpec]) {
         Task {
             await self.doActionsAsync(pageKey: pageKey, actions)
         }

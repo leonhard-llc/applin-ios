@@ -24,16 +24,16 @@ enum ModalKind: String {
     }
 }
 
-struct ModalData: Equatable {
+struct ModalSpec: Equatable {
     let connectionMode: ConnectionMode
     let kind: ModalKind
     let pageKey: String
     let text: String?
     let title: String
     let typ: String
-    let widgets: [ModalButtonData]
+    let widgets: [ModalButtonSpec]
 
-    init(pageKey: String, _ kind: ModalKind, title: String, text: String?, _ widgets: [ModalButtonData]) {
+    init(pageKey: String, _ kind: ModalKind, title: String, text: String?, _ widgets: [ModalButtonSpec]) {
         self.connectionMode = .disconnect
         self.kind = kind
         self.pageKey = pageKey
@@ -50,16 +50,16 @@ struct ModalData: Equatable {
         self.text = item.text
         self.title = try item.requireTitle()
         self.typ = kind.typ()
-        var widgets: [ModalButtonData] = []
+        var widgets: [ModalButtonSpec] = []
         guard let items = item.widgets else {
             throw ApplinError.deserializeError("\(self.typ).widgets is empty")
         }
         for item in items {
-            if item.typ == ModalButtonData.TYP {
-                widgets.append(try ModalButtonData(item))
+            if item.typ == ModalButtonSpec.TYP {
+                widgets.append(try ModalButtonSpec(item))
             } else {
                 throw ApplinError.deserializeError(
-                        "\(self.typ).widgets contains entry that is not \(ModalButtonData.TYP): \(item.typ)")
+                        "\(self.typ).widgets contains entry that is not \(ModalButtonSpec.TYP): \(item.typ)")
             }
         }
         self.widgets = widgets
@@ -103,7 +103,7 @@ struct ModalData: Equatable {
 //    Coding this to work reliably is very challenging.  I gave up.
 //
 // class ModalPageController: UIViewController, PageController {
-//    var data: ModalData?
+//    var spec: ModalSpec?
 //    var toPresent: AlertController?
 //    var presented: AlertController?
 //    var visible = false
@@ -116,13 +116,13 @@ struct ModalData: Equatable {
 //        false
 //    }
 //
-//    func update(_ session: ApplinSession, _ data: ModalData, isTop: Bool) {
-//        print("modal update isTop=\(isTop) \(data)")
+//    func update(_ session: ApplinSession, _ spec: ModalSpec, isTop: Bool) {
+//        print("modal update isTop=\(isTop) \(spec)")
 //        self.view.backgroundColor = .systemBackground // pastelPeach.withAlphaComponent(0.5)
 //        if isTop {
 //            if (self.presented == nil) || !(self.presented?.isBeingPresented ?? false) {
-//                let alert = AlertController(title: data.title, message: data.text, preferredStyle: data.kind.style())
-//                for widget in data.widgets {
+//                let alert = AlertController(title: spec.title, message: spec.text, preferredStyle: spec.kind.style())
+//                for widget in spec.widgets {
 //                    alert.addAction(widget.toAlertAction(session))
 //                }
 //                if self.visible {
@@ -138,8 +138,8 @@ struct ModalData: Equatable {
 //            }
 //        } else {
 //            print("modal dismiss")
-//            self.data = data
-//            self.title = data.title
+//            self.spec = spec
+//            self.title = spec.title
 //            self.toPresent = nil
 //            self.presented?.dismiss(animated: false, completion: {})
 //            self.presented = nil
@@ -169,29 +169,29 @@ struct ModalData: Equatable {
 // TODONT: Don't try to add the UIAlertController as a child view controller.
 //         It will display properly, but will not call button handlers.
 // class ModalPageController: UIViewController, PageController {
-//    var data: ModalData?
+//    var spec: ModalSpec?
 //    var alert: AlertController?
 //    let helper = SuperviewHelper()
 //
 //    func isModal() -> Bool { true }
 //    func allowBackSwipe() -> Bool { false }
 //
-//    func update(_ session: ApplinSession, _ data: ModalData, hasNextPage: Bool) {
-//        if data == self.data {
+//    func update(_ session: ApplinSession, _ spec: ModalSpec, hasNextPage: Bool) {
+//        if spec == self.spec {
 //            return
 //        }
 //        if self.alert != nil && !hasNextPage {
 //            print("postponing update to modal")
 //            return
 //        }
-//        self.data = data
-//        self.title = data.title
+//        self.spec = spec
+//        self.title = spec.title
 //        self.helper.removeSubviewsAndConstraints(self.view)
 //
 //        // self.view.backgroundColor = pastelPeach.withAlphaComponent(0.5)
 //        self.alert = nil
-//        self.alert = AlertController(title: data.title, message: data.text, preferredStyle: data.kind.style())
-//        for widget in data.widgets {
+//        self.alert = AlertController(title: spec.title, message: spec.text, preferredStyle: spec.kind.style())
+//        for widget in spec.widgets {
 //            self.alert!.addAction(widget.toAlertAction(session))
 //        }
 //        // This doesn't make a difference.

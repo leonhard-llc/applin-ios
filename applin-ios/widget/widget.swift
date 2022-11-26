@@ -12,7 +12,7 @@ enum WidgetPriority {
 protocol Widget {
     func getView() -> UIView
     func isFocused() -> Bool
-    func update(_ session: ApplinSession, _ data: Spec, _ subs: [Widget]) throws
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws
 }
 
 // Spec is an immutable tree of widget specifications.

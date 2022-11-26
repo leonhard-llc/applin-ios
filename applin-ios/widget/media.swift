@@ -2,7 +2,7 @@
 //import SwiftUI
 //import UIKit
 //
-//struct MediaData: Equatable, Hashable, View {
+//struct MediaSpec: Equatable, Hashable, View {
 //    static let TYP = "media"
 //    let url: URL
 //    let cache: Bool?
@@ -18,7 +18,7 @@
 //    }
 //
 //    func toJsonItem() -> JsonItem {
-//        let item = JsonItem(MarkdownPageData.TYP)
+//        let item = JsonItem(MarkdownPageSpec.TYP)
 //        item.url = self.url.absoluteString
 //        item.cache = self.cache
 //        return item
@@ -33,7 +33,7 @@
 //        switch cache.remove(self.keys()) {
 //        case let widget as MediaWidget:
 //            mediaWidget = widget
-//            mediaWidget.data = self
+//            mediaWidget.spec = self
 //        default:
 //            mediaWidget = MediaWidget(self)
 //        }
@@ -43,23 +43,23 @@
 //}
 //
 //class MediaWidget: Widget {
-//    var data: MediaData
+//    var spec: MediaSpec
 //    var subViewController: UIHostingController<AnyView>
 //    weak var session: ApplinSession?
 //
-//    init(_ data: MediaData) {
-//        print("MediaWidget.init(\(data))")
-//        self.data = data
-//        self.subViewController = UIHostingController(rootView: AnyView(data))
+//    init(_ spec: MediaSpec) {
+//        print("MediaWidget.init(\(spec))")
+//        self.spec = spec
+//        self.subViewController = UIHostingController(rootView: AnyView(spec))
 //    }
 //
 //    func keys() -> [String] {
-//        self.data.keys()
+//        self.spec.keys()
 //    }
 //
 //    func getView(_ session: ApplinSession, _ cache: WidgetCache) -> UIView {
 //        self.session = session
-//        self.subViewController.rootView = AnyView(self.data)
+//        self.subViewController.rootView = AnyView(self.spec)
 //        return self.subViewController
 //    }
 //

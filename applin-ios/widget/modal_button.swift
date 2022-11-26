@@ -1,9 +1,9 @@
 import Foundation
 import UIKit
 
-struct ModalButtonData: Equatable, Hashable {
+struct ModalButtonSpec: Equatable, Hashable {
     static let TYP = "modal-button"
-    let actions: [ActionData]
+    let actions: [ActionSpec]
     let isCancel: Bool
     let isDefault: Bool
     let isDestructive: Bool
@@ -18,7 +18,7 @@ struct ModalButtonData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(ModalButtonData.TYP)
+        let item = JsonItem(ModalButtonSpec.TYP)
         item.actions = self.actions.map({ action in action.toString() })
         item.isDefault = self.isDefault
         item.isDestructive = self.isDestructive

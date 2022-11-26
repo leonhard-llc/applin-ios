@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct PlainPageData: Equatable {
+struct PlainPageSpec: Equatable {
     static let TYP = "plain-page"
     let connectionMode: ConnectionMode
     let title: String?
@@ -20,7 +20,7 @@ struct PlainPageData: Equatable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(PlainPageData.TYP)
+        let item = JsonItem(PlainPageSpec.TYP)
         item.pollSeconds = self.connectionMode.getPollSeconds()
         item.stream = self.connectionMode.getStream()
         item.title = self.title
@@ -34,7 +34,7 @@ struct PlainPageData: Equatable {
 }
 
 class PlainPageController: UIViewController, PageController {
-    var data: PlainPageData?
+    var spec: PlainPageSpec?
     var helper: SingleViewContainerHelper!
 
     init() {
@@ -57,15 +57,15 @@ class PlainPageController: UIViewController, PageController {
     func update(
             _ session: ApplinSession,
             _ cache: WidgetCache,
-            _ newData: PlainPageData
+            _ newSpec: PlainPageSpec
     ) {
-        if newData == self.data {
+        if newSpec == self.spec {
             return
         }
-        self.data = newData
-        self.title = newData.title
+        self.spec = newSpec
+        self.title = newSpec.title
         self.view.backgroundColor = .systemBackground
-        let widget = cache.updateAll(session, newData.widget)
+        let widget = cache.updateAll(session, newSpec.widget)
         let subView = widget.getView()
         self.helper.update(subView) {
             // subView.setNeedsDisplay()

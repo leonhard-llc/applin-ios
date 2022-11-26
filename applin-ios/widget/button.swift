@@ -3,7 +3,7 @@ import UIKit
 
 struct ButtonSpec: Equatable, Hashable {
     static let TYP = "button"
-    let actions: [ActionData]
+    let actions: [ActionSpec]
     let pageKey: String
     let text: String
 
@@ -13,7 +13,7 @@ struct ButtonSpec: Equatable, Hashable {
         self.text = try item.requireText()
     }
 
-    init(pageKey: String, text: String, actions: [ActionData] = []) {
+    init(pageKey: String, text: String, actions: [ActionSpec] = []) {
         self.pageKey = pageKey
         self.text = text
         self.actions = actions
@@ -90,15 +90,15 @@ class ButtonWidget: Widget {
     }
 
     func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
-        guard case let .button(buttonData) = spec.value else {
+        guard case let .button(buttonSpec) = spec.value else {
             throw "Expected .button got: \(spec)"
         }
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.spec = buttonData
+        self.spec = buttonSpec
         self.session = session
-        self.button.setTitle("  \(buttonData.text)  ", for: .normal)
+        self.button.setTitle("  \(buttonSpec.text)  ", for: .normal)
         self.button.isEnabled = !self.spec.actions.isEmpty
         self.button.layer.borderColor = self.spec.actions.isEmpty ? UIColor.systemGray.cgColor : UIColor.tintColor.cgColor
     }

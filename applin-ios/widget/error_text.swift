@@ -84,12 +84,12 @@ class ErrorTextWidget: Widget {
     }
 
     func update(_: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
-        guard case let .errorText(errorData) = spec.value else {
+        guard case let .errorText(errorTextSpec) = spec.value else {
             throw "Expected .errorText got: \(spec)"
         }
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.label.text = errorData.text
+        self.label.text = errorTextSpec.text
     }
 }

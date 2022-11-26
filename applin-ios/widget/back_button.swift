@@ -3,7 +3,7 @@ import UIKit
 
 struct BackButtonSpec: Equatable, Hashable {
     static let TYP = "back-button"
-    let actions: [ActionData]
+    let actions: [ActionSpec]
     let pageKey: String
 
     init(pageKey: String, _ item: JsonItem) throws {

@@ -67,13 +67,13 @@ class AlertController: UIAlertController {
 
 private struct Entry {
     let key: String
-    let data: PageSpec
+    let pageSpec: PageSpec
     let controller: PageController
     let cache: WidgetCache
 
-    init(_ key: String, _ data: PageSpec, _ controller: PageController, _ cache: WidgetCache) {
+    init(_ key: String, _ pageSpec: PageSpec, _ controller: PageController, _ cache: WidgetCache) {
         self.key = key
-        self.data = data
+        self.pageSpec = pageSpec
         self.controller = controller
         self.cache = cache
     }
@@ -152,28 +152,28 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         precondition(!newPages.isEmpty)
         var newEntries: [Entry] = []
         var newModals: [UIViewController] = []
-        for (key, pageData) in newPages {
+        for (key, pageSpec) in newPages {
             let hasPrevPage = !newEntries.isEmpty
-            switch pageData {
-            case let .modal(data):
-                let alert = data.toAlert(session)
+            switch pageSpec {
+            case let .modal(modalSpec):
+                let alert = modalSpec.toAlert(session)
                 alert.delegate = self
                 alert.setAnimated(false)
                 newModals.append(alert)
-            case let .navPage(data):
+            case let .navPage(navPageSpec):
                 newModals = []
                 let entry = self.removeEntry(key)
                 let cache = entry?.cache ?? WidgetCache()
                 let ctl = entry?.controller as? NavPageController ?? NavPageController(self, session, cache)
-                ctl.update(session, cache, data, hasPrevPage: hasPrevPage)
-                newEntries.append(Entry(key, pageData, ctl, cache))
-            case let .plainPage(data):
+                ctl.update(session, cache, navPageSpec, hasPrevPage: hasPrevPage)
+                newEntries.append(Entry(key, pageSpec, ctl, cache))
+            case let .plainPage(plainPageSpec):
                 newModals = []
                 let entry = self.removeEntry(key)
                 let cache = entry?.cache ?? WidgetCache()
                 let ctl = entry?.controller as? PlainPageController ?? PlainPageController()
-                ctl.update(session, cache, data)
-                newEntries.append(Entry(key, pageData, ctl, cache))
+                ctl.update(session, cache, plainPageSpec)
+                newEntries.append(Entry(key, pageSpec, ctl, cache))
             }
         }
         self.modals = [] // So modalDismissed delegate func will not present any modals.

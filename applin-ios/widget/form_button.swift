@@ -3,12 +3,12 @@ import UIKit
 
 struct FormButtonSpec: Equatable, Hashable {
     static let TYP = "form-button"
-    let actions: [ActionData]
+    let actions: [ActionSpec]
     let alignment: ApplinHAlignment?
     let pageKey: String
     let text: String
 
-    init(pageKey: String, _ actions: [ActionData], text: String) {
+    init(pageKey: String, _ actions: [ActionSpec], text: String) {
         self.actions = actions
         self.alignment = .center
         self.pageKey = pageKey
@@ -114,12 +114,12 @@ class FormButtonWidget: Widget {
     }
 
     func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
-        guard case let .formButton(formButtonData) = spec.value else {
+        guard case let .formButton(formButtonSpec) = spec.value else {
             throw "Expected .formButton got: \(spec)"
         }
-        self.spec = formButtonData
+        self.spec = formButtonSpec
         self.session = session
-        self.button.setTitle("  \(formButtonData.text)  ", for: .normal)
+        self.button.setTitle("  \(formButtonSpec.text)  ", for: .normal)
         self.button.isEnabled = !self.spec.actions.isEmpty
         switch self.spec.alignment {
         case nil, .center:

@@ -2,7 +2,7 @@
 //
 //struct ApplinRow: Equatable, Hashable {
 //    static let TYP = "row"
-//    let widgets: [WidgetData]
+//    let widgets: [WidgetSpec]
 //    let alignment: ApplinVAlignment
 //    let spacing: Float32?
 //

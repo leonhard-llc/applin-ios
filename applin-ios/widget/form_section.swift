@@ -107,10 +107,10 @@ class FormSectionWidget: Widget {
     }
 
     func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
-        guard case let .formSection(formSectionData) = spec.value else {
+        guard case let .formSection(formSectionSpec) = spec.value else {
             throw "Expected .formSection got: \(spec)"
         }
-        self.label.text = formSectionData.optTitle?.uppercased()
+        self.label.text = formSectionSpec.optTitle?.uppercased()
         self.columnView.update(
                 .start,
                 separator: .separator,

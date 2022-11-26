@@ -6,17 +6,17 @@ struct FormTextfieldSpec: Equatable, Hashable {
     let checkRpc: String?
     let label: String
     let pageKey: String
-    let textfieldData: TextfieldSpec
+    let textfieldSpec: TextfieldSpec
 
     init(pageKey: String, _ item: JsonItem) throws {
         self.checkRpc = item.checkRpc
         self.label = try item.requireLabel()
         self.pageKey = pageKey
-        self.textfieldData = try TextfieldSpec(pageKey: pageKey, item)
+        self.textfieldSpec = try TextfieldSpec(pageKey: pageKey, item)
     }
 
     func toJsonItem() -> JsonItem {
-        let item = self.textfieldData.toJsonItem()
+        let item = self.textfieldSpec.toJsonItem()
         item.typ = FormTextfieldSpec.TYP
         item.checkRpc = self.checkRpc
         item.label = self.label
@@ -24,7 +24,7 @@ struct FormTextfieldSpec: Equatable, Hashable {
     }
 
     func keys() -> [String] {
-        ["form-textfield:\(self.textfieldData.varName)"]
+        ["form-textfield:\(self.textfieldSpec.varName)"]
     }
 
     func priority() -> WidgetPriority {
@@ -44,7 +44,7 @@ struct FormTextfieldSpec: Equatable, Hashable {
     }
 
     func vars() -> [(String, Var)] {
-        [(self.textfieldData.varName, .string(self.textfieldData.initialString ?? ""))]
+        [(self.textfieldSpec.varName, .string(self.textfieldSpec.initialString ?? ""))]
     }
 }
 
@@ -83,7 +83,7 @@ class FormTextfieldWidget: Widget {
         self.errorLabel.numberOfLines = 0
         self.container.addSubview(self.errorLabel)
 
-        self.textfieldWidget = TextfieldWidget(spec.textfieldData)
+        self.textfieldWidget = TextfieldWidget(spec.textfieldSpec)
         let textfield = self.textfieldWidget.getView()
         self.container.addSubview(textfield)
 
@@ -126,16 +126,16 @@ class FormTextfieldWidget: Widget {
     }
 
     func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
-        guard case let .formTextfield(data) = spec.value else {
+        guard case let .formTextfield(formTextfieldSpec) = spec.value else {
             throw "Expected .text got: \(spec)"
         }
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.spec = data
+        self.spec = formTextfieldSpec
         self.session = session
         self.label.text = self.spec.label
-        try self.textfieldWidget.update(session, Spec(.textfield(self.spec.textfieldData)), [])
+        try self.textfieldWidget.update(session, Spec(.textfield(self.spec.textfieldSpec)), [])
         let textfield = self.textfieldWidget.getView()
         if let errorMessage = self.errorMessage {
             self.errorImageView.isHidden = false

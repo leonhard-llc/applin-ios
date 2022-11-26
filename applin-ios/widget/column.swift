@@ -74,13 +74,13 @@ class ColumnWidget: Widget {
     }
 
     func update(_: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
-        guard case let .column(columnData) = spec.value else {
+        guard case let .column(columnSpec) = spec.value else {
             throw "Expected .column got: \(spec)"
         }
         self.columnView.update(
-                columnData.alignment,
+                columnSpec.alignment,
                 separator: nil,
-                spacing: columnData.spacing,
+                spacing: columnSpec.spacing,
                 subviews: subs.map { widget in
                     widget.getView()
                 }

@@ -8,7 +8,7 @@ func createDir(_ path: String) throws {
 }
 
 func decodeBundleJsonFile<T: Decodable>(_ filename: String) async throws -> T {
-    let data = try await readBundleFile(filename: filename)
+    let data: Data = try await readBundleFile(filename: filename)
     do {
         let decoder = JSONDecoder()
         return try decoder.decode(T.self, from: data)

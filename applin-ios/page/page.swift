@@ -7,20 +7,20 @@ protocol PageController: UIViewController {
 }
 
 enum PageSpec: Equatable {
-    case modal(ModalData)
-    case navPage(NavPageData)
-    case plainPage(PlainPageData)
+    case modal(ModalSpec)
+    case navPage(NavPageSpec)
+    case plainPage(PlainPageSpec)
 
     init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
         case ModalKind.alert.typ():
-            self = try .modal(ModalData(pageKey: pageKey, .alert, item))
+            self = try .modal(ModalSpec(pageKey: pageKey, .alert, item))
         case ModalKind.drawer.typ():
-            self = try .modal(ModalData(pageKey: pageKey, .drawer, item))
-        case NavPageData.TYP:
-            self = try .navPage(NavPageData(session, pageKey: pageKey, item))
-        case PlainPageData.TYP:
-            self = try .plainPage(PlainPageData(session, pageKey: pageKey, item))
+            self = try .modal(ModalSpec(pageKey: pageKey, .drawer, item))
+        case NavPageSpec.TYP:
+            self = try .navPage(NavPageSpec(session, pageKey: pageKey, item))
+        case PlainPageSpec.TYP:
+            self = try .plainPage(PlainPageSpec(session, pageKey: pageKey, item))
         default:
             throw ApplinError.deserializeError("unexpected page 'typ' value: \(item.typ)")
         }

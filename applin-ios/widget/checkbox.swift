@@ -139,13 +139,13 @@ class CheckboxWidget: Widget {
     }
 
     func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
-        guard case let .checkbox(checkboxData) = spec.value else {
+        guard case let .checkbox(checkboxSpec) = spec.value else {
             throw "Expected .checkbox got: \(spec)"
         }
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.spec = checkboxData
+        self.spec = checkboxSpec
         self.session = session
         self.button.setTitle(self.spec.text, for: .normal)
         self.updateImage()

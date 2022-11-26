@@ -39,7 +39,7 @@ func readCacheFile(dataDirPath: String, _ session: ApplinSession) async {
     }
     for (key, item) in contents.pages ?? [:] {
         do {
-            session.pages[key] = try PageData(session, pageKey: key, item)
+            session.pages[key] = try PageSpec(session, pageKey: key, item)
         } catch {
             print("error loading cached key '\(key)': \(error)")
         }

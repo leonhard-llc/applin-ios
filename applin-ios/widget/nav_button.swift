@@ -3,7 +3,7 @@ import UIKit
 
 struct NavButtonSpec: Equatable, Hashable {
     static let TYP = "nav-button"
-    let actions: [ActionData]
+    let actions: [ActionSpec]
     let pageKey: String
     let photoUrl: URL?
     let subText: String?
@@ -122,13 +122,13 @@ class NavButtonWidget: Widget {
     }
 
     func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
-        guard case let .navButton(navButtonData) = spec.value else {
+        guard case let .navButton(navButtonSpec) = spec.value else {
             throw "Expected .navButton got: \(spec)"
         }
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.spec = navButtonData
+        self.spec = navButtonSpec
         self.session = session
         self.label.text = self.spec.text
         self.constraints.set([

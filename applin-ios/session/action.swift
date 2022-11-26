@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-enum ActionData: Codable, Equatable, Hashable {
+enum ActionSpec: Codable, Equatable, Hashable {
     case copyToClipboard(String)
     case launchUrl(URL)
     case logout
@@ -70,7 +70,7 @@ enum ActionData: Codable, Equatable, Hashable {
     }
 }
 
-extension Array where Element == ActionData {
+extension Array where Element == ActionSpec {
     func toString() -> String {
         "[\(self.map({ action in action.toString() }).joined(separator: ","))]"
     }

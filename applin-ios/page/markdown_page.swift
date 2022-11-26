@@ -8,8 +8,8 @@
 //    case ok(String)
 //}
 //
-//struct MarkdownPageData: Equatable {
-//    static func ==(lhs: MarkdownPageData, rhs: MarkdownPageData) -> Bool {
+//struct MarkdownPageSpec: Equatable {
+//    static func ==(lhs: MarkdownPageSpec, rhs: MarkdownPageSpec) -> Bool {
 //        lhs.title == rhs.title
 //                && lhs.url == rhs.url
 //                && lhs.cache == rhs.cache
@@ -34,7 +34,7 @@
 //    }
 //
 //    func toJsonItem() -> JsonItem {
-//        let item = JsonItem(MarkdownPageData.TYP)
+//        let item = JsonItem(MarkdownPageSpec.TYP)
 //        item.title = self.title
 //        item.url = self.url.absoluteString
 //        item.cache = self.cache
@@ -150,7 +150,7 @@
 //}
 //
 //class MarkdownPageController: UIHostingController<AnyView>, PageController {
-//    var data: MarkdownPageData?
+//    var spec: MarkdownPageSpec?
 //
 //    func isModal() -> Bool {
 //        false
@@ -163,13 +163,13 @@
 //    func update(
 //            _ navController: NavigationController,
 //            _ session: ApplinSession,
-//            _ newData: MarkdownPageData
+//            _ newSpec: MarkdownPageSpec
 //    ) {
-//        if newData == self.data {
+//        if newSpec == self.spec {
 //            return
 //        }
-//        self.data = newData
-//        self.title = newData.title
-//        self.rootView = newData.toView(session)
+//        self.spec = newSpec
+//        self.title = newSpec.title
+//        self.rootView = newSpec.toView(session)
 //    }
 //}
