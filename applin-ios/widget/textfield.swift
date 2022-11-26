@@ -113,12 +113,28 @@ class TextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
         default:
             NSLayoutConstraint.activate([self.textview.heightAnchor.constraint(greaterThanOrEqualToConstant: 40)])
         }
-        self.textview.keyboardType = data.allow.keyboardType()
-        self.textview.autocapitalizationType = data.autoCapitalize?.textAutocapitalizationType() ?? .none
-        self.textview.layer.borderColor = UIColor.systemGray4.cgColor
-        self.textview.layer.borderWidth = 1.0
-        self.textview.layer.cornerRadius = 4.0
-        self.textview.reloadInputViews()
+
+        //self.textview.keyboardType = data.allow.keyboardType()
+        //self.textview.autocapitalizationType = data.autoCapitalize?.textAutocapitalizationType() ?? .none
+        //self.textview.layer.borderColor = UIColor.systemGray4.cgColor
+        //self.textview.layer.borderWidth = 1.0
+        //self.textview.layer.cornerRadius = 4.0
+        //self.textview.reloadInputViews()
+        let keyboardTypeChanged = self.textview.keyboardType != data.allow.keyboardType()
+        if keyboardTypeChanged {
+            print("TextfieldWidget(\(data.varName) keyboardType changed \(self.textview.keyboardType) -> \(data.allow.keyboardType())")
+            self.textview.keyboardType = data.allow.keyboardType()
+        }
+        let newAutocapType = data.autoCapitalize?.textAutocapitalizationType() ?? .none
+        let autocapTypeChanged = self.textview.autocapitalizationType != newAutocapType
+        if autocapTypeChanged {
+            print("TextfieldWidget(\(data.varName) autocapitalizationType changed \(self.textview.autocapitalizationType) -> \(newAutocapType)")
+            self.textview.autocapitalizationType = newAutocapType
+        }
+        if keyboardTypeChanged || autocapTypeChanged {
+            print("TextfieldWidget(\(data.varName) reloadInputViews()")
+            self.textview.reloadInputViews()
+        }
     }
 
     // UITextViewDelegate
