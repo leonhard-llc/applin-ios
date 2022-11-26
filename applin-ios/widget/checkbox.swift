@@ -99,7 +99,7 @@ class CheckboxWidget: WidgetProto {
         self.container
     }
 
-    func isFocused(_: ApplinSession, _: Spec) -> Bool {
+    func isFocused() -> Bool {
         self.button.isFocused
     }
 

@@ -11,8 +11,7 @@ enum WidgetPriority {
 
 protocol WidgetProto {
     func getView() -> UIView
-    // TODO(mleonhard) Remove session and data params.
-    func isFocused(_ session: ApplinSession, _ data: Spec) -> Bool
+    func isFocused() -> Bool
     func update(_ session: ApplinSession, _ data: Spec, _ subs: [WidgetProto]) throws
 }
 

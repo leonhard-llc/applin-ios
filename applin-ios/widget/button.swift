@@ -79,7 +79,7 @@ class ButtonWidget: WidgetProto {
         self.button
     }
 
-    func isFocused(_: ApplinSession, _: Spec) -> Bool {
+    func isFocused() -> Bool {
         self.button.isFocused
     }
 

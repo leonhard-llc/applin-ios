@@ -48,7 +48,7 @@ class EmptyWidget: WidgetProto {
         self.view
     }
 
-    func isFocused(_: ApplinSession, _: Spec) -> Bool {
+    func isFocused() -> Bool {
         false
     }
 

@@ -94,7 +94,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
         self.textview
     }
 
-    func isFocused(_ session: ApplinSession, _ data: Spec) -> Bool {
+    func isFocused() -> Bool {
         self.textview.isFirstResponder
     }
 

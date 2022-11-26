@@ -67,7 +67,7 @@ class FormWidget: WidgetProto {
         self.columnView
     }
 
-    func isFocused(_: ApplinSession, _: Spec) -> Bool {
+    func isFocused() -> Bool {
         false
     }
 

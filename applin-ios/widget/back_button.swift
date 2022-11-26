@@ -48,7 +48,7 @@ struct BackButtonData: Equatable, Hashable {
 }
 
 class BackButtonWidget: WidgetProto {
-    func isFocused(_: ApplinSession, _: Spec) -> Bool {
+    func isFocused() -> Bool {
         false
     }
 

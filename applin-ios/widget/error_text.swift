@@ -79,7 +79,7 @@ class ErrorTextWidget: WidgetProto {
         self.container
     }
 
-    func isFocused(_: ApplinSession, _: Spec) -> Bool {
+    func isFocused() -> Bool {
         false
     }
 

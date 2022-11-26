@@ -102,7 +102,7 @@ class ScrollWidget: WidgetProto {
         self.scrollView
     }
 
-    func isFocused(_: ApplinSession, _: Spec) -> Bool {
+    func isFocused() -> Bool {
         false
     }
 

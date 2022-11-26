@@ -110,7 +110,7 @@ class FormTextfieldWidget: WidgetProto {
         self.container.onTap = { [weak self] in
             self?.textfieldWidget.getView().becomeFirstResponder()
         }
-        // TODO(mleonhard) Register onChanged callback and do checkRpc.
+        // TODO: Register onChanged callback and do checkRpc.
     }
 
     func keys() -> [String] {
@@ -121,7 +121,7 @@ class FormTextfieldWidget: WidgetProto {
         self.container
     }
 
-    func isFocused(_: ApplinSession, _: Spec) -> Bool {
+    func isFocused() -> Bool {
         self.textfieldWidget.getView().isFocused
     }
 

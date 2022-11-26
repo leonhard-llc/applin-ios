@@ -6,7 +6,7 @@ private class UpdaterNode {
         root.getSomeWidgets(session, cache, spec) { data in
             if data.priority() == .focusable {
                 if let widget = cache.findStale(data) {
-                    return widget.isFocused(session, data)
+                    return widget.isFocused()
                 }
             }
             return false
