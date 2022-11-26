@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct PlainPageData: Equatable, PageDataProto {
+struct PlainPageData: Equatable {
     static let TYP = "plain-page"
     let connectionMode: ConnectionMode
     let title: String?

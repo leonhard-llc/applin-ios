@@ -6,12 +6,6 @@ protocol PageController: UIViewController {
     func isModal() -> Bool
 }
 
-protocol PageDataProto {
-    var connectionMode: ConnectionMode { get }
-    func toJsonItem() -> JsonItem
-    func vars() -> [(String, Var)]
-}
-
 enum PageData: Equatable {
     case modal(ModalData)
     case navPage(NavPageData)
@@ -32,14 +26,38 @@ enum PageData: Equatable {
         }
     }
 
-    func inner() -> PageDataProto {
+    var connectionMode: ConnectionMode {
+        get {
+            switch self {
+            case let .modal(inner):
+                return inner.connectionMode
+            case let .navPage(inner):
+                return inner.connectionMode
+            case let .plainPage(inner):
+                return inner.connectionMode
+            }
+        }
+    }
+
+    func toJsonItem() -> JsonItem {
         switch self {
         case let .modal(inner):
-            return inner
+            return inner.toJsonItem()
         case let .navPage(inner):
-            return inner
+            return inner.toJsonItem()
         case let .plainPage(inner):
-            return inner
+            return inner.toJsonItem()
+        }
+    }
+    
+    func vars() -> [(String, Var)] {
+        switch self {
+        case let .modal(inner):
+            return inner.vars()
+        case let .navPage(inner):
+            return inner.vars()
+        case let .plainPage(inner):
+            return inner.vars()
         }
     }
 }

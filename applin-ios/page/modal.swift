@@ -24,7 +24,7 @@ enum ModalKind: String {
     }
 }
 
-struct ModalData: Equatable, PageDataProto {
+struct ModalData: Equatable {
     let connectionMode: ConnectionMode
     let kind: ModalKind
     let pageKey: String

@@ -77,7 +77,7 @@ class CacheFileWriter {
                 return nil
             }
         })
-        contents.pages = session.pages.mapValues({ page in page.inner().toJsonItem() })
+        contents.pages = session.pages.mapValues({ page in page.toJsonItem() })
         contents.stack = session.stack
         let bytes = try encodeJson(contents)
         let path = dataDirPath + "/" + CacheFileWriter.cacheFileName

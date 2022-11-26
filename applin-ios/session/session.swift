@@ -85,7 +85,7 @@ class ApplinSession: ObservableObject {
                     ))
             return (key, page)
         })
-        self.connectionMode = entries.map({ (_, data) in data.inner().connectionMode }).min() ?? .disconnect
+        self.connectionMode = entries.map({ (_, data) in data.connectionMode }).min() ?? .disconnect
         self.connection?.setMode(self, self.connectionMode)
         Task {
             await self.nav?.setStackPages(self, entries)
@@ -247,7 +247,7 @@ class ApplinSession: ObservableObject {
             urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
             var reqObj: [String: JSON] = [:]
             if let pageData = self.pages[pageKey] {
-                for (name, initialValue) in pageData.inner().vars() {
+                for (name, initialValue) in pageData.vars() {
                     reqObj[name] = (self.vars[name] ?? initialValue).toJson()
                 }
             } else {

@@ -7,7 +7,7 @@ enum StartEnum: Equatable {
     case empty
 }
 
-struct NavPageData: Equatable, PageDataProto {
+struct NavPageData: Equatable {
     static let TYP = "nav-page"
     let connectionMode: ConnectionMode
     let end: Spec?
