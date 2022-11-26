@@ -17,14 +17,6 @@ enum PageData: Equatable {
     case navPage(NavPageData)
     case plainPage(PlainPageData)
 
-    static func notFound(pageKey: String) -> PageData {
-        .navPage(NavPageData(
-                pageKey: pageKey,
-                title: "Not Found",
-                widget: .text(TextData("Page not found."))
-        ))
-    }
-
     init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
         case ModalKind.alert.typ():
