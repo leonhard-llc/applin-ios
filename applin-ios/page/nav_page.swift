@@ -11,7 +11,6 @@ struct NavPageData: Equatable, PageDataProto {
     static let TYP = "nav-page"
     let connectionMode: ConnectionMode
     let end: WidgetData?
-    let pageKey: String
     let start: StartEnum
     let title: String
     let widget: WidgetData
@@ -25,7 +24,6 @@ struct NavPageData: Equatable, PageDataProto {
     ) {
         self.connectionMode = .disconnect
         self.end = end
-        self.pageKey = pageKey
         self.start = start
         self.title = title
         self.widget = widget
@@ -34,7 +32,6 @@ struct NavPageData: Equatable, PageDataProto {
     init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.end = try item.optEnd(session, pageKey: pageKey)
-        self.pageKey = pageKey
         switch try item.optStart(session, pageKey: pageKey) {
         case let .backButton(inner):
             self.start = .backButton(inner)
