@@ -1,12 +1,12 @@
 import Foundation
 import UIKit
 
-struct FormSectionData: Equatable, Hashable, WidgetDataProto {
+struct FormSectionData: Equatable, Hashable {
     static let TYP = "form-section"
     let optTitle: String?
-    let widgets: [WidgetData]
+    let widgets: [Spec]
 
-    init(_ title: String?, _ widgets: [WidgetData]) {
+    init(_ title: String?, _ widgets: [Spec]) {
         self.optTitle = title
         self.widgets = widgets
     }
@@ -19,7 +19,7 @@ struct FormSectionData: Equatable, Hashable, WidgetDataProto {
     func toJsonItem() -> JsonItem {
         let item = JsonItem(FormSectionData.TYP)
         item.title = self.optTitle
-        item.widgets = self.widgets.map({ widgets in widgets.inner().toJsonItem() })
+        item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
     }
 
@@ -31,12 +31,12 @@ struct FormSectionData: Equatable, Hashable, WidgetDataProto {
         .stateless
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         self.widgets
     }
 
     func vars() -> [(String, Var)] {
-        self.widgets.flatMap({ widget in widget.inner().vars() })
+        self.widgets.flatMap({ widget in widget.vars() })
     }
 
     func widgetClass() -> AnyClass {
@@ -101,13 +101,13 @@ class FormSectionWidget: WidgetProto {
         self.container
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         false
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case let .formSection(formSectionData) = data else {
-            throw "Expected .formSection got: \(data)"
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case let .formSection(formSectionData) = spec.value else {
+            throw "Expected .formSection got: \(spec)"
         }
         self.label.text = formSectionData.optTitle?.uppercased()
         self.columnView.update(

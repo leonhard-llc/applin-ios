@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ButtonData: Equatable, Hashable, WidgetDataProto {
+struct ButtonData: Equatable, Hashable {
     static let TYP = "button"
     let actions: [ActionData]
     let pageKey: String
@@ -28,7 +28,7 @@ struct ButtonData: Equatable, Hashable, WidgetDataProto {
         .focusable
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         []
     }
 
@@ -79,13 +79,16 @@ class ButtonWidget: WidgetProto {
         self.button
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         self.button.isFocused
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case let .button(buttonData) = data else {
-            throw "Expected .button got: \(data)"
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case let .button(buttonData) = spec.value else {
+            throw "Expected .button got: \(spec)"
+        }
+        if !subs.isEmpty {
+            throw "Expected no subs got: \(subs)"
         }
         self.data = buttonData
         self.session = session

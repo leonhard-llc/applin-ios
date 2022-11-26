@@ -5,9 +5,9 @@ struct PlainPageData: Equatable, PageDataProto {
     static let TYP = "plain-page"
     let connectionMode: ConnectionMode
     let title: String?
-    let widget: WidgetData
+    let widget: Spec
 
-    init(title: String?, _ widget: WidgetData) {
+    init(title: String?, _ widget: Spec) {
         self.connectionMode = .disconnect
         self.title = title
         self.widget = widget
@@ -24,12 +24,12 @@ struct PlainPageData: Equatable, PageDataProto {
         item.pollSeconds = self.connectionMode.getPollSeconds()
         item.stream = self.connectionMode.getStream()
         item.title = self.title
-        item.widget = self.widget.inner().toJsonItem()
+        item.widget = self.widget.toJsonItem()
         return item
     }
 
     func vars() -> [(String, Var)] {
-        self.widget.inner().vars()
+        self.widget.vars()
     }
 }
 

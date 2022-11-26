@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct EmptyData: Equatable, Hashable, WidgetDataProto {
+struct EmptyData: Equatable, Hashable {
     static let TYP = "empty"
 
     func toJsonItem() -> JsonItem {
@@ -17,7 +17,7 @@ struct EmptyData: Equatable, Hashable, WidgetDataProto {
         .stateless
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         []
     }
 
@@ -48,10 +48,16 @@ class EmptyWidget: WidgetProto {
         self.view
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         false
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
+    func update(_: ApplinSession, _ spec: Spec, _  subs: [WidgetProto]) throws {
+        guard case .empty = spec.value else {
+            throw "Expected .empty got: \(spec)"
+        }
+        if !subs.isEmpty {
+            throw "Expected no subs got: \(subs)"
+        }
     }
 }

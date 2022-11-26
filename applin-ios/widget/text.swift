@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct TextData: Equatable, Hashable, WidgetDataProto {
+struct TextData: Equatable, Hashable {
     static let TYP = "text"
     let text: String
 
@@ -27,7 +27,7 @@ struct TextData: Equatable, Hashable, WidgetDataProto {
         .stateless
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         []
     }
 
@@ -79,14 +79,17 @@ class TextWidget: WidgetProto {
         self.container
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         false
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case let .text(textData) = data else {
-            throw "Expected .text got: \(data)"
+    func update(_: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case let .text(textSpec) = spec.value else {
+            throw "Expected .text got: \(spec)"
         }
-        self.label.text = textData.text
+        if !subs.isEmpty {
+            throw "Expected no subs got: \(subs)"
+        }
+        self.label.text = textSpec.text
     }
 }

@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct FormTextfieldData: Equatable, Hashable, WidgetDataProto {
+struct FormTextfieldData: Equatable, Hashable {
     static let TYP = "form-textfield"
     let checkRpc: String?
     let label: String
@@ -31,7 +31,7 @@ struct FormTextfieldData: Equatable, Hashable, WidgetDataProto {
         .focusable
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         []
     }
 
@@ -121,18 +121,21 @@ class FormTextfieldWidget: WidgetProto {
         self.container
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         self.textfieldWidget.getView().isFocused
     }
 
-    func update(_ session: ApplinSession, _ widgetData: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case let .formTextfield(data) = widgetData else {
-            throw "Expected .text got: \(widgetData)"
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case let .formTextfield(data) = spec.value else {
+            throw "Expected .text got: \(spec)"
+        }
+        if !subs.isEmpty {
+            throw "Expected no subs got: \(subs)"
         }
         self.data = data
         self.session = session
         self.label.text = self.data.label
-        try self.textfieldWidget.update(session, .textfield(self.data.textfieldData), [])
+        try self.textfieldWidget.update(session, Spec(.textfield(self.data.textfieldData)), [])
         let textfield = self.textfieldWidget.getView()
         if let errorMessage = self.errorMessage {
             self.errorImageView.isHidden = false

@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct NavButtonData: Equatable, Hashable, WidgetDataProto {
+struct NavButtonData: Equatable, Hashable {
     static let TYP = "nav-button"
     let actions: [ActionData]
     let pageKey: String
@@ -41,7 +41,7 @@ struct NavButtonData: Equatable, Hashable, WidgetDataProto {
         .focusable
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         []
     }
 
@@ -112,7 +112,7 @@ class NavButtonWidget: WidgetProto {
         self.container
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         self.container.isPressed
     }
 
@@ -121,9 +121,12 @@ class NavButtonWidget: WidgetProto {
         self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case let .navButton(navButtonData) = data else {
-            throw "Expected .navButton got: \(data)"
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case let .navButton(navButtonData) = spec.value else {
+            throw "Expected .navButton got: \(spec)"
+        }
+        if !subs.isEmpty {
+            throw "Expected no subs got: \(subs)"
         }
         self.data = navButtonData
         self.session = session

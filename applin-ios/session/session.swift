@@ -81,7 +81,7 @@ class ApplinSession: ObservableObject {
                             pageKey: key,
                             title: "Not Found",
                             // TODO: Center the text.
-                            widget: .text(TextData("Page not found."))
+                            widget: Spec(.text(TextData("Page not found.")))
                     ))
             return (key, page)
         })

@@ -6,11 +6,11 @@ import UIKit
 //         Also, the APIs of UITableView, UITableViewDataSource, and UITableViewDiffableDataSource are extremely hard
 //         to use.
 
-struct FormData: Equatable, Hashable, WidgetDataProto {
+struct FormData: Equatable, Hashable {
     static let TYP = "form"
-    let widgets: [WidgetData]
+    let widgets: [Spec]
 
-    init(_ widgets: [WidgetData]) {
+    init(_ widgets: [Spec]) {
         self.widgets = widgets
     }
 
@@ -20,7 +20,7 @@ struct FormData: Equatable, Hashable, WidgetDataProto {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(FormData.TYP)
-        item.widgets = self.widgets.map({ widgets in widgets.inner().toJsonItem() })
+        item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
     }
 
@@ -32,12 +32,12 @@ struct FormData: Equatable, Hashable, WidgetDataProto {
         .stateless
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         self.widgets
     }
 
     func vars() -> [(String, Var)] {
-        self.widgets.flatMap({ widget in widget.inner().vars() })
+        self.widgets.flatMap({ widget in widget.vars() })
     }
 
     func widgetClass() -> AnyClass {
@@ -67,13 +67,13 @@ class FormWidget: WidgetProto {
         self.columnView
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         false
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case .form = data else {
-            throw "Expected .form got: \(data)"
+    func update(_: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case .form = spec.value else {
+            throw "Expected .form got: \(spec)"
         }
         self.columnView.update(
                 .start,

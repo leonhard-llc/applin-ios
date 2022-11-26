@@ -1,6 +1,6 @@
 import UIKit
 
-struct ErrorTextData: Equatable, Hashable, WidgetDataProto {
+struct ErrorTextData: Equatable, Hashable {
     static let TYP = "error-text"
     let text: String
 
@@ -22,7 +22,7 @@ struct ErrorTextData: Equatable, Hashable, WidgetDataProto {
         .stateless
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         []
     }
 
@@ -79,13 +79,16 @@ class ErrorTextWidget: WidgetProto {
         self.container
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         false
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case let .errorText(errorData) = data else {
-            throw "Expected .errorText got: \(data)"
+    func update(_: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case let .errorText(errorData) = spec.value else {
+            throw "Expected .errorText got: \(spec)"
+        }
+        if !subs.isEmpty {
+            throw "Expected no subs got: \(subs)"
         }
         self.label.text = errorData.text
     }

@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ApplinLastErrorTextData: Equatable, Hashable, WidgetDataProto {
+struct ApplinLastErrorTextData: Equatable, Hashable {
     static let TYP = "applin-last-error-text"
 
     func toJsonItem() -> JsonItem {
@@ -17,7 +17,7 @@ struct ApplinLastErrorTextData: Equatable, Hashable, WidgetDataProto {
         .stateless
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         []
     }
 
@@ -61,13 +61,16 @@ class ApplinLastErrorTextWidget: WidgetProto {
         self.container
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         false
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case .applinLastErrorText = data else {
-            throw "Expected .applinLastErrorText got: \(data)"
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case .applinLastErrorText = spec.value else {
+            throw "Expected .applinLastErrorText got: \(spec)"
+        }
+        if !subs.isEmpty {
+            throw "Expected no subs got: \(subs)"
         }
         self.label.text = session.error ?? "Error details not found."
     }

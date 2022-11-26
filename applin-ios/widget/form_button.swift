@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct FormButtonData: Equatable, Hashable, WidgetDataProto {
+struct FormButtonData: Equatable, Hashable {
     static let TYP = "form-button"
     let actions: [ActionData]
     let alignment: ApplinHAlignment?
@@ -38,7 +38,7 @@ struct FormButtonData: Equatable, Hashable, WidgetDataProto {
         .focusable
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         []
     }
 
@@ -109,13 +109,13 @@ class FormButtonWidget: WidgetProto {
         self.container
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         self.button.isFocused
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case let .formButton(formButtonData) = data else {
-            throw "Expected .formButton got: \(data)"
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case let .formButton(formButtonData) = spec.value else {
+            throw "Expected .formButton got: \(spec)"
         }
         self.data = formButtonData
         self.session = session

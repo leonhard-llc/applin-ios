@@ -1,9 +1,9 @@
 import Foundation
 import UIKit
 
-struct ScrollData: Equatable, Hashable, WidgetDataProto {
+struct ScrollData: Equatable, Hashable {
     static let TYP = "scroll"
-    let sub: WidgetData
+    let sub: Spec
 
     init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
         self.sub = try item.requireWidget(session, pageKey: pageKey)
@@ -11,7 +11,7 @@ struct ScrollData: Equatable, Hashable, WidgetDataProto {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ScrollData.TYP)
-        item.widget = self.sub.inner().toJsonItem()
+        item.widget = self.sub.toJsonItem()
         return item
     }
 
@@ -23,12 +23,12 @@ struct ScrollData: Equatable, Hashable, WidgetDataProto {
         .stateful
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         [self.sub]
     }
 
     func vars() -> [(String, Var)] {
-        self.sub.inner().vars()
+        self.sub.vars()
     }
 
     func widgetClass() -> AnyClass {
@@ -102,13 +102,13 @@ class ScrollWidget: WidgetProto {
         self.scrollView
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         false
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case .scroll = data else {
-            throw "Expected .scroll got: \(data)"
+    func update(_: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case .scroll = spec.value else {
+            throw "Expected .scroll got: \(spec)"
         }
         if subs.count != 1 {
             throw "Expected one sub, got: \(subs)"

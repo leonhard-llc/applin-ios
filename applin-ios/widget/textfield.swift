@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct TextfieldData: Equatable, Hashable, WidgetDataProto {
+struct TextfieldData: Equatable, Hashable {
     static let TYP = "textfield"
 
     let allow: ApplinAllow
@@ -44,7 +44,7 @@ struct TextfieldData: Equatable, Hashable, WidgetDataProto {
         .focusable
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         []
     }
 
@@ -94,13 +94,16 @@ class TextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
         self.textview
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_ session: ApplinSession, _ data: Spec) -> Bool {
         self.textview.isFirstResponder
     }
 
-    func update(_ session: ApplinSession, _ widgetData: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case let .textfield(data) = widgetData else {
-            throw "Expected .text got: \(widgetData)"
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case let .textfield(data) = spec.value else {
+            throw "Expected .text got: \(spec)"
+        }
+        if !subs.isEmpty {
+            throw "Expected no subs got: \(subs)"
         }
         self.session = session
         if !self.initialized {

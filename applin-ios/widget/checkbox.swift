@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct CheckboxData: Equatable, Hashable, WidgetDataProto {
+struct CheckboxData: Equatable, Hashable {
     static let TYP = "checkbox"
     let pageKey: String
     let initialBool: Bool?
@@ -34,7 +34,7 @@ struct CheckboxData: Equatable, Hashable, WidgetDataProto {
         .focusable
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         []
     }
 
@@ -99,7 +99,7 @@ class CheckboxWidget: WidgetProto {
         self.container
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         self.button.isFocused
     }
 
@@ -138,9 +138,12 @@ class CheckboxWidget: WidgetProto {
         }
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case let .checkbox(checkboxData) = data else {
-            throw "Expected .checkbox got: \(data)"
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case let .checkbox(checkboxData) = spec.value else {
+            throw "Expected .checkbox got: \(spec)"
+        }
+        if !subs.isEmpty {
+            throw "Expected no subs got: \(subs)"
         }
         self.data = checkboxData
         self.session = session

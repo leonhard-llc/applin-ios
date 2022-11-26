@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct BackButtonData: Equatable, Hashable, WidgetDataProto {
+struct BackButtonData: Equatable, Hashable {
     static let TYP = "back-button"
     let actions: [ActionData]
     let pageKey: String
@@ -21,7 +21,7 @@ struct BackButtonData: Equatable, Hashable, WidgetDataProto {
         []
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         []
     }
 
@@ -48,11 +48,11 @@ struct BackButtonData: Equatable, Hashable, WidgetDataProto {
 }
 
 class BackButtonWidget: WidgetProto {
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         false
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
+    func update(_: ApplinSession, _: Spec, _: [WidgetProto]) throws {
     }
 
     func getView() -> UIView {

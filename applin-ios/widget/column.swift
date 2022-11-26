@@ -1,9 +1,9 @@
 import Foundation
 import UIKit
 
-struct ColumnData: Equatable, Hashable, WidgetDataProto {
+struct ColumnData: Equatable, Hashable {
     static let TYP = "column"
-    let widgets: [WidgetData]
+    let widgets: [Spec]
     let alignment: ApplinHAlignment
     let spacing: Float32
 
@@ -13,7 +13,7 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
         self.spacing = item.spacing ?? 0.0
     }
 
-    init(_ widgets: [WidgetData], _ alignment: ApplinHAlignment, spacing: Float32) {
+    init(_ widgets: [Spec], _ alignment: ApplinHAlignment, spacing: Float32) {
         self.widgets = widgets
         self.alignment = alignment
         self.spacing = spacing
@@ -21,7 +21,7 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ColumnData.TYP)
-        item.widgets = self.widgets.map({ widgets in widgets.inner().toJsonItem() })
+        item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         item.setAlign(self.alignment)
         return item
     }
@@ -34,12 +34,12 @@ struct ColumnData: Equatable, Hashable, WidgetDataProto {
         .stateless
     }
 
-    func subs() -> [WidgetData] {
+    func subs() -> [Spec] {
         self.widgets
     }
 
     func vars() -> [(String, Var)] {
-        self.widgets.flatMap({ widget in widget.inner().vars() })
+        self.widgets.flatMap({ widget in widget.vars() })
     }
 
     func widgetClass() -> AnyClass {
@@ -68,13 +68,13 @@ class ColumnWidget: WidgetProto {
         self.columnView
     }
 
-    func isFocused(_ session: ApplinSession, _ data: WidgetData) -> Bool {
+    func isFocused(_: ApplinSession, _: Spec) -> Bool {
         false
     }
 
-    func update(_ session: ApplinSession, _ data: WidgetData, _ subs: [WidgetProto]) throws {
-        guard case let .column(columnData) = data else {
-            throw "Expected .column got: \(data)"
+    func update(_: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+        guard case let .column(columnData) = spec.value else {
+            throw "Expected .column got: \(spec)"
         }
         self.columnView.update(
                 columnData.alignment,

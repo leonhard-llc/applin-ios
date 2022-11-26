@@ -1,26 +1,26 @@
 import UIKit
 
 private class UpdaterNode {
-    static func update(_ session: ApplinSession, _ cache: WidgetCache, _ data: WidgetData) -> WidgetProto {
-        let root = UpdaterNode(data)
-        root.getSomeWidgets(session, cache, data) { data in
-            if data.inner().priority() == .focusable {
+    static func update(_ session: ApplinSession, _ cache: WidgetCache, _ spec: Spec) -> WidgetProto {
+        let root = UpdaterNode(spec)
+        root.getSomeWidgets(session, cache, spec) { data in
+            if data.priority() == .focusable {
                 if let widget = cache.findStale(data) {
                     return widget.isFocused(session, data)
                 }
             }
             return false
         }
-        root.getSomeWidgets(session, cache, data) { data in
-            data.inner().priority() == .focusable
+        root.getSomeWidgets(session, cache, spec) { data in
+            data.priority() == .focusable
         }
-        root.getSomeWidgets(session, cache, data) { data in
-            data.inner().priority() == .stateful
+        root.getSomeWidgets(session, cache, spec) { data in
+            data.priority() == .stateful
         }
-        root.getSomeWidgets(session, cache, data) { _ in
+        root.getSomeWidgets(session, cache, spec) { _ in
             true
         }
-        root.updateNodeAndSubs(session, cache, data)
+        root.updateNodeAndSubs(session, cache, spec)
         return root.widget!
     }
 
@@ -29,34 +29,34 @@ private class UpdaterNode {
     private let subNodes: [UpdaterNode]
     private var widget: WidgetProto?
 
-    init(_ data: WidgetData) {
+    init(_ spec: Spec) {
         // TODO: Add keys for focused subs.
-        self.subNodes = data.inner().subs().map({ subData in UpdaterNode(subData) })
+        self.subNodes = spec.subs().map({ subData in UpdaterNode(subData) })
     }
 
-    func getSomeWidgets(_ session: ApplinSession, _ cache: WidgetCache, _ data: WidgetData, _ shouldGetViewFn: (WidgetData) -> Bool) {
+    func getSomeWidgets(_ session: ApplinSession, _ cache: WidgetCache, _ spec: Spec, _ shouldGetViewFn: (Spec) -> Bool) {
         var isASubBuilt = false
-        for (n, subData) in data.inner().subs().enumerated() {
+        for (n, subData) in spec.subs().enumerated() {
             let subNode = self.subNodes[n]
             subNode.getSomeWidgets(session, cache, subData, shouldGetViewFn)
             isASubBuilt = isASubBuilt || subNode.widget != nil
         }
-        if self.widget == nil && (isASubBuilt || shouldGetViewFn(data)) {
-            self.widget = cache.getOrMake(data)
+        if self.widget == nil && (isASubBuilt || shouldGetViewFn(spec)) {
+            self.widget = cache.getOrMake(spec)
         }
     }
 
-    func updateNodeAndSubs(_ session: ApplinSession, _ cache: WidgetCache, _ data: WidgetData) {
-        for (n, subData) in data.inner().subs().enumerated() {
+    func updateNodeAndSubs(_ session: ApplinSession, _ cache: WidgetCache, _ spec: Spec) {
+        for (n, subData) in spec.subs().enumerated() {
             let subNode = self.subNodes[n]
             subNode.updateNodeAndSubs(session, cache, subData)
         }
         if self.widget == nil {
-            self.widget = cache.getOrMake(data)
+            self.widget = cache.getOrMake(spec)
         }
         let subWidgets = self.subNodes.map({ node in node.widget! })
         // TODO(mleonhard) Find a way to make this type-safe and eliminate the exception.
-        try! self.widget!.update(session, data, subWidgets)
+        try! self.widget!.update(session, spec, subWidgets)
     }
 }
 
@@ -87,10 +87,10 @@ class WidgetCache: CustomStringConvertible {
         }
     }
 
-    func findStale(_ data: WidgetData) -> WidgetProto? {
-        for key in data.inner().keys() {
+    func findStale(_ spec: Spec) -> WidgetProto? {
+        for key in spec.keys() {
             if case let .stale(widget) = self.keyToWidgets[key] {
-                if type(of: widget) == data.inner().widgetClass() {
+                if type(of: widget) == spec.widgetClass() {
                     return widget
                 }
             }
@@ -109,14 +109,14 @@ class WidgetCache: CustomStringConvertible {
         }
     }
 
-    public func getOrMake(_ data: WidgetData) -> WidgetProto {
-        let newKeys = data.inner().keys()
-        if let widget = self.findStale(data) {
+    public func getOrMake(_ spec: Spec) -> WidgetProto {
+        let newKeys = spec.keys()
+        if let widget = self.findStale(spec) {
             self.removeStale(keys: newKeys)
             self.addFresh(keys: newKeys, widget)
             return widget
         } else {
-            let widget = data.inner().widget()
+            let widget = spec.widget()
             self.addFresh(keys: newKeys, widget)
             return widget
         }
@@ -135,8 +135,8 @@ class WidgetCache: CustomStringConvertible {
         }
     }
 
-    public func updateAll(_ session: ApplinSession, _ data: WidgetData) -> WidgetProto {
-        let rootWidget = UpdaterNode.update(session, self, data)
+    public func updateAll(_ session: ApplinSession, _ spec: Spec) -> WidgetProto {
+        let rootWidget = UpdaterNode.update(session, self, spec)
         self.removeStaleAndChangeFreshToStale()
         return rootWidget
     }
