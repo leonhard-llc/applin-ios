@@ -46,7 +46,7 @@ struct ColumnData: Equatable, Hashable {
         ColumnWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         ColumnWidget()
     }
 }

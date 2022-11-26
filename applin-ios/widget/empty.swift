@@ -29,7 +29,7 @@ struct EmptyData: Equatable, Hashable {
         EmptyWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         EmptyWidget()
     }
 }

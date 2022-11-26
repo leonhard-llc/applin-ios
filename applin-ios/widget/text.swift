@@ -39,7 +39,7 @@ struct TextData: Equatable, Hashable {
         TextWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         TextWidget()
     }
 }

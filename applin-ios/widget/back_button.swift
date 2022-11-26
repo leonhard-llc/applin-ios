@@ -37,7 +37,7 @@ struct BackButtonData: Equatable, Hashable {
         BackButtonWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         BackButtonWidget()
     }
 

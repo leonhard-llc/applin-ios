@@ -49,7 +49,7 @@ struct NavButtonData: Equatable, Hashable {
         NavButtonWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         NavButtonWidget(self)
     }
 

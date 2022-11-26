@@ -25,7 +25,7 @@ struct ApplinLastErrorTextData: Equatable, Hashable {
         ApplinLastErrorTextWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         ApplinLastErrorTextWidget()
     }
 

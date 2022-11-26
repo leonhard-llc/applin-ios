@@ -44,7 +44,7 @@ struct FormData: Equatable, Hashable {
         FormWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         FormWidget()
     }
 }

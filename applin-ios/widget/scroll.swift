@@ -35,7 +35,7 @@ struct ScrollData: Equatable, Hashable {
         ScrollWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         ScrollWidget()
     }
 }

@@ -42,7 +42,7 @@ struct CheckboxData: Equatable, Hashable {
         CheckboxWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         CheckboxWidget(self)
     }
 

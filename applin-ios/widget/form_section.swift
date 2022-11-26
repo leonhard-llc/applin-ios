@@ -43,7 +43,7 @@ struct FormSectionData: Equatable, Hashable {
         FormSectionWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         FormSectionWidget()
     }
 }

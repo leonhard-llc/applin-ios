@@ -56,7 +56,7 @@ struct TextfieldData: Equatable, Hashable {
         TextfieldWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         TextfieldWidget(self)
     }
 }

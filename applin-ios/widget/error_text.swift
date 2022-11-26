@@ -30,7 +30,7 @@ struct ErrorTextData: Equatable, Hashable {
         ErrorTextWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         ErrorTextWidget(self)
     }
 

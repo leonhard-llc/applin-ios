@@ -46,7 +46,7 @@ struct FormButtonData: Equatable, Hashable {
         FormButtonWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         FormButtonWidget(self)
     }
 

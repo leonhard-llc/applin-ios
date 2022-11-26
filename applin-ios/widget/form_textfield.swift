@@ -39,7 +39,7 @@ struct FormTextfieldData: Equatable, Hashable {
         FormTextfieldWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         FormTextfieldWidget(self)
     }
 

@@ -116,7 +116,7 @@ class WidgetCache: CustomStringConvertible {
             self.addFresh(keys: newKeys, widget)
             return widget
         } else {
-            let widget = spec.widget()
+            let widget = spec.newWidget()
             self.addFresh(keys: newKeys, widget)
             return widget
         }

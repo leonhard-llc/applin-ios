@@ -36,7 +36,7 @@ struct ButtonData: Equatable, Hashable {
         ButtonWidget.self
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         ButtonWidget(self)
     }
 

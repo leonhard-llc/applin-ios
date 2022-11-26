@@ -296,38 +296,38 @@ class Spec: Equatable, Hashable {
         }
     }
 
-    func widget() -> Widget {
+    func newWidget() -> Widget {
         switch self.value {
         case let .applinLastErrorText(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .backButton(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .button(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .checkbox(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .column(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .empty(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .errorText(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .form(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .formButton(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .formSection(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .formTextfield(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .navButton(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .textfield(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .scroll(inner):
-            return inner.widget()
+            return inner.newWidget()
         case let .text(inner):
-            return inner.widget()
+            return inner.newWidget()
         }
     }
 
