@@ -29,7 +29,7 @@ struct NavPageData: Equatable, PageDataProto {
         self.widget = widget
     }
 
-    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
+    init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.end = try item.optEnd(session, pageKey: pageKey)
         switch try item.optStart(session, pageKey: pageKey) {
@@ -80,7 +80,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     var optOriginalBackButton: UIBarButtonItem?
     var subView: UIView?
 
-    init(_ navController: NavigationController, _ session: ApplinSession, _ cache: WidgetCache) {
+    init(_ navController: NavigationController?, _ session: ApplinSession?, _ cache: WidgetCache?) {
         self.navController = navController
         self.weakSession = session
         self.weakCache = cache

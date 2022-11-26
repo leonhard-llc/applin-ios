@@ -13,7 +13,7 @@ struct PlainPageData: Equatable, PageDataProto {
         self.widget = widget
     }
 
-    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
+    init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.title = item.title
         self.widget = try item.requireWidget(session, pageKey: pageKey)
