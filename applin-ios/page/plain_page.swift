@@ -2,10 +2,6 @@ import Foundation
 import UIKit
 
 struct PlainPageData: Equatable, PageDataProto {
-    static func blank() -> PlainPageData {
-        PlainPageData(title: "Empty", .empty(EmptyData()))
-    }
-
     static let TYP = "plain-page"
     let connectionMode: ConnectionMode
     let title: String?

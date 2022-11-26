@@ -25,10 +25,6 @@ enum PageData: Equatable {
         ))
     }
 
-    static func blankPage() -> PageData {
-        .plainPage(PlainPageData.blank())
-    }
-
     init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
         case ModalKind.alert.typ():
