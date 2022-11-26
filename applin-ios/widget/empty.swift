@@ -29,12 +29,12 @@ struct EmptyData: Equatable, Hashable {
         EmptyWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         EmptyWidget()
     }
 }
 
-class EmptyWidget: WidgetProto {
+class EmptyWidget: Widget {
     let view: UIView
     weak var session: ApplinSession?
 
@@ -52,7 +52,7 @@ class EmptyWidget: WidgetProto {
         false
     }
 
-    func update(_: ApplinSession, _ spec: Spec, _  subs: [WidgetProto]) throws {
+    func update(_: ApplinSession, _ spec: Spec, _  subs: [Widget]) throws {
         guard case .empty = spec.value else {
             throw "Expected .empty got: \(spec)"
         }

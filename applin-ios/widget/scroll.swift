@@ -35,7 +35,7 @@ struct ScrollData: Equatable, Hashable {
         ScrollWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         ScrollWidget()
     }
 }
@@ -86,7 +86,7 @@ class KeyboardAvoidingScrollView: UIScrollView {
     }
 }
 
-class ScrollWidget: WidgetProto {
+class ScrollWidget: Widget {
     let scrollView: KeyboardAvoidingScrollView
     private let helper: SingleViewContainerHelper
     var keyboardInset: CGFloat = 0.0
@@ -106,7 +106,7 @@ class ScrollWidget: WidgetProto {
         false
     }
 
-    func update(_: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case .scroll = spec.value else {
             throw "Expected .scroll got: \(spec)"
         }

@@ -37,7 +37,7 @@ struct BackButtonData: Equatable, Hashable {
         BackButtonWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         BackButtonWidget()
     }
 
@@ -47,12 +47,12 @@ struct BackButtonData: Equatable, Hashable {
     }
 }
 
-class BackButtonWidget: WidgetProto {
+class BackButtonWidget: Widget {
     func isFocused() -> Bool {
         false
     }
 
-    func update(_: ApplinSession, _: Spec, _: [WidgetProto]) throws {
+    func update(_: ApplinSession, _: Spec, _: [Widget]) throws {
     }
 
     func getView() -> UIView {

@@ -42,7 +42,7 @@ struct CheckboxData: Equatable, Hashable {
         CheckboxWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         CheckboxWidget(self)
     }
 
@@ -51,7 +51,7 @@ struct CheckboxData: Equatable, Hashable {
     }
 }
 
-class CheckboxWidget: WidgetProto {
+class CheckboxWidget: Widget {
     var container: TappableView
     let checked: UIImage
     let unchecked: UIImage
@@ -138,7 +138,7 @@ class CheckboxWidget: WidgetProto {
         }
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .checkbox(checkboxData) = spec.value else {
             throw "Expected .checkbox got: \(spec)"
         }

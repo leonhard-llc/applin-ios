@@ -43,12 +43,12 @@ struct FormSectionData: Equatable, Hashable {
         FormSectionWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         FormSectionWidget()
     }
 }
 
-class FormSectionWidget: WidgetProto {
+class FormSectionWidget: Widget {
     let container: UIView
     let header: UIView
     let label: UILabel
@@ -105,7 +105,7 @@ class FormSectionWidget: WidgetProto {
         false
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .formSection(formSectionData) = spec.value else {
             throw "Expected .formSection got: \(spec)"
         }

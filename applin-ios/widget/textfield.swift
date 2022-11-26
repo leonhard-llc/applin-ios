@@ -56,12 +56,12 @@ struct TextfieldData: Equatable, Hashable {
         TextfieldWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         TextfieldWidget(self)
     }
 }
 
-class TextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
+class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     static let BORDER_COLOR: UIColor = UIColor.label
     static let BORDER_WIDTH: CGFloat = 0.7
     static let CORNER_RADIUS: CGFloat = 10.0
@@ -98,7 +98,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, WidgetProto {
         self.textview.isFirstResponder
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .textfield(data) = spec.value else {
             throw "Expected .text got: \(spec)"
         }

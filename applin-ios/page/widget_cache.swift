@@ -1,7 +1,7 @@
 import UIKit
 
 private class UpdaterNode {
-    static func update(_ session: ApplinSession, _ cache: WidgetCache, _ spec: Spec) -> WidgetProto {
+    static func update(_ session: ApplinSession, _ cache: WidgetCache, _ spec: Spec) -> Widget {
         let root = UpdaterNode(spec)
         root.getSomeWidgets(session, cache, spec) { data in
             if data.priority() == .focusable {
@@ -27,7 +27,7 @@ private class UpdaterNode {
     // TODONT: Don't store WidgetData, since that would take O(n^2) memory and O(n^3) time.
 
     private let subNodes: [UpdaterNode]
-    private var widget: WidgetProto?
+    private var widget: Widget?
 
     init(_ spec: Spec) {
         // TODO: Add keys for focused subs.
@@ -62,8 +62,8 @@ private class UpdaterNode {
 
 private enum CacheEntry {
     case duplicate
-    case fresh(WidgetProto)
-    case stale(WidgetProto)
+    case fresh(Widget)
+    case stale(Widget)
 }
 
 class WidgetCache: CustomStringConvertible {
@@ -73,7 +73,7 @@ class WidgetCache: CustomStringConvertible {
         "WidgetCache(\(self.keyToWidgets))"
     }
 
-    private func addFresh(keys: [String], _ widget: WidgetProto) {
+    private func addFresh(keys: [String], _ widget: Widget) {
         for key in keys {
             switch self.keyToWidgets[key] {
             case nil, .stale(_):
@@ -87,7 +87,7 @@ class WidgetCache: CustomStringConvertible {
         }
     }
 
-    func findStale(_ spec: Spec) -> WidgetProto? {
+    func findStale(_ spec: Spec) -> Widget? {
         for key in spec.keys() {
             if case let .stale(widget) = self.keyToWidgets[key] {
                 if type(of: widget) == spec.widgetClass() {
@@ -109,7 +109,7 @@ class WidgetCache: CustomStringConvertible {
         }
     }
 
-    public func getOrMake(_ spec: Spec) -> WidgetProto {
+    public func getOrMake(_ spec: Spec) -> Widget {
         let newKeys = spec.keys()
         if let widget = self.findStale(spec) {
             self.removeStale(keys: newKeys)
@@ -135,7 +135,7 @@ class WidgetCache: CustomStringConvertible {
         }
     }
 
-    public func updateAll(_ session: ApplinSession, _ spec: Spec) -> WidgetProto {
+    public func updateAll(_ session: ApplinSession, _ spec: Spec) -> Widget {
         let rootWidget = UpdaterNode.update(session, self, spec)
         self.removeStaleAndChangeFreshToStale()
         return rootWidget

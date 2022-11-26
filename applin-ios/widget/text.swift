@@ -39,12 +39,12 @@ struct TextData: Equatable, Hashable {
         TextWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         TextWidget()
     }
 }
 
-class TextWidget: WidgetProto {
+class TextWidget: Widget {
     let container: UIView
     let label: UILabel
 
@@ -83,7 +83,7 @@ class TextWidget: WidgetProto {
         false
     }
 
-    func update(_: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .text(textSpec) = spec.value else {
             throw "Expected .text got: \(spec)"
         }

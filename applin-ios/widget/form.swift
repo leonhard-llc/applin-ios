@@ -44,12 +44,12 @@ struct FormData: Equatable, Hashable {
         FormWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         FormWidget()
     }
 }
 
-class FormWidget: WidgetProto {
+class FormWidget: Widget {
     static let SPACING: Float32 = 4.0
     let columnView: ColumnView
 
@@ -71,7 +71,7 @@ class FormWidget: WidgetProto {
         false
     }
 
-    func update(_: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case .form = spec.value else {
             throw "Expected .form got: \(spec)"
         }

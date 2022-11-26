@@ -46,12 +46,12 @@ struct ColumnData: Equatable, Hashable {
         ColumnWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         ColumnWidget()
     }
 }
 
-class ColumnWidget: WidgetProto {
+class ColumnWidget: Widget {
     let columnView: ColumnView
 
     init() {
@@ -72,7 +72,7 @@ class ColumnWidget: WidgetProto {
         false
     }
 
-    func update(_: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .column(columnData) = spec.value else {
             throw "Expected .column got: \(spec)"
         }

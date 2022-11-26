@@ -49,7 +49,7 @@ struct NavButtonData: Equatable, Hashable {
         NavButtonWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         NavButtonWidget(self)
     }
 
@@ -58,7 +58,7 @@ struct NavButtonData: Equatable, Hashable {
     }
 }
 
-class NavButtonWidget: WidgetProto {
+class NavButtonWidget: Widget {
     static let INSET: CGFloat = 12.0
     let constraints = ConstraintSet()
     var data: NavButtonData
@@ -121,7 +121,7 @@ class NavButtonWidget: WidgetProto {
         self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .navButton(navButtonData) = spec.value else {
             throw "Expected .navButton got: \(spec)"
         }

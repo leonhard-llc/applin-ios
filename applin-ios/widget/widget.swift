@@ -9,10 +9,10 @@ enum WidgetPriority {
     case stateless
 }
 
-protocol WidgetProto {
+protocol Widget {
     func getView() -> UIView
     func isFocused() -> Bool
-    func update(_ session: ApplinSession, _ data: Spec, _ subs: [WidgetProto]) throws
+    func update(_ session: ApplinSession, _ data: Spec, _ subs: [Widget]) throws
 }
 
 // Spec is an immutable tree of widget specifications.
@@ -296,7 +296,7 @@ class Spec: Equatable, Hashable {
         }
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         switch self.value {
         case let .applinLastErrorText(inner):
             return inner.widget()

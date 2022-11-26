@@ -36,7 +36,7 @@ struct ButtonData: Equatable, Hashable {
         ButtonWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         ButtonWidget(self)
     }
 
@@ -45,7 +45,7 @@ struct ButtonData: Equatable, Hashable {
     }
 }
 
-class ButtonWidget: WidgetProto {
+class ButtonWidget: Widget {
     var data: ButtonData
     var button: UIButton!
     weak var session: ApplinSession?
@@ -83,7 +83,7 @@ class ButtonWidget: WidgetProto {
         self.button.isFocused
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .button(buttonData) = spec.value else {
             throw "Expected .button got: \(spec)"
         }

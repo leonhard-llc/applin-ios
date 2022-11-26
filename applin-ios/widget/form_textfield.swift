@@ -39,7 +39,7 @@ struct FormTextfieldData: Equatable, Hashable {
         FormTextfieldWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         FormTextfieldWidget(self)
     }
 
@@ -48,7 +48,7 @@ struct FormTextfieldData: Equatable, Hashable {
     }
 }
 
-class FormTextfieldWidget: WidgetProto {
+class FormTextfieldWidget: Widget {
     static let errorImage = UIImage(systemName: "exclamationmark.circle")
     let container: TappableView
     let label: UILabel
@@ -125,7 +125,7 @@ class FormTextfieldWidget: WidgetProto {
         self.textfieldWidget.getView().isFocused
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .formTextfield(data) = spec.value else {
             throw "Expected .text got: \(spec)"
         }

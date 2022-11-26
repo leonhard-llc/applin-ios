@@ -46,7 +46,7 @@ struct FormButtonData: Equatable, Hashable {
         FormButtonWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         FormButtonWidget(self)
     }
 
@@ -55,7 +55,7 @@ struct FormButtonData: Equatable, Hashable {
     }
 }
 
-class FormButtonWidget: WidgetProto {
+class FormButtonWidget: Widget {
     static let INSET: CGFloat = 8.0
     let constraints = ConstraintSet()
     var data: FormButtonData
@@ -113,7 +113,7 @@ class FormButtonWidget: WidgetProto {
         self.button.isFocused
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .formButton(formButtonData) = spec.value else {
             throw "Expected .formButton got: \(spec)"
         }

@@ -30,7 +30,7 @@ struct ErrorTextData: Equatable, Hashable {
         ErrorTextWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         ErrorTextWidget(self)
     }
 
@@ -39,7 +39,7 @@ struct ErrorTextData: Equatable, Hashable {
     }
 }
 
-class ErrorTextWidget: WidgetProto {
+class ErrorTextWidget: Widget {
     let label: UILabel
     let container: UIView
 
@@ -83,7 +83,7 @@ class ErrorTextWidget: WidgetProto {
         false
     }
 
-    func update(_: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .errorText(errorData) = spec.value else {
             throw "Expected .errorText got: \(spec)"
         }

@@ -25,7 +25,7 @@ struct ApplinLastErrorTextData: Equatable, Hashable {
         ApplinLastErrorTextWidget.self
     }
 
-    func widget() -> WidgetProto {
+    func widget() -> Widget {
         ApplinLastErrorTextWidget()
     }
 
@@ -34,7 +34,7 @@ struct ApplinLastErrorTextData: Equatable, Hashable {
     }
 }
 
-class ApplinLastErrorTextWidget: WidgetProto {
+class ApplinLastErrorTextWidget: Widget {
     let label: UILabel
     let container: UIView
 
@@ -65,7 +65,7 @@ class ApplinLastErrorTextWidget: WidgetProto {
         false
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [WidgetProto]) throws {
+    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case .applinLastErrorText = spec.value else {
             throw "Expected .applinLastErrorText got: \(spec)"
         }
