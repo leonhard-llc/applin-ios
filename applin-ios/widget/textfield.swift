@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct TextfieldData: Equatable, Hashable {
+struct TextfieldSpec: Equatable, Hashable {
     static let TYP = "textfield"
 
     let allow: ApplinAllow
@@ -25,7 +25,7 @@ struct TextfieldData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(TextfieldData.TYP)
+        let item = JsonItem(TextfieldSpec.TYP)
         item.setAllow(self.allow)
         item.setAutoCapitalize(self.autoCapitalize)
         item.initialString = self.initialString
@@ -69,11 +69,11 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     let constraints = ConstraintSet()
     var initialized = false
     weak var session: ApplinSession?
-    var data: TextfieldData
+    var spec: TextfieldSpec
 
-    init(_ data: TextfieldData) {
-        print("TextfieldWidget.init(\(data))")
-        self.data = data
+    init(_ spec: TextfieldSpec) {
+        print("TextfieldWidget.init(\(spec))")
+        self.spec = spec
         // TODONT: Don't use a UIView and layout with constraints.  Text fields scrolled into view
         //         will ignore their width constraint.  Use a UIStackView instead.
         self.textview = UITextView()
@@ -99,7 +99,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     }
 
     func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
-        guard case let .textfield(data) = spec.value else {
+        guard case let .textfield(textfieldSpec) = spec.value else {
             throw "Expected .text got: \(spec)"
         }
         if !subs.isEmpty {
@@ -107,35 +107,35 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         }
         self.session = session
         if !self.initialized {
-            self.textview.text = session.getStringVar(data.varName) ?? data.initialString ?? ""
+            self.textview.text = session.getStringVar(textfieldSpec.varName) ?? textfieldSpec.initialString ?? ""
             self.initialized = true
         }
-        switch data.maxLines {
+        switch textfieldSpec.maxLines {
         case nil, 1:
             NSLayoutConstraint.activate([self.textview.heightAnchor.constraint(greaterThanOrEqualToConstant: 20)])
         default:
             NSLayoutConstraint.activate([self.textview.heightAnchor.constraint(greaterThanOrEqualToConstant: 40)])
         }
 
-        //self.textview.keyboardType = data.allow.keyboardType()
-        //self.textview.autocapitalizationType = data.autoCapitalize?.textAutocapitalizationType() ?? .none
+        //self.textview.keyboardType = textfieldSpec.allow.keyboardType()
+        //self.textview.autocapitalizationType = textfieldSpec.autoCapitalize?.textAutocapitalizationType() ?? .none
         //self.textview.layer.borderColor = UIColor.systemGray4.cgColor
         //self.textview.layer.borderWidth = 1.0
         //self.textview.layer.cornerRadius = 4.0
         //self.textview.reloadInputViews()
-        let keyboardTypeChanged = self.textview.keyboardType != data.allow.keyboardType()
+        let keyboardTypeChanged = self.textview.keyboardType != textfieldSpec.allow.keyboardType()
         if keyboardTypeChanged {
-            print("TextfieldWidget(\(data.varName) keyboardType changed \(self.textview.keyboardType) -> \(data.allow.keyboardType())")
-            self.textview.keyboardType = data.allow.keyboardType()
+            print("TextfieldWidget(\(textfieldSpec.varName) keyboardType changed \(self.textview.keyboardType) -> \(textfieldSpec.allow.keyboardType())")
+            self.textview.keyboardType = textfieldSpec.allow.keyboardType()
         }
-        let newAutocapType = data.autoCapitalize?.textAutocapitalizationType() ?? .none
+        let newAutocapType = textfieldSpec.autoCapitalize?.textAutocapitalizationType() ?? .none
         let autocapTypeChanged = self.textview.autocapitalizationType != newAutocapType
         if autocapTypeChanged {
-            print("TextfieldWidget(\(data.varName) autocapitalizationType changed \(self.textview.autocapitalizationType) -> \(newAutocapType)")
+            print("TextfieldWidget(\(textfieldSpec.varName) autocapitalizationType changed \(self.textview.autocapitalizationType) -> \(newAutocapType)")
             self.textview.autocapitalizationType = newAutocapType
         }
         if keyboardTypeChanged || autocapTypeChanged {
-            print("TextfieldWidget(\(data.varName) reloadInputViews()")
+            print("TextfieldWidget(\(textfieldSpec.varName) reloadInputViews()")
             self.textview.reloadInputViews()
         }
     }
@@ -144,6 +144,6 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
 
     func textViewDidChange(_: UITextView) {
         //print("textViewDidChange")
-        self.session?.setStringVar(self.data.varName, self.textview.text.isEmpty ? nil : self.textview.text)
+        self.session?.setStringVar(self.spec.varName, self.textview.text.isEmpty ? nil : self.textview.text)
     }
 }

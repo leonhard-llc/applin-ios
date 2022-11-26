@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ColumnData: Equatable, Hashable {
+struct ColumnSpec: Equatable, Hashable {
     static let TYP = "column"
     let widgets: [Spec]
     let alignment: ApplinHAlignment
@@ -20,7 +20,7 @@ struct ColumnData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(ColumnData.TYP)
+        let item = JsonItem(ColumnSpec.TYP)
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         item.setAlign(self.alignment)
         return item
@@ -47,7 +47,8 @@ struct ColumnData: Equatable, Hashable {
     }
 
     func newWidget() -> Widget {
-        ColumnWidget()
+        print("ColumnSpec.newWidget()")
+        return ColumnWidget()
     }
 }
 

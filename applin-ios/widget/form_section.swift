@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct FormSectionData: Equatable, Hashable {
+struct FormSectionSpec: Equatable, Hashable {
     static let TYP = "form-section"
     let optTitle: String?
     let widgets: [Spec]
@@ -17,7 +17,7 @@ struct FormSectionData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(FormSectionData.TYP)
+        let item = JsonItem(FormSectionSpec.TYP)
         item.title = self.optTitle
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
@@ -55,6 +55,7 @@ class FormSectionWidget: Widget {
     let columnView: ColumnView
 
     init() {
+        print("FormSectionWidget.init()")
         self.container = UIView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
         //self.container.backgroundColor = pastelBlue

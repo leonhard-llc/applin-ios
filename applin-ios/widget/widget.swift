@@ -22,21 +22,21 @@ protocol Widget {
 // This changes algorithms that would take O(n^2) memory into O(n).
 class Spec: Equatable, Hashable {
     enum Value: Equatable, Hashable {
-        case backButton(BackButtonData)
-        case button(ButtonData)
-        case checkbox(CheckboxData)
-        indirect case column(ColumnData)
-        case empty(EmptyData)
-        case errorText(ErrorTextData)
-        case form(FormData)
-        case formButton(FormButtonData)
-        case formSection(FormSectionData)
-        case formTextfield(FormTextfieldData)
-        case lastErrorText(LastErrorTextData)
-        case navButton(NavButtonData)
-        case textfield(TextfieldData)
-        indirect case scroll(ScrollData)
-        case text(TextData)
+        case backButton(BackButtonSpec)
+        case button(ButtonSpec)
+        case checkbox(CheckboxSpec)
+        case column(ColumnSpec)
+        case empty(EmptySpec)
+        case errorText(ErrorTextSpec)
+        case form(FormSpec)
+        case formButton(FormButtonSpec)
+        case formSection(FormSectionSpec)
+        case formTextfield(FormTextfieldSpec)
+        case lastErrorText(LastErrorTextSpec)
+        case navButton(NavButtonSpec)
+        case textfield(TextfieldSpec)
+        case scroll(ScrollSpec)
+        case text(TextSpec)
     }
 
     static func ==(lhs: Spec, rhs: Spec) -> Bool {
@@ -51,36 +51,36 @@ class Spec: Equatable, Hashable {
 
     init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
-        case BackButtonData.TYP:
-            self.value = .backButton(try BackButtonData(pageKey: pageKey, item))
-        case ButtonData.TYP:
-            self.value = .button(try ButtonData(pageKey: pageKey, item))
-        case CheckboxData.TYP:
-            self.value = .checkbox(try CheckboxData(pageKey: pageKey, item))
-        case ColumnData.TYP:
-            self.value = .column(try ColumnData(session, pageKey: pageKey, item))
-        case EmptyData.TYP:
-            self.value = .empty(EmptyData())
-        case ErrorTextData.TYP:
-            self.value = .errorText(try ErrorTextData(item))
-        case FormData.TYP:
-            self.value = .form(try FormData(session, pageKey: pageKey, item))
-        case FormButtonData.TYP:
-            self.value = .formButton(try FormButtonData(pageKey: pageKey, item))
-        case FormSectionData.TYP:
-            self.value = .formSection(try FormSectionData(session, pageKey: pageKey, item))
-        case FormTextfieldData.TYP:
-            self.value = .formTextfield(try FormTextfieldData(pageKey: pageKey, item))
-        case LastErrorTextData.TYP:
-            self.value = .lastErrorText(LastErrorTextData())
-        case NavButtonData.TYP:
-            self.value = .navButton(try NavButtonData(session, pageKey: pageKey, item))
-        case TextfieldData.TYP:
-            self.value = .textfield(try TextfieldData(pageKey: pageKey, item))
-        case ScrollData.TYP:
-            self.value = .scroll(try ScrollData(session, pageKey: pageKey, item))
-        case TextData.TYP:
-            self.value = .text(try TextData(item))
+        case BackButtonSpec.TYP:
+            self.value = .backButton(try BackButtonSpec(pageKey: pageKey, item))
+        case ButtonSpec.TYP:
+            self.value = .button(try ButtonSpec(pageKey: pageKey, item))
+        case CheckboxSpec.TYP:
+            self.value = .checkbox(try CheckboxSpec(pageKey: pageKey, item))
+        case ColumnSpec.TYP:
+            self.value = .column(try ColumnSpec(session, pageKey: pageKey, item))
+        case EmptySpec.TYP:
+            self.value = .empty(EmptySpec())
+        case ErrorTextSpec.TYP:
+            self.value = .errorText(try ErrorTextSpec(item))
+        case FormSpec.TYP:
+            self.value = .form(try FormSpec(session, pageKey: pageKey, item))
+        case FormButtonSpec.TYP:
+            self.value = .formButton(try FormButtonSpec(pageKey: pageKey, item))
+        case FormSectionSpec.TYP:
+            self.value = .formSection(try FormSectionSpec(session, pageKey: pageKey, item))
+        case FormTextfieldSpec.TYP:
+            self.value = .formTextfield(try FormTextfieldSpec(pageKey: pageKey, item))
+        case LastErrorTextSpec.TYP:
+            self.value = .lastErrorText(LastErrorTextSpec())
+        case NavButtonSpec.TYP:
+            self.value = .navButton(try NavButtonSpec(session, pageKey: pageKey, item))
+        case TextfieldSpec.TYP:
+            self.value = .textfield(try TextfieldSpec(pageKey: pageKey, item))
+        case ScrollSpec.TYP:
+            self.value = .scroll(try ScrollSpec(session, pageKey: pageKey, item))
+        case TextSpec.TYP:
+            self.value = .text(try TextSpec(item))
         default:
             throw ApplinError.deserializeError("unexpected widget 'typ' value: \(item.typ)")
         }

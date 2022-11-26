@@ -1,23 +1,23 @@
 import Foundation
 import UIKit
 
-struct FormTextfieldData: Equatable, Hashable {
+struct FormTextfieldSpec: Equatable, Hashable {
     static let TYP = "form-textfield"
     let checkRpc: String?
     let label: String
     let pageKey: String
-    let textfieldData: TextfieldData
+    let textfieldData: TextfieldSpec
 
     init(pageKey: String, _ item: JsonItem) throws {
         self.checkRpc = item.checkRpc
         self.label = try item.requireLabel()
         self.pageKey = pageKey
-        self.textfieldData = try TextfieldData(pageKey: pageKey, item)
+        self.textfieldData = try TextfieldSpec(pageKey: pageKey, item)
     }
 
     func toJsonItem() -> JsonItem {
         let item = self.textfieldData.toJsonItem()
-        item.typ = FormTextfieldData.TYP
+        item.typ = FormTextfieldSpec.TYP
         item.checkRpc = self.checkRpc
         item.label = self.label
         return item
@@ -56,12 +56,12 @@ class FormTextfieldWidget: Widget {
     let errorImageView: UIImageView
     let errorLabel: UILabel
     let constraintSet = ConstraintSet()
-    var data: FormTextfieldData
+    var spec: FormTextfieldSpec
     weak var session: ApplinSession?
     var errorMessage: String?
 
-    init(_ data: FormTextfieldData) {
-        print("FormTextfieldWidget.init(\(data))")
+    init(_ spec: FormTextfieldSpec) {
+        print("FormTextfieldWidget.init(\(spec))")
         self.container = TappableView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
         //self.container.backgroundColor = pastelPink
@@ -83,7 +83,7 @@ class FormTextfieldWidget: Widget {
         self.errorLabel.numberOfLines = 0
         self.container.addSubview(self.errorLabel)
 
-        self.textfieldWidget = TextfieldWidget(data.textfieldData)
+        self.textfieldWidget = TextfieldWidget(spec.textfieldData)
         let textfield = self.textfieldWidget.getView()
         self.container.addSubview(textfield)
 
@@ -105,7 +105,7 @@ class FormTextfieldWidget: Widget {
             textfield.bottomAnchor.constraint(equalTo: self.container.bottomAnchor, constant: -4.0),
         ])
 
-        self.data = data
+        self.spec = spec
         //self.errorMessage = "Error1"
         self.container.onTap = { [weak self] in
             self?.textfieldWidget.getView().becomeFirstResponder()
@@ -114,7 +114,7 @@ class FormTextfieldWidget: Widget {
     }
 
     func keys() -> [String] {
-        self.data.keys()
+        self.spec.keys()
     }
 
     func getView() -> UIView {
@@ -132,10 +132,10 @@ class FormTextfieldWidget: Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.data = data
+        self.spec = data
         self.session = session
-        self.label.text = self.data.label
-        try self.textfieldWidget.update(session, Spec(.textfield(self.data.textfieldData)), [])
+        self.label.text = self.spec.label
+        try self.textfieldWidget.update(session, Spec(.textfield(self.spec.textfieldData)), [])
         let textfield = self.textfieldWidget.getView()
         if let errorMessage = self.errorMessage {
             self.errorImageView.isHidden = false

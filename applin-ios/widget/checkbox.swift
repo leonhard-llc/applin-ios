@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct CheckboxData: Equatable, Hashable {
+struct CheckboxSpec: Equatable, Hashable {
     static let TYP = "checkbox"
     let pageKey: String
     let initialBool: Bool?
@@ -18,7 +18,7 @@ struct CheckboxData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(CheckboxData.TYP)
+        let item = JsonItem(CheckboxSpec.TYP)
         item.initialBool = self.initialBool
         item.rpc = self.rpc
         item.text = self.text
@@ -55,24 +55,24 @@ class CheckboxWidget: Widget {
     var container: TappableView
     let checked: UIImage
     let unchecked: UIImage
-    var data: CheckboxData
+    var spec: CheckboxSpec
     var button: UIButton!
     weak var session: ApplinSession?
 
-    init(_ data: CheckboxData) {
-        print("CheckboxWidget.init(\(data))")
+    init(_ spec: CheckboxSpec) {
+        print("CheckboxWidget.init(\(spec))")
         self.container = TappableView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
 
         self.checked = UIImage(systemName: "checkmark.square.fill")!
         self.unchecked = UIImage(systemName: "square")!
-        self.data = data
+        self.spec = spec
         // For unknown reasons, when the handler takes `[weak self]`, the first
         // checkbox on the page gets self set to 'nil'.  The strange work
         // around is to bind `weak self` before creating the handler.
         weak var weakSelf: CheckboxWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
-            print("CheckboxWidget(\(weakSelf?.data.varName ?? "nil")) UIAction")
+            print("CheckboxWidget(\(weakSelf?.spec.varName ?? "nil")) UIAction")
             weakSelf?.tap()
         })
         var config = UIButton.Configuration.borderless()
@@ -104,7 +104,7 @@ class CheckboxWidget: Widget {
     }
 
     func getChecked() -> Bool {
-        self.session?.getBoolVar(self.data.varName) ?? self.data.initialBool ?? false
+        self.session?.getBoolVar(self.spec.varName) ?? self.spec.initialBool ?? false
     }
 
     func updateImage() {
@@ -116,21 +116,21 @@ class CheckboxWidget: Widget {
     }
 
     func setChecked(_ checked: Bool?) {
-        self.session?.setBoolVar(self.data.varName, checked)
+        self.session?.setBoolVar(self.spec.varName, checked)
         self.updateImage()
     }
 
     func tap() {
         guard let session = self.session else {
-            print("WARN CheckboxWidget(\(self.data.varName)).tap session is nil")
+            print("WARN CheckboxWidget(\(self.spec.varName)).tap session is nil")
             return
         }
         Task { @MainActor in
-            print("CheckboxWidget(\(self.data.varName)).tap")
-            let oldBoolVar = session.getBoolVar(self.data.varName)
+            print("CheckboxWidget(\(self.spec.varName)).tap")
+            let oldBoolVar = session.getBoolVar(self.spec.varName)
             self.setChecked(!self.getChecked())
-            if let rpc = self.data.rpc {
-                let ok = await session.doActionsAsync(pageKey: self.data.pageKey, [.rpc(rpc)])
+            if let rpc = self.spec.rpc {
+                let ok = await session.doActionsAsync(pageKey: self.spec.pageKey, [.rpc(rpc)])
                 if !ok {
                     self.setChecked(oldBoolVar)
                 }
@@ -145,9 +145,9 @@ class CheckboxWidget: Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.data = checkboxData
+        self.spec = checkboxData
         self.session = session
-        self.button.setTitle(self.data.text, for: .normal)
+        self.button.setTitle(self.spec.text, for: .normal)
         self.updateImage()
     }
 }

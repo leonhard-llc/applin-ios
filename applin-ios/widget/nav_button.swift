@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct NavButtonData: Equatable, Hashable {
+struct NavButtonSpec: Equatable, Hashable {
     static let TYP = "nav-button"
     let actions: [ActionData]
     let pageKey: String
@@ -18,7 +18,7 @@ struct NavButtonData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(NavButtonData.TYP)
+        let item = JsonItem(NavButtonSpec.TYP)
         item.actions = self.actions.map({ action in action.toString() })
         item.photoUrl = self.photoUrl?.relativeString
         item.subText = self.subText
@@ -61,7 +61,7 @@ struct NavButtonData: Equatable, Hashable {
 class NavButtonWidget: Widget {
     static let INSET: CGFloat = 12.0
     let constraints = ConstraintSet()
-    var data: NavButtonData
+    var spec: NavButtonSpec
     var container: TappableView!
     var image: UIImageView?
     var label: UILabel!
@@ -69,9 +69,9 @@ class NavButtonWidget: Widget {
     var chevron: UIImageView
     weak var session: ApplinSession?
 
-    init(_ data: NavButtonData) {
-        print("NavButtonWidget.init(\(data))")
-        self.data = data
+    init(_ spec: NavButtonSpec) {
+        print("NavButtonWidget.init(\(spec))")
+        self.spec = spec
         self.container = TappableView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -118,7 +118,7 @@ class NavButtonWidget: Widget {
 
     @objc func tap() {
         print("NavButtonWidget.tap")
-        self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
+        self.session?.doActions(pageKey: self.spec.pageKey, self.spec.actions)
     }
 
     func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
@@ -128,9 +128,9 @@ class NavButtonWidget: Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.data = navButtonData
+        self.spec = navButtonData
         self.session = session
-        self.label.text = self.data.text
+        self.label.text = self.spec.text
         self.constraints.set([
             self.label.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: Self.INSET),
             self.label.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor, constant: -Self.INSET),

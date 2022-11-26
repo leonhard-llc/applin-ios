@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct FormButtonData: Equatable, Hashable {
+struct FormButtonSpec: Equatable, Hashable {
     static let TYP = "form-button"
     let actions: [ActionData]
     let alignment: ApplinHAlignment?
@@ -23,7 +23,7 @@ struct FormButtonData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(FormButtonData.TYP)
+        let item = JsonItem(FormButtonSpec.TYP)
         item.actions = self.actions.map({ action in action.toString() })
         item.setAlign(self.alignment)
         item.text = self.text
@@ -58,14 +58,14 @@ struct FormButtonData: Equatable, Hashable {
 class FormButtonWidget: Widget {
     static let INSET: CGFloat = 8.0
     let constraints = ConstraintSet()
-    var data: FormButtonData
+    var spec: FormButtonSpec
     var container: TappableView!
     var button: UIButton!
     weak var session: ApplinSession?
 
-    init(_ data: FormButtonData) {
-        print("FormButtonWidget.init(\(data))")
-        self.data = data
+    init(_ spec: FormButtonSpec) {
+        print("FormButtonWidget.init(\(spec))")
+        self.spec = spec
 
         self.container = TappableView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
@@ -73,7 +73,7 @@ class FormButtonWidget: Widget {
 
         weak var weakSelf: FormButtonWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
-            print("form-button \(String(describing: data.text)) UIAction")
+            print("form-button \(String(describing: spec.text)) UIAction")
             weakSelf?.tap()
         })
         self.button = UIButton(type: .custom, primaryAction: action)
@@ -98,11 +98,11 @@ class FormButtonWidget: Widget {
     }
 
     func tap() {
-        if self.data.actions.isEmpty {
+        if self.spec.actions.isEmpty {
             return
         }
-        print("form-button \(String(describing: data.text)) tap")
-        self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
+        print("form-button \(String(describing: spec.text)) tap")
+        self.session?.doActions(pageKey: self.spec.pageKey, self.spec.actions)
     }
 
     func getView() -> UIView {
@@ -117,11 +117,11 @@ class FormButtonWidget: Widget {
         guard case let .formButton(formButtonData) = spec.value else {
             throw "Expected .formButton got: \(spec)"
         }
-        self.data = formButtonData
+        self.spec = formButtonData
         self.session = session
         self.button.setTitle("  \(formButtonData.text)  ", for: .normal)
-        self.button.isEnabled = !self.data.actions.isEmpty
-        switch self.data.alignment {
+        self.button.isEnabled = !self.spec.actions.isEmpty
+        switch self.spec.alignment {
         case nil, .center:
             self.constraints.set([
                 self.button.leftAnchor.constraint(greaterThanOrEqualTo: self.container.leftAnchor, constant: Self.INSET),

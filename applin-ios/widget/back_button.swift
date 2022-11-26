@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct BackButtonData: Equatable, Hashable {
+struct BackButtonSpec: Equatable, Hashable {
     static let TYP = "back-button"
     let actions: [ActionData]
     let pageKey: String
@@ -12,7 +12,7 @@ struct BackButtonData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(BackButtonData.TYP)
+        let item = JsonItem(BackButtonSpec.TYP)
         item.actions = self.actions.map({ action in action.toString() })
         return item
     }
@@ -38,7 +38,8 @@ struct BackButtonData: Equatable, Hashable {
     }
 
     func newWidget() -> Widget {
-        BackButtonWidget()
+        print("BackButtonSpec.newWidget(\(self))")
+        return BackButtonWidget()
     }
 
     func tap(_ session: ApplinSession, _ cache: WidgetCache) {

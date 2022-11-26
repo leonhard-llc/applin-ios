@@ -6,7 +6,7 @@ import UIKit
 //         Also, the APIs of UITableView, UITableViewDataSource, and UITableViewDiffableDataSource are extremely hard
 //         to use.
 
-struct FormData: Equatable, Hashable {
+struct FormSpec: Equatable, Hashable {
     static let TYP = "form"
     let widgets: [Spec]
 
@@ -19,7 +19,7 @@ struct FormData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(FormData.TYP)
+        let item = JsonItem(FormSpec.TYP)
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
     }
@@ -54,6 +54,7 @@ class FormWidget: Widget {
     let columnView: ColumnView
 
     init() {
+        print("FormWidget.init()")
         self.columnView = ColumnView()
         self.columnView.translatesAutoresizingMaskIntoConstraints = false
         //self.columnView.backgroundColor = pastelMint

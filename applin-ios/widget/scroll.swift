@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ScrollData: Equatable, Hashable {
+struct ScrollSpec: Equatable, Hashable {
     static let TYP = "scroll"
     let sub: Spec
 
@@ -10,7 +10,7 @@ struct ScrollData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(ScrollData.TYP)
+        let item = JsonItem(ScrollSpec.TYP)
         item.widget = self.sub.toJsonItem()
         return item
     }
@@ -45,6 +45,7 @@ struct ScrollData: Equatable, Hashable {
 
 class KeyboardAvoidingScrollView: UIScrollView {
     init() {
+        print("KeyboardAvoidingScrollView.init()")
         super.init(frame: CGRect.zero)
         let notificationCenter = NotificationCenter.default
         // NOTE: NotificationCenter.default.addObserver will silently do nothing if you pass it
@@ -92,6 +93,7 @@ class ScrollWidget: Widget {
     var keyboardInset: CGFloat = 0.0
 
     init() {
+        print("ScrollWidget.init()")
         self.scrollView = KeyboardAvoidingScrollView()
         self.scrollView.translatesAutoresizingMaskIntoConstraints = false
         self.scrollView.keyboardDismissMode = .interactive

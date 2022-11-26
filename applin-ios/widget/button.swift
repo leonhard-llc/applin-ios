@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ButtonData: Equatable, Hashable {
+struct ButtonSpec: Equatable, Hashable {
     static let TYP = "button"
     let actions: [ActionData]
     let pageKey: String
@@ -14,7 +14,7 @@ struct ButtonData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(ButtonData.TYP)
+        let item = JsonItem(ButtonSpec.TYP)
         item.actions = self.actions.map({ action in action.toString() })
         item.text = self.text
         return item
@@ -46,13 +46,13 @@ struct ButtonData: Equatable, Hashable {
 }
 
 class ButtonWidget: Widget {
-    var data: ButtonData
+    var spec: ButtonSpec
     var button: UIButton!
     weak var session: ApplinSession?
 
-    init(_ data: ButtonData) {
-        print("ButtonWidget.init(\(data))")
-        self.data = data
+    init(_ spec: ButtonSpec) {
+        print("ButtonWidget.init(\(spec))")
+        self.spec = spec
         weak var weakSelf: ButtonWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
             print("button UIAction")
@@ -72,7 +72,7 @@ class ButtonWidget: Widget {
 
     func tap() {
         print("button actions")
-        self.session?.doActions(pageKey: self.data.pageKey, self.data.actions)
+        self.session?.doActions(pageKey: self.spec.pageKey, self.spec.actions)
     }
 
     func getView() -> UIView {
@@ -90,10 +90,10 @@ class ButtonWidget: Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.data = buttonData
+        self.spec = buttonData
         self.session = session
         self.button.setTitle("  \(buttonData.text)  ", for: .normal)
-        self.button.isEnabled = !self.data.actions.isEmpty
-        self.button.layer.borderColor = self.data.actions.isEmpty ? UIColor.systemGray.cgColor : UIColor.tintColor.cgColor
+        self.button.isEnabled = !self.spec.actions.isEmpty
+        self.button.layer.borderColor = self.spec.actions.isEmpty ? UIColor.systemGray.cgColor : UIColor.tintColor.cgColor
     }
 }

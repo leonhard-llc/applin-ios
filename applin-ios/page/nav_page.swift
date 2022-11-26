@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 enum StartEnum: Equatable {
-    case backButton(BackButtonData)
+    case backButton(BackButtonSpec)
     case defaultBackButton
     case empty
 }
@@ -58,7 +58,7 @@ struct NavPageData: Equatable, PageDataProto {
         case .defaultBackButton:
             break
         case .empty:
-            item.start = EmptyData().toJsonItem()
+            item.start = EmptySpec().toJsonItem()
         }
         item.widget = self.widget.toJsonItem()
         return item

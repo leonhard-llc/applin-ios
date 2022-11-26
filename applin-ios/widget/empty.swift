@@ -1,11 +1,11 @@
 import Foundation
 import UIKit
 
-struct EmptyData: Equatable, Hashable {
+struct EmptySpec: Equatable, Hashable {
     static let TYP = "empty"
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(EmptyData.TYP)
+        let item = JsonItem(EmptySpec.TYP)
         return item
     }
 
@@ -39,6 +39,7 @@ class EmptyWidget: Widget {
     weak var session: ApplinSession?
 
     init() {
+        print("EmptyWidget.init()")
         self.view = UIView()
         self.view.translatesAutoresizingMaskIntoConstraints = false
         self.view.backgroundColor = pastelPink

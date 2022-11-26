@@ -1,6 +1,6 @@
 import UIKit
 
-struct ErrorTextData: Equatable, Hashable {
+struct ErrorTextSpec: Equatable, Hashable {
     static let TYP = "error-text"
     let text: String
 
@@ -9,7 +9,7 @@ struct ErrorTextData: Equatable, Hashable {
     }
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(ErrorTextData.TYP)
+        let item = JsonItem(ErrorTextSpec.TYP)
         item.text = self.text
         return item
     }
@@ -43,8 +43,8 @@ class ErrorTextWidget: Widget {
     let label: UILabel
     let container: UIView
 
-    init(_ data: ErrorTextData) {
-        print("ErrorTextWidget.init()")
+    init(_ spec: ErrorTextSpec) {
+        print("ErrorTextWidget.init(\(spec))")
         self.label = UILabel()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.lineBreakMode = .byWordWrapping
