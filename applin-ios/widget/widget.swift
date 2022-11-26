@@ -22,7 +22,6 @@ protocol Widget {
 // This changes algorithms that would take O(n^2) memory into O(n).
 class Spec: Equatable, Hashable {
     enum Value: Equatable, Hashable {
-        case applinLastErrorText(ApplinLastErrorTextData)
         case backButton(BackButtonData)
         case button(ButtonData)
         case checkbox(CheckboxData)
@@ -33,6 +32,7 @@ class Spec: Equatable, Hashable {
         case formButton(FormButtonData)
         case formSection(FormSectionData)
         case formTextfield(FormTextfieldData)
+        case lastErrorText(LastErrorTextData)
         case navButton(NavButtonData)
         case textfield(TextfieldData)
         indirect case scroll(ScrollData)
@@ -51,8 +51,6 @@ class Spec: Equatable, Hashable {
 
     init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
-        case ApplinLastErrorTextData.TYP:
-            self.value = .applinLastErrorText(ApplinLastErrorTextData())
         case BackButtonData.TYP:
             self.value = .backButton(try BackButtonData(pageKey: pageKey, item))
         case ButtonData.TYP:
@@ -73,6 +71,8 @@ class Spec: Equatable, Hashable {
             self.value = .formSection(try FormSectionData(session, pageKey: pageKey, item))
         case FormTextfieldData.TYP:
             self.value = .formTextfield(try FormTextfieldData(pageKey: pageKey, item))
+        case LastErrorTextData.TYP:
+            self.value = .lastErrorText(LastErrorTextData())
         case NavButtonData.TYP:
             self.value = .navButton(try NavButtonData(session, pageKey: pageKey, item))
         case TextfieldData.TYP:
@@ -88,8 +88,6 @@ class Spec: Equatable, Hashable {
 
     func toJsonItem() -> JsonItem {
         switch self.value {
-        case let .applinLastErrorText(inner):
-            return inner.toJsonItem()
         case let .backButton(inner):
             return inner.toJsonItem()
         case let .button(inner):
@@ -109,6 +107,8 @@ class Spec: Equatable, Hashable {
         case let .formSection(inner):
             return inner.toJsonItem()
         case let .formTextfield(inner):
+            return inner.toJsonItem()
+        case let .lastErrorText(inner):
             return inner.toJsonItem()
         case let .navButton(inner):
             return inner.toJsonItem()
@@ -123,8 +123,6 @@ class Spec: Equatable, Hashable {
 
     func keys() -> [String] {
         switch self.value {
-        case let .applinLastErrorText(inner):
-            return inner.keys()
         case let .backButton(inner):
             return inner.keys()
         case let .button(inner):
@@ -144,6 +142,8 @@ class Spec: Equatable, Hashable {
         case let .formSection(inner):
             return inner.keys()
         case let .formTextfield(inner):
+            return inner.keys()
+        case let .lastErrorText(inner):
             return inner.keys()
         case let .navButton(inner):
             return inner.keys()
@@ -158,8 +158,6 @@ class Spec: Equatable, Hashable {
 
     func priority() -> WidgetPriority {
         switch self.value {
-        case let .applinLastErrorText(inner):
-            return inner.priority()
         case let .backButton(inner):
             return inner.priority()
         case let .button(inner):
@@ -179,6 +177,8 @@ class Spec: Equatable, Hashable {
         case let .formSection(inner):
             return inner.priority()
         case let .formTextfield(inner):
+            return inner.priority()
+        case let .lastErrorText(inner):
             return inner.priority()
         case let .navButton(inner):
             return inner.priority()
@@ -193,8 +193,6 @@ class Spec: Equatable, Hashable {
 
     func subs() -> [Spec] {
         switch self.value {
-        case let .applinLastErrorText(inner):
-            return inner.subs()
         case let .backButton(inner):
             return inner.subs()
         case let .button(inner):
@@ -214,6 +212,8 @@ class Spec: Equatable, Hashable {
         case let .formSection(inner):
             return inner.subs()
         case let .formTextfield(inner):
+            return inner.subs()
+        case let .lastErrorText(inner):
             return inner.subs()
         case let .navButton(inner):
             return inner.subs()
@@ -228,8 +228,6 @@ class Spec: Equatable, Hashable {
 
     func vars() -> [(String, Var)] {
         switch self.value {
-        case let .applinLastErrorText(inner):
-            return inner.vars()
         case let .backButton(inner):
             return inner.vars()
         case let .button(inner):
@@ -249,6 +247,8 @@ class Spec: Equatable, Hashable {
         case let .formSection(inner):
             return inner.vars()
         case let .formTextfield(inner):
+            return inner.vars()
+        case let .lastErrorText(inner):
             return inner.vars()
         case let .navButton(inner):
             return inner.vars()
@@ -263,8 +263,6 @@ class Spec: Equatable, Hashable {
 
     func widgetClass() -> AnyClass {
         switch self.value {
-        case let .applinLastErrorText(inner):
-            return inner.widgetClass()
         case let .backButton(inner):
             return inner.widgetClass()
         case let .button(inner):
@@ -284,6 +282,8 @@ class Spec: Equatable, Hashable {
         case let .formSection(inner):
             return inner.widgetClass()
         case let .formTextfield(inner):
+            return inner.widgetClass()
+        case let .lastErrorText(inner):
             return inner.widgetClass()
         case let .navButton(inner):
             return inner.widgetClass()
@@ -298,8 +298,6 @@ class Spec: Equatable, Hashable {
 
     func newWidget() -> Widget {
         switch self.value {
-        case let .applinLastErrorText(inner):
-            return inner.newWidget()
         case let .backButton(inner):
             return inner.newWidget()
         case let .button(inner):
@@ -319,6 +317,8 @@ class Spec: Equatable, Hashable {
         case let .formSection(inner):
             return inner.newWidget()
         case let .formTextfield(inner):
+            return inner.newWidget()
+        case let .lastErrorText(inner):
             return inner.newWidget()
         case let .navButton(inner):
             return inner.newWidget()

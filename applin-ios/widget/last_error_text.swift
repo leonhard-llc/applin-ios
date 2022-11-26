@@ -1,11 +1,11 @@
 import Foundation
 import UIKit
 
-struct ApplinLastErrorTextData: Equatable, Hashable {
-    static let TYP = "applin-last-error-text"
+struct LastErrorTextData: Equatable, Hashable {
+    static let TYP = "last-error-text"
 
     func toJsonItem() -> JsonItem {
-        let item = JsonItem(ApplinLastErrorTextData.TYP)
+        let item = JsonItem(LastErrorTextData.TYP)
         return item
     }
 
@@ -22,11 +22,11 @@ struct ApplinLastErrorTextData: Equatable, Hashable {
     }
 
     func widgetClass() -> AnyClass {
-        ApplinLastErrorTextWidget.self
+        LastErrorTextWidget.self
     }
 
     func newWidget() -> Widget {
-        ApplinLastErrorTextWidget()
+        LastErrorTextWidget()
     }
 
     func vars() -> [(String, Var)] {
@@ -34,12 +34,12 @@ struct ApplinLastErrorTextData: Equatable, Hashable {
     }
 }
 
-class ApplinLastErrorTextWidget: Widget {
+class LastErrorTextWidget: Widget {
     let label: UILabel
     let container: UIView
 
     init() {
-        print("ApplinLastErrorTextWidget.init")
+        print("LastErrorTextWidget.init")
         self.label = UILabel()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.font = UIFont.preferredFont(forTextStyle: .body)
@@ -66,8 +66,8 @@ class ApplinLastErrorTextWidget: Widget {
     }
 
     func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
-        guard case .applinLastErrorText = spec.value else {
-            throw "Expected .applinLastErrorText got: \(spec)"
+        guard case .lastErrorText = spec.value else {
+            throw "Expected .lastErrorText got: \(spec)"
         }
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
