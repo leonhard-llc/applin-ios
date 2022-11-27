@@ -1,6 +1,6 @@
 import Foundation
 
-func readDefaultData(_ session: ApplinSession) async {
+func readDefaultData(_ config: ApplinConfig, _ session: ApplinSession) async {
     print("readDefaultData")
     let itemMap: [String: JsonItem]
     do {
@@ -11,7 +11,7 @@ func readDefaultData(_ session: ApplinSession) async {
     }
     for (key, item) in itemMap {
         do {
-            session.pages[key] = try PageSpec(session, pageKey: key, item)
+            session.pages[key] = try PageSpec(config, pageKey: key, item)
         } catch {
             print("readDefaultData error loading default.json key '\(key)': \(error)")
         }

@@ -45,12 +45,17 @@ enum ConnectionState {
 }
 
 class ApplinConnection {
+    let config: ApplinConfig
     var paused: Bool = true
     var state: ConnectionState = .disconnected
     private var connectTask: Task<(), Never>?
     private var pollTask: Task<(), Never>?
     private var pollSeconds: UInt32 = 1
     private var running: Bool = false
+
+    init(_ config: ApplinConfig) {
+        self.config = config
+    }
 
     private func connectOnce(_ session: ApplinSession) async throws {
         print("ApplinConnection connect")
@@ -72,7 +77,7 @@ class ApplinConnection {
         // If we're going to spend that code, then let's make it good.
         // Let's make an URLSession extension with an asyncEventStream() method that returns
         // whole Server-Sent Events.
-        let url = session.url.appendingPathComponent("stream")
+        let url = self.config.url.appendingPathComponent("stream")
         let (asyncBytes, response) = try await urlSession.bytes(from: url)
         let httpResponse = response as! HTTPURLResponse
         if httpResponse.statusCode != 200 {

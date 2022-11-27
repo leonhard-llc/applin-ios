@@ -31,10 +31,10 @@ enum Var {
 // TODO: Prevent racing between applyUpdate(), rpc(), and doActionsAsync().
 
 class ApplinSession: ObservableObject {
+    let config: ApplinConfig
     let cacheFileWriter: CacheFileWriter?
     let connection: ApplinConnection?
-    weak var nav: NavigationController?
-    let url: URL
+    let nav: NavigationController?
     var error: String?
     var pages: [String: PageSpec] = [:]
     var stack: [String] = ["/"]
@@ -42,17 +42,16 @@ class ApplinSession: ObservableObject {
     var connectionMode: ConnectionMode = .disconnect
     var pauseUpdateNav: Bool = false
 
-    init(_ cacheFileWriter: CacheFileWriter?,
+    init(_ config: ApplinConfig,
+         _ cacheFileWriter: CacheFileWriter?,
          _ connection: ApplinConnection?,
-         _ nav: NavigationController?,
-         _ url: URL
+         _ nav: NavigationController?
     ) {
-        print("ApplinSession \(url)")
-        precondition(url.scheme == "http" || url.scheme == "https")
+        print("ApplinSession \(config)")
+        self.config = config
         self.cacheFileWriter = cacheFileWriter
         self.connection = connection
         self.nav = nav
-        self.url = url
     }
 
     public func pause() {
@@ -193,7 +192,7 @@ class ApplinSession: ObservableObject {
             for (key, optItem) in newPages {
                 if let item = optItem {
                     do {
-                        let pageSpec = try PageSpec(self, pageKey: key, item)
+                        let pageSpec = try PageSpec(self.config, pageKey: key, item)
                         self.pages[key] = pageSpec
                         print("updated key \(key) \(pageSpec)")
                     } catch {
@@ -236,7 +235,7 @@ class ApplinSession: ObservableObject {
         defer {
             urlSession.invalidateAndCancel()
         }
-        let url = self.url.appendingPathComponent(
+        let url = self.config.url.appendingPathComponent(
                 path.starts(with: "/") ? String(path.dropFirst()) : path)
         var urlRequest = URLRequest(
                 url: url,

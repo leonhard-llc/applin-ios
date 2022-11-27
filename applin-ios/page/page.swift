@@ -12,16 +12,16 @@ enum PageSpec: Equatable {
     case navPage(NavPageSpec)
     case plainPage(PlainPageSpec)
 
-    init(_ session: ApplinSession, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
         case ModalKind.alert.typ():
             self = try .modal(ModalSpec(pageKey: pageKey, .alert, item))
         case ModalKind.drawer.typ():
             self = try .modal(ModalSpec(pageKey: pageKey, .drawer, item))
         case NavPageSpec.TYP:
-            self = try .navPage(NavPageSpec(session, pageKey: pageKey, item))
+            self = try .navPage(NavPageSpec(config, pageKey: pageKey, item))
         case PlainPageSpec.TYP:
-            self = try .plainPage(PlainPageSpec(session, pageKey: pageKey, item))
+            self = try .plainPage(PlainPageSpec(config, pageKey: pageKey, item))
         default:
             throw ApplinError.deserializeError("unexpected page 'typ' value: \(item.typ)")
         }

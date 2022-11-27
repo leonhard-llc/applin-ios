@@ -49,7 +49,7 @@ class Spec: Equatable, Hashable {
         self.value = value
     }
 
-    init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
         case BackButtonSpec.TYP:
             self.value = .backButton(try BackButtonSpec(pageKey: pageKey, item))
@@ -58,27 +58,27 @@ class Spec: Equatable, Hashable {
         case CheckboxSpec.TYP:
             self.value = .checkbox(try CheckboxSpec(pageKey: pageKey, item))
         case ColumnSpec.TYP:
-            self.value = .column(try ColumnSpec(session, pageKey: pageKey, item))
+            self.value = .column(try ColumnSpec(config, pageKey: pageKey, item))
         case EmptySpec.TYP:
             self.value = .empty(EmptySpec())
         case ErrorTextSpec.TYP:
             self.value = .errorText(try ErrorTextSpec(item))
         case FormSpec.TYP:
-            self.value = .form(try FormSpec(session, pageKey: pageKey, item))
+            self.value = .form(try FormSpec(config, pageKey: pageKey, item))
         case FormButtonSpec.TYP:
             self.value = .formButton(try FormButtonSpec(pageKey: pageKey, item))
         case FormSectionSpec.TYP:
-            self.value = .formSection(try FormSectionSpec(session, pageKey: pageKey, item))
+            self.value = .formSection(try FormSectionSpec(config, pageKey: pageKey, item))
         case FormTextfieldSpec.TYP:
             self.value = .formTextfield(try FormTextfieldSpec(pageKey: pageKey, item))
         case LastErrorTextSpec.TYP:
             self.value = .lastErrorText(LastErrorTextSpec())
         case NavButtonSpec.TYP:
-            self.value = .navButton(try NavButtonSpec(session, pageKey: pageKey, item))
+            self.value = .navButton(try NavButtonSpec(config, pageKey: pageKey, item))
         case TextfieldSpec.TYP:
             self.value = .textfield(try TextfieldSpec(pageKey: pageKey, item))
         case ScrollSpec.TYP:
-            self.value = .scroll(try ScrollSpec(session, pageKey: pageKey, item))
+            self.value = .scroll(try ScrollSpec(config, pageKey: pageKey, item))
         case TextSpec.TYP:
             self.value = .text(try TextSpec(item))
         default:

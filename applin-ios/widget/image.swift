@@ -6,8 +6,8 @@
 //    let width: ApplinDimension
 //    let disposition: ApplinDisposition
 //
-//    init(_ item: JsonItem, _ session: ApplinSession?) throws {
-//        self.url = try item.requireUrl(session)
+//    init(_ item: JsonItem, _ config: ApplinConfig) throws {
+//        self.url = try item.requireUrl(config)
 //        self.width = item.getWidth()
 //        self.disposition = item.optDisposition() ?? .fit
 //    }

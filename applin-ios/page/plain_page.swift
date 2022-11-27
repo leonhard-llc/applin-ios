@@ -13,10 +13,10 @@ struct PlainPageSpec: Equatable {
         self.widget = widget
     }
 
-    init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.title = item.title
-        self.widget = try item.requireWidget(session, pageKey: pageKey)
+        self.widget = try item.requireWidget(config, pageKey: pageKey)
     }
 
     func controllerClass() -> AnyClass {

@@ -2,20 +2,22 @@ import UIKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    let config: ApplinConfig
     let dataDirPath: String
     let cacheFileWriter: CacheFileWriter
-    let connection: ApplinConnection = ApplinConnection()
+    let connection: ApplinConnection
     let session: ApplinSession
     let navigationController: NavigationController
     var window: UIWindow?
 
     override init() {
         // Note: This code runs during app prewarming.
+        self.config = ApplinConfig(url: URL(string: "http://127.0.0.1:8000/")!)
+        self.connection = ApplinConnection(self.config)
         self.dataDirPath = getDataDirPath()
         self.cacheFileWriter = CacheFileWriter(dataDirPath: dataDirPath)
         self.navigationController = NavigationController()
-        let url = URL(string: "http://127.0.0.1:8000/")!
-        self.session = ApplinSession(self.cacheFileWriter, self.connection, self.navigationController, url)
+        self.session = ApplinSession(self.config, self.cacheFileWriter, self.connection, self.navigationController)
         super.init()
     }
 
@@ -35,9 +37,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     self.session.pauseUpdateNav = false
                     self.session.updateNav()
                 }
-                await readDefaultData(self.session)
+                await readDefaultData(self.config, self.session)
                 try createDir(dataDirPath)
-                await readCacheFile(dataDirPath: self.dataDirPath, self.session)
+                await readCacheFile(dataDirPath: self.dataDirPath, self.config, self.session)
                 self.session.unpause()
             } catch {
                 print("startup error: \(error)")

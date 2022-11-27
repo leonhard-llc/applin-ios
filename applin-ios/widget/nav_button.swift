@@ -9,10 +9,10 @@ struct NavButtonSpec: Equatable, Hashable {
     let subText: String?
     let text: String
 
-    init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
         self.pageKey = pageKey
-        self.photoUrl = try item.optPhotoUrl(session)
+        self.photoUrl = try item.optPhotoUrl(config)
         self.subText = item.subText
         self.text = try item.requireText()
     }

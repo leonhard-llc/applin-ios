@@ -5,8 +5,8 @@ struct ScrollSpec: Equatable, Hashable {
     static let TYP = "scroll"
     let sub: Spec
 
-    init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
-        self.sub = try item.requireWidget(session, pageKey: pageKey)
+    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
+        self.sub = try item.requireWidget(config, pageKey: pageKey)
     }
 
     func toJsonItem() -> JsonItem {

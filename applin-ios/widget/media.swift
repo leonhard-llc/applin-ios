@@ -12,8 +12,8 @@
 //        self.cache = cache
 //    }
 //
-//    init(_ item: JsonItem, _ session: ApplinSession?) throws {
-//        self.url = try item.requireUrl(session)
+//    init(_ item: JsonItem, _ config: ApplinConfig) throws {
+//        self.url = try item.requireUrl(config)
 //        self.cache = item.cache
 //    }
 //

@@ -11,9 +11,9 @@ struct FormSectionSpec: Equatable, Hashable {
         self.widgets = widgets
     }
 
-    init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.optTitle = item.title
-        self.widgets = try item.optWidgets(session, pageKey: pageKey) ?? []
+        self.widgets = try item.optWidgets(config, pageKey: pageKey) ?? []
     }
 
     func toJsonItem() -> JsonItem {

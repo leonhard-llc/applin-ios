@@ -29,10 +29,10 @@ struct NavPageSpec: Equatable {
         self.widget = widget
     }
 
-    init(_ session: ApplinSession?, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
-        self.end = try item.optEnd(session, pageKey: pageKey)
-        switch try item.optStart(session, pageKey: pageKey)?.value {
+        self.end = try item.optEnd(config, pageKey: pageKey)
+        switch try item.optStart(config, pageKey: pageKey)?.value {
         case let .backButton(inner):
             self.start = .backButton(inner)
         case .none:
@@ -43,7 +43,7 @@ struct NavPageSpec: Equatable {
             throw ApplinError.deserializeError("bad \(item.typ).start: \(other)")
         }
         self.title = try item.requireTitle()
-        self.widget = try item.requireWidget(session, pageKey: pageKey)
+        self.widget = try item.requireWidget(config, pageKey: pageKey)
     }
 
     func controllerClass() -> AnyClass {

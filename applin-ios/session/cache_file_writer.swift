@@ -7,7 +7,7 @@ struct CacheFileContents: Codable {
     var stack: [String]?
 }
 
-func readCacheFile(dataDirPath: String, _ session: ApplinSession) async {
+func readCacheFile(dataDirPath: String, _ config: ApplinConfig, _ session: ApplinSession) async {
     print("readCacheFile")
     let path = dataDirPath + "/" + CacheFileWriter.cacheFileName
     if !(await fileExists(path: path)) {
@@ -39,7 +39,7 @@ func readCacheFile(dataDirPath: String, _ session: ApplinSession) async {
     }
     for (key, item) in contents.pages ?? [:] {
         do {
-            session.pages[key] = try PageSpec(session, pageKey: key, item)
+            session.pages[key] = try PageSpec(config, pageKey: key, item)
         } catch {
             print("error loading cached key '\(key)': \(error)")
         }
