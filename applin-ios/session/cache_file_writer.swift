@@ -51,16 +51,15 @@ class CacheFileWriter {
     static let cacheFileName = "cache.json"
 
     private let dataDirPath: String
-    private var writeTime: Date = .distantPast
-    private var writerWaiting: Bool = false
-    private var writerRunning: Bool = false
+    @BackgroundActor private var waitTask: Task<Void, Error>?
+    @BackgroundActor private var writeTask: Task<Void, Error>?
 
     public init(dataDirPath: String) {
         self.dataDirPath = dataDirPath
         // print("CacheFileWriter \(dataDirPath)")
     }
 
-    func writeCacheFile(_ session: ApplinSession) async throws {
+    func wroteOnce(_ session: ApplinSession) async throws {
         print("write cache")
         var contents = CacheFileContents()
         contents.boolVars = session.vars.compactMapValues({ v in
@@ -89,34 +88,59 @@ class CacheFileWriter {
         try await moveFile(atPath: tmpPath, toPath: path)
     }
 
-    public func scheduleWrite(_ session: ApplinSession) {
-        if self.writerWaiting {
+    @BackgroundActor private func writeLoop(_ session: ApplinSession) async {
+        // TODO: Move the defer into the calling Task closure once https://github.com/apple/swift/issues/58921 is fixed.
+        defer {
+            self.writeTask = nil
+        }
+        while !Task.isCancelled {
+            do {
+                try await self.wroteOnce(session)
+                return
+            } catch {
+                print("CacheFileWriter error writing: \(error)")
+                // TODO: Update session error.
+                await sleep(ms: 60_000)
+            }
+        }
+        print("CacheFileWriter.writeLoop task cancelled")
+    }
+
+    @BackgroundActor private func waitThenWrite(_ session: ApplinSession) async {
+        defer {
+            self.waitTask = nil
+        }
+        let waitDeadline = Date() + 10.0 /* seconds */
+        while !Task.isCancelled && self.writeTask != nil {
+            await sleep(ms: 1_000)
+        }
+        while !Task.isCancelled && Date() < waitDeadline {
+            await sleep(ms: 1_000)
+        }
+        if Task.isCancelled {
+            print("CacheFileWriter.waitThenWrite task cancelled")
             return
         }
-        self.writerWaiting = true
-        Task(priority: .low) {
-            self.writeTime = Date() + 10.0 /* seconds */
-            while self.writerRunning || Date() < writeTime {
-                await sleep(ms: 1_000)
+        self.writeTask = Task(priority: .low) { @BackgroundActor in
+            await self.writeLoop(session)
+        }
+    }
+
+    nonisolated public func scheduleWrite(_ session: ApplinSession) {
+        Task(priority: .low) { @BackgroundActor in
+            if self.waitTask != nil {
+                return
             }
-            self.writerRunning = true
-            defer {
-                self.writerRunning = false
-            }
-            self.writerWaiting = false
-            while !Task.isCancelled {
-                do {
-                    try await self.writeCacheFile(session)
-                    return
-                } catch {
-                    print("error writing cache: \(error)")
-                    await sleep(ms: 60_000)
-                }
+            self.waitTask = Task(priority: .low) { @BackgroundActor in
+                await self.waitThenWrite(session)
             }
         }
     }
 
-    public func stop() {
-        self.writeTime = .distantPast
+    nonisolated public func stop() {
+        Task(priority: .low) { @BackgroundActor in
+            self.waitTask?.cancel()
+            self.writeTask?.cancel()
+        }
     }
 }
