@@ -4,10 +4,10 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
     let config: ApplinConfig
     let dataDirPath: String
+    let navigationController = NavigationController()
     let cacheFileWriter: CacheFileWriter
     let connection: ApplinConnection
     let session: ApplinSession
-    let navigationController: NavigationController
     var window: UIWindow?
 
     override init() {
@@ -16,8 +16,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.connection = ApplinConnection(self.config)
         self.dataDirPath = getDataDirPath()
         self.cacheFileWriter = CacheFileWriter(dataDirPath: dataDirPath)
-        self.navigationController = NavigationController()
-        self.session = ApplinSession(self.config, self.cacheFileWriter, self.connection, self.navigationController)
+        self.session = ApplinSession(
+                self.config,
+                ApplinState(),
+                self.cacheFileWriter,
+                self.connection,
+                self.navigationController
+        )
         super.init()
     }
 
@@ -31,19 +36,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window!.rootViewController = self.navigationController
         self.window!.makeKeyAndVisible()
         Task(priority: .high) {
+            let initialState: ApplinState
             do {
-                self.session.pauseUpdateNav = true
-                defer {
-                    self.session.pauseUpdateNav = false
-                    self.session.updateNav()
-                }
-                await readDefaultData(self.config, self.session)
-                try createDir(dataDirPath)
-                await readCacheFile(dataDirPath: self.dataDirPath, self.config, self.session)
-                self.session.unpause()
+                initialState = try await readCacheFile(self.config, dataDirPath: self.dataDirPath)
             } catch {
-                print("startup error: \(error)")
+                print(error)
+                // TODO: Add a test that reads and checks default.json.
+                initialState = ApplinState(error: "Error loading data")
             }
+            self.session.state = initialState
+            self.session.updateNav()
+            self.session.unpause()
         }
         return true
     }
