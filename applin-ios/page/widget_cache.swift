@@ -1,141 +1,130 @@
 import UIKit
 
-private class UpdaterNode {
-    static func update(_ session: ApplinSession, _ cache: WidgetCache, _ spec: Spec) -> Widget {
-        let root = UpdaterNode(spec)
-        root.getSomeWidgets(session, cache, spec) { spec in
-            if spec.priority() == .focusable {
-                if let widget = cache.findStale(spec) {
-                    return widget.isFocused()
-                }
-            }
-            return false
-        }
-        root.getSomeWidgets(session, cache, spec) { spec in
-            spec.priority() == .focusable
-        }
-        root.getSomeWidgets(session, cache, spec) { spec in
-            spec.priority() == .stateful
-        }
-        root.getSomeWidgets(session, cache, spec) { _ in
-            true
-        }
-        root.updateNodeAndSubs(session, cache, spec)
-        return root.widget!
-    }
-
-    private let subNodes: [UpdaterNode]
-    private var widget: Widget?
+/// A node with `optWidget`, which may be absent.
+private class RoughNode {
+    let keys: [String]
+    let spec: Spec // Memory is not O(n^2) because Spec is a reference.
+    let subNodes: [RoughNode]
+    weak var superNode: RoughNode?
+    var optWidget: Widget?
 
     init(_ spec: Spec) {
-        // TODO: Add keys for focused subs.
-        self.subNodes = spec.subs().map({ subSpec in UpdaterNode(subSpec) })
-    }
-
-    func getSomeWidgets(_ session: ApplinSession, _ cache: WidgetCache, _ spec: Spec, _ shouldGetViewFn: (Spec) -> Bool) {
-        var isASubBuilt = false
-        for (n, subSpec) in spec.subs().enumerated() {
-            let subNode = self.subNodes[n]
-            subNode.getSomeWidgets(session, cache, subSpec, shouldGetViewFn)
-            isASubBuilt = isASubBuilt || subNode.widget != nil
+        self.spec = spec
+        self.keys = spec.keys()
+        self.subNodes = spec.subs().map({ subSpec in RoughNode(subSpec) })
+        for subNode in self.subNodes {
+            subNode.superNode = self
         }
-        if self.widget == nil && (isASubBuilt || shouldGetViewFn(spec)) {
-            self.widget = cache.getOrMake(spec)
-        }
-    }
-
-    func updateNodeAndSubs(_ session: ApplinSession, _ cache: WidgetCache, _ spec: Spec) {
-        for (n, subSpec) in spec.subs().enumerated() {
-            let subNode = self.subNodes[n]
-            subNode.updateNodeAndSubs(session, cache, subSpec)
-        }
-        if self.widget == nil {
-            self.widget = cache.getOrMake(spec)
-        }
-        let subWidgets = self.subNodes.map({ node in node.widget! })
-        // TODO(mleonhard) Find a way to make this type-safe and eliminate the exception.
-        try! self.widget!.update(session, spec, subWidgets)
     }
 }
 
-private enum CacheEntry {
-    case duplicate
-    case fresh(Widget)
-    case stale(Widget)
+/// A node with `widget`.
+private class DoneNode {
+    let keys: [String]
+    let spec: Spec // Memory is not O(n^2) because Spec is a reference.
+    let subNodes: [DoneNode]
+    let widget: Widget
+    weak var superNode: DoneNode?
+
+    init(_ roughNode: RoughNode) {
+        self.keys = roughNode.keys
+        self.spec = roughNode.spec
+        self.subNodes = roughNode.subNodes.compactMap({ subNode in DoneNode(subNode) })
+        self.widget = roughNode.optWidget ?? roughNode.spec.newWidget()
+        for subNode in self.subNodes {
+            subNode.superNode = self
+        }
+    }
 }
 
-class WidgetCache: CustomStringConvertible {
-    private var keyToWidgets: [String: CacheEntry] = [:]
+private class NodeTable {
+    private var keyToNodes: [String: [DoneNode]] = [:]
 
-    public var description: String {
-        "WidgetCache(\(self.keyToWidgets))"
+    func insert(_ node: DoneNode) {
+        for key in node.keys {
+            self.keyToNodes[key, default: []].append(node)
+        }
+        for subNode in node.subNodes {
+            self.insert(subNode)
+        }
     }
 
-    private func addFresh(keys: [String], _ widget: Widget) {
-        for key in keys {
-            switch self.keyToWidgets[key] {
-            case nil, .stale(_):
-                self.keyToWidgets[key] = .fresh(widget)
-            case .duplicate:
-                break
-            case .fresh(_):
-                // Two widgets use this key.  Don't use it for any widgets.
-                self.keyToWidgets[key] = .duplicate
+    func remove(_ node: DoneNode) {
+        for key in node.keys {
+            if var nodeList = self.keyToNodes[key] {
+                nodeList.removeAll(where: { nodeInTable in nodeInTable === node })
             }
         }
     }
 
-    func findStale(_ spec: Spec) -> Widget? {
-        for key in spec.keys() {
-            if case let .stale(widget) = self.keyToWidgets[key] {
-                if type(of: widget) == spec.widgetClass() {
-                    return widget
+    func find(_ roughNode: RoughNode) -> DoneNode? {
+        for key in roughNode.keys {
+            if let doneNodes = self.keyToNodes[key] {
+                if doneNodes.count == 1 {
+                    let doneNode = doneNodes.first!
+                    if doneNode.spec.widgetClass() == roughNode.spec.widgetClass() {
+                        return doneNode
+                    }
                 }
             }
         }
         return nil
     }
 
-    private func removeStale(keys: [String]) {
-        for key in keys {
-            switch self.keyToWidgets[key] {
-            case nil, .duplicate, .fresh(_):
-                break
-            case .stale:
-                self.keyToWidgets.removeValue(forKey: key)
+    func removeAll() {
+        self.keyToNodes.removeAll()
+    }
+}
+
+class WidgetCache {
+    private var table = NodeTable()
+
+    private func visitNode(_ node: RoughNode, _ findOldNode: (RoughNode) -> DoneNode?) -> DoneNode? {
+        var oldSuperNode: DoneNode?
+        for subNode in node.subNodes {
+            if let oldNode = self.visitNode(subNode, findOldNode) {
+                if node.optWidget == nil && oldNode.spec.widgetClass() == node.spec.widgetClass() {
+                    node.optWidget = oldNode.widget
+                    oldSuperNode = oldNode.superNode
+                }
             }
         }
-    }
-
-    public func getOrMake(_ spec: Spec) -> Widget {
-        let newKeys = spec.keys()
-        if let widget = self.findStale(spec) {
-            self.removeStale(keys: newKeys)
-            self.addFresh(keys: newKeys, widget)
-            return widget
-        } else {
-            let widget = spec.newWidget()
-            self.addFresh(keys: newKeys, widget)
-            return widget
-        }
-    }
-
-    private func removeStaleAndChangeFreshToStale() {
-        for (key, value) in self.keyToWidgets {
-            switch value {
-            case .duplicate:
-                break
-            case .stale(_):
-                self.keyToWidgets.removeValue(forKey: key)
-            case let .fresh(widget):
-                self.keyToWidgets[key] = .stale(widget)
+        if node.optWidget == nil {
+            if let oldNode = findOldNode(node) {
+                self.table.remove(oldNode)
+                node.optWidget = oldNode.widget
+                oldSuperNode = oldNode.superNode
             }
         }
+        return oldSuperNode
     }
 
-    public func updateAll(_ session: ApplinSession, _ spec: Spec) -> Widget {
-        let rootWidget = UpdaterNode.update(session, self, spec)
-        self.removeStaleAndChangeFreshToStale()
-        return rootWidget
+    private func updateNode(_ session: ApplinSession, _ node: DoneNode) {
+        for subNode in node.subNodes {
+            self.updateNode(session, subNode)
+        }
+        let subWidgets = node.subNodes.map({ subNode in subNode.widget })
+        // TODO(mleonhard) Find a way to make this type-safe and eliminate the exception.
+        try! node.widget.update(session, node.spec, subWidgets)
+    }
+
+    func updateAll(_ session: ApplinSession, _ spec: Spec) -> Widget {
+        let roughRoot = RoughNode(spec)
+        _ = self.visitNode(roughRoot) { node in
+            if node.spec.priority() == .focusable, let oldNode = self.table.find(node) {
+                if oldNode.widget.isFocused() {
+                    return oldNode
+                }
+            }
+            return nil
+        }
+        _ = self.visitNode(roughRoot, { node in node.spec.priority() == .focusable ? self.table.find(node) : nil })
+        _ = self.visitNode(roughRoot, { node in node.spec.priority() == .stateful ? self.table.find(node) : nil })
+        _ = self.visitNode(roughRoot, { node in self.table.find(node) })
+        let doneRoot = DoneNode(roughRoot)
+        self.table.removeAll()
+        self.table.insert(doneRoot)
+        self.updateNode(session, doneRoot)
+        return doneRoot.widget
     }
 }
