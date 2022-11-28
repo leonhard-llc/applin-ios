@@ -140,7 +140,7 @@ class ApplinSession: ObservableObject {
         }
         print("setVar \(name)=\(value)")
         self.state.vars[name] = value
-        self.stateStore?.scheduleWrite(self)
+        self.stateStore?.scheduleWrite(self.state)
     }
 
     func setBoolVar(_ name: String, _ optValue: Bool?) {
@@ -213,7 +213,7 @@ class ApplinSession: ObservableObject {
             }
         }
         // TODO: Handle user_error.
-        self.stateStore?.scheduleWrite(self)
+        self.stateStore?.scheduleWrite(self.state)
         if let vars = update.vars {
             for (name, jsonValue) in vars {
                 switch jsonValue {

@@ -11,12 +11,14 @@ class StateStore {
     static let FILE_NAME = "state.json"
 
     private let config: ApplinConfig
-    @BackgroundActor private var waitTask: Task<Void, Error>?
-    @BackgroundActor private var writeTask: Task<Void, Error>?
+    @BackgroundActor private var writeLoopTask: Task<Void, Never>?
+    @BackgroundActor private var stateToWrite: ApplinState?
+    @BackgroundActor private var optEarliestWriteTime: Date?
 
     public init(_ config: ApplinConfig) {
         print("StateStore")
         self.config = config
+        self.start()
     }
 
     private func readDefaultJson() async throws -> FileContents {
@@ -90,24 +92,24 @@ class StateStore {
         return ApplinState(pages: pages, stack: stack, vars: vars)
     }
 
-    func writeOnce(_ session: ApplinSession) async throws {
+    func writeOnce(_ state: ApplinState) async throws {
         print("StateStore.writeOnce")
-        let boolVars: [String: Bool] = session.state.vars.compactMapValues({ v in
+        let boolVars: [String: Bool] = state.vars.compactMapValues({ v in
             if case let .boolean(value) = v {
                 return value
             } else {
                 return nil
             }
         })
-        let stringVars: [String: String] = session.state.vars.compactMapValues({ v in
+        let stringVars: [String: String] = state.vars.compactMapValues({ v in
             if case let .string(value) = v {
                 return value
             } else {
                 return nil
             }
         })
-        let pages = session.state.pages.mapValues({ page in page.toJsonItem() })
-        let stack = session.state.stack
+        let pages = state.pages.mapValues({ page in page.toJsonItem() })
+        let stack = state.stack
         let contents = FileContents(boolVars: boolVars, stringVars: stringVars, pages: pages, stack: stack)
         let bytes = try encodeJson(contents)
         // TODO: Keep hash of file contents and don't write if file contents won't change.
@@ -121,65 +123,76 @@ class StateStore {
         try await moveFile(atPath: tmpPath, toPath: path)
     }
 
-    @BackgroundActor private func writeLoop(_ session: ApplinSession) async {
+    @BackgroundActor private func writeLoop() async {
+        print("StateStore.writeLoop")
         // TODO: Move the defer into the calling Task closure once https://github.com/apple/swift/issues/58921 is fixed.
         defer {
-            self.writeTask = nil
+            self.writeLoopTask = nil
         }
         while !Task.isCancelled {
-            do {
-                try await self.writeOnce(session)
-                return
-            } catch {
-                print("StateStore.writeLoop: \(error)")
-                // TODO: Update session error.
-                await sleep(ms: 60_000)
+            while true {
+                if Task.isCancelled {
+                    print("StateStore.writeLoop: Task is cancelled")
+                    break
+                } else if let earliestWriteTime = self.optEarliestWriteTime, earliestWriteTime < Date() {
+                    print("StateStore.writeLoop: optEarliestWriteTime passed")
+                    break
+                } else {
+                    await sleep(ms: 1_000)
+                }
+            }
+            var optState: ApplinState?
+            while true {
+                optState = self.stateToWrite ?? optState
+                self.stateToWrite = nil
+                self.optEarliestWriteTime = nil
+                guard let state = optState else {
+                    print("StateStore.writeLoop: nothing to write")
+                    break
+                }
+                do {
+                    print("StateStore.writeLoop: writing")
+                    try await self.writeOnce(state)
+                    break
+                } catch {
+                    print("StateStore.writeLoop: \(error)")
+                    // TODO: Update session error.
+                    if Task.isCancelled {
+                        await sleep(ms: 1_000)
+                    } else {
+                        await sleep(ms: 60_000)
+                    }
+                }
             }
         }
-        print("StateStore.writeLoop task cancelled")
+        print("StateStore.writeLoop stopping")
     }
 
-    @BackgroundActor private func waitThenWrite(_ session: ApplinSession) async {
-        print("StateStore.waitThenWrite")
-        defer {
-            self.waitTask = nil
-        }
-        let waitDeadline = Date() + 10.0 /* seconds */
-        while !Task.isCancelled && self.writeTask != nil {
-            await sleep(ms: 1_000)
-        }
-        print("StateStore.waitThenWrite writeTask is available")
-        while !Task.isCancelled && Date() < waitDeadline {
-            await sleep(ms: 1_000)
-        }
-        if Task.isCancelled {
-            print("StateStore.waitThenWrite task cancelled")
-            return
-        }
-        self.writeTask = Task(priority: .low) { @BackgroundActor in
-            await self.writeLoop(session)
-        }
-    }
-
-    // TODO: Take ApplinState as argument, not session, and cancel any pending waiter.
-
-    nonisolated public func scheduleWrite(_ session: ApplinSession) {
+    public func scheduleWrite(_ state: ApplinState) {
         print("StateStore.scheduleWrite")
         Task(priority: .low) { @BackgroundActor in
-            if self.waitTask != nil {
-                print("StateStore.scheduleWrite another task is already waiting")
-                return
+            self.optEarliestWriteTime = self.optEarliestWriteTime ?? (Date() + 10.0 /* seconds */)
+            self.stateToWrite = state
+        }
+    }
+
+    public func start() {
+        Task(priority: .low) { @BackgroundActor in
+            if let task = self.writeLoopTask {
+                task.cancel()
+                while !Task.isCancelled && self.writeLoopTask != nil {
+                    await sleep(ms: 1_000)
+                }
             }
-            self.waitTask = Task(priority: .low) { @BackgroundActor in
-                await self.waitThenWrite(session)
+            self.writeLoopTask = Task(priority: .low) { @BackgroundActor in
+                await self.writeLoop()
             }
         }
     }
 
-    nonisolated public func stop() {
+    public func stop() {
         Task(priority: .low) { @BackgroundActor in
-            self.waitTask?.cancel()
-            self.writeTask?.cancel()
+            self.writeLoopTask?.cancel() // Makes sleep return immediately.
         }
     }
 }

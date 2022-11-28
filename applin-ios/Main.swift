@@ -54,6 +54,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidBecomeActive(_ application: UIApplication) {
         print("active")
         self.session.unpause()
+        self.stateStore.start()
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
