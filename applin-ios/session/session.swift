@@ -42,20 +42,20 @@ struct ApplinState {
 
 class ApplinSession: ObservableObject {
     let config: ApplinConfig
-    let cacheFileWriter: CacheFileWriter?
+    let stateStore: StateStore?
     let connection: ApplinConnection?
     let nav: NavigationController?
     var state: ApplinState
 
     init(_ config: ApplinConfig,
          _ state: ApplinState,
-         _ cacheFileWriter: CacheFileWriter?,
+         _ stateStore: StateStore?,
          _ connection: ApplinConnection?,
          _ nav: NavigationController?
     ) {
-        print("ApplinSession \(config)")
+        print("ApplinSession")
         self.config = config
-        self.cacheFileWriter = cacheFileWriter
+        self.stateStore = stateStore
         self.connection = connection
         self.nav = nav
         self.state = state
@@ -140,7 +140,7 @@ class ApplinSession: ObservableObject {
         }
         print("setVar \(name)=\(value)")
         self.state.vars[name] = value
-        self.cacheFileWriter?.scheduleWrite(self)
+        self.stateStore?.scheduleWrite(self)
     }
 
     func setBoolVar(_ name: String, _ optValue: Bool?) {
@@ -213,7 +213,7 @@ class ApplinSession: ObservableObject {
             }
         }
         // TODO: Handle user_error.
-        self.cacheFileWriter?.scheduleWrite(self)
+        self.stateStore?.scheduleWrite(self)
         if let vars = update.vars {
             for (name, jsonValue) in vars {
                 switch jsonValue {

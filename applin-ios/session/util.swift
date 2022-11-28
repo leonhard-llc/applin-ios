@@ -1,10 +1,17 @@
 import Foundation
 
-func createDir(_ path: String) throws {
-    if FileManager.default.fileExists(atPath: path) {
-        return
+func createDir(_ path: String) async throws {
+    let task = Task {
+        do {
+            if FileManager.default.fileExists(atPath: path) {
+                return
+            }
+            try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+        } catch {
+            throw ApplinError.deserializeError("error creating directory '\(path)': \(error)")
+        }
     }
-    try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+    try await task.value
 }
 
 func decodeBundleJsonFile<T: Decodable>(_ filename: String) async throws -> T {
@@ -29,23 +36,27 @@ func encodeJson<T: Encodable>(_ item: T) throws -> Data {
 
 func deleteFile(path: String) async throws {
     let task = Task {
-        // Apple's docs don't say what happens when the file doesn't exist.
-        // https://developer.apple.com/documentation/foundation/filemanager/1408573-removeitem
-        // Here's what I get from iOS 15 in Simulator:
-        // Error Domain=NSCocoaErrorDomain Code=4 "'cache.json.tmp' couldn't be removed."
-        // UserInfo={
-        //   NSUserStringVariant=(Remove),
-        //   NSFilePath=/Users/user/Library/Developer/CoreSimulator/Devices/61ED91D5-4782-4D6C-B943-74774C383CEC/data/
-        //     Containers/Data/Application/CDF87840-5B50-4217-A2AC-5CC345A52A9B/Documents/cache.json.tmp,
-        //   NSUnderlyingError=0x600000d541e0 {Error Domain=NSPOSIXErrorDomain Code=2 "No such file or directory"}
-        // }
-        // Apple docs also don't list the constant values.  And the editor won't show the values.
-        // I printed out the value of kCFNotFound, which printed as -1.  But that value is not found in the error.
-        // So I give up making this method idempotent.
-        if !FileManager.default.fileExists(atPath: path) {
-            return
+        do {
+            // Apple's docs don't say what happens when the file doesn't exist.
+            // https://developer.apple.com/documentation/foundation/filemanager/1408573-removeitem
+            // Here's what I get from iOS 15 in Simulator:
+            // Error Domain=NSCocoaErrorDomain Code=4 "'cache.json.tmp' couldn't be removed."
+            // UserInfo={
+            //   NSUserStringVariant=(Remove),
+            //   NSFilePath=/Users/user/Library/Developer/CoreSimulator/Devices/61ED91D5-4782-4D6C-B943-74774C383CEC/data/
+            //     Containers/Data/Application/CDF87840-5B50-4217-A2AC-5CC345A52A9B/Documents/cache.json.tmp,
+            //   NSUnderlyingError=0x600000d541e0 {Error Domain=NSPOSIXErrorDomain Code=2 "No such file or directory"}
+            // }
+            // Apple docs also don't list the constant values.  And the editor won't show the values.
+            // I printed out the value of kCFNotFound, which printed as -1.  But that value is not found in the error.
+            // So I give up making this method idempotent.
+            if !FileManager.default.fileExists(atPath: path) {
+                return
+            }
+            try FileManager.default.removeItem(atPath: path)
+        } catch {
+            throw ApplinError.deserializeError("error deleting file '\(path)': \(error)")
         }
-        try FileManager.default.removeItem(atPath: path)
     }
     try await task.value
 }
@@ -73,7 +84,11 @@ func getTempDirPath() -> String {
 
 func moveFile(atPath: String, toPath: String) async throws {
     let task = Task {
-        try FileManager.default.moveItem(atPath: atPath, toPath: toPath)
+        do {
+            try FileManager.default.moveItem(atPath: atPath, toPath: toPath)
+        } catch {
+            throw ApplinError.deserializeError("error moving file '\(atPath)' to '\(toPath)': \(error)")
+        }
     }
     try await task.value
 }
@@ -94,8 +109,12 @@ func readBundleFile(filename: String) async throws -> Data {
 }
 
 func readFile(path: String) async throws -> Data {
-    let task = Task {
-        try Data(contentsOf: URL(fileURLWithPath: path))
+    let task: Task<Data, Error> = Task {
+        do {
+            return try Data(contentsOf: URL(fileURLWithPath: path))
+        } catch {
+            throw ApplinError.deserializeError("error reading file '\(path)': \(error)")
+        }
     }
     return try await task.value
 }
@@ -109,14 +128,13 @@ func sleep(ms: Int) async {
 
 func writeFile(data: Data, path: String) async throws {
     let task = Task {
-        try data.write(to: URL(fileURLWithPath: path))
+        do {
+            try data.write(to: URL(fileURLWithPath: path))
+        } catch {
+            throw ApplinError.deserializeError("error writing file '\(path)': \(error)")
+        }
     }
     try await task.value
-}
-
-// Swift does not allow `throw ()` or `throw Error()` and
-// does not document an alternative.
-struct EmptyError: Error {
 }
 
 extension HTTPURLResponse {

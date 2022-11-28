@@ -119,7 +119,6 @@ enum ApplinAlignment: Equatable, Hashable {
     }
 }
 
-// swiftlint:disable type_body_length
 class JsonItem: Codable {
     var typ: String
     var actions: [String]?
@@ -210,7 +209,6 @@ class JsonItem: Codable {
         try self.actions?.map({ string in try ActionSpec(string) })
     }
 
-    // swiftlint:disable cyclomatic_complexity
     func optAlign() -> ApplinAlignment? {
         switch self.align {
         case "top-start":

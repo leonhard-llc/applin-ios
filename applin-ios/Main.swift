@@ -2,24 +2,24 @@ import UIKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    let config: ApplinConfig
-    let dataDirPath: String
     let navigationController = NavigationController()
-    let cacheFileWriter: CacheFileWriter
+    let stateStore: StateStore
     let connection: ApplinConnection
     let session: ApplinSession
     var window: UIWindow?
 
     override init() {
         // Note: This code runs during app prewarming.
-        self.config = ApplinConfig(url: URL(string: "http://127.0.0.1:8000/")!)
-        self.connection = ApplinConnection(self.config)
-        self.dataDirPath = getDataDirPath()
-        self.cacheFileWriter = CacheFileWriter(dataDirPath: dataDirPath)
+        let config = ApplinConfig(
+                dataDirPath: getDataDirPath(),
+                url: URL(string: "http://127.0.0.1:8000/")!
+        )
+        self.connection = ApplinConnection(config)
+        self.stateStore = StateStore(config)
         self.session = ApplinSession(
-                self.config,
+                config,
                 ApplinState(),
-                self.cacheFileWriter,
+                self.stateStore,
                 self.connection,
                 self.navigationController
         )
@@ -38,7 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Task(priority: .high) {
             let initialState: ApplinState
             do {
-                initialState = try await readCacheFile(self.config, dataDirPath: self.dataDirPath)
+                initialState = try await self.stateStore.read()
             } catch {
                 print(error)
                 // TODO: Add a test that reads and checks default.json.
@@ -59,6 +59,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(_ application: UIApplication) {
         print("background")
         self.session.pause()
-        self.cacheFileWriter.stop()
+        self.stateStore.stop()
     }
 }
