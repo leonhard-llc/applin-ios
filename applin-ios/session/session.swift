@@ -382,7 +382,7 @@ class ApplinSession: ObservableObject {
                         self.state.error = "Unexpected exception: \(error)"
                         await stopwatch.waitUntil(seconds: 1.0)
                         self.push(pageKey: "/applin-error-details")
-                    case let .deserializeError(msg), let .networkError(msg), let .serverError(msg):
+                    case let .appError(msg), let .networkError(msg), let .serverError(msg):
                         self.state.error = msg
                         await stopwatch.waitUntil(seconds: 1.0)
                         self.push(pageKey: "/applin-error-details")

@@ -8,7 +8,7 @@ func createDir(_ path: String) async throws {
             }
             try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
         } catch {
-            throw ApplinError.deserializeError("error creating directory '\(path)': \(error)")
+            throw ApplinError.appError("error creating directory '\(path)': \(error)")
         }
     }
     try await task.value
@@ -20,7 +20,7 @@ func decodeBundleJsonFile<T: Decodable>(_ filename: String) async throws -> T {
         let decoder = JSONDecoder()
         return try decoder.decode(T.self, from: data)
     } catch {
-        throw ApplinError.deserializeError("error parsing JSON \(filename) as \(T.self): \(error)")
+        throw ApplinError.appError("error parsing JSON \(filename) as \(T.self): \(error)")
     }
 }
 
@@ -55,7 +55,7 @@ func deleteFile(path: String) async throws {
             }
             try FileManager.default.removeItem(atPath: path)
         } catch {
-            throw ApplinError.deserializeError("error deleting file '\(path)': \(error)")
+            throw ApplinError.appError("error deleting file '\(path)': \(error)")
         }
     }
     try await task.value
@@ -87,7 +87,7 @@ func moveFile(atPath: String, toPath: String) async throws {
         do {
             try FileManager.default.moveItem(atPath: atPath, toPath: toPath)
         } catch {
-            throw ApplinError.deserializeError("error moving file '\(atPath)' to '\(toPath)': \(error)")
+            throw ApplinError.appError("error moving file '\(atPath)' to '\(toPath)': \(error)")
         }
     }
     try await task.value
@@ -97,12 +97,12 @@ func readBundleFile(filename: String) async throws -> Data {
     let task: Task<Data, Error> = Task {
         guard let file = Bundle.main.url(forResource: filename, withExtension: nil)
         else {
-            throw ApplinError.deserializeError("bundle file not found: \(filename)")
+            throw ApplinError.appError("bundle file not found: \(filename)")
         }
         do {
             return try Data(contentsOf: file)
         } catch {
-            throw ApplinError.deserializeError("error reading bundle file \(filename): \(error)")
+            throw ApplinError.appError("error reading bundle file \(filename): \(error)")
         }
     }
     return try await task.value
@@ -113,7 +113,7 @@ func readFile(path: String) async throws -> Data {
         do {
             return try Data(contentsOf: URL(fileURLWithPath: path))
         } catch {
-            throw ApplinError.deserializeError("error reading file '\(path)': \(error)")
+            throw ApplinError.appError("error reading file '\(path)': \(error)")
         }
     }
     return try await task.value
@@ -131,7 +131,7 @@ func writeFile(data: Data, path: String) async throws {
         do {
             try data.write(to: URL(fileURLWithPath: path))
         } catch {
-            throw ApplinError.deserializeError("error writing file '\(path)': \(error)")
+            throw ApplinError.appError("error writing file '\(path)': \(error)")
         }
     }
     try await task.value

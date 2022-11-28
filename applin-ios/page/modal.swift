@@ -52,13 +52,13 @@ struct ModalSpec: Equatable {
         self.typ = kind.typ()
         var widgets: [ModalButtonSpec] = []
         guard let items = item.widgets else {
-            throw ApplinError.deserializeError("\(self.typ).widgets is empty")
+            throw ApplinError.appError("\(self.typ).widgets is empty")
         }
         for item in items {
             if item.typ == ModalButtonSpec.TYP {
                 widgets.append(try ModalButtonSpec(item))
             } else {
-                throw ApplinError.deserializeError(
+                throw ApplinError.appError(
                         "\(self.typ).widgets contains entry that is not \(ModalButtonSpec.TYP): \(item.typ)")
             }
         }

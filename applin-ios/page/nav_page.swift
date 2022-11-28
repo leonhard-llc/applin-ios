@@ -40,7 +40,7 @@ struct NavPageSpec: Equatable {
         case .empty:
             self.start = .empty
         case let .some(other):
-            throw ApplinError.deserializeError("bad \(item.typ).start: \(other)")
+            throw ApplinError.appError("bad \(item.typ).start: \(other)")
         }
         self.title = try item.requireTitle()
         self.widget = try item.requireWidget(config, pageKey: pageKey)

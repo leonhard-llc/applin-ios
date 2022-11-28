@@ -24,7 +24,7 @@ class StateStore {
         do {
             return try decodeJson(bytes)
         } catch {
-            throw ApplinError.deserializeError("error decoding bundle file 'default.json': \(error)")
+            throw ApplinError.appError("error decoding bundle file 'default.json': \(error)")
         }
     }
 

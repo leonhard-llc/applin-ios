@@ -23,7 +23,7 @@ enum PageSpec: Equatable {
         case PlainPageSpec.TYP:
             self = try .plainPage(PlainPageSpec(config, pageKey: pageKey, item))
         default:
-            throw ApplinError.deserializeError("unexpected page 'typ' value: \(item.typ)")
+            throw ApplinError.appError("unexpected page 'typ' value: \(item.typ)")
         }
     }
 

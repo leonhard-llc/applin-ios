@@ -418,14 +418,14 @@ class JsonItem: Codable {
         if let value = self.id {
             return value
         }
-        throw ApplinError.deserializeError("missing \(self.typ).id")
+        throw ApplinError.appError("missing \(self.typ).id")
     }
 
     func requireLabel() throws -> String {
         if let value = self.label {
             return value
         }
-        throw ApplinError.deserializeError("missing \(self.typ).label")
+        throw ApplinError.appError("missing \(self.typ).label")
     }
 
     func getMinMaxHeight() -> (Float32?, Float32?) {
@@ -525,7 +525,7 @@ class JsonItem: Codable {
             if let url = URL(string: value, relativeTo: config.url) {
                 return url
             }
-            throw ApplinError.deserializeError("bad \(self.typ).photo-url: \(value)")
+            throw ApplinError.appError("bad \(self.typ).photo-url: \(value)")
         }
         return nil
     }
@@ -541,14 +541,14 @@ class JsonItem: Codable {
         if let value = self.text {
             return value
         }
-        throw ApplinError.deserializeError("missing \(self.typ).text")
+        throw ApplinError.appError("missing \(self.typ).text")
     }
 
     func requireTitle() throws -> String {
         if let value = self.title {
             return value
         }
-        throw ApplinError.deserializeError("missing \(self.typ).title")
+        throw ApplinError.appError("missing \(self.typ).title")
     }
 
     func requireUrl(_ config: ApplinConfig) throws -> URL {
@@ -556,16 +556,16 @@ class JsonItem: Codable {
             if let url = URL(string: value, relativeTo: config.url) {
                 return url
             }
-            throw ApplinError.deserializeError("bad \(self.typ).url: \(value)")
+            throw ApplinError.appError("bad \(self.typ).url: \(value)")
         }
-        throw ApplinError.deserializeError("missing \(self.typ).url")
+        throw ApplinError.appError("missing \(self.typ).url")
     }
 
     func requireWidget(_ config: ApplinConfig, pageKey: String) throws -> Spec {
         if let value = self.widget {
             return try Spec(config, pageKey: pageKey, value)
         }
-        throw ApplinError.deserializeError("missing \(self.typ).widget")
+        throw ApplinError.appError("missing \(self.typ).widget")
     }
 
     func optWidgets(_ config: ApplinConfig, pageKey: String) throws -> [Spec]? {
@@ -576,13 +576,13 @@ class JsonItem: Codable {
         if let values = self.widgets {
             return try values.map({ value in try Spec(config, pageKey: pageKey, value) })
         }
-        throw ApplinError.deserializeError("missing \(self.typ).widgets")
+        throw ApplinError.appError("missing \(self.typ).widgets")
     }
 
     func requireVar() throws -> String {
         if let value = self.varName {
             return value
         }
-        throw ApplinError.deserializeError("missing \(self.typ).var")
+        throw ApplinError.appError("missing \(self.typ).var")
     }
 }

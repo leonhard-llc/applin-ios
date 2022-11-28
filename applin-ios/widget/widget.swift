@@ -82,7 +82,7 @@ class Spec: Equatable, Hashable {
         case TextSpec.TYP:
             self.value = .text(try TextSpec(item))
         default:
-            throw ApplinError.deserializeError("unexpected widget 'typ' value: \(item.typ)")
+            throw ApplinError.appError("unexpected widget 'typ' value: \(item.typ)")
         }
     }
 

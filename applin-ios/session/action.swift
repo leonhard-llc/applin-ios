@@ -14,7 +14,7 @@ enum ActionSpec: Codable, Equatable, Hashable {
     init(_ string: String) throws {
         switch string {
         case "":
-            throw ApplinError.deserializeError("action is empty")
+            throw ApplinError.appError("action is empty")
         case "logout":
             self = .logout
             return
@@ -29,7 +29,7 @@ enum ActionSpec: Codable, Equatable, Hashable {
         }
         let parts = string.split(separator: ":", maxSplits: 1)
         if parts.count != 2 || parts[1].isEmpty {
-            throw ApplinError.deserializeError("invalid action: \(string)")
+            throw ApplinError.appError("invalid action: \(string)")
         }
         let part1 = String(parts[1])
         switch parts[0] {
@@ -39,14 +39,14 @@ enum ActionSpec: Codable, Equatable, Hashable {
             if let url = URL(string: part1) {
                 self = .launchUrl(url)
             } else {
-                throw ApplinError.deserializeError("failed parsing url: \(part1)")
+                throw ApplinError.appError("failed parsing url: \(part1)")
             }
         case "push":
             self = .push(part1)
         case "rpc":
             self = .rpc(part1)
         default:
-            throw ApplinError.deserializeError("unknown action: \(string)")
+            throw ApplinError.appError("unknown action: \(string)")
         }
     }
 
