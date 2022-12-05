@@ -29,6 +29,34 @@ enum Var {
 }
 
 struct ApplinState {
+    public static func loading() -> Self {
+        ApplinState(
+                connectionMode: .disconnect,
+                error: nil,
+                // TODO: Show a spinner.
+                pages: ["/loading": .plainPage(PlainPageSpec(title: "Loading", Spec(.text(TextSpec("Loading")))))],
+                pauseUpdateNav: false,
+                stack: ["/loading"],
+                vars: [:]
+        )
+    }
+
+    public static func loadError(error: String) -> Self {
+        ApplinState(
+                connectionMode: .disconnect,
+                error: nil,
+                pages: [
+                    "/error": .plainPage(PlainPageSpec(
+                            title: "Error",
+                            Spec(.text(TextSpec("ERROR: \(error)")))
+                    ))
+                ],
+                pauseUpdateNav: false,
+                stack: ["/error"],
+                vars: [:]
+        )
+    }
+
     // TODO: Replace connectionMode with a method.
     var connectionMode: ConnectionMode = .disconnect
     var error: String?
@@ -36,20 +64,31 @@ struct ApplinState {
     var pauseUpdateNav: Bool = false
     var stack: [String] = ["/"]
     var vars: [String: Var] = [:]
+
+    public mutating func merge(_ other: ApplinState) {
+        self.connectionMode = other.connectionMode
+        self.error = other.error
+        for (key, spec) in other.pages {
+            self.pages[key] = spec
+        }
+        self.pauseUpdateNav = other.pauseUpdateNav
+        self.stack = other.stack
+        for (name, value) in other.vars {
+            self.vars[name] = value
+        }
+    }
 }
 
 // TODO: Prevent racing between applyUpdate(), rpc(), and doActionsAsync().
 
 class ApplinSession: ObservableObject {
     let config: ApplinConfig
-    let stateStore: StateStore?
+    let stateStore: StateStore
     let connection: ApplinConnection?
     let nav: NavigationController?
-    var state: ApplinState
 
     init(_ config: ApplinConfig,
-         _ state: ApplinState,
-         _ stateStore: StateStore?,
+         _ stateStore: StateStore,
          _ connection: ApplinConnection?,
          _ nav: NavigationController?
     ) {
@@ -58,7 +97,7 @@ class ApplinSession: ObservableObject {
         self.stateStore = stateStore
         self.connection = connection
         self.nav = nav
-        self.state = state
+        self.updateNav()
     }
 
     public func pause() {
@@ -66,81 +105,94 @@ class ApplinSession: ObservableObject {
     }
 
     public func unpause() {
-        self.connection?.unpause(self, self.state.connectionMode)
+        let connectionMode = self.stateStore.read({ state in state.connectionMode })
+        self.connection?.unpause(self, connectionMode)
     }
 
+    // TODO: Rename to updatePages or something.
+
     public func updateNav() {
-        print("updateNav \(self.state.stack)")
-        if self.state.pauseUpdateNav {
+        let (pauseUpdateNav, stack, entries, connectionMode) = self.stateStore.update({
+            state -> (Bool, [String], [(String, PageSpec)], ConnectionMode) in
+            if state.pauseUpdateNav {
+                return (true, [], [], .disconnect)
+            }
+            if state.stack.isEmpty {
+                state.stack = ["/"]
+            }
+            let entries: [(String, PageSpec)] = state.stack.map({ key -> (String, PageSpec) in
+                let page = state.pages[key]
+                        ?? state.pages["/applin-page-not-found"]
+                        ?? .navPage(NavPageSpec(
+                        pageKey: key,
+                        title: "Not Found",
+                        // TODO: Center the text.
+                        widget: Spec(.text(TextSpec("Page not found.")))
+                ))
+                return (key, page)
+            })
+            state.connectionMode = entries.map({ (_, pageSpec) in pageSpec.connectionMode }).min() ?? .disconnect
+            // Swift Array and String are value types.
+            return (false, state.stack, entries, state.connectionMode)
+        })
+        print("updateNav \(stack)")
+        if pauseUpdateNav {
             print("updateNav paused")
             return
         }
-        if self.state.stack.isEmpty {
-            self.state.stack = ["/"]
-            print("updateNav \(self.state.stack)")
-        }
-        let entries = self.state.stack.map({ key -> (String, PageSpec) in
-            let page =
-                    self.state.pages[key]
-                            ?? self.state.pages["/applin-page-not-found"]
-                            ?? .navPage(NavPageSpec(
-                            pageKey: key,
-                            title: "Not Found",
-                            // TODO: Center the text.
-                            widget: Spec(.text(TextSpec("Page not found.")))
-                    ))
-            return (key, page)
-        })
-        self.state.connectionMode = entries.map({ (_, pageSpec) in pageSpec.connectionMode }).min() ?? .disconnect
-        self.connection?.setMode(self, self.state.connectionMode)
+        self.connection?.setMode(self, connectionMode)
         Task {
             await self.nav?.setStackPages(self, entries)
         }
     }
 
     func pop() {
-        if self.state.stack.count > 1 {
-            let key = self.state.stack.removeLast()
-            print("pop '\(key)'")
+        let (stack, optPoppedKey) = self.stateStore.update({ state -> ([String], String?) in
+            let optPoppedKey = state.stack.isEmpty ? nil : state.stack.removeLast()
+            if state.stack.isEmpty {
+                state.stack = ["/"]
+            }
+            return (state.stack, optPoppedKey)
+        })
+        if let poppedKey = optPoppedKey {
+            print("pop '\(poppedKey)'")
         }
-        if self.state.stack.isEmpty {
-            self.state.stack = ["/"]
-        }
-        print("stack=\(self.state.stack)")
+        print("stack=\(stack)")
         self.updateNav()
     }
 
     func push(pageKey: String) {
         print("push '\(pageKey)'")
-        self.state.stack.append(pageKey)
-        print("stack=\(self.state.stack)")
-        self.updateNav()
-    }
-
-    func setStack(_ stack: [String]) {
-        self.state.stack = stack
-        if self.state.stack.isEmpty {
-            self.state.stack = ["/"]
-        }
-        print("stack=\(self.state.stack)")
+        let stack = self.stateStore.update({ state -> [String] in
+            state.stack.append(pageKey)
+            return state.stack
+        })
+        print("stack=\(stack)")
         self.updateNav()
     }
 
     func setVar(_ name: String, _ optValue: Var?) {
-        guard let value = optValue else {
-            print("setVar \(name)=nil")
-            self.state.vars.removeValue(forKey: name)
-            return
+        let messages = self.stateStore.update { state -> [String] in
+            guard let value = optValue else {
+                state.vars.removeValue(forKey: name)
+                return ["setVar \(name)=nil"]
+            }
+            let oldValue = state.vars.updateValue(value, forKey: name)
+            switch (oldValue, value) {
+            case let (.boolean, .boolean(value)):
+                return ["setVar \(name)=\(value)"]
+            case let (.string, .string(value)):
+                return ["setVar \(name)=\(value)"]
+            default:
+                return [
+                    "setVar \(name)=\(value)",
+                    "WARN setVar changed var type: \(name): \(String(describing: oldValue)) -> \(String(describing: optValue))"
+                ]
+            }
         }
-        switch (self.state.vars[name], value) {
-        case (.none, _), (.boolean, .boolean), (.string, .string):
-            break
-        default:
-            print("WARN setVar changed var type: \(name): \(String(describing: self.state.vars[name])) -> \(value)")
+        for message in messages {
+            print(messages)
         }
-        print("setVar \(name)=\(value)")
-        self.state.vars[name] = value
-        self.stateStore?.scheduleWrite(self.state)
     }
 
     func setBoolVar(_ name: String, _ optValue: Bool?) {
@@ -160,7 +212,7 @@ class ApplinSession: ObservableObject {
     }
 
     func getBoolVar(_ name: String) -> Bool? {
-        switch self.state.vars[name] {
+        switch self.stateStore.read({ state in state.vars[name] }) {
         case .none:
             return nil
         case let .some(.boolean(value)):
@@ -172,7 +224,7 @@ class ApplinSession: ObservableObject {
     }
 
     func getStringVar(_ name: String) -> String? {
-        switch self.state.vars[name] {
+        switch self.stateStore.read({ state in state.vars[name] }) {
         case .none:
             return nil
         case let .some(.string(value)):
@@ -191,41 +243,52 @@ class ApplinSession: ObservableObject {
         } catch {
             throw ApplinError.serverError("error decoding update: \(error)")
         }
-        if let newStack = update.stack {
-            self.state.stack = newStack
-        }
-        var err: String?
-        if let newPages = update.pages {
-            for (key, optItem) in newPages {
-                if let item = optItem {
-                    do {
-                        let pageSpec = try PageSpec(self.config, pageKey: key, item)
-                        self.state.pages[key] = pageSpec
-                        print("updated key \(key) \(pageSpec)")
-                    } catch {
-                        err = "error processing updated key '\(key)': \(error)"
-                        print(err!)
+        let messages: [String] = self.stateStore.update({ state in
+            var messages: [String] = []
+            if let newPages = update.pages {
+                for (key, optItem) in newPages {
+                    if let item = optItem {
+                        do {
+                            let pageSpec = try PageSpec(self.config, pageKey: key, item)
+                            state.pages[key] = pageSpec
+                            messages.append("updated key \(key) \(pageSpec)")
+                        } catch {
+                            state.pages[key] = .navPage(NavPageSpec(
+                                    pageKey: key,
+                                    title: "Error",
+                                    // TODO: Show a better error page.
+                                    widget: Spec(.text(TextSpec("Error loading page. Please update the app.")))
+                            ))
+                            messages.append("WARN error processing updated key '\(key)': \(error)")
+                        }
+                    } else {
+                        state.pages.removeValue(forKey: key)
+                        messages.append("removed key \(key)")
                     }
-                } else {
-                    self.state.pages.removeValue(forKey: key)
-                    print("removed key \(key)")
                 }
             }
-        }
-        // TODO: Handle user_error.
-        self.stateStore?.scheduleWrite(self.state)
-        if let vars = update.vars {
-            for (name, jsonValue) in vars {
-                switch jsonValue {
-                case let .boolean(value):
-                    self.setBoolVar(name, value)
-                default:
-                    print("WARN ignoring var from server \(name)=\(jsonValue)")
+            if let newStack = update.stack {
+                state.stack = newStack
+            }
+            // TODO: Handle user_error.
+            if let vars = update.vars {
+                for (name, jsonValue) in vars {
+                    switch jsonValue {
+                    case .null:
+                        self.setVar(name, nil)
+                    case let .boolean(value):
+                        self.setBoolVar(name, value)
+                    case let .string(value):
+                        self.setStringVar(name, value)
+                    default:
+                        messages.append("WARN ignoring unknown var from server \(name)=\(jsonValue)")
+                    }
                 }
             }
-        }
-        if let err = err {
-            throw ApplinError.serverError(err)
+            return messages
+        })
+        for message in messages {
+            print(message)
         }
         self.updateNav()
     }
@@ -251,16 +314,27 @@ class ApplinSession: ObservableObject {
         urlRequest.httpMethod = method
         if let pageKey = optPageKey {
             urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
-            var reqObj: [String: JSON] = [:]
-            if let pageSpec = self.state.pages[pageKey] {
-                for (name, initialValue) in pageSpec.vars() {
-                    reqObj[name] = (self.state.vars[name] ?? initialValue).toJson()
+            let optVars: [String: Var]? = self.stateStore.read({ state -> [String: Var]? in
+                if let pageSpec = state.pages[pageKey] {
+                    var vars: [String: Var] = [:]
+                    for (name, initialValue) in pageSpec.vars() {
+                        let value = state.vars[name] ?? initialValue
+                        vars[name] = value
+                    }
+                    return vars
+                } else {
+                    return nil
                 }
+            })
+            let jsonBody: [String: JSON]
+            if let vars = optVars {
+                jsonBody = vars.mapValues({ v in v.toJson() })
             } else {
                 // TODO: Prevent this.
                 print("WARN rpc for missing page '\(pageKey)', not including any variables")
+                jsonBody = [:]
             }
-            urlRequest.httpBody = try! encodeJson(reqObj)
+            urlRequest.httpBody = try! encodeJson(jsonBody)
             if let bodyString = String(data: urlRequest.httpBody!, encoding: .utf8) {
                 print("DEBUG request body: \(bodyString)")
             }
@@ -340,10 +414,10 @@ class ApplinSession: ObservableObject {
         return data
     }
 
-    @MainActor func doActionsAsync(pageKey: String, _ actions: [ActionSpec]) async -> Bool {
-        self.state.pauseUpdateNav = true
+    func doActionsAsync(pageKey: String, _ actions: [ActionSpec]) async -> Bool {
+        self.stateStore.update({ state in state.pauseUpdateNav = true })
         defer {
-            self.state.pauseUpdateNav = false
+            self.stateStore.update({ state in state.pauseUpdateNav = false })
             self.updateNav()
         }
         loop: for action in actions {
@@ -367,9 +441,11 @@ class ApplinSession: ObservableObject {
                 self.push(pageKey: key)
             case let .rpc(path):
                 print("rpc(\(path))")
-                self.nav?.setWorking("Working")
+                await self.nav?.setWorking("Working")
                 defer {
-                    self.nav?.setWorking(nil)
+                    Task {
+                        await self.nav?.setWorking(nil)
+                    }
                 }
                 let stopwatch = Stopwatch()
                 do {
@@ -379,15 +455,15 @@ class ApplinSession: ObservableObject {
                     print(error)
                     switch error as? ApplinError {
                     case nil:
-                        self.state.error = "Unexpected exception: \(error)"
+                        self.stateStore.update({ state in state.error = "Unexpected exception: \(error)" })
                         await stopwatch.waitUntil(seconds: 1.0)
                         self.push(pageKey: "/applin-error-details")
                     case let .appError(msg), let .networkError(msg), let .serverError(msg):
-                        self.state.error = msg
+                        self.stateStore.update({ state in state.error = msg })
                         await stopwatch.waitUntil(seconds: 1.0)
                         self.push(pageKey: "/applin-error-details")
                     case let .userError(msg):
-                        self.state.error = msg
+                        self.stateStore.update({ state in state.error = msg })
                         await stopwatch.waitUntil(seconds: 1.0)
                         // TODO: Display a simple alert.
                         self.push(pageKey: "/applin-error-details")

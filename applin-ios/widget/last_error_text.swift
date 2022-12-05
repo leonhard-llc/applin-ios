@@ -72,6 +72,6 @@ class LastErrorTextWidget: Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.label.text = session.state.error ?? "Error details not found."
+        self.label.text = session.stateStore.read({ state in state.error ?? "Error details not found." })
     }
 }

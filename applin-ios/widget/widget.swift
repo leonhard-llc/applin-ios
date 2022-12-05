@@ -43,6 +43,8 @@ class Spec: Equatable, Hashable {
         lhs.value == rhs.value
     }
 
+    // NOTE: This class must be immutable.
+
     public let value: Value
 
     init(_ value: Value) {

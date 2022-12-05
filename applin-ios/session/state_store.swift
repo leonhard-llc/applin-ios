@@ -6,31 +6,51 @@ class StateStore {
         var stringVars: [String: String]?
         var pages: [String: JsonItem]?
         var stack: [String]?
+
+        func toApplinState(_ config: ApplinConfig, throwOnPageError: Bool) throws -> ApplinState {
+            var vars: [String: Var] = [:]
+            for (name, value) in self.boolVars ?? [:] {
+                vars[name] = .boolean(value)
+            }
+            for (name, value) in self.stringVars ?? [:] {
+                vars[name] = .string(value)
+            }
+            var pages: [String: PageSpec] = [:]
+            for (key, item) in self.pages ?? [:] {
+                do {
+                    pages[key] = try PageSpec(config, pageKey: key, item)
+                } catch {
+                    if throwOnPageError {
+                        throw "error in page '\(key)': \(error)"
+                    } else {
+                        print("WARNING: error in page '\(key)': \(error)")
+                    }
+                }
+            }
+            let stack = self.stack ?? ["/"]
+            return ApplinState(pages: pages, stack: stack, vars: vars)
+        }
     }
 
     static let FILE_NAME = "state.json"
 
-    private let config: ApplinConfig
-    @BackgroundActor private var writeLoopTask: Task<Void, Never>?
-    @BackgroundActor private var stateToWrite: ApplinState?
-    @BackgroundActor private var optEarliestWriteTime: Date?
-
-    public init(_ config: ApplinConfig) {
-        print("StateStore")
-        self.config = config
-        self.start()
-    }
-
-    private func readDefaultJson() async throws -> FileContents {
+    public static func loadDefaultJson(_ config: ApplinConfig) async throws -> ApplinState {
         let bytes = try await readBundleFile(filename: "default.json")
+        let contents: FileContents
         do {
-            return try decodeJson(bytes)
+            contents = try decodeJson(bytes)
         } catch {
-            throw ApplinError.appError("error decoding bundle file 'default.json': \(error)")
+            throw ApplinError.appError("error decoding 'default.json': \(error)")
+        }
+        do {
+            return try contents.toApplinState(config, throwOnPageError: true)
+        } catch {
+            throw "error in 'default.json': \(error)"
         }
     }
 
-    private func readStateFile(_ path: String) async -> FileContents? {
+    public static func loadSavedState(_ config: ApplinConfig) async -> ApplinState? {
+        let path = config.dataDirPath + "/" + StateStore.FILE_NAME
         // Swift's standard library provides no documented way to tell if a file read error is due to file not found.
         // So we check for file existence separately.
         if !(await fileExists(path: path)) {
@@ -41,75 +61,64 @@ class StateStore {
         do {
             bytes = try await readFile(path: path)
         } catch {
-            print("StateStore: \(error)")
+            print("ERROR: \(error)")
             return nil
         }
         //print("state file contents: ")
         //FileHandle.standardOutput.write(bytes)
         //print("")
+        let contents: FileContents
         do {
-            return try decodeJson(bytes)
+            contents = try decodeJson(bytes)
         } catch {
-            print("StateStore: error decoding state file '\(path)': \(error)")
+            print("ERROR: error decoding state file '\(path)': \(error)")
+            return nil
+        }
+        do {
+            return try contents.toApplinState(config, throwOnPageError: false)
+        } catch {
+            print("unreachable")
             return nil
         }
     }
 
-    func read() async throws -> ApplinState {
-        print("StateStore.read")
-        let defaultState = try await readDefaultJson()
-        let stateFilePath = self.config.dataDirPath + "/" + StateStore.FILE_NAME
-        let savedState = await readStateFile(stateFilePath) ?? FileContents()
-        var vars: [String: Var] = [:]
-        for (name, value) in defaultState.boolVars ?? [:] {
-            vars[name] = .boolean(value)
-        }
-        for (name, value) in defaultState.stringVars ?? [:] {
-            vars[name] = .string(value)
-        }
-        for (name, value) in savedState.boolVars ?? [:] {
-            vars[name] = .boolean(value)
-        }
-        for (name, value) in savedState.stringVars ?? [:] {
-            vars[name] = .string(value)
-        }
-        var pages: [String: PageSpec] = [:]
-        for (key, item) in defaultState.pages ?? [:] {
-            do {
-                pages[key] = try PageSpec(config, pageKey: key, item)
-            } catch {
-                throw "StateStore: error in 'default.json' page '\(key)': \(error)"
-            }
-        }
-        for (key, item) in savedState.pages ?? [:] {
-            do {
-                pages[key] = try PageSpec(config, pageKey: key, item)
-            } catch {
-                print("StateStore: error in stored page '\(key)': \(error)")
-            }
-        }
-        let stack = savedState.stack ?? defaultState.stack ?? ["/"]
-        return ApplinState(pages: pages, stack: stack, vars: vars)
+    private let config: ApplinConfig
+    private let lock = NSLock()
+    private var state: ApplinState
+    private var writesAllowed = false
+    private var writeLoopTask: Task<Void, Never>?
+    private var optEarliestWriteTime: Date?
+
+    public init(_ config: ApplinConfig, _ state: ApplinState) {
+        print("StateStore")
+        self.config = config
+        self.state = state
     }
 
-    func writeOnce(_ state: ApplinState) async throws {
+    public func allowWrites() {
+        self.lock.lock()
+        self.writesAllowed = true
+        self.lock.unlock()
+    }
+
+    private func writeOnce(_ stateToWrite: ApplinState) async throws {
         print("StateStore.writeOnce")
-        let boolVars: [String: Bool] = state.vars.compactMapValues({ v in
+        let boolVars: [String: Bool] = stateToWrite.vars.compactMapValues({ v in
             if case let .boolean(value) = v {
                 return value
             } else {
                 return nil
             }
         })
-        let stringVars: [String: String] = state.vars.compactMapValues({ v in
+        let stringVars: [String: String] = stateToWrite.vars.compactMapValues({ v in
             if case let .string(value) = v {
                 return value
             } else {
                 return nil
             }
         })
-        let pages = state.pages.mapValues({ page in page.toJsonItem() })
-        let stack = state.stack
+        let pages = stateToWrite.pages.mapValues({ page in page.toJsonItem() })
+        let stack = stateToWrite.stack
         let contents = FileContents(boolVars: boolVars, stringVars: stringVars, pages: pages, stack: stack)
         let bytes = try encodeJson(contents)
         // TODO: Keep hash of file contents and don't write if file contents won't change.
@@ -123,39 +132,47 @@ class StateStore {
         try await moveFile(atPath: tmpPath, toPath: path)
     }
 
-    @BackgroundActor private func writeLoop() async {
+    private func writeLoop() async {
         print("StateStore.writeLoop")
         // TODO: Move the defer into the calling Task closure once https://github.com/apple/swift/issues/58921 is fixed.
         defer {
+            self.lock.lock()
             self.writeLoopTask = nil
+            self.lock.unlock()
         }
         while !Task.isCancelled {
             while true {
                 if Task.isCancelled {
-                    print("StateStore.writeLoop: Task is cancelled")
+                    print("StateStore.writeLoop cancelled")
                     break
                 } else if let earliestWriteTime = self.optEarliestWriteTime, earliestWriteTime < Date() {
-                    print("StateStore.writeLoop: optEarliestWriteTime passed")
+                    print("StateStore.writeLoop writing")
                     break
                 } else {
                     await sleep(ms: 1_000)
                 }
             }
-            var optState: ApplinState?
             while true {
-                optState = self.stateToWrite ?? optState
-                self.stateToWrite = nil
+                self.lock.lock()
+                let stateToWrite = self.state
                 self.optEarliestWriteTime = nil
-                guard let state = optState else {
-                    print("StateStore.writeLoop: nothing to write")
-                    break
+                let writesAllowed = self.writesAllowed
+                self.lock.unlock()
+
+                if !writesAllowed {
+                    print("StateStore: writes not allowed")
+                    if Task.isCancelled {
+                        break
+                    } else {
+                        await sleep(ms: 1_000)
+                        continue
+                    }
                 }
                 do {
-                    print("StateStore.writeLoop: writing")
-                    try await self.writeOnce(state)
+                    try await self.writeOnce(stateToWrite)
                     break
                 } catch {
-                    print("StateStore.writeLoop: \(error)")
+                    print("ERROR StateStore: \(error)")
                     // TODO: Update session error.
                     if Task.isCancelled {
                         await sleep(ms: 1_000)
@@ -168,31 +185,49 @@ class StateStore {
         print("StateStore.writeLoop stopping")
     }
 
-    public func scheduleWrite(_ state: ApplinState) {
-        print("StateStore.scheduleWrite")
-        Task(priority: .low) { @BackgroundActor in
-            self.optEarliestWriteTime = self.optEarliestWriteTime ?? (Date() + 10.0 /* seconds */)
-            self.stateToWrite = state
+    public func startWriterTask() {
+        print("StateStore.startWriterTask")
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
         }
-    }
-
-    public func start() {
-        Task(priority: .low) { @BackgroundActor in
-            if let task = self.writeLoopTask {
-                task.cancel()
-                while !Task.isCancelled && self.writeLoopTask != nil {
-                    await sleep(ms: 1_000)
-                }
-            }
-            self.writeLoopTask = Task(priority: .low) { @BackgroundActor in
+        if self.writeLoopTask == nil {
+            self.writeLoopTask = Task(priority: .low) {
                 await self.writeLoop()
             }
         }
     }
 
-    public func stop() {
-        Task(priority: .low) { @BackgroundActor in
-            self.writeLoopTask?.cancel() // Makes sleep return immediately.
+    public func stopWriterTask() {
+        print("StateStore.stopWriterTask")
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
         }
+        self.writeLoopTask?.cancel() // Makes sleep return immediately.
+    }
+
+    public func read<R>(_ f: (_: ApplinState) -> R) -> R {
+        print("StateStore.read")
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        let result: R = f(self.state)
+
+        return result
+    }
+
+    public func update<R>(_ f: (_: inout ApplinState) -> R) -> R {
+        print("StateStore.update")
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        let result: R = f(&self.state)
+        if self.writesAllowed {
+            self.optEarliestWriteTime = self.optEarliestWriteTime ?? (Date() + 10.0 /* seconds */)
+        }
+        return result
     }
 }

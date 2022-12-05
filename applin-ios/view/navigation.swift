@@ -99,12 +99,6 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         fatalError("unimplemented")
     }
 
-    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        let result = self.entries.last?.controller.allowBackSwipe() ?? false
-        print("allowBackSwipe \(result)")
-        return result
-    }
-
     private func presentCorrectModal() {
         if let modal = self.working ?? self.modals.last {
             if self.presentedViewController === modal {
@@ -123,10 +117,6 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         }
     }
 
-    func modalDismissed() {
-        self.presentCorrectModal()
-    }
-
     private func removeEntry(_ key: String) -> Entry? {
         if let n = self.entries.firstIndex(where: { entry in entry.key == key }) {
             return self.entries.remove(at: n)
@@ -135,7 +125,8 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         }
     }
 
-    func setWorking(_ text: String?) {
+    @MainActor
+    func setWorking(_ text: String?) async {
         print("setWorking '\(text ?? "nil")'")
         if let text = text {
             self.working = WorkingView(text: text)
@@ -145,6 +136,7 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         self.presentCorrectModal()
     }
 
+    @MainActor
     func setStackPages(_ session: ApplinSession, _ newPages: [(String, PageSpec)]) async {
         print("setStackPages")
         let appJustStarted = self.entries.isEmpty
@@ -204,5 +196,19 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
 
     public func topPageController() -> PageController? {
         self.entries.last?.controller
+    }
+
+    // Implements ModalDelegate ----
+
+    internal func modalDismissed() {
+        self.presentCorrectModal()
+    }
+
+    // Implements UIGestureRecognizerDelegate ----
+
+    internal func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        let result = self.entries.last?.controller.allowBackSwipe() ?? false
+        print("allowBackSwipe \(result)")
+        return result
     }
 }

@@ -2,6 +2,7 @@ import UIKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    let config: ApplinConfig
     let navigationController = NavigationController()
     let stateStore: StateStore
     let connection: ApplinConnection
@@ -10,15 +11,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     override init() {
         // Note: This code runs during app prewarming.
-        let config = ApplinConfig(
+        self.config = ApplinConfig(
                 dataDirPath: getDataDirPath(),
                 url: URL(string: "http://127.0.0.1:8000/")!
         )
-        self.connection = ApplinConnection(config)
-        self.stateStore = StateStore(config)
+        self.connection = ApplinConnection(self.config)
+        let initialState = ApplinState.loading()
+        self.stateStore = StateStore(self.config, initialState)
         self.session = ApplinSession(
-                config,
-                ApplinState(),
+                self.config,
                 self.stateStore,
                 self.connection,
                 self.navigationController
@@ -36,17 +37,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window!.rootViewController = self.navigationController
         self.window!.makeKeyAndVisible()
         Task(priority: .high) {
-            let initialState: ApplinState
+            var initialState: ApplinState
             do {
-                initialState = try await self.stateStore.read()
+                initialState = try await StateStore.loadDefaultJson(self.config)
             } catch {
-                print(error)
-                // TODO: Add a test that reads and checks default.json.
-                initialState = ApplinState(error: "Error loading data")
+                print("ERROR: startup error: \(error)")
+                // TODO: Make app developers provide unique error codes.
+                self.stateStore.update({ state in state = ApplinState.loadError(error: "\(error)") })
+                self.session.updateNav()
+                return
             }
-            self.session.state = initialState
+            if let savedState = await StateStore.loadSavedState(self.config) {
+                initialState.merge(savedState)
+            }
+            self.stateStore.update({ state in state = initialState })
+            self.stateStore.allowWrites()
             self.session.updateNav()
             self.session.unpause()
+            self.stateStore.startWriterTask()
         }
         return true
     }
@@ -54,12 +62,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidBecomeActive(_ application: UIApplication) {
         print("active")
         self.session.unpause()
-        self.stateStore.start()
+        self.stateStore.startWriterTask()
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         print("background")
         self.session.pause()
-        self.stateStore.stop()
+        self.stateStore.stopWriterTask()
     }
 }
