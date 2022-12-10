@@ -127,7 +127,7 @@ class FormTextfieldWidget: Widget {
 
     func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .formTextfield(formTextfieldSpec) = spec.value else {
-            throw "Expected .text got: \(spec)"
+            throw "Expected .formTextfield got: \(spec)"
         }
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"

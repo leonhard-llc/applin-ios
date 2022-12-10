@@ -125,11 +125,10 @@ class CheckboxWidget: Widget {
             print("WARN CheckboxWidget(\(self.spec.varName)).tap session is nil")
             return
         }
-        Task { @MainActor in
-            print("CheckboxWidget(\(self.spec.varName)).tap")
-            let oldBoolVar = session.getBoolVar(self.spec.varName)
-            self.setChecked(!self.getChecked())
-            if let rpc = self.spec.rpc {
+        let oldBoolVar = session.getBoolVar(self.spec.varName)
+        self.setChecked(!self.getChecked())
+        if let rpc = self.spec.rpc {
+            Task { @MainActor in
                 let ok = await session.doActionsAsync(pageKey: self.spec.pageKey, [.rpc(rpc)])
                 if !ok {
                     self.setChecked(oldBoolVar)
