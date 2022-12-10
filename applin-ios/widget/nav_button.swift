@@ -81,7 +81,6 @@ class NavButtonWidget: Widget {
         let chevronImage = UIImage(systemName: "chevron.forward")
         self.chevron = UIImageView(image: chevronImage)
         self.chevron.translatesAutoresizingMaskIntoConstraints = false
-        self.chevron.tintColor = .label
         self.container.addSubview(self.chevron)
         NSLayoutConstraint.activate([
             self.chevron.widthAnchor.constraint(equalToConstant: 12.0),
@@ -131,6 +130,13 @@ class NavButtonWidget: Widget {
         self.spec = navButtonSpec
         self.session = session
         self.label.text = self.spec.text
+        if self.spec.actions.isEmpty {
+            self.label.textColor = .placeholderText
+            self.chevron.tintColor = .placeholderText
+        } else {
+            self.label.textColor = .label
+            self.chevron.tintColor = .label
+        }
         self.constraints.set([
             self.label.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: Self.INSET),
             self.label.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor, constant: -Self.INSET),
