@@ -44,7 +44,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 print("ERROR: startup error: \(error)")
                 // TODO: Make app developers provide unique error codes.
                 self.stateStore.update({ state in state = ApplinState.loadError(error: "\(error)") })
-                self.session.updateNav()
+                self.session.updateDisplayedPages()
                 return
             }
             if let savedState = await StateStore.loadSavedState(self.config) {
@@ -52,7 +52,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
             self.stateStore.update({ state in state = initialState })
             self.stateStore.allowWrites()
-            self.session.updateNav()
+            self.session.updateDisplayedPages()
             self.session.unpause()
             self.stateStore.startWriterTask()
         }

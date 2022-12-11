@@ -116,7 +116,7 @@ class ApplinSession: ObservableObject {
         self.stateStore = stateStore
         self.connection = connection
         self.nav = nav
-        self.updateNav()
+        self.updateDisplayedPages()
     }
 
     public func pause() {
@@ -128,9 +128,7 @@ class ApplinSession: ObservableObject {
         self.connection?.unpause(self, connectionMode)
     }
 
-    // TODO: Rename to updatePages or something.
-
-    public func updateNav() {
+    public func updateDisplayedPages() {
         let (pauseUpdateNav, stack, entries, connectionMode) = self.stateStore.update({
             state -> (Bool, [String], [(String, PageSpec)], ConnectionMode) in
             if state.pauseUpdateNav {
@@ -177,7 +175,7 @@ class ApplinSession: ObservableObject {
             print("pop '\(poppedKey)'")
         }
         print("stack=\(stack)")
-        self.updateNav()
+        self.updateDisplayedPages()
     }
 
     func push(pageKey: String) {
@@ -187,7 +185,7 @@ class ApplinSession: ObservableObject {
             return state.stack
         })
         print("stack=\(stack)")
-        self.updateNav()
+        self.updateDisplayedPages()
     }
 
     func setVar(_ name: String, _ optValue: Var?) {
@@ -295,7 +293,7 @@ class ApplinSession: ObservableObject {
         for message in messages {
             print(message)
         }
-        self.updateNav()
+        self.updateDisplayedPages()
     }
 
     func rpc(pageKey optPageKey: String?, path: String, method: String) async throws {
@@ -423,7 +421,7 @@ class ApplinSession: ObservableObject {
         self.stateStore.update({ state in state.pauseUpdateNav = true })
         defer {
             self.stateStore.update({ state in state.pauseUpdateNav = false })
-            self.updateNav()
+            self.updateDisplayedPages()
         }
         loop: for action in actions {
             switch action {
