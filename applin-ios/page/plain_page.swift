@@ -69,9 +69,6 @@ class PlainPageController: UIViewController, PageController {
             print("FATAL: PlainPageController.update() called with newPageSpec=\(newPageSpec)")
             abort()
         }
-        if self.spec == plainPageSpec {
-            return
-        }
         self.title = plainPageSpec.title
         self.view.backgroundColor = .systemBackground
         let widget = cache.updateAll(session, plainPageSpec.widget)

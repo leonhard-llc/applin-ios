@@ -190,9 +190,6 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             print("FATAL: NavPageController.update called with newPageSpec=\(newPageSpec)")
             abort() // This should never happen.
         }
-        if self.spec == navPageSpec {
-            return
-        }
         self.spec = navPageSpec
         self.hasPrevPage = hasPrevPage
         self.title = navPageSpec.title
