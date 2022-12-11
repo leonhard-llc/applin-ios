@@ -77,6 +77,25 @@ struct ApplinState {
             self.vars[name] = value
         }
     }
+
+    public mutating func setVar(_ name: String, _ optValue: Var?) -> [String] {
+        guard let value = optValue else {
+            self.vars.removeValue(forKey: name)
+            return ["setVar \(name)=nil"]
+        }
+        let oldValue = self.vars.updateValue(value, forKey: name)
+        switch (oldValue, value) {
+        case let (.boolean, .boolean(value)):
+            return ["setVar \(name)=\(value)"]
+        case let (.string, .string(value)):
+            return ["setVar \(name)=\(value)"]
+        default:
+            return [
+                "setVar \(name)=\(value)",
+                "WARN setVar changed var type: \(name): \(String(describing: oldValue)) -> \(String(describing: optValue))"
+            ]
+        }
+    }
 }
 
 // TODO: Prevent racing between applyUpdate(), rpc(), and doActionsAsync().
@@ -172,26 +191,9 @@ class ApplinSession: ObservableObject {
     }
 
     func setVar(_ name: String, _ optValue: Var?) {
-        let messages = self.stateStore.update { state -> [String] in
-            guard let value = optValue else {
-                state.vars.removeValue(forKey: name)
-                return ["setVar \(name)=nil"]
-            }
-            let oldValue = state.vars.updateValue(value, forKey: name)
-            switch (oldValue, value) {
-            case let (.boolean, .boolean(value)):
-                return ["setVar \(name)=\(value)"]
-            case let (.string, .string(value)):
-                return ["setVar \(name)=\(value)"]
-            default:
-                return [
-                    "setVar \(name)=\(value)",
-                    "WARN setVar changed var type: \(name): \(String(describing: oldValue)) -> \(String(describing: optValue))"
-                ]
-            }
-        }
+        let messages = self.stateStore.update({ state -> [String] in state.setVar(name, optValue) })
         for message in messages {
-            print(messages)
+            print(message)
         }
     }
 
@@ -275,11 +277,14 @@ class ApplinSession: ObservableObject {
                 for (name, jsonValue) in vars {
                     switch jsonValue {
                     case .null:
-                        self.setVar(name, nil)
+                        let newMessages = state.setVar(name, nil)
+                        messages.append(contentsOf: newMessages)
                     case let .boolean(value):
-                        self.setBoolVar(name, value)
+                        let newMessages = state.setVar(name, .boolean(value))
+                        messages.append(contentsOf: newMessages)
                     case let .string(value):
-                        self.setStringVar(name, value)
+                        let newMessages = state.setVar(name, .string(value))
+                        messages.append(contentsOf: newMessages)
                     default:
                         messages.append("WARN ignoring unknown var from server \(name)=\(jsonValue)")
                     }
