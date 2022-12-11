@@ -1,5 +1,20 @@
 import Foundation
 
+class Periodic {
+    var last: Date = .distantPast
+
+    func checkNow(_ interval: TimeInterval) -> Bool {
+        let now = Date.now
+        let nextPollTime = last.addingTimeInterval(interval)
+        if nextPollTime < now {
+            last = max(nextPollTime, now.addingTimeInterval(-interval))
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
 enum ConnectionMode: Equatable, Comparable {
     case stream
     case pollSeconds(UInt32)
@@ -172,22 +187,22 @@ class ApplinConnection {
             self.running = false
         }
         self.running = true
+        let periodic = Periodic()
         while !Task.isCancelled {
             do {
-                try await session.rpc(pageKey: nil, path: "/", method: "GET")
-                try await Task.sleep(nanoseconds: UInt64(max(self.pollSeconds, 1)) * 1_000_000_000)
-                continue
-            } catch is CancellationError {
-                self.state = .disconnected
-                break
+                if periodic.checkNow(TimeInterval(self.pollSeconds)) {
+                    try await session.rpc(pageKey: nil, path: "/", method: "GET")
+                } else {
+                    await sleep(ms: 1000)
+                }
             } catch let error as NSError where error.code == -1004 /* Could not connect to the server */ {
                 self.state = .connectError
+                await sleep(ms: 5_000)
             } catch {
-                // TODO: Show error to user on startup.
-                self.state = .connectError
                 print("ApplinConnection error: \(error)")
+                self.state = .connectError
+                await sleep(ms: 5_000)
             }
-            await sleep(ms: 5_000)
         }
         print("ApplinConnection stop poll")
     }
