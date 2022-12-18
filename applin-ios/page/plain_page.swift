@@ -46,6 +46,7 @@ class PlainPageController: UIViewController, PageController {
     var helper: SingleViewContainerHelper!
 
     init() {
+        print("NavPageController.init")
         super.init(nibName: nil, bundle: nil)
         self.helper = SingleViewContainerHelper(superView: self.view)
     }

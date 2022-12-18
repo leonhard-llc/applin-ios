@@ -89,6 +89,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     var subView: UIView?
 
     init(_ navController: NavigationController?, _ session: ApplinSession?, _ cache: WidgetCache?) {
+        print("NavPageController.init")
         self.navController = navController
         self.weakSession = session
         self.weakCache = cache

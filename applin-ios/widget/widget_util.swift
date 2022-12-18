@@ -32,7 +32,7 @@ class SingleViewContainerHelper {
         guard let superView = self.superView else {
             return
         }
-        if newSubView == self.subView {
+        if newSubView === self.subView {
             return
         }
         NSLayoutConstraint.deactivate(self.constraints)
