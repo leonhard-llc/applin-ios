@@ -9,6 +9,10 @@ struct ScrollSpec: Equatable, Hashable {
         self.sub = try item.requireWidget(config, pageKey: pageKey)
     }
 
+    init(_ sub: Spec) {
+        self.sub = sub
+    }
+
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ScrollSpec.TYP)
         item.widget = self.sub.toJsonItem()

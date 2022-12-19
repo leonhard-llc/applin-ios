@@ -32,6 +32,18 @@ class WidgetCacheTests: XCTestCase {
         XCTAssertEqual(widget2.button.currentTitle, "  b2  ")
     }
 
+    func testStatefulWithoutKey() throws {
+        let cache = WidgetCache()
+        let scroll1 = cache.updateAll(self.session!, Spec(.scroll(ScrollSpec(Spec(.text(TextSpec("t1"))))))) as! ScrollWidget
+        let label1 = scroll1.scrollView.subviews.first!.subviews.first! as! UILabel
+        XCTAssertEqual(label1.text, "t1")
+        let scroll2 = cache.updateAll(self.session!, Spec(.scroll(ScrollSpec(Spec(.text(TextSpec("t2"))))))) as! ScrollWidget
+        XCTAssert(scroll1 === scroll2)
+        let label2 = scroll1.scrollView.subviews.first!.subviews.first! as! UILabel
+        XCTAssertEqual(label2.text, "t2")
+        XCTAssert(label1 === label2)
+    }
+
     func testStateless() throws {
         let cache = WidgetCache()
         let column1 = cache.updateAll(
@@ -44,7 +56,7 @@ class WidgetCacheTests: XCTestCase {
                 self.session!,
                 Spec(.column(ColumnSpec([Spec(.text(TextSpec("t2"))), Spec(.text(TextSpec("t1")))], .start, spacing: 0.0)))
         ) as! ColumnWidget
-        XCTAssert(column1 !== column2)
+        XCTAssert(column1 === column2)
         let label2a = column2.columnView.orderedSubviews[0].subviews.first as! UILabel
         let label2b = column2.columnView.orderedSubviews[1].subviews.first as! UILabel
         XCTAssert(label1 !== label2a)
@@ -54,7 +66,6 @@ class WidgetCacheTests: XCTestCase {
     }
 
     // TODO(mleonhard) Test stateful widget updates.
-
     // TODO(mleonhard) Test focusable widget updates.
     // TODO(mleonhard) Test matching order: focused, focusable, stateful, stateless.
 
