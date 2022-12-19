@@ -32,15 +32,19 @@ class ColumnView: UIView {
         self.orderedSubviews = subviews
         self.separatorColor = separator
         self.spacing = spacing
-        let subviewsSet = Set(subviews)
-        let viewsToRemove: [UIView] = self.subviews.filter({ v in subviewsSet.contains(v) })
-        for viewToRemove in viewsToRemove {
-            print("ColumnView.update remove \(viewToRemove)")
-            viewToRemove.removeFromSuperview()
+        let newSubviews = Set(subviews)
+        for subview in self.subviews {
+            if !newSubviews.contains(subview) {
+                print("ColumnView.update remove \(subview)")
+                subview.removeFromSuperview()
+            }
         }
-        for newView in subviews {
-            print("ColumnView.update add \(newView)")
-            self.addSubview(newView)
+        let existingSubviews = Set(self.subviews)
+        for subview in subviews {
+            if !existingSubviews.contains(subview) {
+                print("ColumnView.update add \(subview)")
+                self.addSubview(subview)
+            }
         }
         var newConstraints: [NSLayoutConstraint] = []
         // Top
