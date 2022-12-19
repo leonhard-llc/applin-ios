@@ -3,27 +3,45 @@ import UIKit
 @testable import applin_ios
 
 class WidgetCacheTests: XCTestCase {
+    var optTempDir: String?
+    var config: ApplinConfig?
+    var stateStore: StateStore?
+    var session: ApplinSession?
+
+    override func setUpWithError() throws {
+        let tempDir = NSTemporaryDirectory() + "/" + UUID().uuidString
+        try FileManager.default.createDirectory(atPath: tempDir, withIntermediateDirectories: true)
+        self.optTempDir = tempDir
+        self.config = ApplinConfig(dataDirPath: tempDir, url: URL(string: "https://test1/")!)
+        self.stateStore = StateStore(self.config!, ApplinState())
+        self.session = ApplinSession(self.config!, self.stateStore!, nil, nil)
+    }
+
+    override func tearDownWithError() throws {
+        if let tempDir = self.optTempDir {
+            try FileManager.default.removeItem(atPath: tempDir)
+        }
+    }
+
     func testSimple() throws {
-        let session = ApplinSession(nil, nil, nil, URL(string: "https://test1/")!)
         let cache = WidgetCache()
-        let widget1 = cache.updateAll(session, Spec(.button(ButtonSpec(pageKey: "page1", text: "b1")))) as! ButtonWidget
+        let widget1 = cache.updateAll(self.session!, Spec(.button(ButtonSpec(pageKey: "page1", text: "b1")))) as! ButtonWidget
         XCTAssertEqual(widget1.button.currentTitle, "  b1  ")
-        let widget2 = cache.updateAll(session, Spec(.button(ButtonSpec(pageKey: "page1", text: "b2")))) as! ButtonWidget
+        let widget2 = cache.updateAll(self.session!, Spec(.button(ButtonSpec(pageKey: "page1", text: "b2")))) as! ButtonWidget
         XCTAssert(widget1 === widget2)
         XCTAssertEqual(widget2.button.currentTitle, "  b2  ")
     }
 
     func testStateless() throws {
-        let session = ApplinSession(nil, nil, nil, URL(string: "https://test1/")!)
         let cache = WidgetCache()
         let column1 = cache.updateAll(
-                session,
+                self.session!,
                 Spec(.column(ColumnSpec([Spec(.text(TextSpec("t1")))], .start, spacing: 0.0)))
         ) as! ColumnWidget
         let label1 = column1.columnView.orderedSubviews.first!.subviews.first! as! UILabel
         XCTAssertEqual(label1.text, "t1")
         let column2 = cache.updateAll(
-                session,
+                self.session!,
                 Spec(.column(ColumnSpec([Spec(.text(TextSpec("t2"))), Spec(.text(TextSpec("t1")))], .start, spacing: 0.0)))
         ) as! ColumnWidget
         XCTAssert(column1 !== column2)
