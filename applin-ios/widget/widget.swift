@@ -32,6 +32,7 @@ class Spec: Equatable, Hashable {
         case formButton(FormButtonSpec)
         case formSection(FormSectionSpec)
         case formTextfield(FormTextfieldSpec)
+        case image(ImageSpec)
         case lastErrorText(LastErrorTextSpec)
         case navButton(NavButtonSpec)
         case textfield(TextfieldSpec)
@@ -73,6 +74,8 @@ class Spec: Equatable, Hashable {
             self.value = .formSection(try FormSectionSpec(config, pageKey: pageKey, item))
         case FormTextfieldSpec.TYP:
             self.value = .formTextfield(try FormTextfieldSpec(pageKey: pageKey, item))
+        case ImageSpec.TYP:
+            self.value = .image(try ImageSpec(config, item))
         case LastErrorTextSpec.TYP:
             self.value = .lastErrorText(LastErrorTextSpec())
         case NavButtonSpec.TYP:
@@ -110,6 +113,8 @@ class Spec: Equatable, Hashable {
             return inner.toJsonItem()
         case let .formTextfield(inner):
             return inner.toJsonItem()
+        case let .image(inner):
+            return inner.toJsonItem()
         case let .lastErrorText(inner):
             return inner.toJsonItem()
         case let .navButton(inner):
@@ -144,6 +149,8 @@ class Spec: Equatable, Hashable {
         case let .formSection(inner):
             return inner.keys()
         case let .formTextfield(inner):
+            return inner.keys()
+        case let .image(inner):
             return inner.keys()
         case let .lastErrorText(inner):
             return inner.keys()
@@ -180,6 +187,8 @@ class Spec: Equatable, Hashable {
             return inner.priority()
         case let .formTextfield(inner):
             return inner.priority()
+        case let .image(inner):
+            return inner.priority()
         case let .lastErrorText(inner):
             return inner.priority()
         case let .navButton(inner):
@@ -214,6 +223,8 @@ class Spec: Equatable, Hashable {
         case let .formSection(inner):
             return inner.subs()
         case let .formTextfield(inner):
+            return inner.subs()
+        case let .image(inner):
             return inner.subs()
         case let .lastErrorText(inner):
             return inner.subs()
@@ -250,6 +261,8 @@ class Spec: Equatable, Hashable {
             return inner.vars()
         case let .formTextfield(inner):
             return inner.vars()
+        case let .image(inner):
+            return inner.vars()
         case let .lastErrorText(inner):
             return inner.vars()
         case let .navButton(inner):
@@ -285,6 +298,8 @@ class Spec: Equatable, Hashable {
             return inner.widgetClass()
         case let .formTextfield(inner):
             return inner.widgetClass()
+        case let .image(inner):
+            return inner.widgetClass()
         case let .lastErrorText(inner):
             return inner.widgetClass()
         case let .navButton(inner):
@@ -319,6 +334,8 @@ class Spec: Equatable, Hashable {
         case let .formSection(inner):
             return inner.newWidget()
         case let .formTextfield(inner):
+            return inner.newWidget()
+        case let .image(inner):
             return inner.newWidget()
         case let .lastErrorText(inner):
             return inner.newWidget()

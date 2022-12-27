@@ -7,6 +7,10 @@ class TappableView: UIView {
     var onTap: (() -> Void)?
     private var originalBackgroundColor: UIColor?
 
+    public override var description: String {
+        return "TappableView{frame=\(self.frame), subviews=\(self.subviews)}"
+    }
+
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         //print("TouchShowingView.touchesBegan")
         super.touchesBegan(touches, with: event)

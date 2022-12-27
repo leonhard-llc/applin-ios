@@ -372,50 +372,50 @@ class ApplinSession: ObservableObject {
         try self.applyUpdate(data)
     }
 
-    func fetch(_ url: URL) async throws -> Data {
-        // TODO: Merge concurrent fetches of the same URL.
-        //  https://developer.apple.com/documentation/uikit/views_and_controls/table_views/asynchronously_loading_images_into_table_and_collection_views#3637628
-        // TODO: Retry on error.
-        // TODO: When retrying multiple URLs at same server, round-robin the URLs.
-        print("fetch \(url.absoluteString)")
-        let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 10.0 /* seconds */
-        config.timeoutIntervalForResource = 60.0 /* seconds */
-        // TODONT: Don't set the config.urlCache to nil.  We want to use the cache.
-        config.httpShouldSetCookies = true
-        let urlSession = URLSession(configuration: config)
-        defer {
-            urlSession.invalidateAndCancel()
-        }
-        var urlRequest = URLRequest(
-                url: url,
-                cachePolicy: .useProtocolCachePolicy
-        )
-        urlRequest.httpMethod = "GET"
-        let data: Data
-        let httpResponse: HTTPURLResponse
-        do {
-            let (urlData, urlResponse) = try await urlSession.data(for: urlRequest)
-            data = urlData
-            httpResponse = urlResponse as! HTTPURLResponse
-        } catch {
-            print("fetch \(url.absoluteString) transport error: \(error)")
-            throw FetchError()
-        }
-        if !(200...299).contains(httpResponse.statusCode) {
-            if httpResponse.contentTypeBase() == "text/plain",
-               let string = String(data: data, encoding: .utf8) {
-                print("fetch \(url.absoluteString) server error: \(httpResponse.statusCode) "
-                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
-            } else {
-                print("fetch \(url.absoluteString) server error: \(httpResponse.statusCode) "
-                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), "
-                        + "len=\(data.count) \(httpResponse.mimeType ?? "")")
-            }
-            throw FetchError()
-        }
-        return data
-    }
+    //func fetch(_ url: URL) async throws -> Data {
+    //    // TODO: Merge concurrent fetches of the same URL.
+    //    //  https://developer.apple.com/documentation/uikit/views_and_controls/table_views/asynchronously_loading_images_into_table_and_collection_views#3637628
+    //    // TODO: Retry on error.
+    //    // TODO: When retrying multiple URLs at same server, round-robin the URLs.
+    //    print("fetch \(url.absoluteString)")
+    //    let config = URLSessionConfiguration.default
+    //    config.timeoutIntervalForRequest = 10.0 /* seconds */
+    //    config.timeoutIntervalForResource = 60.0 /* seconds */
+    //    // TODONT: Don't set the config.urlCache to nil.  We want to use the cache.
+    //    config.httpShouldSetCookies = true
+    //    let urlSession = URLSession(configuration: config)
+    //    defer {
+    //        urlSession.invalidateAndCancel()
+    //    }
+    //    var urlRequest = URLRequest(
+    //            url: url,
+    //            cachePolicy: .useProtocolCachePolicy
+    //    )
+    //    urlRequest.httpMethod = "GET"
+    //    let data: Data
+    //    let httpResponse: HTTPURLResponse
+    //    do {
+    //        let (urlData, urlResponse) = try await urlSession.data(for: urlRequest)
+    //        data = urlData
+    //        httpResponse = urlResponse as! HTTPURLResponse
+    //    } catch {
+    //        print("fetch \(url.absoluteString) transport error: \(error)")
+    //        throw FetchError()
+    //    }
+    //    if !(200...299).contains(httpResponse.statusCode) {
+    //        if httpResponse.contentTypeBase() == "text/plain",
+    //           let string = String(data: data, encoding: .utf8) {
+    //            print("fetch \(url.absoluteString) server error: \(httpResponse.statusCode) "
+    //                    + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
+    //        } else {
+    //            print("fetch \(url.absoluteString) server error: \(httpResponse.statusCode) "
+    //                    + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), "
+    //                    + "len=\(data.count) \(httpResponse.mimeType ?? "")")
+    //        }
+    //        throw FetchError()
+    //    }
+    //    return data
+    //}
 
     func doActionsAsync(pageKey: String, _ actions: [ActionSpec]) async -> Bool {
         self.stateStore.update({ state in state.pauseUpdateNav = true })

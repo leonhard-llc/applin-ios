@@ -144,6 +144,8 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         precondition(!newPages.isEmpty)
         var newEntries: [Entry] = []
         var newModals: [UIViewController] = []
+        // TODO: Solve flash on poll when modal is visible.
+        // TODO: Solve keyboard disappearing on poll.
         for (key, pageSpec) in newPages {
             let hasPrevPage = !newEntries.isEmpty
             if case let .modal(modalSpec) = pageSpec {
@@ -166,6 +168,7 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
                     cache = WidgetCache()
                     ctl = pageSpec.newController(self, session, cache)
                 }
+                print("setStackPages update \(key)")
                 ctl.update(session, cache, pageSpec, hasPrevPage: hasPrevPage)
                 newEntries.append(Entry(key, pageSpec, ctl, cache))
             }

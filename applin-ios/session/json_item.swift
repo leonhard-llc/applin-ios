@@ -124,6 +124,7 @@ class JsonItem: Codable {
     var actions: [String]?
     var align: String?
     var allow: String?
+    var aspectRatio: Double?
     var autoCapitalize: String?
     var cache: Bool?
     var checkRpc: String?
@@ -165,6 +166,7 @@ class JsonItem: Codable {
         case actions
         case align
         case allow
+        case aspectRatio = "aspect-ratio"
         case autoCapitalize = "auto-capitalize"
         case cache
         case checkRpc = "check-rpc"
@@ -353,6 +355,13 @@ class JsonItem: Codable {
         case .some(.tel):
             self.allow = "tel"
         }
+    }
+
+    func requireAspectRatio() throws -> Double {
+        if let value = self.aspectRatio {
+            return value
+        }
+        throw ApplinError.appError("missing \(self.typ).aspect-ratio")
     }
 
     func optAutoCapitalize() -> ApplinAutoCapitalize? {
