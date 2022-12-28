@@ -16,56 +16,59 @@ class NoIntrinsicSizeActivityView: UIActivityIndicatorView {
 /// ImageView loads an image from a URL and display it.
 /// It shows an activity indicator while loading.
 class ImageView: UIView {
-    private enum State {
+    private static func makeIndicator() -> NoIntrinsicSizeActivityView {
+        let indicator = NoIntrinsicSizeActivityView(style: .medium)
+        indicator.startAnimating()
+        return indicator
+    }
+
+    private enum Symbol: Equatable {
         case loading(NoIntrinsicSizeActivityView)
         case image(UIImageView)
         case error(NoIntrinsicSizeImageView)
     }
 
+    private var aspectRatioConstraint = ConstraintHolder()
     private var containerHelper: SingleViewContainerHelper?
-    private var state: State
 
     private let lock = NSLock()
-    private var aspectRatio: Double = 1.0
     private var url: URL?
     private var fetchImageTask: Task<(), Never>?
+    private var aspectRatio: Double
+    private var symbol: Symbol
 
-    override init(frame: CGRect) {
+    init(aspectRatio: Double) {
         print("ImageView.init")
-        let indicator = NoIntrinsicSizeActivityView(style: .medium)
-        self.state = .loading(indicator)
-        super.init(frame: frame)
+        self.symbol = .loading(Self.makeIndicator())
+        self.aspectRatio = aspectRatio
+        super.init(frame: CGRect.zero)
         self.containerHelper = SingleViewContainerHelper(superView: self)
         self.translatesAutoresizingMaskIntoConstraints = false
+        //self.backgroundColor = pastelYellow
+        self.clipsToBounds = true
         NSLayoutConstraint.activate([
             self.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
         ])
-        self.backgroundColor = pastelYellow
-        self.clipsToBounds = true
-        indicator.startAnimating()
-        Task {
-            await self.updateViews()
-        }
-    }
-
-    convenience init() {
-        print("ColumnView.init")
-        self.init(frame: CGRect.zero)
+        self.applyAspectRatio(aspectRatio)
+        self.applySymbol(self.symbol)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @MainActor
-    func updateViews() async {
-        switch self.state {
+    private func applyAspectRatio(_ aspectRatio: Double) {
+        self.aspectRatioConstraint.set(
+                self.heightAnchor.constraint(equalTo: self.widthAnchor, multiplier: aspectRatio))
+    }
+
+    private func applySymbol(_ symbol: Symbol) {
+        switch symbol {
         case let .loading(indicator):
             print("ImageView.applyUpdate .loading")
             indicator.translatesAutoresizingMaskIntoConstraints = false
             self.containerHelper!.update(indicator, {
                 [
-                    self.heightAnchor.constraint(equalTo: self.widthAnchor, multiplier: self.aspectRatio),
                     indicator.centerXAnchor.constraint(equalTo: self.centerXAnchor),
                     indicator.centerYAnchor.constraint(equalTo: self.centerYAnchor),
                 ]
@@ -76,12 +79,10 @@ class ImageView: UIView {
             image.contentMode = .scaleAspectFill
             self.containerHelper!.update(image, {
                 [
-                    self.heightAnchor.constraint(equalTo: self.widthAnchor, multiplier: self.aspectRatio),
                     image.centerXAnchor.constraint(equalTo: self.centerXAnchor),
                     image.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-                    image.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
-                    image.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor),
-                    image.heightAnchor.constraint(lessThanOrEqualTo: self.heightAnchor),
+                    image.widthAnchor.constraint(equalTo: self.widthAnchor),
+                    image.heightAnchor.constraint(equalTo: self.heightAnchor),
                 ]
             })
         case let .error(image):
@@ -90,12 +91,11 @@ class ImageView: UIView {
             image.tintColor = .systemGray
             self.containerHelper!.update(image, {
                 [
-                    self.heightAnchor.constraint(equalTo: self.widthAnchor, multiplier: self.aspectRatio),
                     image.centerXAnchor.constraint(equalTo: self.centerXAnchor),
                     image.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-                    image.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
-                    image.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor, multiplier: 0.5),
-                    image.heightAnchor.constraint(lessThanOrEqualTo: self.heightAnchor, multiplier: 0.5),
+                    image.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor),
+                    image.heightAnchor.constraint(lessThanOrEqualTo: self.heightAnchor),
+                    image.widthAnchor.constraint(equalToConstant: 24.0).withPriority(.fittingSizeLevel),
                     image.heightAnchor.constraint(equalTo: image.widthAnchor),
                 ]
             })
@@ -103,31 +103,25 @@ class ImageView: UIView {
     }
 
     @MainActor
-    func showLoading() async {
-        let indicator = NoIntrinsicSizeActivityView(style: .medium)
-        indicator.startAnimating()
-        self.state = .loading(indicator)
-        await self.updateViews()
-    }
+    private func setSymbol(_ symbol: Symbol) {
+        self.lock.lock()
+        let changed = self.symbol != symbol
+        self.symbol = symbol
+        self.lock.unlock()
 
-    @MainActor
-    func showImage(_ image: UIImage) async {
-        self.state = .image(UIImageView(image: image))
-        await self.updateViews()
-    }
-
-    @MainActor
-    func showError() async {
-        self.state = .error(NoIntrinsicSizeImageView(image: UIImage(systemName: "x.square")))
-        await self.updateViews()
+        if changed {
+            self.applySymbol(symbol)
+        }
     }
 
     func fetchImage(_ url: URL) async {
         print("ImageView.fetchImage(\(url.absoluteString))")
-        await self.showLoading()
+        let indicator = Self.makeIndicator()
+        Task { @MainActor in
+            self.setSymbol(.loading(indicator))
+        }
         // TODO: Merge concurrent fetches of the same URL.  Maybe the ios library does this already?
         //  https://developer.apple.com/documentation/uikit/views_and_controls/table_views/asynchronously_loading_images_into_table_and_collection_views#3637628
-        // TODO: Retry on error.
         // TODO: When retrying multiple URLs at same server, round-robin the URLs.  Maybe the ios library does this already?
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 10.0 /* seconds */
@@ -167,7 +161,10 @@ class ImageView: UIView {
                     throw "error processing data as image: \(data.count) bytes"
                 }
                 print("ImageView.fetchImage(\(url.absoluteString)) done")
-                await showImage(image)
+                let uiImageView = UIImageView(image: image)
+                Task { @MainActor in
+                    self.setSymbol(.image(uiImageView))
+                }
                 return
             } catch {
                 print("ImageView.fetchImage(\(url.absoluteString) error: \(error)")
@@ -175,7 +172,10 @@ class ImageView: UIView {
             }
         }
         print("ImageView.fetchImage(\(url.absoluteString) giving up")
-        await self.showError()
+        let image = NoIntrinsicSizeImageView(image: UIImage(systemName: "xmark"))
+        Task { @MainActor in
+            self.setSymbol(.error(image))
+        }
     }
 
     func update(_ url: URL, aspectRatio: Double) {
@@ -184,12 +184,13 @@ class ImageView: UIView {
         defer {
             self.lock.unlock()
         }
-        self.aspectRatio = aspectRatio
-        if self.url == url {
-            Task {
-                await self.updateViews()
+        if self.aspectRatio != aspectRatio {
+            self.aspectRatio = aspectRatio
+            Task { @MainActor in
+                self.applyAspectRatio(aspectRatio)
             }
-        } else {
+        }
+        if self.url != url {
             self.url = url
             self.fetchImageTask?.cancel()
             self.fetchImageTask = Task {

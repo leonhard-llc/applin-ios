@@ -9,6 +9,16 @@ let pastelMint = UIColor(hue: 171.0 / 360.0, saturation: 0.36, brightness: 0.93,
 let pastelGreen = UIColor(hue: 144.0 / 360.0, saturation: 0.41, brightness: 0.96, alpha: 1.0)
 let pastelYellowGreen = UIColor(hue: 66.0 / 360.0, saturation: 0.66, brightness: 0.91, alpha: 1.0)
 
+class ConstraintHolder {
+    private var constraint: NSLayoutConstraint?
+
+    func set(_ constraint: NSLayoutConstraint?) {
+        self.constraint?.isActive = false
+        self.constraint = constraint
+        self.constraint?.isActive = true
+    }
+}
+
 class ConstraintSet {
     private var constraints: [NSLayoutConstraint] = []
 

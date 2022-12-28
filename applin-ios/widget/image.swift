@@ -35,7 +35,7 @@ struct ImageSpec: Equatable, Hashable {
     }
 
     func newWidget() -> Widget {
-        ImageWidget()
+        ImageWidget(aspectRatio: self.aspectRatio)
     }
 
     func vars() -> [(String, Var)] {
@@ -44,7 +44,11 @@ struct ImageSpec: Equatable, Hashable {
 }
 
 class ImageWidget: Widget {
-    private let imageView = ImageView()
+    private let imageView: ImageView
+
+    public init(aspectRatio: Double) {
+        self.imageView = ImageView(aspectRatio: aspectRatio)
+    }
 
     func getView() -> UIView {
         self.imageView
