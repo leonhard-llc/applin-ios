@@ -38,11 +38,10 @@ class ImageView: UIView {
         self.containerHelper = SingleViewContainerHelper(superView: self)
         self.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            self.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultHigh),
-            // TODO: Find out why this constraint has no effect.
-            self.widthAnchor.constraint(equalTo: self.heightAnchor, multiplier: self.aspectRatio)
+            self.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
         ])
-        //self.backgroundColor = pastelYellow
+        self.backgroundColor = pastelYellow
+        self.clipsToBounds = true
         indicator.startAnimating()
         Task {
             await self.updateViews()
@@ -66,6 +65,7 @@ class ImageView: UIView {
             indicator.translatesAutoresizingMaskIntoConstraints = false
             self.containerHelper!.update(indicator, {
                 [
+                    self.heightAnchor.constraint(equalTo: self.widthAnchor, multiplier: self.aspectRatio),
                     indicator.centerXAnchor.constraint(equalTo: self.centerXAnchor),
                     indicator.centerYAnchor.constraint(equalTo: self.centerYAnchor),
                 ]
@@ -76,9 +76,10 @@ class ImageView: UIView {
             image.contentMode = .scaleAspectFill
             self.containerHelper!.update(image, {
                 [
+                    self.heightAnchor.constraint(equalTo: self.widthAnchor, multiplier: self.aspectRatio),
                     image.centerXAnchor.constraint(equalTo: self.centerXAnchor),
                     image.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-                    image.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultHigh),
+                    image.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
                     image.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor),
                     image.heightAnchor.constraint(lessThanOrEqualTo: self.heightAnchor),
                 ]
@@ -89,6 +90,7 @@ class ImageView: UIView {
             image.tintColor = .systemGray
             self.containerHelper!.update(image, {
                 [
+                    self.heightAnchor.constraint(equalTo: self.widthAnchor, multiplier: self.aspectRatio),
                     image.centerXAnchor.constraint(equalTo: self.centerXAnchor),
                     image.centerYAnchor.constraint(equalTo: self.centerYAnchor),
                     image.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
