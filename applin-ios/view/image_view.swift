@@ -24,7 +24,7 @@ class ImageView: UIView {
 
     private enum Symbol: Equatable {
         case loading(NoIntrinsicSizeActivityView)
-        case image(UIImageView)
+        case image(UIImageView, ApplinDisposition)
         case error(NoIntrinsicSizeImageView)
     }
 
@@ -73,10 +73,17 @@ class ImageView: UIView {
                     indicator.centerYAnchor.constraint(equalTo: self.centerYAnchor),
                 ]
             })
-        case let .image(image):
+        case let .image(image, disposition):
             print("ImageView.applyUpdate .image")
             image.translatesAutoresizingMaskIntoConstraints = false
-            image.contentMode = .scaleAspectFill
+            switch disposition {
+            case .fit:
+                image.contentMode = .scaleAspectFit
+            case .stretch:
+                image.contentMode = .scaleToFill
+            case .cover:
+                image.contentMode = .scaleAspectFill
+            }
             self.containerHelper!.update(image, {
                 [
                     image.centerXAnchor.constraint(equalTo: self.centerXAnchor),
@@ -114,7 +121,7 @@ class ImageView: UIView {
         }
     }
 
-    func fetchImage(_ url: URL) async {
+    func fetchImage(_ url: URL, _ disposition: ApplinDisposition) async {
         print("ImageView.fetchImage(\(url.absoluteString))")
         let indicator = Self.makeIndicator()
         Task { @MainActor in
@@ -163,7 +170,7 @@ class ImageView: UIView {
                 print("ImageView.fetchImage(\(url.absoluteString)) done")
                 let uiImageView = UIImageView(image: image)
                 Task { @MainActor in
-                    self.setSymbol(.image(uiImageView))
+                    self.setSymbol(.image(uiImageView, disposition))
                 }
                 return
             } catch {
@@ -178,7 +185,7 @@ class ImageView: UIView {
         }
     }
 
-    func update(_ url: URL, aspectRatio: Double) {
+    func update(_ url: URL, aspectRatio: Double, _ disposition: ApplinDisposition) {
         print("ImageView.update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
         self.lock.lock()
         defer {
@@ -194,7 +201,13 @@ class ImageView: UIView {
             self.url = url
             self.fetchImageTask?.cancel()
             self.fetchImageTask = Task {
-                await self.fetchImage(url)
+                await self.fetchImage(url, disposition)
+            }
+        } else if case let .image(image, oldDisposition) = self.symbol, oldDisposition != disposition {
+            let symbol: Symbol = .image(image, disposition)
+            self.symbol = symbol
+            Task { @MainActor in
+                self.applySymbol(symbol)
             }
         }
     }

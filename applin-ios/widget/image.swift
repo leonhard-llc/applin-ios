@@ -4,16 +4,19 @@ import UIKit
 struct ImageSpec: Equatable, Hashable {
     static let TYP = "image"
     let aspectRatio: Double
+    let disposition: ApplinDisposition?
     let url: URL
 
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.aspectRatio = try item.requireAspectRatio()
+        self.disposition = item.optDisposition()
         self.url = try item.requireUrl(config)
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ImageSpec.TYP)
         item.aspectRatio = self.aspectRatio
+        item.setDisposition(self.disposition)
         item.url = self.url.relativeString
         return item
     }
@@ -65,6 +68,6 @@ class ImageWidget: Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.imageView.update(imageSpec.url, aspectRatio: imageSpec.aspectRatio)
+        self.imageView.update(imageSpec.url, aspectRatio: imageSpec.aspectRatio, imageSpec.disposition ?? .cover)
     }
 }

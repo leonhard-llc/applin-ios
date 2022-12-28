@@ -389,8 +389,10 @@ class JsonItem: Codable {
         }
     }
 
-    func setDisposition(_ value: ApplinDisposition) {
+    func setDisposition(_ value: ApplinDisposition?) {
         switch value {
+        case nil:
+            break
         case .cover:
             self.disposition = "cover"
         case .fit:
