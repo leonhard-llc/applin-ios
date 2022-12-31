@@ -108,6 +108,7 @@ class ImageView: UIView {
                 ]
             })
         }
+        //self.setNeedsLayout()
     }
 
     @MainActor

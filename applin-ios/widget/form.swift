@@ -59,7 +59,7 @@ class FormWidget: Widget {
         self.columnView.translatesAutoresizingMaskIntoConstraints = false
         //self.columnView.backgroundColor = pastelMint
         NSLayoutConstraint.activate([
-            self.columnView.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+            self.columnView.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
             self.columnView.heightAnchor.constraint(equalToConstant: 0.0).withPriority(.fittingSizeLevel),
         ])
     }

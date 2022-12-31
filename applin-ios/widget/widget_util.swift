@@ -51,6 +51,7 @@ class SingleViewContainerHelper {
         self.subView = newSubView
         self.constraints = constraintsFn()
         NSLayoutConstraint.activate(self.constraints)
+        //self.subView?.setNeedsDisplay()
     }
 }
 

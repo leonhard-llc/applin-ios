@@ -224,7 +224,6 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         let widget = cache.updateAll(session, navPageSpec.widget)
         let subView = widget.getView()
         self.helper.update(subView) {
-            // subView.setNeedsDisplay()
             [
                 self.navBar.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
                 self.navBar.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),

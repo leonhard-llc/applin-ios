@@ -86,7 +86,7 @@ class CheckboxWidget: Widget {
         }
 
         NSLayoutConstraint.activate([
-            self.container.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+            self.container.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
             self.button.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
             self.button.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor),
             self.button.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor),

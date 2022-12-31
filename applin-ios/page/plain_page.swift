@@ -75,7 +75,6 @@ class PlainPageController: UIViewController, PageController {
         let widget = cache.updateAll(session, plainPageSpec.widget)
         let subView = widget.getView()
         self.helper.update(subView) {
-            // subView.setNeedsDisplay()
             [
                 subView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
                 subView.bottomAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.bottomAnchor),

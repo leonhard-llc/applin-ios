@@ -88,7 +88,7 @@ class FormTextfieldWidget: Widget {
         self.container.addSubview(textfield)
 
         NSLayoutConstraint.activate([
-            self.container.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+            self.container.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
 
             self.label.topAnchor.constraint(equalTo: self.container.topAnchor, constant: 8.0),
             self.label.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 8.0),
