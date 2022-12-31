@@ -47,7 +47,7 @@ class ImageView: UIView {
         //self.backgroundColor = pastelYellow
         self.clipsToBounds = true
         NSLayoutConstraint.activate([
-            self.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
+            self.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow + 1.0),
         ])
         self.applyAspectRatio(aspectRatio)
         self.applySymbol(self.symbol)
@@ -87,10 +87,10 @@ class ImageView: UIView {
             }
             self.containerHelper!.update(image, {
                 [
-                    image.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-                    image.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-                    image.widthAnchor.constraint(equalTo: self.widthAnchor),
-                    image.heightAnchor.constraint(equalTo: self.heightAnchor),
+                    image.leftAnchor.constraint(equalTo: self.leftAnchor),
+                    image.rightAnchor.constraint(equalTo: self.rightAnchor),
+                    image.topAnchor.constraint(equalTo: self.topAnchor),
+                    image.bottomAnchor.constraint(equalTo: self.bottomAnchor),
                 ]
             })
         case let .error(image):
