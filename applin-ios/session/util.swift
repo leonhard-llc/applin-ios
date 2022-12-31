@@ -85,19 +85,18 @@ func moveFile(atPath: String, toPath: String) async throws {
     try await task.value
 }
 
-func readBundleFile(filename: String) async throws -> Data {
-    let task: Task<Data, Error> = Task {
-        guard let file = Bundle.main.url(forResource: filename, withExtension: nil)
-        else {
-            throw ApplinError.appError("bundle file not found: \(filename)")
-        }
-        do {
-            return try Data(contentsOf: file)
-        } catch {
-            throw ApplinError.appError("error reading bundle file \(filename): \(error)")
-        }
+func readBundleFile(filepath: String) async throws -> Data {
+    guard let url = Bundle.main.url(forResource: filepath, withExtension: nil)
+    else {
+        throw ApplinError.appError("bundle file not found: \(filepath)")
     }
-    return try await task.value
+    //print("readBundleFile(\(filename) reading \(url.absoluteString)")
+    //file:///Users/user/Library/Developer/CoreSimulator/Devices/76F2E4B6E4C9/data/Containers/Bundle/Application/1D1493CF6169/applin-ios.app/default.json
+    do {
+        return try Data(contentsOf: url)
+    } catch {
+        throw ApplinError.appError("error reading bundle file \(filepath): \(error)")
+    }
 }
 
 func readFile(path: String) async throws -> Data {

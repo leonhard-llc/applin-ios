@@ -35,7 +35,7 @@ class StateStore {
     static let FILE_NAME = "state.json"
 
     public static func loadDefaultJson(_ config: ApplinConfig) async throws -> ApplinState {
-        let bytes = try await readBundleFile(filename: "default.json")
+        let bytes = try await readBundleFile(filepath: "default.json")
         let contents: FileContents
         do {
             contents = try decodeJson(bytes)
