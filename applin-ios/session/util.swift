@@ -16,16 +16,6 @@ func createDir(_ path: String) async throws {
     try await task.value
 }
 
-func decodeBundleJsonFile<T: Decodable>(_ filename: String) async throws -> T {
-    let data: Data = try await readBundleFile(filename: filename)
-    do {
-        let decoder = JSONDecoder()
-        return try decoder.decode(T.self, from: data)
-    } catch {
-        throw ApplinError.appError("error parsing JSON \(filename) as \(T.self): \(error)")
-    }
-}
-
 func decodeJson<T: Decodable>(_ data: Data) throws -> T {
     let decoder = JSONDecoder()
     return try decoder.decode(T.self, from: data)
