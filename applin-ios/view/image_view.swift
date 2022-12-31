@@ -149,10 +149,9 @@ class ImageView: UIView {
                 return
             }
             print("ImageView.fetchImage(\(url.absoluteString)) start")
-            let httpResponse: HTTPURLResponse
             do {
                 let (data, urlResponse) = try await urlSession.data(for: urlRequest)
-                httpResponse = urlResponse as! HTTPURLResponse
+                let httpResponse = urlResponse as! HTTPURLResponse
                 if !(200...299).contains(httpResponse.statusCode) {
                     if httpResponse.contentTypeBase() == "text/plain",
                        let string = String(data: data, encoding: .utf8) {
@@ -185,6 +184,27 @@ class ImageView: UIView {
         }
     }
 
+    func loadImageBundleFile(filepath: String, _ disposition: ApplinDisposition) async {
+        do {
+            print("ImageView.loadImageBundleFile(\(filepath))")
+            let data = try await readBundleFile(filepath: filepath)
+            guard let image = UIImage(data: data) else {
+                throw "error processing data as image: \(data.count) bytes"
+            }
+            print("ImageView.loadImageBundleFile(\(filepath)) done")
+            let uiImageView = UIImageView(image: image)
+            Task { @MainActor in
+                self.setSymbol(.image(uiImageView, disposition))
+            }
+        } catch {
+            print("ImageView.loadImageBundleFile(\(filepath)) error: \(error)")
+            let image = NoIntrinsicSizeImageView(image: UIImage(systemName: "xmark"))
+            Task { @MainActor in
+                self.setSymbol(.error(image))
+            }
+        }
+    }
+
     func update(_ url: URL, aspectRatio: Double, _ disposition: ApplinDisposition) {
         print("ImageView.update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
         self.lock.lock()
@@ -201,7 +221,11 @@ class ImageView: UIView {
             self.url = url
             self.fetchImageTask?.cancel()
             self.fetchImageTask = Task {
-                await self.fetchImage(url, disposition)
+                if url.scheme == "asset" {
+                    await self.loadImageBundleFile(filepath: url.path, disposition)
+                } else {
+                    await self.fetchImage(url, disposition)
+                }
             }
         } else if case let .image(image, oldDisposition) = self.symbol, oldDisposition != disposition {
             let symbol: Symbol = .image(image, disposition)

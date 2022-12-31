@@ -8,6 +8,11 @@
         "typ": "form",
         "widgets": [
           {
+            "typ": "image",
+            "url": "asset:///logo.png",
+            "aspect-ratio": 2.469
+          },
+          {
             "typ": "text",
             "text": "Connecting"
           }
