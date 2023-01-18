@@ -50,7 +50,6 @@ struct FormSpec: Equatable, Hashable {
 }
 
 class FormWidget: Widget {
-    static let SPACING: Float32 = 4.0
     let columnView: ColumnView
 
     init() {
@@ -79,7 +78,7 @@ class FormWidget: Widget {
         self.columnView.update(
                 .start,
                 separator: .separator,
-                spacing: Self.SPACING,
+                spacing: 0.0,
                 subviews: subs.map { widget in
                     widget.getView()
                 }

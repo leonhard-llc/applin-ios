@@ -114,7 +114,7 @@ class FormSectionWidget: Widget {
         self.columnView.update(
                 .start,
                 separator: .separator,
-                spacing: FormWidget.SPACING,
+                spacing: 0.0,
                 subviews: subs.map { widget in
                     widget.getView()
                 }
