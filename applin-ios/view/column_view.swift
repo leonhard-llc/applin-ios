@@ -27,12 +27,20 @@ class ColumnView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    func separatorThickness() -> Float32? {
+        self.separatorColor == nil ? nil : SEPARATOR_THICKNESS
+    }
+
+    func gap() -> Float32 {
+        Float32.maximum(self.spacing, self.separatorThickness() ?? 0.0)
+    }
+
     func update(_ alignment: ApplinHAlignment, separator: UIColor?, spacing: Float32, subviews: [UIView]) {
         print("ColumnView.update alignment=\(alignment) separator=\(String(describing: separator)) spacing=\(spacing) subviews=\(subviews)")
         self.alignment = alignment
         self.orderedSubviews = subviews
         self.separatorColor = separator
-        self.spacing = Float32.maximum(spacing, self.separatorColor == nil ? 0 : SEPARATOR_THICKNESS)
+        self.spacing = spacing
         let newSubviews = Set(subviews)
         for subview in self.subviews {
             if !newSubviews.contains(subview) {
@@ -50,16 +58,18 @@ class ColumnView: UIView {
         var newConstraints: [NSLayoutConstraint] = []
         // Top
         if let first = subviews.first {
-            newConstraints.append(first.topAnchor.constraint(equalTo: self.topAnchor))
+            let topGap = CGFloat(self.separatorThickness() ?? 0.0)
+            newConstraints.append(first.topAnchor.constraint(equalTo: self.topAnchor, constant: topGap))
         }
         // Between
         for (n, a) in subviews.dropLast(1).enumerated() {
             let b = subviews[n + 1]
-            newConstraints.append(b.topAnchor.constraint(equalTo: a.bottomAnchor, constant: CGFloat(self.spacing)))
+            newConstraints.append(b.topAnchor.constraint(equalTo: a.bottomAnchor, constant: CGFloat(self.gap())))
         }
         // Bottom
         if let last = subviews.last {
-            newConstraints.append(last.bottomAnchor.constraint(equalTo: self.bottomAnchor))
+            let bottomGap = CGFloat(0.0 - (self.separatorThickness() ?? 0.0))
+            newConstraints.append(last.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomGap))
         }
         // Left, Right, and Alignment
         for view in subviews {
@@ -88,10 +98,20 @@ class ColumnView: UIView {
             ctx.setLineWidth(CGFloat(SEPARATOR_THICKNESS))
             ctx.setStrokeColor(color.cgColor)
             ctx.beginPath()
+            if let first = self.orderedSubviews.first, let sepThickness = self.separatorThickness() {
+                let y = first.frame.minY - CGFloat(sepThickness / 2.0)
+                ctx.move(to: CGPoint(x: left, y: y))
+                ctx.addLine(to: CGPoint(x: right, y: y))
+            }
             for (n, a) in self.orderedSubviews.dropLast(1).enumerated() {
                 let b = self.orderedSubviews[n + 1]
                 let y = (a.frame.maxY + b.frame.minY) / 2.0
                 //print("ColumnView.draw (\(left), \(y)) -> (\(right), \(y))")
+                ctx.move(to: CGPoint(x: left, y: y))
+                ctx.addLine(to: CGPoint(x: right, y: y))
+            }
+            if let last = self.orderedSubviews.last, let sepThickness = self.separatorThickness() {
+                let y = last.frame.maxY + CGFloat(sepThickness / 2.0)
                 ctx.move(to: CGPoint(x: left, y: y))
                 ctx.addLine(to: CGPoint(x: right, y: y))
             }
