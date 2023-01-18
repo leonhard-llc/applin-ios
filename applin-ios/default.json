@@ -2,10 +2,9 @@
   "pages": {
     "/": {
       "typ": "plain-page",
-      "poll-seconds": 5,
-      "title": "Home",
+      "title": "Age Form",
       "widget": {
-        "typ": "form",
+        "typ": "column",
         "widgets": [
           {
             "typ": "image",
@@ -14,9 +13,82 @@
           },
           {
             "typ": "text",
-            "text": "Connecting"
+            "text": "To use this app, you must be at least 18 years old."
+          },
+          {
+            "typ": "form-button",
+            "text": "I am 18+ Years Old",
+            "actions": [
+              "push:/policy-form"
+            ]
           }
         ]
+      }
+    },
+    "/policy-form": {
+      "typ": "plain-page",
+      "title": "Policy Form",
+      "widget": {
+        "typ": "column",
+        "widgets": [
+          {
+            "typ": "image",
+            "url": "asset:///logo.png",
+            "aspect-ratio": 1.67
+          },
+          {
+            "typ": "text",
+            "text": "To use this app, you must agree to the Terms of Use and Privacy Policy."
+          },
+          {
+            "typ": "form",
+            "widgets": [
+              {
+                "typ": "nav-button",
+                "text": "Terms of Use",
+                "actions": [
+                  "push:/terms"
+                ]
+              },
+              {
+                "typ": "nav-button",
+                "text": "Privacy Policy",
+                "actions": [
+                  "push:/privacy"
+                ]
+              }
+            ]
+          },
+          {
+            "typ": "form-button",
+            "text": "I Agree",
+            "actions": [
+              "rpc:/agree-to-policy"
+            ]
+          }
+        ]
+      }
+    },
+    "/terms": {
+      "typ": "nav-page",
+      "title": "Terms of Use",
+      "widget": {
+        "typ": "scroll",
+        "widget": {
+          "typ": "text",
+          "text": "TERMS OF USE"
+        }
+      }
+    },
+    "/privacy": {
+      "typ": "nav-page",
+      "title": "Privacy Policy",
+      "widget": {
+        "typ": "scroll",
+        "widget": {
+          "typ": "text",
+          "text": "PRIVACY POLICY"
+        }
       }
     },
     "/applin-error-details": {
