@@ -15,6 +15,7 @@ class ColumnView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.isOpaque = false
+        self.translatesAutoresizingMaskIntoConstraints = false
     }
 
     convenience init() {
@@ -31,7 +32,7 @@ class ColumnView: UIView {
         self.alignment = alignment
         self.orderedSubviews = subviews
         self.separatorColor = separator
-        self.spacing = spacing
+        self.spacing = Float32.maximum(spacing, self.separatorColor == nil ? 0 : SEPARATOR_THICKNESS)
         let newSubviews = Set(subviews)
         for subview in self.subviews {
             if !newSubviews.contains(subview) {
@@ -52,10 +53,9 @@ class ColumnView: UIView {
             newConstraints.append(first.topAnchor.constraint(equalTo: self.topAnchor))
         }
         // Between
-        let gap = CGFloat(self.spacing + (self.separatorColor == nil ? 0 : SEPARATOR_THICKNESS))
         for (n, a) in subviews.dropLast(1).enumerated() {
             let b = subviews[n + 1]
-            newConstraints.append(b.topAnchor.constraint(equalTo: a.bottomAnchor, constant: gap))
+            newConstraints.append(b.topAnchor.constraint(equalTo: a.bottomAnchor, constant: CGFloat(self.spacing)))
         }
         // Bottom
         if let last = subviews.last {
