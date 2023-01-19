@@ -35,7 +35,7 @@ struct ApplinState {
                 error: nil,
                 // TODO: Show a spinner.
                 pages: ["/loading": .plainPage(PlainPageSpec(title: "Loading", Spec(.text(TextSpec("Loading")))))],
-                pauseUpdateNav: false,
+                pauseUpdateDisplayedPages: false,
                 stack: ["/loading"],
                 vars: [:]
         )
@@ -51,7 +51,7 @@ struct ApplinState {
                             Spec(.text(TextSpec("ERROR: \(error)")))
                     ))
                 ],
-                pauseUpdateNav: false,
+                pauseUpdateDisplayedPages: false,
                 stack: ["/error"],
                 vars: [:]
         )
@@ -61,7 +61,7 @@ struct ApplinState {
     var connectionMode: ConnectionMode = .disconnect
     var error: String?
     var pages: [String: PageSpec] = [:]
-    var pauseUpdateNav: Bool = false
+    var pauseUpdateDisplayedPages: Bool = false
     var stack: [String] = ["/"]
     var vars: [String: Var] = [:]
 
@@ -71,7 +71,6 @@ struct ApplinState {
         for (key, spec) in other.pages {
             self.pages[key] = spec
         }
-        self.pauseUpdateNav = other.pauseUpdateNav
         self.stack = other.stack
         for (name, value) in other.vars {
             self.vars[name] = value
@@ -129,9 +128,9 @@ class ApplinSession: ObservableObject {
     }
 
     public func updateDisplayedPages() {
-        let (pauseUpdateNav, stack, entries, connectionMode) = self.stateStore.update({
+        let (paused, stack, entries, connectionMode) = self.stateStore.update({
             state -> (Bool, [String], [(String, PageSpec)], ConnectionMode) in
-            if state.pauseUpdateNav {
+            if state.pauseUpdateDisplayedPages {
                 return (true, [], [], .disconnect)
             }
             if state.stack.isEmpty {
@@ -152,9 +151,9 @@ class ApplinSession: ObservableObject {
             // Swift Array and String are value types.
             return (false, state.stack, entries, state.connectionMode)
         })
-        print("updateNav \(stack)")
-        if pauseUpdateNav {
-            print("updateNav paused")
+        print("updateDisplayedPages \(stack)")
+        if paused {
+            print("updateDisplayedPages paused")
             return
         }
         self.connection?.setMode(self, connectionMode)
@@ -418,9 +417,9 @@ class ApplinSession: ObservableObject {
     //}
 
     func doActionsAsync(pageKey: String, _ actions: [ActionSpec]) async -> Bool {
-        self.stateStore.update({ state in state.pauseUpdateNav = true })
+        self.stateStore.update({ state in state.pauseUpdateDisplayedPages = true })
         defer {
-            self.stateStore.update({ state in state.pauseUpdateNav = false })
+            self.stateStore.update({ state in state.pauseUpdateDisplayedPages = false })
             self.updateDisplayedPages()
         }
         loop: for action in actions {
