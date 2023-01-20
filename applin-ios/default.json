@@ -13,32 +13,7 @@
           },
           {
             "typ": "text",
-            "text": "To use this app, you must be at least 18 years old."
-          },
-          {
-            "typ": "form-button",
-            "text": "I am 18+ Years Old",
-            "actions": [
-              "push:/policy-form"
-            ]
-          }
-        ]
-      }
-    },
-    "/policy-form": {
-      "typ": "plain-page",
-      "title": "Policy Form",
-      "widget": {
-        "typ": "column",
-        "widgets": [
-          {
-            "typ": "image",
-            "url": "asset:///logo.png",
-            "aspect-ratio": 1.67
-          },
-          {
-            "typ": "text",
-            "text": "To use this app, you must agree to the Terms of Use and Privacy Policy."
+            "text": "To use this app, you must agree to the Terms of Use and be at least 18 years old."
           },
           {
             "typ": "form",
@@ -61,9 +36,9 @@
           },
           {
             "typ": "form-button",
-            "text": "I Agree",
+            "text": "I Agree and I am 18+ Years Old",
             "actions": [
-              "rpc:/agree-to-policy"
+              "rpc:/"
             ]
           }
         ]

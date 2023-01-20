@@ -49,6 +49,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
             if let savedState = await StateStore.loadSavedState(self.config) {
                 initialState.merge(savedState)
+            } else {
+                // Don't let app start up with cookies (session) and no saved pages because the rpc:/ will not update
+                // any of the pages.
+                print("WARNING: Failed to load saved state.  Erasing cookies.")
+                HTTPCookieStorage.shared.cookies?.forEach(HTTPCookieStorage.shared.deleteCookie)
             }
             self.stateStore.update({ state in state = initialState })
             self.stateStore.allowWrites()
