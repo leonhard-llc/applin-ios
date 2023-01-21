@@ -295,7 +295,7 @@ class ApplinSession: ObservableObject {
         self.updateDisplayedPages()
     }
 
-    func rpc(pageKey optPageKey: String?, path: String, method: String) async throws {
+    func rpc(optPageKey: String?, path: String, method: String) async throws {
         print("rpc \(path)")
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 10.0 /* seconds */
@@ -371,6 +371,39 @@ class ApplinSession: ObservableObject {
         try self.applyUpdate(data)
     }
 
+    private func interactiveRpc(optPageKey: String?, path: String, method: String) async -> Bool {
+        await self.nav?.setWorking("Working")
+        defer {
+            Task {
+                await self.nav?.setWorking(nil)
+            }
+        }
+        let stopwatch = Stopwatch()
+        do {
+            try await self.rpc(optPageKey: optPageKey, path: path, method: method)
+            await stopwatch.waitUntil(seconds: 1.0)
+            return true
+        } catch {
+            print(error)
+            switch error as? ApplinError {
+            case nil:
+                self.stateStore.update({ state in state.error = "Unexpected exception: \(error)" })
+                await stopwatch.waitUntil(seconds: 1.0)
+                self.push(pageKey: "/applin-error-details")
+            case let .appError(msg), let .networkError(msg), let .serverError(msg):
+                self.stateStore.update({ state in state.error = msg })
+                await stopwatch.waitUntil(seconds: 1.0)
+                self.push(pageKey: "/applin-error-details")
+            case let .userError(msg):
+                self.stateStore.update({ state in state.error = msg })
+                await stopwatch.waitUntil(seconds: 1.0)
+                // TODO: Display a simple alert.
+                self.push(pageKey: "/applin-error-details")
+            }
+            return false
+        }
+    }
+
     //func fetch(_ url: URL) async throws -> Data {
     //    // TODO: Merge concurrent fetches of the same URL.
     //    //  https://developer.apple.com/documentation/uikit/views_and_controls/table_views/asynchronously_loading_images_into_table_and_collection_views#3637628
@@ -435,6 +468,12 @@ class ApplinSession: ObservableObject {
                 print("logout unimplemented")
             case .nothing:
                 print("nothing")
+            case .poll:
+                print("poll")
+                let success = await self.interactiveRpc(optPageKey: nil, path: "/", method: "GET")
+                if !success {
+                    return false
+                }
             case .pop:
                 print("pop")
                 self.pop()
@@ -443,33 +482,8 @@ class ApplinSession: ObservableObject {
                 self.push(pageKey: key)
             case let .rpc(path):
                 print("rpc(\(path))")
-                await self.nav?.setWorking("Working")
-                defer {
-                    Task {
-                        await self.nav?.setWorking(nil)
-                    }
-                }
-                let stopwatch = Stopwatch()
-                do {
-                    try await self.rpc(pageKey: pageKey, path: path, method: "POST")
-                    await stopwatch.waitUntil(seconds: 1.0)
-                } catch {
-                    print(error)
-                    switch error as? ApplinError {
-                    case nil:
-                        self.stateStore.update({ state in state.error = "Unexpected exception: \(error)" })
-                        await stopwatch.waitUntil(seconds: 1.0)
-                        self.push(pageKey: "/applin-error-details")
-                    case let .appError(msg), let .networkError(msg), let .serverError(msg):
-                        self.stateStore.update({ state in state.error = msg })
-                        await stopwatch.waitUntil(seconds: 1.0)
-                        self.push(pageKey: "/applin-error-details")
-                    case let .userError(msg):
-                        self.stateStore.update({ state in state.error = msg })
-                        await stopwatch.waitUntil(seconds: 1.0)
-                        // TODO: Display a simple alert.
-                        self.push(pageKey: "/applin-error-details")
-                    }
+                let success = await self.interactiveRpc(optPageKey: pageKey, path: path, method: "POST")
+                if !success {
                     return false
                 }
             }

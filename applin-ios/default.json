@@ -38,7 +38,7 @@
             "typ": "form-button",
             "text": "I Agree and I am 18+ Years Old",
             "actions": [
-              "rpc:/"
+              "poll"
             ]
           }
         ]

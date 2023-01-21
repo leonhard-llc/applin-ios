@@ -6,6 +6,7 @@ enum ActionSpec: Codable, Equatable, Hashable {
     case launchUrl(URL)
     case logout
     case nothing
+    case poll
     case pop
     case push(String)
     case rpc(String)
@@ -20,6 +21,9 @@ enum ActionSpec: Codable, Equatable, Hashable {
             return
         case "nothing":
             self = .nothing
+            return
+        case "poll":
+            self = .poll
             return
         case "pop":
             self = .pop
@@ -62,6 +66,8 @@ enum ActionSpec: Codable, Equatable, Hashable {
             return "nothing"
         case .pop:
             return "pop"
+        case .poll:
+            return "poll"
         case let .push(value):
             return "push:\(value)"
         case let .rpc(value):
