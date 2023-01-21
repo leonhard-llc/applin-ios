@@ -189,18 +189,22 @@ class ApplinConnection {
         self.running = true
         let periodic = Periodic()
         while !Task.isCancelled {
-            do {
+            while !Task.isCancelled {
                 if periodic.checkNow(TimeInterval(self.pollSeconds)) {
-                    try await session.rpc(pageKey: nil, path: "/", method: "GET")
-                } else {
-                    await sleep(ms: 1000)
+                    break
                 }
-            } catch let error as NSError where error.code == -1004 /* Could not connect to the server */ {
-                self.state = .connectError
-                await sleep(ms: 5_000)
-            } catch {
-                print("ApplinConnection error: \(error)")
-                self.state = .connectError
+                await sleep(ms: 1000)
+            }
+            while !Task.isCancelled {
+                do {
+                    try await session.rpc(optPageKey: nil, path: "/", method: "GET")
+                    break
+                } catch let error as NSError where error.code == -1004 /* Could not connect to the server */ {
+                    self.state = .connectError
+                } catch {
+                    print("ApplinConnection error: \(error)")
+                    self.state = .connectError
+                }
                 await sleep(ms: 5_000)
             }
         }
