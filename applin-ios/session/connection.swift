@@ -159,7 +159,7 @@ class ApplinConnection {
                 self.state = .connectError
                 print("ApplinConnection error: \(error)")
             }
-            await sleep(ms: 5_000)
+            await sleep(ms: Int.random(in: 2_500...7_500))
         }
         print("ApplinConnection stop connect")
     }
@@ -205,7 +205,7 @@ class ApplinConnection {
                     print("ApplinConnection error: \(error)")
                     self.state = .connectError
                 }
-                await sleep(ms: 5_000)
+                await sleep(ms: Int.random(in: 2_500...7_500))
             }
         }
         print("ApplinConnection stop poll")
