@@ -131,6 +131,7 @@ class JsonItem: Codable {
     // TODO: Split this into separate horizontal and vertical fields.
     var disposition: String?
     var end: JsonItem?
+    var error: String?
     var height: Float32?
     var id: String?
     var initialBool: Bool?
@@ -172,6 +173,7 @@ class JsonItem: Codable {
         case checkRpc = "check-rpc"
         case disposition
         case end
+        case error
         case height
         case id
         case initialBool = "initial-bool"

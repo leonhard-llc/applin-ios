@@ -29,7 +29,6 @@
 		36EBC9498336E2FDFCAD5C23 /* session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCBB8E0A5A02F501EBC47 /* session.swift */; };
 		36EBC95C7C6D0E2BEDB78235 /* error_text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC49B2A28E23E7556A4ED /* error_text.swift */; };
 		36EBCA840F70B82AF3B17697 /* widget_cache_test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC8629F4380E1C84057A9 /* widget_cache_test.swift */; };
-		36EBCAC3EA38CC8A1194222C /* form_textfield.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC0016E79660C86334A20 /* form_textfield.swift */; };
 		36EBCBBC8BC3163E99A8F172 /* form_section.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCE7CF445372318DC66BD /* form_section.swift */; };
 		36EBCC046FCA05F3DA8E9DB2 /* json.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC1F3397545904FD885DE /* json.swift */; };
 		36EBCC45CA62CA3D0813C4B0 /* column_view.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC7AD7ED8C71B8B9DD53A /* column_view.swift */; };
@@ -83,7 +82,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		36EBC0016E79660C86334A20 /* form_textfield.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = form_textfield.swift; sourceTree = "<group>"; };
 		36EBC028E3CC54EA8CE9C422 /* textfield.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = textfield.swift; sourceTree = "<group>"; };
 		36EBC0399B6CB8510C2A1A7C /* page.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = page.swift; sourceTree = "<group>"; };
 		36EBC10D3F4C74A515298A7A /* util.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = util.swift; sourceTree = "<group>"; };
@@ -233,7 +231,6 @@
 				36EBC6C3A01FADBD0060FDB8 /* checkbox.swift */,
 				36EBC960F01F9A285F600570 /* form_button.swift */,
 				36EBC49B2A28E23E7556A4ED /* error_text.swift */,
-				36EBC0016E79660C86334A20 /* form_textfield.swift */,
 				36EBC028E3CC54EA8CE9C422 /* textfield.swift */,
 			);
 			path = widget;
@@ -474,7 +471,6 @@
 				36EBC1693A9EC7BB3155AE5B /* form_button.swift in Sources */,
 				36EBC79A9E124AC5E23319AC /* checkbox.swift in Sources */,
 				36EBC95C7C6D0E2BEDB78235 /* error_text.swift in Sources */,
-				36EBCAC3EA38CC8A1194222C /* form_textfield.swift in Sources */,
 				36EBC894DAA57B20493F7BF5 /* textfield.swift in Sources */,
 				36EBC100C096D0CEE7D5288B /* session_status.swift in Sources */,
 				36EBCC45CA62CA3D0813C4B0 /* column_view.swift in Sources */,
