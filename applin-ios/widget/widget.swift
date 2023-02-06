@@ -353,4 +353,12 @@ class Spec: Equatable, Hashable {
     func hash(into hasher: inout Hasher) {
         self.value.hash(into: &hasher)
     }
+
+    func is_empty() -> Bool {
+        if case .empty(_) = self.value {
+            return true
+        } else {
+            return false
+        }
+    }
 }

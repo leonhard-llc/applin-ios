@@ -13,7 +13,7 @@ struct FormSectionSpec: Equatable, Hashable {
 
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.optTitle = item.title
-        self.widgets = try item.optWidgets(config, pageKey: pageKey) ?? []
+        self.widgets = try item.optWidgets(config, pageKey: pageKey)?.filter({ spec in !spec.is_empty() }) ?? []
     }
 
     func toJsonItem() -> JsonItem {
