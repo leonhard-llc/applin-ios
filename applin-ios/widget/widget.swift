@@ -15,11 +15,10 @@ protocol Widget {
     func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws
 }
 
-// Spec is an immutable tree of widget specifications.
-
-//
-// It is a reference-counted wrapper around the enum, to prevent unnecessary copies of the widget tree.
-// This changes algorithms that would take O(n^2) memory into O(n).
+/// Spec is an immutable tree of widget specifications.
+///
+/// It is a reference-counted wrapper around the enum, to prevent unnecessary copies of the widget tree.
+/// This changes algorithms that would take O(n^2) memory into O(n).
 class Spec: Equatable, Hashable {
     enum Value: Equatable, Hashable {
         case backButton(BackButtonSpec)

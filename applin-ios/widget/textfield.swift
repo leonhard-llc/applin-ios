@@ -125,6 +125,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
             self.textview.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultHigh),
             self.textview.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 4.0),
             self.textview.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -4.0),
+            self.textview.bottomAnchor.constraint(equalTo: self.container.bottomAnchor, constant: -4.0),
         ])
         super.init()
         self.textview.delegate = self
@@ -148,49 +149,30 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
+        print("TextfieldWidget.update(\(textfieldSpec))")
+        self.spec = textfieldSpec
         self.session = session
         if !self.initialized {
-            self.textview.text = session.getStringVar(textfieldSpec.varName) ?? textfieldSpec.initialString ?? ""
+            self.textview.text = session.getStringVar(self.spec.varName) ?? self.spec.initialString ?? ""
             self.initialized = true
         }
         var constraints: [NSLayoutConstraint] = []
+        var prevBottomAnchor: NSLayoutYAxisAnchor = self.container.topAnchor
         // Label
         if let labelString = self.spec.label {
             self.label.text = labelString
             self.container.addSubview(self.label)
             constraints.append(contentsOf: [
-                self.label.topAnchor.constraint(equalTo: self.container.topAnchor, constant: 8.0),
+                self.label.topAnchor.constraint(equalTo: prevBottomAnchor, constant: 8.0),
                 self.label.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 8.0),
                 self.label.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -8.0),
-                self.textview.topAnchor.constraint(greaterThanOrEqualTo: self.label.bottomAnchor, constant: 4.0),
             ])
+            prevBottomAnchor = self.label.bottomAnchor
         } else {
             self.label.removeFromSuperview()
-            constraints.append(self.textview.topAnchor.constraint(equalTo: self.container.topAnchor, constant: 4.0))
-        }
-        // Textview
-        switch textfieldSpec.maxLines {
-        case nil, 1:
-            constraints.append(self.textview.heightAnchor.constraint(greaterThanOrEqualToConstant: 20))
-        default:
-            constraints.append(self.textview.heightAnchor.constraint(greaterThanOrEqualToConstant: 40))
-        }
-        let keyboardTypeChanged = self.textview.keyboardType != textfieldSpec.allow.keyboardType()
-        if keyboardTypeChanged {
-            print("TextfieldWidget(\(textfieldSpec.varName) keyboardType changed \(self.textview.keyboardType) -> \(textfieldSpec.allow.keyboardType())")
-            self.textview.keyboardType = textfieldSpec.allow.keyboardType()
-        }
-        let newAutocapType = textfieldSpec.autoCapitalize?.textAutocapitalizationType() ?? .none
-        let autocapTypeChanged = self.textview.autocapitalizationType != newAutocapType
-        if autocapTypeChanged {
-            print("TextfieldWidget(\(textfieldSpec.varName) autocapitalizationType changed \(self.textview.autocapitalizationType) -> \(newAutocapType)")
-            self.textview.autocapitalizationType = newAutocapType
-        }
-        if keyboardTypeChanged || autocapTypeChanged {
-            print("TextfieldWidget(\(textfieldSpec.varName) reloadInputViews()")
-            self.textview.reloadInputViews()
         }
         // Error image and label
+        // TODO: Scroll textview into view after error appears or gets longer.
         if let errorString = self.spec.error {
             self.textview.layer.borderColor = UIColor.systemRed.cgColor
             self.textview.layer.borderWidth = TextfieldWidget.BORDER_WIDTH * 2.0
@@ -204,16 +186,16 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
                 self.errorImageView.heightAnchor.constraint(equalToConstant: 30),
                 self.errorImageView.widthAnchor.constraint(equalTo: self.errorImageView.heightAnchor),
 
-                self.errorImageView.topAnchor.constraint(greaterThanOrEqualTo: self.textview.bottomAnchor, constant: 4.0),
+                self.errorImageView.topAnchor.constraint(greaterThanOrEqualTo: prevBottomAnchor, constant: 4.0),
                 self.errorImageView.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 4.0),
                 self.errorImageView.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -4.0),
 
-                self.errorLabel.topAnchor.constraint(greaterThanOrEqualTo: self.textview.bottomAnchor, constant: 4.0),
+                self.errorLabel.topAnchor.constraint(greaterThanOrEqualTo: prevBottomAnchor, constant: 4.0),
                 self.errorLabel.leftAnchor.constraint(equalTo: self.errorImageView.rightAnchor, constant: 4.0),
                 self.errorLabel.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -4.0),
                 self.errorLabel.centerYAnchor.constraint(equalTo: self.errorImageView.centerYAnchor),
-                self.errorLabel.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -4.0),
             ])
+            prevBottomAnchor = self.errorLabel.bottomAnchor
         } else {
             self.textview.layer.borderColor = TextfieldWidget.BORDER_COLOR.cgColor
             self.textview.layer.borderWidth = TextfieldWidget.BORDER_WIDTH
@@ -221,7 +203,30 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
             self.errorLabel.text = nil
             self.errorImageView.removeFromSuperview()
             self.errorLabel.removeFromSuperview()
-            constraints.append(self.textview.bottomAnchor.constraint(equalTo: self.container.bottomAnchor, constant: -4.0))
+        }
+
+        // Textview
+        constraints.append(self.textview.topAnchor.constraint(greaterThanOrEqualTo: prevBottomAnchor, constant: 4.0))
+        switch self.spec.maxLines {
+        case nil, 1:
+            constraints.append(self.textview.heightAnchor.constraint(greaterThanOrEqualToConstant: 20))
+        default:
+            constraints.append(self.textview.heightAnchor.constraint(greaterThanOrEqualToConstant: 40))
+        }
+        let keyboardTypeChanged = self.textview.keyboardType != self.spec.allow.keyboardType()
+        if keyboardTypeChanged {
+            print("TextfieldWidget(\(self.spec.varName) keyboardType changed \(self.textview.keyboardType) -> \(self.spec.allow.keyboardType())")
+            self.textview.keyboardType = self.spec.allow.keyboardType()
+        }
+        let newAutocapType = self.spec.autoCapitalize?.textAutocapitalizationType() ?? .none
+        let autocapTypeChanged = self.textview.autocapitalizationType != newAutocapType
+        if autocapTypeChanged {
+            print("TextfieldWidget(\(self.spec.varName) autocapitalizationType changed \(self.textview.autocapitalizationType) -> \(newAutocapType)")
+            self.textview.autocapitalizationType = newAutocapType
+        }
+        if keyboardTypeChanged || autocapTypeChanged {
+            print("TextfieldWidget(\(self.spec.varName) reloadInputViews()")
+            self.textview.reloadInputViews()
         }
         self.constraintSet.set(constraints)
     }
@@ -242,6 +247,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
                 if Task.isCancelled {
                     return
                 }
+                // TODO: Don't show modal on RPC or on RPC error.
                 let _ = await self.session?.doActionsAsync(pageKey: self.spec.pageKey, [.rpc(rpc)])
             }
         }
