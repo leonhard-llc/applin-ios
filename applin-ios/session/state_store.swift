@@ -208,7 +208,7 @@ class StateStore {
     }
 
     public func read<R>(_ f: (_: ApplinState) -> R) -> R {
-        print("StateStore.read")
+        //print("StateStore.read")
         self.lock.lock()
         defer {
             self.lock.unlock()
@@ -219,7 +219,7 @@ class StateStore {
     }
 
     public func update<R>(_ f: (_: inout ApplinState) -> R) -> R {
-        print("StateStore.update")
+        //print("StateStore.update")
         self.lock.lock()
         defer {
             self.lock.unlock()

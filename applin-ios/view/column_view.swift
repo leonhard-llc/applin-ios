@@ -36,7 +36,7 @@ class ColumnView: UIView {
     }
 
     func update(_ alignment: ApplinHAlignment, separator: UIColor?, spacing: Float32, subviews: [UIView]) {
-        print("ColumnView.update alignment=\(alignment) separator=\(String(describing: separator)) spacing=\(spacing) subviews=\(subviews)")
+        //print("ColumnView.update alignment=\(alignment) separator=\(String(describing: separator)) spacing=\(spacing) subviews=\(subviews)")
         self.alignment = alignment
         self.orderedSubviews = subviews
         self.separatorColor = separator
@@ -44,14 +44,14 @@ class ColumnView: UIView {
         let newSubviews = Set(subviews)
         for subview in self.subviews {
             if !newSubviews.contains(subview) {
-                print("ColumnView.update remove \(subview)")
+                //print("ColumnView.update remove \(subview)")
                 subview.removeFromSuperview()
             }
         }
         let existingSubviews = Set(self.subviews)
         for subview in subviews {
             if !existingSubviews.contains(subview) {
-                print("ColumnView.update add \(subview)")
+                //print("ColumnView.update add \(subview)")
                 self.addSubview(subview)
             }
         }

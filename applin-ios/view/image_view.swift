@@ -208,7 +208,7 @@ class ImageView: UIView {
     }
 
     func update(_ url: URL, aspectRatio: Double, _ disposition: ApplinDisposition) {
-        print("ImageView.update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
+        //print("ImageView.update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
         self.lock.lock()
         defer {
             self.lock.unlock()

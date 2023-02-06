@@ -119,7 +119,7 @@ class ApplinConnection {
         defer {
             self.state = .connectError
         }
-        print("ApplinConnection reading")
+        //print("ApplinConnection reading")
         for try await line in asyncBytes.lines {
             if Task.isCancelled {
                 return
