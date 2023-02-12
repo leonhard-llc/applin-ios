@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ColumnSpec: Equatable, Hashable {
+struct ColumnSpec: Equatable, Hashable, ToSpec {
     static let TYP = "column"
     let widgets: [Spec]
     let alignment: ApplinHAlignment
@@ -13,17 +13,21 @@ struct ColumnSpec: Equatable, Hashable {
         self.spacing = item.spacing ?? 0.0
     }
 
-    init(_ widgets: [Spec], _ alignment: ApplinHAlignment, spacing: Float32) {
-        self.widgets = widgets
-        self.alignment = alignment
-        self.spacing = spacing
-    }
-
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ColumnSpec.TYP)
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         item.setAlign(self.alignment)
         return item
+    }
+
+    init(_ widgets: [ToSpec]) {
+        self.widgets = widgets.map({ widget in widget.toSpec() })
+        self.alignment = .start
+        self.spacing = 0.0
+    }
+
+    func toSpec() -> Spec {
+        Spec(.column(self))
     }
 
     func keys() -> [String] {

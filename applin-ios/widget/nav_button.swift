@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct NavButtonSpec: Equatable, Hashable {
+struct NavButtonSpec: Equatable, Hashable, ToSpec {
     static let TYP = "nav-button"
     let actions: [ActionSpec]
     let pageKey: String
@@ -24,6 +24,18 @@ struct NavButtonSpec: Equatable, Hashable {
         item.subText = self.subText
         item.text = self.text
         return item
+    }
+
+    init(pageKey: String, photoUrl: URL? = nil, text: String, subText: String? = nil, _ actions: [ActionSpec]) {
+        self.actions = actions
+        self.pageKey = pageKey
+        self.photoUrl = photoUrl
+        self.subText = subText
+        self.text = text
+    }
+
+    func toSpec() -> Spec {
+        Spec(.navButton(self))
     }
 
     func keys() -> [String] {

@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct CheckboxSpec: Equatable, Hashable {
+struct CheckboxSpec: Equatable, Hashable, ToSpec {
     static let TYP = "checkbox"
     let pageKey: String
     let initialBool: Bool?
@@ -24,6 +24,18 @@ struct CheckboxSpec: Equatable, Hashable {
         item.text = self.text
         item.varName = self.varName
         return item
+    }
+
+    init(pageKey: String, varName: String, initialBool: Bool? = nil, text: String? = nil, rpc: String? = nil) {
+        self.pageKey = pageKey
+        self.initialBool = initialBool
+        self.rpc = rpc
+        self.text = text
+        self.varName = varName
+    }
+
+    func toSpec() -> Spec {
+        Spec(.checkbox(self))
     }
 
     func keys() -> [String] {

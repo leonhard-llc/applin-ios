@@ -15,20 +15,6 @@ struct NavPageSpec: Equatable {
     let title: String
     let widget: Spec
 
-    init(
-            pageKey: String,
-            title: String,
-            widget: Spec,
-            start: StartEnum = .defaultBackButton,
-            end: Spec? = nil
-    ) {
-        self.connectionMode = .disconnect
-        self.end = end
-        self.start = start
-        self.title = title
-        self.widget = widget
-    }
-
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.end = try item.optEnd(config, pageKey: pageKey)
@@ -44,14 +30,6 @@ struct NavPageSpec: Equatable {
         }
         self.title = try item.requireTitle()
         self.widget = try item.requireWidget(config, pageKey: pageKey)
-    }
-
-    func controllerClass() -> AnyClass {
-        NavPageController.self
-    }
-
-    func newController(_ navController: NavigationController?, _ session: ApplinSession?, _ cache: WidgetCache) -> PageController {
-        NavPageController(navController, session, cache)
     }
 
     func toJsonItem() -> JsonItem {
@@ -70,6 +48,33 @@ struct NavPageSpec: Equatable {
         }
         item.widget = self.widget.toJsonItem()
         return item
+    }
+
+    init(
+            pageKey: String,
+            title: String,
+            start: StartEnum = .defaultBackButton,
+            end: Spec? = nil,
+            connectionMode: ConnectionMode = .disconnect,
+            _ widget: ToSpec
+    ) {
+        self.connectionMode = connectionMode
+        self.end = end
+        self.start = start
+        self.title = title
+        self.widget = widget.toSpec()
+    }
+
+    func toSpec() -> PageSpec {
+        .navPage(self)
+    }
+
+    func controllerClass() -> AnyClass {
+        NavPageController.self
+    }
+
+    func newController(_ navController: NavigationController?, _ session: ApplinSession?, _ cache: WidgetCache) -> PageController {
+        NavPageController(navController, session, cache)
     }
 
     func vars() -> [(String, Var)] {

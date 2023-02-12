@@ -1,12 +1,16 @@
 import Foundation
 import UIKit
 
-struct LastErrorTextSpec: Equatable, Hashable {
+struct LastErrorTextSpec: Equatable, Hashable, ToSpec {
     static let TYP = "last-error-text"
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(LastErrorTextSpec.TYP)
         return item
+    }
+
+    func toSpec() -> Spec {
+        Spec(.lastErrorText(self))
     }
 
     func keys() -> [String] {

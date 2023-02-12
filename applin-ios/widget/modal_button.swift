@@ -26,6 +26,14 @@ struct ModalButtonSpec: Equatable, Hashable {
         return item
     }
 
+    init(text: String, isCancel: Bool = false, isDefault: Bool = false, isDestructive: Bool = false, _ actions: [ActionSpec]) {
+        self.actions = actions
+        self.isCancel = isCancel
+        self.isDefault = isDefault
+        self.isDestructive = isDestructive
+        self.text = text
+    }
+
     func style() -> UIAlertAction.Style {
         if self.isCancel {
             return .cancel

@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct TextSpec: Equatable, Hashable {
+struct TextSpec: Equatable, Hashable, ToSpec {
     static let TYP = "text"
     let text: String
 
@@ -17,6 +17,10 @@ struct TextSpec: Equatable, Hashable {
         let item = JsonItem(TextSpec.TYP)
         item.text = self.text
         return item
+    }
+
+    func toSpec() -> Spec {
+        Spec(.text(self))
     }
 
     func keys() -> [String] {

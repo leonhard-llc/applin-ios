@@ -6,13 +6,9 @@ import UIKit
 //         Also, the APIs of UITableView, UITableViewDataSource, and UITableViewDiffableDataSource are extremely hard
 //         to use.
 
-struct FormSpec: Equatable, Hashable {
+struct FormSpec: Equatable, Hashable, ToSpec {
     static let TYP = "form"
     let widgets: [Spec]
-
-    init(_ widgets: [Spec]) {
-        self.widgets = widgets
-    }
 
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.widgets = try item.optWidgets(config, pageKey: pageKey)?.filter({ spec in !spec.is_empty() }) ?? []
@@ -22,6 +18,14 @@ struct FormSpec: Equatable, Hashable {
         let item = JsonItem(FormSpec.TYP)
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
+    }
+
+    init(_ widgets: [ToSpec]) {
+        self.widgets = widgets.map({ widget in widget.toSpec() })
+    }
+
+    func toSpec() -> Spec {
+        Spec(.form(self))
     }
 
     func keys() -> [String] {

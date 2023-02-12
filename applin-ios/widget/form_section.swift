@@ -1,15 +1,10 @@
 import Foundation
 import UIKit
 
-struct FormSectionSpec: Equatable, Hashable {
+struct FormSectionSpec: Equatable, Hashable, ToSpec {
     static let TYP = "form-section"
     let optTitle: String?
     let widgets: [Spec]
-
-    init(_ title: String?, _ widgets: [Spec]) {
-        self.optTitle = title
-        self.widgets = widgets
-    }
 
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.optTitle = item.title
@@ -21,6 +16,15 @@ struct FormSectionSpec: Equatable, Hashable {
         item.title = self.optTitle
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
+    }
+
+    init(_ title: String?, _ widgets: [ToSpec]) {
+        self.optTitle = title
+        self.widgets = widgets.map({ widget in widget.toSpec() })
+    }
+
+    func toSpec() -> Spec {
+        Spec(.formSection(self))
     }
 
     func keys() -> [String] {

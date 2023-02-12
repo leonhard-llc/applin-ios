@@ -7,24 +7,10 @@ struct PlainPageSpec: Equatable {
     let title: String?
     let widget: Spec
 
-    init(title: String?, _ widget: Spec) {
-        self.connectionMode = .disconnect
-        self.title = title
-        self.widget = widget
-    }
-
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.title = item.title
         self.widget = try item.requireWidget(config, pageKey: pageKey)
-    }
-
-    func controllerClass() -> AnyClass {
-        PlainPageController.self
-    }
-
-    func newController() -> PageController {
-        PlainPageController()
     }
 
     func toJsonItem() -> JsonItem {
@@ -34,6 +20,24 @@ struct PlainPageSpec: Equatable {
         item.title = self.title
         item.widget = self.widget.toJsonItem()
         return item
+    }
+
+    init(title: String?, connectionMode: ConnectionMode = .disconnect, _ widget: ToSpec) {
+        self.connectionMode = connectionMode
+        self.title = title
+        self.widget = widget.toSpec()
+    }
+
+    func toSpec() -> PageSpec {
+        .plainPage(self)
+    }
+
+    func controllerClass() -> AnyClass {
+        PlainPageController.self
+    }
+
+    func newController() -> PageController {
+        PlainPageController()
     }
 
     func vars() -> [(String, Var)] {

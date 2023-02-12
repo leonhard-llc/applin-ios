@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ScrollSpec: Equatable, Hashable {
+struct ScrollSpec: Equatable, Hashable, ToSpec {
     static let TYP = "scroll"
     let sub: Spec
 
@@ -9,14 +9,18 @@ struct ScrollSpec: Equatable, Hashable {
         self.sub = try item.requireWidget(config, pageKey: pageKey)
     }
 
-    init(_ sub: Spec) {
-        self.sub = sub
-    }
-
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ScrollSpec.TYP)
         item.widget = self.sub.toJsonItem()
         return item
+    }
+
+    init(_ sub: ToSpec) {
+        self.sub = sub.toSpec()
+    }
+
+    func toSpec() -> Spec {
+        Spec(.scroll(self))
     }
 
     func keys() -> [String] {

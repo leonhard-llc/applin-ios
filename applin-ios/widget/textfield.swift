@@ -1,10 +1,10 @@
 import Foundation
 import UIKit
 
-struct TextfieldSpec: Equatable, Hashable {
+struct TextfieldSpec: Equatable, Hashable, ToSpec {
     static let TYP = "textfield"
 
-    let allow: ApplinAllow
+    let allow: ApplinAllow?
     let autoCapitalize: ApplinAutoCapitalize?
     let error: String?
     let initialString: String?
@@ -45,8 +45,42 @@ struct TextfieldSpec: Equatable, Hashable {
         return item
     }
 
+    init(
+            pageKey: String,
+            varName: String,
+            allow: ApplinAllow? = nil,
+            autoCapitalize: ApplinAutoCapitalize? = nil,
+            error: String? = nil,
+            initialString: String? = nil,
+            label: String? = nil,
+            maxChars: UInt32? = nil,
+            maxLines: UInt32? = nil,
+            minChars: UInt32? = nil,
+            rpc: String? = nil
+    ) throws {
+        self.allow = allow
+        self.autoCapitalize = autoCapitalize
+        self.error = error
+        self.initialString = initialString
+        self.label = label
+        self.maxChars = maxChars
+        self.maxLines = maxLines
+        self.minChars = minChars
+        self.pageKey = pageKey
+        self.rpc = rpc
+        self.varName = varName
+    }
+
+    func toSpec() -> Spec {
+        Spec(.textfield(self))
+    }
+
     func keys() -> [String] {
         ["textfield:\(self.varName)"]
+    }
+
+    func keyboardType() -> UIKeyboardType {
+        self.allow?.keyboardType() ?? .default
     }
 
     func priority() -> WidgetPriority {
@@ -213,10 +247,10 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         default:
             constraints.append(self.textview.heightAnchor.constraint(greaterThanOrEqualToConstant: 40))
         }
-        let keyboardTypeChanged = self.textview.keyboardType != self.spec.allow.keyboardType()
+        let keyboardTypeChanged = self.textview.keyboardType != self.spec.keyboardType()
         if keyboardTypeChanged {
-            print("TextfieldWidget(\(self.spec.varName) keyboardType changed \(self.textview.keyboardType) -> \(self.spec.allow.keyboardType())")
-            self.textview.keyboardType = self.spec.allow.keyboardType()
+            print("TextfieldWidget(\(self.spec.varName) keyboardType changed \(self.textview.keyboardType) -> \(self.spec.keyboardType())")
+            self.textview.keyboardType = self.spec.keyboardType()
         }
         let newAutocapType = self.spec.autoCapitalize?.textAutocapitalizationType() ?? .none
         let autocapTypeChanged = self.textview.autocapitalizationType != newAutocapType

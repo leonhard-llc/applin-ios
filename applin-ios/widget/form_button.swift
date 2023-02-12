@@ -1,19 +1,12 @@
 import Foundation
 import UIKit
 
-struct FormButtonSpec: Equatable, Hashable {
+struct FormButtonSpec: Equatable, Hashable, ToSpec {
     static let TYP = "form-button"
     let actions: [ActionSpec]
     let alignment: ApplinHAlignment?
     let pageKey: String
     let text: String
-
-    init(pageKey: String, _ actions: [ActionSpec], text: String) {
-        self.actions = actions
-        self.alignment = .center
-        self.pageKey = pageKey
-        self.text = text
-    }
 
     init(pageKey: String, _ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
@@ -28,6 +21,17 @@ struct FormButtonSpec: Equatable, Hashable {
         item.setAlign(self.alignment)
         item.text = self.text
         return item
+    }
+
+    init(pageKey: String, text: String, _ actions: [ActionSpec]) {
+        self.actions = actions
+        self.alignment = .center
+        self.pageKey = pageKey
+        self.text = text
+    }
+
+    func toSpec() -> Spec {
+        Spec(.formButton(self))
     }
 
     func keys() -> [String] {

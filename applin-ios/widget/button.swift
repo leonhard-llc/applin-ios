@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ButtonSpec: Equatable, Hashable {
+struct ButtonSpec: Equatable, Hashable, ToSpec {
     static let TYP = "button"
     let actions: [ActionSpec]
     let pageKey: String
@@ -13,17 +13,21 @@ struct ButtonSpec: Equatable, Hashable {
         self.text = try item.requireText()
     }
 
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(ButtonSpec.TYP)
+        item.actions = self.actions.map({ action in action.toString() })
+        item.text = self.text
+        return item
+    }
+
     init(pageKey: String, text: String, actions: [ActionSpec] = []) {
         self.pageKey = pageKey
         self.text = text
         self.actions = actions
     }
 
-    func toJsonItem() -> JsonItem {
-        let item = JsonItem(ButtonSpec.TYP)
-        item.actions = self.actions.map({ action in action.toString() })
-        item.text = self.text
-        return item
+    func toSpec() -> Spec {
+        Spec(.button(self))
     }
 
     func keys() -> [String] {

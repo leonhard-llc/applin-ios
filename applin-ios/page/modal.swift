@@ -33,16 +33,6 @@ struct ModalSpec: Equatable {
     let typ: String
     let widgets: [ModalButtonSpec]
 
-    init(pageKey: String, _ kind: ModalKind, title: String, text: String?, _ widgets: [ModalButtonSpec]) {
-        self.connectionMode = .disconnect
-        self.kind = kind
-        self.pageKey = pageKey
-        self.typ = kind.typ()
-        self.title = title
-        self.text = text
-        self.widgets = widgets
-    }
-
     init(pageKey: String, _ kind: ModalKind, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.kind = kind
@@ -73,6 +63,20 @@ struct ModalSpec: Equatable {
         item.title = self.title
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
+    }
+
+    init(pageKey: String, kind: ModalKind, title: String, text: String? = nil, _ widgets: [ModalButtonSpec]) {
+        self.connectionMode = .disconnect
+        self.kind = kind
+        self.pageKey = pageKey
+        self.typ = kind.typ()
+        self.title = title
+        self.text = text
+        self.widgets = widgets
+    }
+
+    func toSpec() -> PageSpec {
+        .modal(self)
     }
 
     func toAlert(_ session: ApplinSession) -> AlertController {

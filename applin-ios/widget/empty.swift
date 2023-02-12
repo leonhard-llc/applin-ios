@@ -1,12 +1,16 @@
 import Foundation
 import UIKit
 
-struct EmptySpec: Equatable, Hashable {
+struct EmptySpec: Equatable, Hashable, ToSpec {
     static let TYP = "empty"
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(EmptySpec.TYP)
         return item
+    }
+
+    func toSpec() -> Spec {
+        Spec(.empty(self))
     }
 
     func keys() -> [String] {
