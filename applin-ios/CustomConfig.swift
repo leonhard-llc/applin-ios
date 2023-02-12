@@ -1,6 +1,6 @@
 import Foundation
 
-class Config: ConfigProto {
+class CustomConfig: CustomConfigProto {
     static let APPSTORE_URL = URL(string: "itms-apps://itunes.apple.com/app/id00000000000")!
 
     func serverUrl() -> URL {
@@ -29,9 +29,8 @@ class Config: ConfigProto {
                     TODO: Replace with privacy policy.
                     """
             ))).toSpec(),
-            // Applin pushes this modal when it fails to make an HTTP request to the server.
-            "/applin-network-error-modal": ModalSpec(
-                    pageKey: "/applin-network-error-modal",
+            APPLIN_NETWORK_ERROR_PAGE_KEY: ModalSpec(
+                    pageKey: APPLIN_NETWORK_ERROR_PAGE_KEY,
                     kind: .alert,
                     title: "Connection Problem",
                     text: "Could not contact server.  Check your connection and try again.",
@@ -43,9 +42,8 @@ class Config: ConfigProto {
                         ModalButtonSpec(text: "OK", isDefault: true, [.pop]),
                     ]
             ).toSpec(),
-            // Applin pushes this modal when the server returns a non-200 response.
-            "/applin-rpc-error-modal": ModalSpec(
-                    pageKey: "/applin-rpc-error-modal",
+            APPLIN_RPC_ERROR_PAGE_KEY: ModalSpec(
+                    pageKey: APPLIN_RPC_ERROR_PAGE_KEY,
                     kind: .alert,
                     // TODO: Include error code in title.
                     title: "Error",
@@ -79,6 +77,9 @@ class Config: ConfigProto {
                         ModalButtonSpec(text: "OK", isDefault: true, [.pop]),
                     ]
             ).toSpec(),
+            APPLIN_STATE_LOAD_ERROR_PAGE_KEY: PlainPageSpec(title: "Connect", ColumnSpec([
+                FormButtonSpec(pageKey: APPLIN_STATE_LOAD_ERROR_PAGE_KEY, text: "Connect", [.poll]),
+            ])).toSpec(),
         ]
     }
 }

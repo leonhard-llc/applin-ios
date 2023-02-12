@@ -11,8 +11,8 @@
 		36EBC01989EC1917F94B37BE /* widget_cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCA01EB2B14A89C9EB74B /* widget_cache.swift */; };
 		36EBC100C096D0CEE7D5288B /* session_status.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCAD457C2BC103586A70C /* session_status.swift */; };
 		36EBC164AAAE4057718E9612 /* atomic_bool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC4492316F3F5B6AE0615 /* atomic_bool.swift */; };
+		36EBC1669D07E90DE864AC7D /* CustomConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC2D560A957291769F677 /* CustomConfig.swift */; };
 		36EBC1693A9EC7BB3155AE5B /* form_button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC960F01F9A285F600570 /* form_button.swift */; };
-		36EBC1669D07E90DE864AC7D /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC2D560A957291769F677 /* Config.swift */; };
 		36EBC245A01DDE0A822A6EA4 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 36EBC1440B64839FC0AB1B5D /* logo.png */; };
 		36EBC389DC6A8BB8BEAEFD19 /* util.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC10D3F4C74A515298A7A /* util.swift */; };
 		36EBC3A535AF66B4D4347E44 /* navigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCBA78DCB4741A74E8072 /* navigation.swift */; };
@@ -92,12 +92,12 @@
 		36EBC1440B64839FC0AB1B5D /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 		36EBC1F3397545904FD885DE /* json.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = json.swift; sourceTree = "<group>"; };
 		36EBC277DCF9C9B496B4A96B /* tappable_view.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = tappable_view.swift; sourceTree = "<group>"; };
+		36EBC2D560A957291769F677 /* CustomConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomConfig.swift; sourceTree = "<group>"; };
 		36EBC2C3C48EB2D794D16AB7 /* json_item.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = json_item.swift; sourceTree = "<group>"; };
 		36EBC43E4CA22293A5DF405A /* atomic_int64.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = atomic_int64.swift; sourceTree = "<group>"; };
 		36EBC4492316F3F5B6AE0615 /* atomic_bool.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = atomic_bool.swift; sourceTree = "<group>"; };
 		36EBC48E9DF567509E5B1121 /* mutex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = mutex.swift; sourceTree = "<group>"; };
 		36EBC49B2A28E23E7556A4ED /* error_text.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = error_text.swift; sourceTree = "<group>"; };
-		36EBC2D560A957291769F677 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		36EBC4E51D92FA9D8B56927B /* error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = error.swift; sourceTree = "<group>"; };
 		36EBC5430B831FFCC6098B08 /* .swiftlint.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		36EBC6C3A01FADBD0060FDB8 /* checkbox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = checkbox.swift; sourceTree = "<group>"; };
@@ -302,7 +302,7 @@
 				36EBC1F47C5C0A6657BADF43 /* view */,
 				36EBC2700F07B71C4CE3D770 /* session */,
 				36EBC717BC709C06B9F3D700 /* default.json */,
-				36EBC2D560A957291769F677 /* Config.swift */,
+				36EBC2D560A957291769F677 /* CustomConfig.swift */,
 				36EBC1440B64839FC0AB1B5D /* logo.png */,
 				36EBC4E83FB9588C73211CF7 /* util */,
 			);
@@ -509,7 +509,7 @@
 				36EBC8512BA87075D55A3D2B /* json_item.swift in Sources */,
 				36EBCEA29F95470D4FA3C8ED /* background_actor.swift in Sources */,
 				36EBCCA82D365BCED9B0877B /* applin_config.swift in Sources */,
-				36EBC1669D07E90DE864AC7D /* Config.swift in Sources */,
+				36EBC1669D07E90DE864AC7D /* CustomConfig.swift in Sources */,
 				36EBC71BD57C2B7370EA5FE1 /* image_view.swift in Sources */,
 				36EBCE5F7EE78CCF0D510305 /* mutex.swift in Sources */,
 				36EBC164AAAE4057718E9612 /* atomic_bool.swift in Sources */,
