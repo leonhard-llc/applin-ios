@@ -1,5 +1,10 @@
 import UIKit
 
+protocol ConfigProto {
+    func serverUrl() -> URL
+    func defaultPages(_ config: ApplinConfig) -> [String: PageSpec]
+}
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     let config: ApplinConfig
