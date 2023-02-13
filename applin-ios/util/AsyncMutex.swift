@@ -2,21 +2,22 @@ import Foundation
 
 class AsyncMutex<T> {
     class Guard<T> {
+        private let lockGuard: AsyncLock.Guard
         private let mutex: AsyncMutex<T>
         public var value: T
 
-        init(_ mutex: AsyncMutex<T>, _ value: T) {
+        init(_ lockGuard: AsyncLock.Guard, _ mutex: AsyncMutex<T>) {
+            self.lockGuard = lockGuard
             self.mutex = mutex
-            self.value = value
+            self.value = self.mutex.value
         }
 
         deinit {
-            self.mutex.unlock(self.value)
+            self.mutex.value = self.value
         }
     }
 
-    private let locked = AtomicBool(false)
-    private let nsLock = NSLock()
+    private let asyncLock = AsyncLock()
     private var value: T
 
     init(value: T) {
@@ -24,29 +25,11 @@ class AsyncMutex<T> {
     }
 
     func lock() -> Guard<T> {
-        self.nsLock.lock()
-        let wasLocked = self.locked.store(true)
-        assert(!wasLocked)
-        return Guard(self, self.value)
+        Guard(self.asyncLock.lock(), self)
     }
 
     /// Throws `CancellationError` when the task is cancelled.
     func lockAsync() async throws -> Guard<T> {
-        while true {
-            if self.locked.load() {
-                try await Task.sleep(nanoseconds: 50_000_000)
-            } else if self.nsLock.lock(before: Date.now + TimeInterval(0.050)) {
-                let wasLocked = self.locked.store(true)
-                assert(!wasLocked)
-                return Guard(self, self.value)
-            }
-        }
-    }
-
-    private func unlock(_ value: T) {
-        self.value = value
-        self.nsLock.unlock()
-        let wasLocked = self.locked.store(false)
-        assert(wasLocked)
+        Guard(try await self.asyncLock.lockAsync(), self)
     }
 }
