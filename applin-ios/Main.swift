@@ -7,6 +7,14 @@ let APPLIN_NETWORK_ERROR_PAGE_KEY = "/applin-network-error"
 /// Applin pushes this modal when it fails to load the state file.
 /// Show the user a Connect button so they can retry and deal with auto errors.
 let APPLIN_STATE_LOAD_ERROR_PAGE_KEY = "/applin-state-load-error"
+/// Applin pushes this page the page key is not found in the page set.
+let APPLIN_PAGE_NOT_FOUND_PAGE_KEY = "/applin-page-not-found"
+/// Applin pushes this page when the server returns a user error message.
+/// Include an ErrorDetails widget to display the message.
+let APPLIN_USER_ERROR_PAGE_KEY = "/applin-user-error"
+/// Applin pushes this page when the app has an error.
+/// Include an ErrorDetails widget to display the message.
+let APPLIN_APP_ERROR_PAGE_KEY = "/applin-app-error"
 
 protocol CustomConfigProto {
     func serverUrl() -> URL

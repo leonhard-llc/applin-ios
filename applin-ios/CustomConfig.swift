@@ -56,6 +56,19 @@ class CustomConfig: CustomConfigProto {
                         ModalButtonSpec(text: "OK", isDefault: true, [.pop]),
                     ]
             ).toSpec(),
+            APPLIN_APP_ERROR_PAGE_KEY: ModalSpec(
+                    pageKey: APPLIN_APP_ERROR_PAGE_KEY,
+                    kind: .alert,
+                    // TODO: Include error code in title.
+                    title: "Error",
+                    text: "Error in app.  Please try again, quit and reopen the app. or update the app.",
+                    [
+                        ModalButtonSpec(text: "Update App", [.launchUrl(Self.APPSTORE_URL)]),
+                        ModalButtonSpec(text: "Error Details", [.push("/error-details")]),
+                        ModalButtonSpec(text: "Support", [.push("/support")]),
+                        ModalButtonSpec(text: "OK", isDefault: true, [.pop]),
+                    ]
+            ).toSpec(),
             "/error-details": NavPageSpec(pageKey: "/error-details", title: "Error Details", ScrollSpec(
                     LastErrorTextSpec()
             )).toSpec(),
@@ -80,6 +93,18 @@ class CustomConfig: CustomConfigProto {
             APPLIN_STATE_LOAD_ERROR_PAGE_KEY: PlainPageSpec(title: "Connect", ColumnSpec([
                 FormButtonSpec(pageKey: APPLIN_STATE_LOAD_ERROR_PAGE_KEY, text: "Connect", [.poll]),
             ])).toSpec(),
+            APPLIN_PAGE_NOT_FOUND_PAGE_KEY: NavPageSpec(
+                    pageKey: APPLIN_PAGE_NOT_FOUND_PAGE_KEY,
+                    title: "Not Found",
+                    ColumnSpec([TextSpec("Page not found.")])
+            ).toSpec(),
+            APPLIN_USER_ERROR_PAGE_KEY: ModalSpec(
+                    pageKey: APPLIN_USER_ERROR_PAGE_KEY,
+                    kind: .drawer,
+                    title: "Problem",
+                    text: "${ERROR_DETAILS}",
+                    [ModalButtonSpec(text: "OK", isDefault: true, [.pop])]
+            ).toSpec(),
         ]
     }
 }
