@@ -16,11 +16,13 @@ class AtomicBool {
         return self.value
     }
 
-    public func store(_ newValue: Bool) {
+    public func store(_ newValue: Bool) -> Bool {
         self.nsLock.lock()
         defer {
             self.nsLock.unlock()
         }
+        let oldValue = self.value
         self.value = newValue
+        return oldValue
     }
 }
