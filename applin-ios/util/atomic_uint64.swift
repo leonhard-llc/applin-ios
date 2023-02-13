@@ -1,10 +1,10 @@
 import Foundation
 
-class AtomicInt64 {
+class AtomicUInt64 {
     private let nsLock = NSLock()
-    private var value: Int64 = 0
+    private var value: UInt64 = 0
 
-    public func load() -> Int64 {
+    public func load() -> UInt64 {
         self.nsLock.lock()
         defer {
             self.nsLock.unlock()
