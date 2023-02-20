@@ -87,6 +87,7 @@ class ColumnView: UIView {
             }
         }
         self.constraintSet.set(newConstraints)
+        self.setNeedsDisplay()
     }
 
     override func draw(_ rect: CGRect) {
