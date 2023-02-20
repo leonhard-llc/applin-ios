@@ -69,8 +69,8 @@ class ApplinLock {
     }
 
     private func unlock() {
-        self.nsLock.unlock()
         let wasLocked = self.locked.store(false)
+        self.nsLock.unlock()
         assert(wasLocked)
     }
 }
