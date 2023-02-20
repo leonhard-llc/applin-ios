@@ -272,7 +272,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         self.session?.mutex.lock({ state in
             state.setStringVar(self.spec.varName, self.textview.text.isEmpty ? nil : self.textview.text)
         })
-        if let rpc = self.spec.rpc {
+        if let rpcPath = self.spec.rpc {
             self.lock.lock()
             defer {
                 self.lock.unlock()
@@ -283,8 +283,13 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
                 if Task.isCancelled {
                     return
                 }
-                // TODO: Don't show modal on RPC or on RPC error.
-                let _ = await self.session?.doActionsAsync(pageKey: self.spec.pageKey, [.rpc(rpc)])
+                do {
+                    _ = try await self.session?.rpcCaller?.rpc(optPageKey: self.spec.pageKey, path: rpcPath, method: "POST")
+                } catch let e as ApplinError {
+                    print("TextField rpc error: \(e)")
+                } catch let e {
+                    print("TextField rpc unexpected error: \(e)")
+                }
             }
         }
     }
