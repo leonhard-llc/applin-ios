@@ -1,233 +1,141 @@
 import Foundation
 
-class StateStore {
-    struct FileContents: Codable {
-        var boolVars: [String: Bool]?
-        var stringVars: [String: String]?
-        var pages: [String: JsonItem]?
-        var stack: [String]?
+func stateFilePath(_ config: ApplinConfig) -> String {
+    config.dataDirPath + "/state.json"
+}
 
-        func toApplinState(_ config: ApplinConfig, throwOnPageError: Bool) throws -> ApplinState {
-            var vars: [String: Var] = [:]
-            for (name, value) in self.boolVars ?? [:] {
-                vars[name] = .boolean(value)
-            }
-            for (name, value) in self.stringVars ?? [:] {
-                vars[name] = .string(value)
-            }
-            var pages: [String: PageSpec] = [:]
-            for (key, item) in self.pages ?? [:] {
-                do {
-                    pages[key] = try PageSpec(config, pageKey: key, item)
-                } catch {
-                    if throwOnPageError {
-                        throw "error in page '\(key)': \(error)"
-                    } else {
-                        print("WARNING: error in page '\(key)': \(error)")
-                    }
-                }
-            }
-            let stack = self.stack ?? ["/"]
-            return ApplinState(pages: pages, stack: stack, vars: vars)
+struct StateFileContents: Codable {
+    var boolVars: [String: Bool]?
+    var stringVars: [String: String]?
+    var pages: [String: JsonItem]?
+    var stack: [String]?
+}
+
+func loadStateFile(_ config: ApplinConfig) async throws -> ApplinState? {
+    let path = stateFilePath(config)
+    // Swift's standard library provides no documented way to tell if a file read error is due to file not found.
+    // So we check for file existence separately.
+    if !(await fileExists(path: path)) {
+        return nil
+    }
+    let bytes: Data
+    do {
+        bytes = try Data(contentsOf: URL(fileURLWithPath: path))
+    } catch {
+        throw "error reading state file '\(path)': \(error)"
+    }
+    //print("state file contents: ")
+    //FileHandle.standardOutput.write(bytes)
+    //print("")
+    let contents: StateFileContents
+    do {
+        contents = try decodeJson(bytes)
+    } catch {
+        throw "error decoding state file '\(path)': \(error)"
+    }
+    var state = ApplinState()
+    for (name, value) in contents.boolVars ?? [:] {
+        state.vars[name] = .boolean(value)
+    }
+    for (name, value) in contents.stringVars ?? [:] {
+        state.vars[name] = .string(value)
+    }
+    for (key, item) in contents.pages ?? [:] {
+        do {
+            state.pages[key] = try PageSpec(config, pageKey: key, item)
+        } catch {
+            throw "error decoding state file '\(path)': error in page '\(key)': \(error)"
         }
     }
+    state.stack = contents.stack ?? ["/"]
+    return state
+}
 
-    static let FILE_NAME = "state.json"
-
-    public static func loadDefaultJson(_ config: ApplinConfig) async throws -> ApplinState {
-        let bytes = try await readBundleFile(filepath: "default.json")
-        let contents: FileContents
-        do {
-            contents = try decodeJson(bytes)
-        } catch {
-            throw ApplinError.appError("error decoding 'default.json': \(error)")
-        }
-        do {
-            return try contents.toApplinState(config, throwOnPageError: true)
-        } catch {
-            throw "error in 'default.json': \(error)"
-        }
-    }
-
-    public static func loadSavedState(_ config: ApplinConfig) async -> ApplinState? {
-        let path = config.dataDirPath + "/" + StateStore.FILE_NAME
-        // Swift's standard library provides no documented way to tell if a file read error is due to file not found.
-        // So we check for file existence separately.
-        if !(await fileExists(path: path)) {
-            print("StateStore: state file not found: \(path)")
-            return nil
-        }
-        let bytes: Data
-        do {
-            bytes = try await readFile(path: path)
-        } catch {
-            print("ERROR: \(error)")
-            return nil
-        }
-        //print("state file contents: ")
-        //FileHandle.standardOutput.write(bytes)
-        //print("")
-        let contents: FileContents
-        do {
-            contents = try decodeJson(bytes)
-        } catch {
-            print("ERROR: error decoding state file '\(path)': \(error)")
-            return nil
-        }
-        do {
-            return try contents.toApplinState(config, throwOnPageError: false)
-        } catch {
-            print("unreachable")
-            return nil
-        }
-    }
-
+class StateFileWriter {
     private let config: ApplinConfig
-    private let lock = NSLock()
-    private var state: ApplinState
-    private var writesAllowed = false
-    private var writeLoopTask: Task<Void, Never>?
-    private var optEarliestWriteTime: Date?
+    private var lock = NSLock()
+    private weak var session: ApplinSession?
+    private var task: Task<(), Never>?
 
-    public init(_ config: ApplinConfig, _ state: ApplinState) {
-        print("StateStore")
+    public init(_ config: ApplinConfig, _ session: ApplinSession?) {
+        print("StateFileWriter")
         self.config = config
-        self.state = state
+        self.session = session
     }
 
-    public func allowWrites() {
+    deinit {
+        self.task?.cancel()
+    }
+
+    func update(_ state: ApplinState) {
         self.lock.lock()
-        self.writesAllowed = true
-        self.lock.unlock()
-    }
-
-    private func writeOnce(_ stateToWrite: ApplinState) async throws {
-        print("StateStore.writeOnce")
-        let boolVars: [String: Bool] = stateToWrite.vars.compactMapValues({ v in
-            if case let .boolean(value) = v {
-                return value
-            } else {
-                return nil
-            }
-        })
-        let stringVars: [String: String] = stateToWrite.vars.compactMapValues({ v in
-            if case let .string(value) = v {
-                return value
-            } else {
-                return nil
-            }
-        })
-        let pages = stateToWrite.pages.mapValues({ page in page.toJsonItem() })
-        let stack = stateToWrite.stack
-        let contents = FileContents(boolVars: boolVars, stringVars: stringVars, pages: pages, stack: stack)
-        let bytes = try encodeJson(contents)
-        // TODO: Keep hash of file contents and don't write if file contents won't change.
-        try await createDir(self.config.dataDirPath)
-        let path = self.config.dataDirPath + "/" + Self.FILE_NAME
-        let tmpPath = path + ".tmp"
-        try await deleteFile(path: tmpPath)
-        try await writeFile(data: bytes, path: tmpPath)
-        // Swift has no atomic file replace function.
-        try await deleteFile(path: path)
-        try await moveFile(atPath: tmpPath, toPath: path)
-    }
-
-    private func writeLoop() async {
-        print("StateStore.writeLoop")
-        // TODO: Move the defer into the calling Task closure once https://github.com/apple/swift/issues/58921 is fixed.
         defer {
-            self.lock.lock()
-            self.writeLoopTask = nil
             self.lock.unlock()
         }
+        if self.task?.isCancelled != false {
+            let lastWrittenId: UInt64 = state.fileUpdateId
+            self.task = Task(priority: .low) {
+                await self.writer(lastWrittenId)
+            }
+        }
+    }
+
+    private func writer(_ lastWrittenId: UInt64) async {
+        print("StateFileWriter starting")
+        var lastWrittenId: UInt64 = 0
         while !Task.isCancelled {
-            while true {
-                if Task.isCancelled {
-                    print("StateStore.writeLoop cancelled")
+            await sleep(ms: 1_000)
+            let contents: StateFileContents
+            let contentsId: UInt64
+            do {
+                guard let mutexGuard = self.session?.mutex.readOnlyLock() else {
                     break
-                } else if let earliestWriteTime = self.optEarliestWriteTime, earliestWriteTime < Date() {
-                    print("StateStore.writeLoop writing")
+                }
+                if mutexGuard.readOnlyState.fileUpdateId == lastWrittenId {
+                    continue
+                }
+                contentsId = mutexGuard.readOnlyState.fileUpdateId
+                let boolVars: [String: Bool] = mutexGuard.readOnlyState.vars.compactMapValues({ v in
+                    if case let .boolean(value) = v {
+                        return value
+                    } else {
+                        return nil
+                    }
+                })
+                let stringVars: [String: String] = mutexGuard.readOnlyState.vars.compactMapValues({ v in
+                    if case let .string(value) = v {
+                        return value
+                    } else {
+                        return nil
+                    }
+                })
+                let pages = mutexGuard.readOnlyState.pages.mapValues({ page in page.toJsonItem() })
+                let stack = mutexGuard.readOnlyState.stack
+                contents = StateFileContents(boolVars: boolVars, stringVars: stringVars, pages: pages, stack: stack)
+            }
+            do {
+                let bytes = try encodeJson(contents)
+                // TODO: Keep hash of file contents and don't write if file contents won't change.
+                try await createDir(self.config.dataDirPath)
+                let path = stateFilePath(config)
+                let tmpPath = path + ".tmp"
+                try await deleteFile(path: tmpPath)
+                try await writeFile(data: bytes, path: tmpPath)
+                // Swift has no atomic file replace function.
+                try await deleteFile(path: path)
+                try await moveFile(atPath: tmpPath, toPath: path)
+                lastWrittenId = contentsId
+            } catch {
+                print("ERROR StateFileWriter: \(error)")
+                self.session?.mutex.lock().state.connectionError = .appError(
+                        "Error saving data to device.  Is your storage full?  Details: \(error)")
+                if Task.isCancelled {
                     break
                 } else {
-                    await sleep(ms: 1_000)
-                }
-            }
-            while true {
-                self.lock.lock()
-                let stateToWrite = self.state
-                self.optEarliestWriteTime = nil
-                let writesAllowed = self.writesAllowed
-                self.lock.unlock()
-
-                if !writesAllowed {
-                    print("StateStore: writes not allowed")
-                    if Task.isCancelled {
-                        break
-                    } else {
-                        await sleep(ms: 1_000)
-                        continue
-                    }
-                }
-                do {
-                    try await self.writeOnce(stateToWrite)
-                    break
-                } catch {
-                    print("ERROR StateStore: \(error)")
-                    // TODO: Update session error.
-                    if Task.isCancelled {
-                        await sleep(ms: 1_000)
-                    } else {
-                        await sleep(ms: 60_000)
-                    }
+                    await sleep(ms: 60_000)
                 }
             }
         }
         print("StateStore.writeLoop stopping")
-    }
-
-    public func startWriterTask() {
-        print("StateStore.startWriterTask")
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        if self.writeLoopTask == nil {
-            self.writeLoopTask = Task(priority: .low) {
-                await self.writeLoop()
-            }
-        }
-    }
-
-    public func stopWriterTask() {
-        print("StateStore.stopWriterTask")
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        self.writeLoopTask?.cancel() // Makes sleep return immediately.
-    }
-
-    public func read<R>(_ f: (_: ApplinState) -> R) -> R {
-        //print("StateStore.read")
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        let result: R = f(self.state)
-
-        return result
-    }
-
-    public func update<R>(_ f: (_: inout ApplinState) -> R) -> R {
-        //print("StateStore.update")
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        let result: R = f(&self.state)
-        if self.writesAllowed {
-            self.optEarliestWriteTime = self.optEarliestWriteTime ?? (Date() + 10.0 /* seconds */)
-        }
-        return result
     }
 }

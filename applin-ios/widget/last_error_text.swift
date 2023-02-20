@@ -69,13 +69,13 @@ class LastErrorTextWidget: Widget {
         false
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
         guard case .lastErrorText = spec.value else {
             throw "Expected .lastErrorText got: \(spec)"
         }
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.label.text = session.stateStore.read({ state in state.error ?? "Error details not found." })
+        self.label.text = state.errorDetails()
     }
 }

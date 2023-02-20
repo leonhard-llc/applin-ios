@@ -143,16 +143,16 @@ class WidgetCache {
         return node.optOldNode?.optSuper
     }
 
-    private func updateNode(_ session: ApplinSession, _ node: DoneNode) {
+    private func updateNode(_ session: ApplinSession, _ state: ApplinState, _ node: DoneNode) {
         for subNode in node.subs {
-            self.updateNode(session, subNode)
+            self.updateNode(session, state, subNode)
         }
         let subWidgets = node.subs.map({ subNode in subNode.widget })
         // TODO(mleonhard) Find a way to make this type-safe and eliminate the exception.
-        try! node.widget.update(session, node.spec, subWidgets)
+        try! node.widget.update(session, state, node.spec, subWidgets)
     }
 
-    func updateAll(_ session: ApplinSession, _ spec: Spec) -> Widget {
+    func updateAll(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec) -> Widget {
         let roughRoot = RoughNode(spec)
         _ = self.visitNode(.post, roughRoot) { node in
             if node.spec.priority() == .focusable, let oldNode = self.table.find(node) {
@@ -169,7 +169,7 @@ class WidgetCache {
         let doneRoot = DoneNode(roughRoot)
         self.table.removeAll()
         self.table.insert(doneRoot)
-        self.updateNode(session, doneRoot)
+        self.updateNode(session, state, doneRoot)
         return doneRoot.widget
     }
 }

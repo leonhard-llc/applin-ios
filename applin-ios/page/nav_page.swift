@@ -15,6 +15,7 @@ struct NavPageSpec: Equatable {
     let title: String
     let widget: Spec
 
+    // TODO: Remove `pageKey` param.
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.end = try item.optEnd(config, pageKey: pageKey)
@@ -134,7 +135,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
                 inner.tap(session, cache)
             }
         case .defaultBackButton:
-            self.weakSession?.pop()
+            self.weakSession?.mutex.lock().state.pop()
         case .empty:
             break
         }
@@ -189,6 +190,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     func update(
             _ session: ApplinSession,
             _ cache: WidgetCache,
+            _ state: ApplinState,
             _ newPageSpec: PageSpec,
             hasPrevPage: Bool
     ) {
@@ -226,7 +228,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             self.navigationItem.hidesBackButton = true
             self.navBar.items = [self.navigationItem]
         }
-        let widget = cache.updateAll(session, navPageSpec.widget)
+        let widget = cache.updateAll(session, state, navPageSpec.widget)
         let subView = widget.getView()
         self.helper.update(subView) {
             [

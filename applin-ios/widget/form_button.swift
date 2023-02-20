@@ -117,7 +117,7 @@ class FormButtonWidget: Widget {
         self.button.isFocused
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .formButton(formButtonSpec) = spec.value else {
             throw "Expected .formButton got: \(spec)"
         }

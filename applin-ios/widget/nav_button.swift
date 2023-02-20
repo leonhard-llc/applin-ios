@@ -132,7 +132,7 @@ class NavButtonWidget: Widget {
         self.session?.doActions(pageKey: self.spec.pageKey, self.spec.actions)
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .navButton(navButtonSpec) = spec.value else {
             throw "Expected .navButton got: \(spec)"
         }

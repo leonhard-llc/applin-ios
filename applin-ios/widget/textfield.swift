@@ -176,7 +176,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         self.textview.isFirstResponder
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .textfield(textfieldSpec) = spec.value else {
             throw "Expected .text got: \(spec)"
         }
@@ -187,7 +187,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         self.spec = textfieldSpec
         self.session = session
         if !self.initialized {
-            self.textview.text = session.getStringVar(self.spec.varName) ?? self.spec.initialString ?? ""
+            self.textview.text = state.getStringVar(self.spec.varName) ?? self.spec.initialString ?? ""
             self.initialized = true
         }
         var constraints: [NSLayoutConstraint] = []
@@ -269,7 +269,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
 
     func textViewDidChange(_: UITextView) {
         //print("textViewDidChange")
-        self.session?.setStringVar(self.spec.varName, self.textview.text.isEmpty ? nil : self.textview.text)
+        self.session?.mutex.lock().state.setStringVar(self.spec.varName, self.textview.text.isEmpty ? nil : self.textview.text)
         if let rpc = self.spec.rpc {
             self.lock.lock()
             defer {

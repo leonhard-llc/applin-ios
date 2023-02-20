@@ -4,7 +4,7 @@ import UIKit
 protocol PageController: UIViewController {
     func allowBackSwipe() -> Bool
     func klass() -> AnyClass
-    func update(_ session: ApplinSession, _ cache: WidgetCache, _ newPageSpec: PageSpec, hasPrevPage: Bool)
+    func update(_ session: ApplinSession, _ cache: WidgetCache, _ state: ApplinState, _ newPageSpec: PageSpec, hasPrevPage: Bool)
 }
 
 enum PageSpec: Equatable {

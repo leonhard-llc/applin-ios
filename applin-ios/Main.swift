@@ -37,26 +37,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Note: This code runs during app prewarming.
         self.customConfig = CustomConfig()
         self.config = ApplinConfig(dataDirPath: getDataDirPath(), url: self.customConfig.serverUrl())
-        self.rpcCaller = RpcCaller(config)
-        self.poller = Poller(config)
-        self.stateFileWriter = StateFileWriter(config)
-        self.streamer = Streamer(config)
-        self.session = ApplinSession(
-                self.config,
-                ApplinState.loading(),
-                self.navigationController,
+        self.session = ApplinSession(self.config, ApplinState.loading(), self.navigationController)
+        self.rpcCaller = RpcCaller(config, self.session)
+        self.poller = Poller(config, self.rpcCaller, self.session)
+        self.stateFileWriter = StateFileWriter(config, self.session)
+        self.streamer = Streamer(config, self.session)
+        self.session.setDeps(
                 self.poller,
                 self.rpcCaller,
                 self.stateFileWriter,
                 self.streamer
         )
-        self.poller.setWeakRpcCaller(self.rpcCaller)
-        self.poller.setWeakSession(self.session)
-        self.rpcCaller.setWeakSession(self.session)
-        self.stateFileWriter.setWeakSession(self.session)
-        self.streamer.setWeakSession(self.session)
         super.init()
     }
+
+    // impl UIApplicationDelegate
 
     func application(
             _ application: UIApplication,
@@ -75,61 +70,36 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 print("ERROR: \(error)")
             }
             if let state = optState {
-                print("Loaded state file.")
-                self.session.state.lock().value = state
+                print("loaded state file")
+                let mutexGuard = self.session.mutex.lock()
+                mutexGuard.state.pauseUpdates = false
+                mutexGuard.state = state
+                print("saved new state")
             } else {
-                let cookies = HTTPCookieStorage.shared.cookies(for: self.config.url) ?? []
-                let session_cookies = cookies.filter({ c in c.name == "session" })
+                let hasSession = hasSessionCookie(self.config)
                 let defaultPages = self.customConfig.defaultPages(self.config)
-                let state_guard = self.session.state.lock()
-                if session_cookies.isEmpty {
-                    // New app install.
-                    state_guard.value.pages = defaultPages
+                let mutexGuard = self.session.mutex.lock()
+                mutexGuard.state.pauseUpdates = false
+                mutexGuard.state.pages = defaultPages
+                if hasSession {
+                    print("has session")
+                    mutexGuard.state.stack = [APPLIN_STATE_LOAD_ERROR_PAGE_KEY]
                 } else {
-                    // App already has a session.
-                    state_guard.value.stack = ["/applin-error-loading-state"]
+                    print("no session")
+                    mutexGuard.state.stack = ["/"]
                 }
             }
-            let pages = self.customConfig.defaultPages(self.config)
-            let state_guard = self.session.state.lock()
-            state_guard.value.pages = pages
-
-            var initialState: ApplinState
-            do {
-                initialState = try await StateFileReader.loadDefaultJson(self.config)
-            } catch {
-                print("ERROR: startup error: \(error)")
-                // TODO: Make app developers provide unique error codes.
-                self.stateStore.update({ state in state = ApplinState.loadError(error: "\(error)") })
-                self.session.updateDisplayedPages()
-                return
-            }
-            if let savedState = await StateFileReader.loadSavedState(self.config) {
-                initialState.merge(savedState)
-            } else {
-                // Don't let app start up with cookies (session) and no saved pages because the rpc:/ will not update
-                // any of the pages.
-                print("WARNING: Failed to load saved state.  Erasing cookies.")
-                HTTPCookieStorage.shared.cookies?.forEach(HTTPCookieStorage.shared.deleteCookie)
-            }
-            self.stateStore.update({ state in state = initialState })
-            self.stateStore.allowWrites()
-            self.session.updateDisplayedPages()
-            self.session.unpause()
-            self.stateStore.startWriterTask()
         }
         return true
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         print("active")
-        self.session.unpause()
-        self.stateStore.startWriterTask()
+        self.session.mutex.lock().state.paused = false
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         print("background")
-        self.session.pause()
-        self.stateStore.stopWriterTask()
+        self.session.mutex.lock().state.paused = true
     }
 }

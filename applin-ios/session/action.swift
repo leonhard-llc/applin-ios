@@ -9,7 +9,7 @@ enum ActionSpec: Codable, Equatable, Hashable {
     case poll
     case pop
     case push(String)
-    // TODO: Store pagekey, remove from button and nav-button.
+    // TODO: Store pageKey, remove from button and nav-button.
     case rpc(String)
 
     // swiftlint:disable cyclomatic_complexity

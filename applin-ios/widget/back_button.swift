@@ -53,7 +53,7 @@ class BackButtonWidget: Widget {
         false
     }
 
-    func update(_: ApplinSession, _: Spec, _: [Widget]) throws {
+    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
     }
 
     func getView() -> UIView {

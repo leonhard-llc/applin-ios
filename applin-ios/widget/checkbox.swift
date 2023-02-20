@@ -115,12 +115,11 @@ class CheckboxWidget: Widget {
         self.button.isFocused
     }
 
-    func getChecked() -> Bool {
-        self.session?.getBoolVar(self.spec.varName) ?? self.spec.initialBool ?? false
-    }
-
     func updateImage() {
-        if self.getChecked() {
+        let checked = self.session?.mutex.readOnlyLock().readOnlyState.getBoolVar(self.spec.varName)
+                ?? self.spec.initialBool
+                ?? false
+        if checked {
             self.button.setImage(self.checked, for: .normal)
         } else {
             self.button.setImage(self.unchecked, for: .normal)
@@ -128,7 +127,7 @@ class CheckboxWidget: Widget {
     }
 
     func setChecked(_ checked: Bool?) {
-        self.session?.setBoolVar(self.spec.varName, checked)
+        self.session?.mutex.lock().state.setBoolVar(self.spec.varName, checked)
         self.updateImage()
     }
 
@@ -137,8 +136,9 @@ class CheckboxWidget: Widget {
             print("WARN CheckboxWidget(\(self.spec.varName)).tap session is nil")
             return
         }
-        let oldBoolVar = session.getBoolVar(self.spec.varName)
-        self.setChecked(!self.getChecked())
+        let oldBoolVar = session.mutex.readOnlyLock().readOnlyState.getBoolVar(self.spec.varName)
+        let checked = oldBoolVar ?? self.spec.initialBool ?? false
+        self.setChecked(!checked)
         if let rpc = self.spec.rpc {
             Task { @MainActor in
                 let ok = await session.doActionsAsync(pageKey: self.spec.pageKey, [.rpc(rpc)])
@@ -149,7 +149,7 @@ class CheckboxWidget: Widget {
         }
     }
 
-    func update(_ session: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .checkbox(checkboxSpec) = spec.value else {
             throw "Expected .checkbox got: \(spec)"
         }

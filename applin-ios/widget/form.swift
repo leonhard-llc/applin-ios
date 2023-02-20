@@ -75,7 +75,7 @@ class FormWidget: Widget {
         false
     }
 
-    func update(_: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
         guard case .form = spec.value else {
             throw "Expected .form got: \(spec)"
         }

@@ -83,6 +83,8 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
     private var entries: [Entry] = []
     private var modals: [UIViewController] = []
     private var working: UIViewController?
+    private var taskLock = AsyncLock()
+    private var lastServerUpdateId: UInt64 = 0
 
     init() {
         super.init(rootViewController: LoadingPage())
@@ -136,65 +138,70 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         self.presentCorrectModal()
     }
 
-    @MainActor
-    func setStackPages(_ session: ApplinSession, _ newPages: [(String, PageSpec)]) async {
-        print("setStackPages")
-        let appJustStarted = self.entries.isEmpty
-        let topEntry: Entry? = self.entries.last
-        precondition(!newPages.isEmpty)
-        var newEntries: [Entry] = []
-        var newModals: [UIViewController] = []
-        // TODO: Solve flash on poll when modal is visible.
-        // TODO: Solve keyboard disappearing on poll.
-        for (key, pageSpec) in newPages {
-            let hasPrevPage = !newEntries.isEmpty
-            if case let .modal(modalSpec) = pageSpec {
-                let alert = modalSpec.toAlert(session)
-                alert.delegate = self
-                alert.setAnimated(false)
-                newModals.append(alert)
-            } else {
-                newModals = []
-                var ctl: PageController
-                var cache: WidgetCache
-                if let entry = self.removeEntry(key) {
-                    cache = entry.cache
-                    if entry.controller.klass() == pageSpec.controllerClass() {
-                        ctl = entry.controller
-                    } else {
-                        ctl = pageSpec.newController(self, session, entry.cache)
-                    }
+    func update(_ session: ApplinSession, _ state: ApplinState) {
+        // TODO: Don't keep reference to `state`.
+        let serverUpdateId: UInt64 = state.serverUpdateId
+        let newPages = state.getStackPages()
+        print("newPages \(newPages)")
+        Task { @MainActor [serverUpdateId, newPages] in
+            let _lockGuard = try await self.taskLock.lockAsync()
+            //if self.lastServerUpdateId >= serverUpdateId {
+            //    print("NavigationController ignored update")
+            //    return
+            //}
+            print("NavigationController update")
+            self.lastServerUpdateId = serverUpdateId
+            let appJustStarted = self.entries.isEmpty
+            let topEntry: Entry? = self.entries.last
+            precondition(!newPages.isEmpty)
+            var newEntries: [Entry] = []
+            var newModals: [UIViewController] = []
+            // TODO: Solve flash on poll when modal is visible.
+            for (key, pageSpec) in newPages {
+                let hasPrevPage = !newEntries.isEmpty
+                if case let .modal(modalSpec) = pageSpec {
+                    let alert = modalSpec.toAlert(session)
+                    alert.delegate = self
+                    alert.setAnimated(false)
+                    newModals.append(alert)
                 } else {
-                    cache = WidgetCache()
-                    ctl = pageSpec.newController(self, session, cache)
+                    newModals = []
+                    var ctl: PageController
+                    var cache: WidgetCache
+                    if let entry = self.removeEntry(key) {
+                        cache = entry.cache
+                        if entry.controller.klass() == pageSpec.controllerClass() {
+                            ctl = entry.controller
+                        } else {
+                            ctl = pageSpec.newController(self, session, entry.cache)
+                        }
+                    } else {
+                        cache = WidgetCache()
+                        ctl = pageSpec.newController(self, session, cache)
+                    }
+                    print("setStackPages update \(key)")
+                    ctl.update(session, cache, state, pageSpec, hasPrevPage: hasPrevPage)
+                    newEntries.append(Entry(key, pageSpec, ctl, cache))
                 }
-                print("setStackPages update \(key)")
-                ctl.update(session, cache, pageSpec, hasPrevPage: hasPrevPage)
-                newEntries.append(Entry(key, pageSpec, ctl, cache))
             }
+            self.modals = [] // So modalDismissed delegate func will not present any modals.
+            // Dismiss any presented view to prevent error
+            // "setViewControllers:animated: called on <applin_ios.NavigationController>
+            // while an existing transition or presentation is occurring;
+            // the navigation stack will not be updated."
+            await self.presentedViewController?.dismissAsync(animated: false)
+            self.modals = newModals
+            self.entries = newEntries
+            let newTopEntry = self.entries.last
+            let changedTopPage = topEntry?.controller !== newTopEntry?.controller
+            let animated = changedTopPage && !appJustStarted
+            let newViewControllers = self.entries.compactMap({ entry in entry.controller })
+            if self.viewControllers != newViewControllers {
+                print("setViewControllers")
+                self.setViewControllers(newViewControllers, animated: animated)
+            }
+            self.presentCorrectModal()
         }
-        self.modals = [] // So modalDismissed delegate func will not present any modals.
-        // Dismiss any presented view to prevent error
-        // "setViewControllers:animated: called on <applin_ios.NavigationController>
-        // while an existing transition or presentation is occurring;
-        // the navigation stack will not be updated."
-        await self.presentedViewController?.dismissAsync(animated: false)
-        self.modals = newModals
-        self.entries = newEntries
-        let newTopEntry = self.entries.last
-        let changedTopPage = topEntry?.controller !== newTopEntry?.controller
-        let animated = changedTopPage && !appJustStarted
-        // TODO(mleonhard) See if this is causing the keyboard to hide.
-        //self.setViewControllers(
-        //        self.entries.compactMap({ entry in entry.controller }),
-        //        animated: animated
-        //)
-        let newViewControllers = self.entries.compactMap({ entry in entry.controller })
-        if self.viewControllers != newViewControllers {
-            print("setViewControllers")
-            self.setViewControllers(newViewControllers, animated: animated)
-        }
-        self.presentCorrectModal()
     }
 
     public func topPageController() -> PageController? {

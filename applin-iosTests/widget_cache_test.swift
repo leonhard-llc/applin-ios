@@ -5,7 +5,6 @@ import UIKit
 class WidgetCacheTests: XCTestCase {
     var optTempDir: String?
     var config: ApplinConfig?
-    var stateStore: StateStore?
     var session: ApplinSession?
 
     override func setUpWithError() throws {
@@ -13,8 +12,7 @@ class WidgetCacheTests: XCTestCase {
         try FileManager.default.createDirectory(atPath: tempDir, withIntermediateDirectories: true)
         self.optTempDir = tempDir
         self.config = ApplinConfig(dataDirPath: tempDir, url: URL(string: "https://test1/")!)
-        self.stateStore = StateStore(self.config!, ApplinState())
-        self.session = ApplinSession(self.config!, self.stateStore!, nil, nil)
+        self.session = ApplinSession(self.config!, ApplinState.loading(), nil)
     }
 
     override func tearDownWithError() throws {
@@ -25,19 +23,35 @@ class WidgetCacheTests: XCTestCase {
 
     func testSimple() throws {
         let cache = WidgetCache()
-        let widget1 = cache.updateAll(self.session!, Spec(.button(ButtonSpec(pageKey: "page1", text: "b1")))) as! ButtonWidget
+        let widget1 = cache.updateAll(
+                self.session!,
+                ApplinState.loading(),
+                ButtonSpec(pageKey: "page1", text: "b1").toSpec()
+        ) as! ButtonWidget
         XCTAssertEqual(widget1.button.currentTitle, "  b1  ")
-        let widget2 = cache.updateAll(self.session!, Spec(.button(ButtonSpec(pageKey: "page1", text: "b2")))) as! ButtonWidget
+        let widget2 = cache.updateAll(
+                self.session!,
+                ApplinState.loading(),
+                ButtonSpec(pageKey: "page1", text: "b2").toSpec()
+        ) as! ButtonWidget
         XCTAssert(widget1 === widget2)
         XCTAssertEqual(widget2.button.currentTitle, "  b2  ")
     }
 
     func testStatefulWithoutKey() throws {
         let cache = WidgetCache()
-        let scroll1 = cache.updateAll(self.session!, Spec(.scroll(ScrollSpec(Spec(.text(TextSpec("t1"))))))) as! ScrollWidget
+        let scroll1 = cache.updateAll(
+                self.session!,
+                ApplinState.loading(),
+                ScrollSpec(TextSpec("t1")).toSpec()
+        ) as! ScrollWidget
         let label1 = scroll1.scrollView.subviews.first!.subviews.first! as! UILabel
         XCTAssertEqual(label1.text, "t1")
-        let scroll2 = cache.updateAll(self.session!, Spec(.scroll(ScrollSpec(Spec(.text(TextSpec("t2"))))))) as! ScrollWidget
+        let scroll2 = cache.updateAll(
+                self.session!,
+                ApplinState.loading(),
+                ScrollSpec(TextSpec("t2")).toSpec()
+        ) as! ScrollWidget
         XCTAssert(scroll1 === scroll2)
         let label2 = scroll1.scrollView.subviews.first!.subviews.first! as! UILabel
         XCTAssertEqual(label2.text, "t2")
@@ -48,13 +62,15 @@ class WidgetCacheTests: XCTestCase {
         let cache = WidgetCache()
         let column1 = cache.updateAll(
                 self.session!,
-                Spec(.column(ColumnSpec([Spec(.text(TextSpec("t1")))], .start, spacing: 0.0)))
+                ApplinState.loading(),
+                ColumnSpec([TextSpec("t1")]).toSpec()
         ) as! ColumnWidget
         let label1 = column1.columnView.orderedSubviews.first!.subviews.first! as! UILabel
         XCTAssertEqual(label1.text, "t1")
         let column2 = cache.updateAll(
                 self.session!,
-                Spec(.column(ColumnSpec([Spec(.text(TextSpec("t2"))), Spec(.text(TextSpec("t1")))], .start, spacing: 0.0)))
+                ApplinState.loading(),
+                ColumnSpec([TextSpec("t2"), TextSpec("t1")]).toSpec()
         ) as! ColumnWidget
         XCTAssert(column1 === column2)
         let label2a = column2.columnView.orderedSubviews[0].subviews.first as! UILabel

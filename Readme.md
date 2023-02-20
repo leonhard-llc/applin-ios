@@ -5,16 +5,15 @@ Copy this iOS app and customize it to connect to your
 To use:
 1. Clone this repo.
    - [Do not make a GitHub fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/what-happens-to-forks-when-a-repository-is-deleted-or-changes-visibility).
-2. Add an icon
-3. Add your server's URL to `Main.swift`
-4. Edit `default.json`.  The app uses pages in that file until it connects to the server the first time.
-   - Put your app's ID in the "Update" button action URL.
-   - Optional: Add `/applin-server-status` and `/applin-contact-support-modal` pages.
-     The default error modal has "Status" and "Contact Support" buttons which open those pages.
-5. Use standard processes to build and test your app
+2. Replace the AppIcon
+3. Edit [`CustomConfig.swift`](applin-ios/CustomConfig.swift).
+   - Enter your server's prod URL
+   - Customize the pages that your app shows before it connects to the server the first time.
+4. Replace [`logo.png`](applin-ios/CustomConfig.swift) if your initial screen uses it.
+5. Use XCode or other tools to build and test your app
 
 ## License
-This project will use the [Brandeis-2023 licnese](https://github.com/mleonhard/brandeis-license).
+This project will use the [Brandeis-2023 license](https://github.com/mleonhard/brandeis-license).
 
 ## Development Progress
 

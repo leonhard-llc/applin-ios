@@ -29,189 +29,80 @@ enum Var {
 }
 
 struct ApplinState {
-    public static func loading() -> Self {
-        ApplinState(
-                connectionMode: .disconnect,
-                error: nil,
-                // TODO: Show a spinner.
-                pages: ["/loading": .plainPage(PlainPageSpec(title: "Loading", Spec(.text(TextSpec("Loading")))))],
-                pauseUpdateDisplayedPages: false,
-                stack: ["/loading"],
-                vars: [:]
-        )
+    public static func loading() -> ApplinState {
+        var state = ApplinState()
+        // TODO: Show a spinner.
+        state.pages = ["/": .plainPage(PlainPageSpec(title: "Loading", Spec(.text(TextSpec("Loading")))))]
+        state.stack = ["/"]
+        return state
     }
 
-    public static func loadError(error: String) -> Self {
-        ApplinState(
-                connectionMode: .disconnect,
-                error: nil,
-                pages: [
-                    "/error": .plainPage(PlainPageSpec(
-                            title: "Error",
-                            Spec(.text(TextSpec("ERROR: \(error)")))
-                    ))
-                ],
-                pauseUpdateDisplayedPages: false,
-                stack: ["/error"],
-                vars: [:]
-        )
-    }
-
-    // TODO: Replace connectionMode with a method.
-    var connectionMode: ConnectionMode = .disconnect
-    var error: String?
+    // TODO: Clean up unused vars.
+    var working: String?
+    var paused: Bool = true
+    var connectionError: ApplinError?
+    var interactiveError: ApplinError?
     var pages: [String: PageSpec] = [:]
-    var pauseUpdateDisplayedPages: Bool = false
+    var pauseUpdates: Bool = true
     var stack: [String] = ["/"]
     var vars: [String: Var] = [:]
+    var navUpdateId: UInt64 = 0
+    var serverUpdateId: UInt64 = 0
+    var fileUpdateId: UInt64 = 0
 
-    public mutating func merge(_ other: ApplinState) {
-        self.connectionMode = other.connectionMode
-        self.error = other.error
-        for (key, spec) in other.pages {
-            self.pages[key] = spec
-        }
-        self.stack = other.stack
-        for (name, value) in other.vars {
-            self.vars[name] = value
-        }
+    func getStack() -> [String] {
+        self.stack.isEmpty ? ["/"] : self.stack
     }
 
-    public mutating func setVar(_ name: String, _ optValue: Var?) -> [String] {
-        guard let value = optValue else {
-            self.vars.removeValue(forKey: name)
-            return ["setVar \(name)=nil"]
-        }
-        let oldValue = self.vars.updateValue(value, forKey: name)
-        switch (oldValue, value) {
-        case let (.boolean, .boolean(value)):
-            return ["setVar \(name)=\(value)"]
-        case let (.string, .string(value)):
-            return ["setVar \(name)=\(value)"]
-        default:
-            return [
-                "setVar \(name)=\(value)",
-                "WARN setVar changed var type: \(name): \(String(describing: oldValue)) -> \(String(describing: optValue))"
-            ]
-        }
-    }
-}
-
-// TODO: Prevent racing between applyUpdate(), rpc(), and doActionsAsync().
-
-class ApplinSession: ObservableObject {
-    let config: ApplinConfig
-    let stateStore: StateStore
-    let connection: ApplinConnection?
-    let nav: NavigationController?
-
-    init(_ config: ApplinConfig,
-         _ stateStore: StateStore,
-         _ connection: ApplinConnection?,
-         _ nav: NavigationController?
-    ) {
-        print("ApplinSession")
-        self.config = config
-        self.stateStore = stateStore
-        self.connection = connection
-        self.nav = nav
-        self.updateDisplayedPages()
-    }
-
-    public func pause() {
-        self.connection?.pause()
-    }
-
-    public func unpause() {
-        let connectionMode = self.stateStore.read({ state in state.connectionMode })
-        self.connection?.unpause(self, connectionMode)
-    }
-
-    public func updateDisplayedPages() {
-        let (paused, stack, entries, connectionMode) = self.stateStore.update({
-            state -> (Bool, [String], [(String, PageSpec)], ConnectionMode) in
-            if state.pauseUpdateDisplayedPages {
-                return (true, [], [], .disconnect)
-            }
-            if state.stack.isEmpty {
-                state.stack = ["/"]
-            }
-            let entries: [(String, PageSpec)] = state.stack.map({ key -> (String, PageSpec) in
-                let page = state.pages[key]
-                        ?? state.pages["/applin-page-not-found"]
-                        ?? .navPage(NavPageSpec(
-                        pageKey: key,
-                        title: "Not Found",
-                        // TODO: Center the text.
-                        widget: Spec(.text(TextSpec("Page not found.")))
-                ))
-                return (key, page)
-            })
-            state.connectionMode = entries.map({ (_, pageSpec) in pageSpec.connectionMode }).min() ?? .disconnect
-            // Swift Array and String are value types.
-            return (false, state.stack, entries, state.connectionMode)
+    func getStackPages() -> [(String, PageSpec)] {
+        self.getStack().map({ key -> (String, PageSpec) in
+            let page = self.pages[key]
+                    ?? self.pages[APPLIN_PAGE_NOT_FOUND_PAGE_KEY]
+                    ?? NavPageSpec(pageKey: key, title: "Not Found", ColumnSpec([TextSpec("Page not found.")])).toSpec()
+            return (key, page)
         })
-        print("updateDisplayedPages \(stack)")
-        if paused {
-            print("updateDisplayedPages paused")
-            return
-        }
-        self.connection?.setMode(self, connectionMode)
-        Task {
-            await self.nav?.setStackPages(self, entries)
+    }
+
+    func getConnectionMode() -> ConnectionMode {
+        self.getStack().compactMap({ key -> ConnectionMode? in self.pages[key]?.connectionMode }).min() ?? .disconnect
+    }
+
+    func errorDetails() -> String {
+        switch self.interactiveError ?? self.connectionError {
+        case nil:
+            return "Error details not found."
+        case let .appError(e), let .networkError(e), let .serverError(e), let .userError(e):
+            return e
         }
     }
 
-    func pop() {
-        let (stack, optPoppedKey) = self.stateStore.update({ state -> ([String], String?) in
-            let optPoppedKey = state.stack.isEmpty ? nil : state.stack.removeLast()
-            if state.stack.isEmpty {
-                state.stack = ["/"]
-            }
-            return (state.stack, optPoppedKey)
-        })
-        if let poppedKey = optPoppedKey {
-            print("pop '\(poppedKey)'")
+    mutating func pop() {
+        if self.stack.isEmpty {
+            let pageKey = self.stack.removeLast()
+            print("pop '\(pageKey)'")
         }
-        print("stack=\(stack)")
-        self.updateDisplayedPages()
+        if self.stack.isEmpty {
+            self.stack = ["/"]
+        }
+        print("stack=\(self.stack)")
     }
 
-    func push(pageKey: String) {
+    mutating func push(pageKey: String) {
         print("push '\(pageKey)'")
-        let stack = self.stateStore.update({ state -> [String] in
-            state.stack.append(pageKey)
-            return state.stack
-        })
-        print("stack=\(stack)")
-        self.updateDisplayedPages()
+        self.stack.append(pageKey)
+        print("stack=\(self.stack)")
     }
 
-    func setVar(_ name: String, _ optValue: Var?) {
-        let messages = self.stateStore.update({ state -> [String] in state.setVar(name, optValue) })
-        for message in messages {
-            print(message)
-        }
-    }
-
-    func setBoolVar(_ name: String, _ optValue: Bool?) {
-        if let value = optValue {
-            self.setVar(name, .boolean(value))
+    func pageVars(pageKey: String) -> [String: Var]? {
+        if let pageVars = self.pages[pageKey]?.vars() {
+            return Dictionary(uniqueKeysWithValues: pageVars)
         } else {
-            self.setVar(name, nil)
-        }
-    }
-
-    func setStringVar(_ name: String, _ optValue: String?) {
-        if let value = optValue {
-            self.setVar(name, .string(value))
-        } else {
-            self.setVar(name, nil)
+            return nil
         }
     }
 
     func getBoolVar(_ name: String) -> Bool? {
-        switch self.stateStore.read({ state in state.vars[name] }) {
+        switch self.vars[name] {
         case .none:
             return nil
         case let .some(.boolean(value)):
@@ -223,7 +114,7 @@ class ApplinSession: ObservableObject {
     }
 
     func getStringVar(_ name: String) -> String? {
-        switch self.stateStore.read({ state in state.vars[name] }) {
+        switch self.vars[name] {
         case .none:
             return nil
         case let .some(.string(value)):
@@ -234,6 +125,154 @@ class ApplinSession: ObservableObject {
         }
     }
 
+    mutating func setVar(_ name: String, _ optValue: Var?) {
+        guard let value = optValue else {
+            self.vars.removeValue(forKey: name)
+            print("setVar \(name)=nil")
+            return
+        }
+        let oldValue = self.vars.updateValue(value, forKey: name)
+        switch (oldValue, value) {
+        case let (.boolean, .boolean(value)):
+            print("setVar \(name)=\(value)")
+        case let (.string, .string(value)):
+            print("setVar \(name)=\(value)")
+        default:
+            print("setVar \(name)=\(value)")
+            print("WARN setVar changed var type: \(name): \(String(describing: oldValue)) -> \(String(describing: optValue))")
+        }
+    }
+
+    mutating func setBoolVar(_ name: String, _ optValue: Bool?) {
+        if let value = optValue {
+            self.setVar(name, .boolean(value))
+        } else {
+            self.setVar(name, nil)
+        }
+    }
+
+    mutating func setStringVar(_ name: String, _ optValue: String?) {
+        if let value = optValue {
+            self.setVar(name, .string(value))
+        } else {
+            self.setVar(name, nil)
+        }
+    }
+}
+
+// TODO: Prevent racing between applyUpdate(), rpc(), and doActionsAsync().
+
+class ApplinSession: ObservableObject {
+    class Mutex {
+        class Guard {
+            private let mutex: Mutex
+            public var state: ApplinState
+
+            init(_ mutex: Mutex) {
+                self.mutex = mutex
+                self.mutex.nsLock.lock()
+                self.state = self.mutex.value
+            }
+
+            deinit {
+                self.state.fileUpdateId += 1
+                self.mutex.value = self.state
+                self.mutex.session?.updateDeps(self.mutex.value)
+                self.mutex.nsLock.unlock()
+            }
+        }
+
+        class ReadOnlyGuard {
+            private let mutex: Mutex
+            public let readOnlyState: ApplinState
+
+            init(_ mutex: Mutex) {
+                self.mutex = mutex
+                self.mutex.nsLock.lock()
+                self.readOnlyState = self.mutex.value
+            }
+
+            deinit {
+                self.mutex.nsLock.unlock()
+            }
+        }
+
+        let nsLock = NSLock()
+        weak var session: ApplinSession?
+        var value: ApplinState
+
+        init(value: ApplinState) {
+            self.value = value
+        }
+
+        public func lock() -> Guard {
+            Guard(self)
+        }
+
+        public func readOnlyLock() -> ReadOnlyGuard {
+            ReadOnlyGuard(self)
+        }
+    }
+
+    private class PauseUpdateGuard {
+        weak var session: ApplinSession?
+
+        init(_ session: ApplinSession?) {
+            self.session = session
+        }
+
+        deinit {
+            if let session = self.session {
+                session.mutex.lock().state.pauseUpdates = false
+                print("unpause updates")
+            }
+        }
+    }
+
+    let config: ApplinConfig
+    let mutex: Mutex
+    weak var nav: NavigationController?
+    weak var poller: Poller?
+    weak var rpcCaller: RpcCaller?
+    weak var stateFileWriter: StateFileWriter?
+    weak var streamer: Streamer?
+
+    init(_ config: ApplinConfig, _ initialState: ApplinState, _ nav: NavigationController?) {
+        self.config = config
+        self.nav = nav
+        self.mutex = Mutex(value: initialState)
+        self.mutex.session = self
+    }
+
+    func setDeps(_ poller: Poller, _ rpcCaller: RpcCaller, _ stateFileWriter: StateFileWriter, _ streamer: Streamer) {
+        self.poller = poller
+        self.rpcCaller = rpcCaller
+        self.stateFileWriter = stateFileWriter
+        self.streamer = streamer
+    }
+
+    private func pauseUpdates() -> PauseUpdateGuard {
+        let _ = {
+            let mutexGuard = self.mutex.lock()
+            mutexGuard.state.pauseUpdates = true
+            print("pauseUpdates \(mutexGuard.state.pauseUpdates)")
+        }
+        print("pause updates")
+        return PauseUpdateGuard(self)
+    }
+
+    func updateDeps(_ value: ApplinState) {
+        if value.pauseUpdates {
+            print("skipped update")
+            return
+        }
+        print("update")
+        self.nav?.update(self, value)
+        self.poller?.update(value)
+        self.stateFileWriter?.update(value)
+        self.streamer?.update(value)
+    }
+
     func applyUpdate(_ data: Data) throws {
         let update: Update
         do {
@@ -242,219 +281,53 @@ class ApplinSession: ObservableObject {
         } catch {
             throw ApplinError.serverError("error decoding update: \(error)")
         }
-        let messages: [String] = self.stateStore.update({ state in
-            var messages: [String] = []
-            if let newPages = update.pages {
-                for (key, optItem) in newPages {
-                    if let item = optItem {
-                        do {
-                            let pageSpec = try PageSpec(self.config, pageKey: key, item)
-                            state.pages[key] = pageSpec
-                            messages.append("updated key \(key) \(pageSpec)")
-                        } catch {
-                            state.pages[key] = .navPage(NavPageSpec(
-                                    pageKey: key,
-                                    title: "Error",
-                                    // TODO: Show a better error page.
-                                    widget: Spec(.text(TextSpec("Error loading page. Please update the app.")))
-                            ))
-                            messages.append("WARN error processing updated key '\(key)': \(error)")
-                        }
-                    } else {
-                        state.pages.removeValue(forKey: key)
-                        messages.append("removed key \(key)")
-                    }
+        var optPageError: ApplinError?
+        let mutexGuard = self.mutex.lock()
+        // TODO: Set mutexGuard.state.serverUpdateId and don't go backwards.
+        for (key, optItem) in update.pages ?? [:] {
+            if let item = optItem {
+                do {
+                    let pageSpec = try PageSpec(self.config, pageKey: key, item)
+                    mutexGuard.state.pages[key] = pageSpec
+                    print("updated key \(key) \(pageSpec)")
+                } catch {
+                    mutexGuard.state.pages[key] = NavPageSpec(
+                            pageKey: key,
+                            title: "Error",
+                            // TODO: Show a better error page.
+                            TextSpec("Error loading page. Please update the app.")
+                    ).toSpec()
+                    optPageError = ApplinError.appError("error processing updated key '\(key)': \(error)")
                 }
-            }
-            if let newStack = update.stack {
-                state.stack = newStack
-            }
-            // TODO: Handle user_error.
-            if let vars = update.vars {
-                for (name, jsonValue) in vars {
-                    switch jsonValue {
-                    case .null:
-                        let newMessages = state.setVar(name, nil)
-                        messages.append(contentsOf: newMessages)
-                    case let .boolean(value):
-                        let newMessages = state.setVar(name, .boolean(value))
-                        messages.append(contentsOf: newMessages)
-                    case let .string(value):
-                        let newMessages = state.setVar(name, .string(value))
-                        messages.append(contentsOf: newMessages)
-                    default:
-                        messages.append("WARN ignoring unknown var from server \(name)=\(jsonValue)")
-                    }
-                }
-            }
-            return messages
-        })
-        for message in messages {
-            print(message)
-        }
-        self.updateDisplayedPages()
-    }
-
-    func rpc(optPageKey: String?, path: String, method: String) async throws {
-        print("rpc \(path)")
-        let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 10.0 /* seconds */
-        config.timeoutIntervalForResource = 60.0 /* seconds */
-        config.urlCache = nil
-        config.httpCookieAcceptPolicy = .always
-        config.httpShouldSetCookies = true
-        let urlSession = URLSession(configuration: config)
-        defer {
-            urlSession.invalidateAndCancel()
-        }
-        let url = self.config.url.appendingPathComponent(
-                path.starts(with: "/") ? String(path.dropFirst()) : path)
-        var urlRequest = URLRequest(
-                url: url,
-                cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
-        )
-        urlRequest.httpMethod = method
-        if let pageKey = optPageKey {
-            urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
-            let optVars: [String: Var]? = self.stateStore.read({ state -> [String: Var]? in
-                if let pageSpec = state.pages[pageKey] {
-                    var vars: [String: Var] = [:]
-                    for (name, initialValue) in pageSpec.vars() {
-                        let value = state.vars[name] ?? initialValue
-                        vars[name] = value
-                    }
-                    return vars
-                } else {
-                    return nil
-                }
-            })
-            let jsonBody: [String: JSON]
-            if let vars = optVars {
-                jsonBody = vars.mapValues({ v in v.toJson() })
             } else {
-                // TODO: Prevent this.
-                print("WARN rpc for missing page '\(pageKey)', not including any variables")
-                jsonBody = [:]
-            }
-            urlRequest.httpBody = try! encodeJson(jsonBody)
-            if let bodyString = String(data: urlRequest.httpBody!, encoding: .utf8) {
-                print("DEBUG request body: \(bodyString)")
+                mutexGuard.state.pages.removeValue(forKey: key)
+                print("removed key \(key)")
             }
         }
-        let data: Data
-        let httpResponse: HTTPURLResponse
-        do {
-            let (urlData, urlResponse) = try await urlSession.data(for: urlRequest)
-            data = urlData
-            httpResponse = urlResponse as! HTTPURLResponse
-        } catch {
-            throw ApplinError.networkError("rpc \(path) transport error: \(error)")
+        if let newStack = update.stack {
+            mutexGuard.state.stack = newStack
         }
-        if !(200...299).contains(httpResponse.statusCode) {
-            if httpResponse.contentTypeBase() == "text/plain", let string = String(data: data, encoding: .utf8) {
-                throw ApplinError.serverError("rpc \(path) server error: \(httpResponse.statusCode) "
-                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
-            } else {
-                throw ApplinError.serverError("rpc \(path) server error: \(httpResponse.statusCode) "
-                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), "
-                        + "len=\(data.count) \(httpResponse.mimeType ?? "")")
+        if let vars = update.vars {
+            for (name, jsonValue) in vars {
+                switch jsonValue {
+                case .null:
+                    mutexGuard.state.setVar(name, nil)
+                case let .boolean(value):
+                    mutexGuard.state.setVar(name, .boolean(value))
+                case let .string(value):
+                    mutexGuard.state.setVar(name, .string(value))
+                default:
+                    optPageError = ApplinError.appError("unknown var from server \(name)=\(jsonValue)")
+                }
             }
         }
-        let contentTypeBase = httpResponse.contentTypeBase()
-        if let bodyString = String(data: data, encoding: .utf8) {
-            print("DEBUG response body \(contentTypeBase ?? ""): \(bodyString)")
-        }
-        if contentTypeBase != "application/json" {
-            throw ApplinError.serverError(
-                    "rpc \(path) server response content-type is not 'application/json': '\(contentTypeBase ?? "")'")
-        }
-        try self.applyUpdate(data)
-    }
-
-    private func interactiveRpc(optPageKey: String?, path: String, method: String) async -> Bool {
-        await self.nav?.setWorking("Working")
-        defer {
-            Task {
-                await self.nav?.setWorking(nil)
-            }
-        }
-        let stopwatch = Stopwatch()
-        do {
-            try await self.rpc(optPageKey: optPageKey, path: path, method: method)
-            await stopwatch.waitUntil(seconds: 1.0)
-            return true
-        } catch {
-            print(error)
-            switch error as? ApplinError {
-            case nil:
-                self.stateStore.update({ state in state.error = "Unexpected exception: \(error)" })
-                await stopwatch.waitUntil(seconds: 1.0)
-                self.push(pageKey: "/applin-error-details")
-            case let .appError(msg), let .networkError(msg), let .serverError(msg):
-                self.stateStore.update({ state in state.error = msg })
-                await stopwatch.waitUntil(seconds: 1.0)
-                self.push(pageKey: "/applin-error-details")
-            case let .userError(msg):
-                self.stateStore.update({ state in state.error = msg })
-                await stopwatch.waitUntil(seconds: 1.0)
-                // TODO: Display a simple alert.
-                self.push(pageKey: "/applin-error-details")
-            }
-            return false
+        if let pageError = optPageError {
+            throw pageError
         }
     }
-
-    //func fetch(_ url: URL) async throws -> Data {
-    //    // TODO: Merge concurrent fetches of the same URL.
-    //    //  https://developer.apple.com/documentation/uikit/views_and_controls/table_views/asynchronously_loading_images_into_table_and_collection_views#3637628
-    //    // TODO: Retry on error.
-    //    // TODO: When retrying multiple URLs at same server, round-robin the URLs.
-    //    print("fetch \(url.absoluteString)")
-    //    let config = URLSessionConfiguration.default
-    //    config.timeoutIntervalForRequest = 10.0 /* seconds */
-    //    config.timeoutIntervalForResource = 60.0 /* seconds */
-    //    // TODONT: Don't set the config.urlCache to nil.  We want to use the cache.
-    //    config.httpShouldSetCookies = true
-    //    let urlSession = URLSession(configuration: config)
-    //    defer {
-    //        urlSession.invalidateAndCancel()
-    //    }
-    //    var urlRequest = URLRequest(
-    //            url: url,
-    //            cachePolicy: .useProtocolCachePolicy
-    //    )
-    //    urlRequest.httpMethod = "GET"
-    //    let data: Data
-    //    let httpResponse: HTTPURLResponse
-    //    do {
-    //        let (urlData, urlResponse) = try await urlSession.data(for: urlRequest)
-    //        data = urlData
-    //        httpResponse = urlResponse as! HTTPURLResponse
-    //    } catch {
-    //        print("fetch \(url.absoluteString) transport error: \(error)")
-    //        throw FetchError()
-    //    }
-    //    if !(200...299).contains(httpResponse.statusCode) {
-    //        if httpResponse.contentTypeBase() == "text/plain",
-    //           let string = String(data: data, encoding: .utf8) {
-    //            print("fetch \(url.absoluteString) server error: \(httpResponse.statusCode) "
-    //                    + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
-    //        } else {
-    //            print("fetch \(url.absoluteString) server error: \(httpResponse.statusCode) "
-    //                    + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)), "
-    //                    + "len=\(data.count) \(httpResponse.mimeType ?? "")")
-    //        }
-    //        throw FetchError()
-    //    }
-    //    return data
-    //}
 
     func doActionsAsync(pageKey: String, _ actions: [ActionSpec]) async -> Bool {
-        self.stateStore.update({ state in state.pauseUpdateDisplayedPages = true })
-        defer {
-            self.stateStore.update({ state in state.pauseUpdateDisplayedPages = false })
-            self.updateDisplayedPages()
-        }
+        let _pauseUpdatesGuard = self.pauseUpdates()
         loop: for action in actions {
             switch action {
             case let .copyToClipboard(string):
@@ -470,20 +343,20 @@ class ApplinSession: ObservableObject {
                 print("nothing")
             case .poll:
                 print("poll")
-                let success = await self.interactiveRpc(optPageKey: nil, path: "/", method: "GET")
-                if !success {
+                let success = await self.rpcCaller?.interactiveRpc(optPageKey: nil, path: "/", method: "GET")
+                if success != true {
                     return false
                 }
             case .pop:
                 print("pop")
-                self.pop()
+                self.mutex.lock().state.pop()
             case let .push(key):
                 print("push(\(key))")
-                self.push(pageKey: key)
+                self.mutex.lock().state.push(pageKey: key)
             case let .rpc(path):
                 print("rpc(\(path))")
-                let success = await self.interactiveRpc(optPageKey: pageKey, path: path, method: "POST")
-                if !success {
+                let success = await self.rpcCaller?.interactiveRpc(optPageKey: pageKey, path: path, method: "POST")
+                if success != true {
                     return false
                 }
             }

@@ -69,14 +69,20 @@ class PlainPageController: UIViewController, PageController {
         PlainPageController.self
     }
 
-    func update(_ session: ApplinSession, _ cache: WidgetCache, _ newPageSpec: PageSpec, hasPrevPage: Bool) {
+    func update(
+            _ session: ApplinSession,
+            _ cache: WidgetCache,
+            _ state: ApplinState,
+            _ newPageSpec: PageSpec,
+            hasPrevPage: Bool
+    ) {
         guard case let .plainPage(plainPageSpec) = newPageSpec else {
             print("FATAL: PlainPageController.update() called with newPageSpec=\(newPageSpec)")
             abort()
         }
         self.title = plainPageSpec.title
         self.view.backgroundColor = .systemBackground
-        let widget = cache.updateAll(session, plainPageSpec.widget)
+        let widget = cache.updateAll(session, state, plainPageSpec.widget)
         let subView = widget.getView()
         self.helper.update(subView) {
             [

@@ -47,7 +47,7 @@ class Poller {
         print("Poller.poll stopped")
     }
 
-    let config: ApplinConfig
+    private let config: ApplinConfig
     private var lock = NSLock()
     private weak var rpcCaller: RpcCaller?
     private weak var session: ApplinSession?
@@ -69,6 +69,12 @@ class Poller {
         defer {
             self.lock.unlock()
         }
+        if state.paused {
+            self.seconds = 0
+            self.task?.cancel()
+            self.task = nil
+            return
+        }
         switch state.getConnectionMode() {
         case let .pollSeconds(s) where s == self.seconds:
             break
@@ -83,6 +89,7 @@ class Poller {
         default:
             self.seconds = 0
             self.task?.cancel()
+            self.task = nil
         }
     }
 }

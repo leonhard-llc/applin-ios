@@ -87,7 +87,7 @@ class TextWidget: Widget {
         false
     }
 
-    func update(_: ApplinSession, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .text(textSpec) = spec.value else {
             throw "Expected .text got: \(spec)"
         }
