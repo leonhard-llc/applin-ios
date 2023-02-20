@@ -93,11 +93,23 @@ struct ApplinState {
     }
 
     func pageVars(pageKey: String) -> [String: Var]? {
-        if let pageVars = self.pages[pageKey]?.vars() {
-            return Dictionary(uniqueKeysWithValues: pageVars)
-        } else {
+        guard let pageVars = self.pages[pageKey]?.vars() else {
             return nil
         }
+        return Dictionary(uniqueKeysWithValues: pageVars.compactMap({ (name, defaultValue) -> (String, Var)? in
+            guard let value = self.vars[name] else {
+                return nil
+            }
+            switch (defaultValue, value) {
+            case (.boolean, .boolean):
+                return (name, value)
+            case (.string, .string):
+                return (name, value)
+            default:
+                print("WARN expected page '\(pageKey)' var '\(name)' to be same type as \(String(describing: defaultValue)) but found \(String(describing: value)), not sending var in RPC")
+                return nil
+            }
+        }))
     }
 
     func getBoolVar(_ name: String) -> Bool? {
