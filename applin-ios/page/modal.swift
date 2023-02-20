@@ -80,7 +80,7 @@ struct ModalSpec: Equatable {
     }
 
     func toAlert(_ session: ApplinSession) -> AlertController {
-        let errorDetails: String = session.mutex.readOnlyLock().readOnlyState.errorDetails()
+        let errorDetails: String = session.mutex.lockReadOnly({ state in state.errorDetails() })
         let text = self.text?.replacingOccurrences(of: "${ERROR_DETAILS}", with: errorDetails)
         let alert = AlertController(title: self.title, message: text, preferredStyle: self.kind.style())
         for widget in self.widgets {

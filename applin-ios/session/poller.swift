@@ -36,10 +36,10 @@ class Poller {
                     break
                 } catch let e as ApplinError {
                     print("Poller.poll error: \(e)")
-                    session.mutex.lock().state.connectionError = e
+                    session.mutex.lock({ state in state.connectionError = e })
                 } catch let e {
                     print("Poller.poll unexpected error: \(e)")
-                    session.mutex.lock().state.connectionError = .appError("\(e)")
+                    session.mutex.lock({ state in state.connectionError = .appError("\(e)") })
                 }
                 await sleep(ms: Int.random(in: 2_500...7_500))
             }

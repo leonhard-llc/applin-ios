@@ -269,7 +269,9 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
 
     func textViewDidChange(_: UITextView) {
         //print("textViewDidChange")
-        self.session?.mutex.lock().state.setStringVar(self.spec.varName, self.textview.text.isEmpty ? nil : self.textview.text)
+        self.session?.mutex.lock({ state in
+            state.setStringVar(self.spec.varName, self.textview.text.isEmpty ? nil : self.textview.text)
+        })
         if let rpc = self.spec.rpc {
             self.lock.lock()
             defer {

@@ -135,7 +135,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
                 inner.tap(session, cache)
             }
         case .defaultBackButton:
-            self.weakSession?.mutex.lock().state.pop()
+            self.weakSession?.mutex.lock({ state in state.pop() })
         case .empty:
             break
         }

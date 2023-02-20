@@ -116,7 +116,7 @@ class CheckboxWidget: Widget {
     }
 
     func updateImage() {
-        let checked = self.session?.mutex.readOnlyLock().readOnlyState.getBoolVar(self.spec.varName)
+        let checked = self.session?.mutex.lockReadOnly({ state in state.getBoolVar(self.spec.varName) })
                 ?? self.spec.initialBool
                 ?? false
         if checked {
@@ -127,7 +127,7 @@ class CheckboxWidget: Widget {
     }
 
     func setChecked(_ checked: Bool?) {
-        self.session?.mutex.lock().state.setBoolVar(self.spec.varName, checked)
+        self.session?.mutex.lock({ state in state.setBoolVar(self.spec.varName, checked) })
         self.updateImage()
     }
 
@@ -136,7 +136,7 @@ class CheckboxWidget: Widget {
             print("WARN CheckboxWidget(\(self.spec.varName)).tap session is nil")
             return
         }
-        let oldBoolVar = session.mutex.readOnlyLock().readOnlyState.getBoolVar(self.spec.varName)
+        let oldBoolVar = session.mutex.lockReadOnly({ state in state.getBoolVar(self.spec.varName) })
         let checked = oldBoolVar ?? self.spec.initialBool ?? false
         self.setChecked(!checked)
         if let rpc = self.spec.rpc {

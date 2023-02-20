@@ -85,33 +85,37 @@ class StateFileWriter {
         var lastWrittenId: UInt64 = 0
         while !Task.isCancelled {
             await sleep(ms: 1_000)
-            let contents: StateFileContents
-            let contentsId: UInt64
-            do {
-                guard let mutexGuard = self.session?.mutex.readOnlyLock() else {
-                    break
+            var contents: StateFileContents = StateFileContents()
+            var contentsId: UInt64 = 0
+            guard let session = self.session else {
+                break
+            }
+            let needsWrite = session.mutex.lockReadOnly { state -> Bool in
+                if state.fileUpdateId == lastWrittenId {
+                    return false
                 }
-                if mutexGuard.readOnlyState.fileUpdateId == lastWrittenId {
-                    continue
-                }
-                contentsId = mutexGuard.readOnlyState.fileUpdateId
-                let boolVars: [String: Bool] = mutexGuard.readOnlyState.vars.compactMapValues({ v in
+                contentsId = state.fileUpdateId
+                let boolVars: [String: Bool] = state.vars.compactMapValues({ v in
                     if case let .boolean(value) = v {
                         return value
                     } else {
                         return nil
                     }
                 })
-                let stringVars: [String: String] = mutexGuard.readOnlyState.vars.compactMapValues({ v in
+                let stringVars: [String: String] = state.vars.compactMapValues({ v in
                     if case let .string(value) = v {
                         return value
                     } else {
                         return nil
                     }
                 })
-                let pages = mutexGuard.readOnlyState.pages.mapValues({ page in page.toJsonItem() })
-                let stack = mutexGuard.readOnlyState.stack
+                let pages = state.pages.mapValues({ page in page.toJsonItem() })
+                let stack = state.stack
                 contents = StateFileContents(boolVars: boolVars, stringVars: stringVars, pages: pages, stack: stack)
+                return true
+            }
+            if !needsWrite {
+                continue
             }
             do {
                 let bytes = try encodeJson(contents)
@@ -127,8 +131,10 @@ class StateFileWriter {
                 lastWrittenId = contentsId
             } catch {
                 print("ERROR StateFileWriter: \(error)")
-                self.session?.mutex.lock().state.connectionError = .appError(
-                        "Error saving data to device.  Is your storage full?  Details: \(error)")
+                self.session?.mutex.lock { state in
+                    state.connectionError = .appError(
+                            "Error saving data to device.  Is your storage full?  Details: \(error)")
+                }
                 if Task.isCancelled {
                     break
                 } else {

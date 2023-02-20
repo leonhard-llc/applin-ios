@@ -38,7 +38,6 @@ struct ApplinState {
     }
 
     // TODO: Clean up unused vars.
-    var working: String?
     var paused: Bool = true
     var connectionError: ApplinError?
     var interactiveError: ApplinError?
@@ -77,7 +76,7 @@ struct ApplinState {
     }
 
     mutating func pop() {
-        if self.stack.isEmpty {
+        if !self.stack.isEmpty {
             let pageKey = self.stack.removeLast()
             print("pop '\(pageKey)'")
         }
@@ -163,74 +162,71 @@ struct ApplinState {
 // TODO: Prevent racing between applyUpdate(), rpc(), and doActionsAsync().
 
 class ApplinSession: ObservableObject {
-    class Mutex {
-        class Guard {
-            private let mutex: Mutex
-            public var state: ApplinState
-
-            init(_ mutex: Mutex) {
-                self.mutex = mutex
-                self.mutex.nsLock.lock()
-                self.state = self.mutex.value
-            }
-
-            deinit {
-                self.state.fileUpdateId += 1
-                self.mutex.value = self.state
-                self.mutex.session?.updateDeps(self.mutex.value)
-                self.mutex.nsLock.unlock()
-            }
-        }
-
-        class ReadOnlyGuard {
-            private let mutex: Mutex
-            public let readOnlyState: ApplinState
-
-            init(_ mutex: Mutex) {
-                self.mutex = mutex
-                self.mutex.nsLock.lock()
-                self.readOnlyState = self.mutex.value
-            }
-
-            deinit {
-                self.mutex.nsLock.unlock()
-            }
-        }
-
-        let nsLock = NSLock()
+    class StateMutex {
         weak var session: ApplinSession?
-        var value: ApplinState
+        let applinMutex: ApplinMutex<ApplinState>
 
-        init(value: ApplinState) {
-            self.value = value
+        init(state: ApplinState) {
+            self.applinMutex = ApplinMutex(value: state)
         }
 
-        public func lock() -> Guard {
-            Guard(self)
+        private func update(_ state: inout ApplinState) {
+            state.fileUpdateId += 1
+            self.session?.updateDeps(state)
         }
 
-        public func readOnlyLock() -> ReadOnlyGuard {
-            ReadOnlyGuard(self)
-        }
-    }
-
-    private class PauseUpdateGuard {
-        weak var session: ApplinSession?
-
-        init(_ session: ApplinSession?) {
-            self.session = session
+        func lock<R>(_ f: (inout ApplinState) -> R) -> R {
+            self.applinMutex.lock({ state in
+                let result = f(&state)
+                self.update(&state)
+                return result
+            })
         }
 
-        deinit {
-            if let session = self.session {
-                session.mutex.lock().state.pauseUpdates = false
-                print("unpause updates")
-            }
+        func lockReadOnly<R>(_ f: (ApplinState) -> R) -> R {
+            self.applinMutex.lock({ state in f(state) })
+        }
+
+        func lockThrows<R>(_ f: (inout ApplinState) throws -> R) throws -> R {
+            try self.applinMutex.lockThrows({ state in
+                let result = try f(&state)
+                self.update(&state)
+                return result
+            })
+        }
+
+        func lockReadOnlyThrows<R>(_ f: (ApplinState) throws -> R) throws -> R {
+            try self.applinMutex.lockThrows({ state in try f(state) })
+        }
+
+        func lockAsync<R>(_ f: (inout ApplinState) async -> R) async -> R {
+            await self.applinMutex.lockAsync({ state in
+                let result = await f(&state)
+                self.update(&state)
+                return result
+            })
+        }
+
+        func lockAsyncReadOnly<R>(_ f: (ApplinState) async -> R) async -> R {
+            await self.applinMutex.lockAsync({ state in await f(state) })
+        }
+
+        func lockAsyncThrows<R>(_ f: (inout ApplinState) async throws -> R) async throws -> R {
+            try await self.applinMutex.lockAsyncThrows({ state in
+                let result = try await f(&state)
+                self.update(&state)
+                return result
+            })
+        }
+
+        func lockAsyncThrowsReadOnly<R>(_ f: (ApplinState) async throws -> R) async throws -> R {
+            try await self.applinMutex.lockAsyncThrows({ state in try await f(state) })
         }
     }
 
     let config: ApplinConfig
-    let mutex: Mutex
+    let mutex: StateMutex
+    private let actionLock = ApplinLock()
     weak var nav: NavigationController?
     weak var poller: Poller?
     weak var rpcCaller: RpcCaller?
@@ -240,7 +236,7 @@ class ApplinSession: ObservableObject {
     init(_ config: ApplinConfig, _ initialState: ApplinState, _ nav: NavigationController?) {
         self.config = config
         self.nav = nav
-        self.mutex = Mutex(value: initialState)
+        self.mutex = StateMutex(state: initialState)
         self.mutex.session = self
     }
 
@@ -249,16 +245,6 @@ class ApplinSession: ObservableObject {
         self.rpcCaller = rpcCaller
         self.stateFileWriter = stateFileWriter
         self.streamer = streamer
-    }
-
-    private func pauseUpdates() -> PauseUpdateGuard {
-        let _ = {
-            let mutexGuard = self.mutex.lock()
-            mutexGuard.state.pauseUpdates = true
-            print("pauseUpdates \(mutexGuard.state.pauseUpdates)")
-        }
-        print("pause updates")
-        return PauseUpdateGuard(self)
     }
 
     func updateDeps(_ value: ApplinState) {
@@ -282,86 +268,109 @@ class ApplinSession: ObservableObject {
             throw ApplinError.serverError("error decoding update: \(error)")
         }
         var optPageError: ApplinError?
-        let mutexGuard = self.mutex.lock()
-        // TODO: Set mutexGuard.state.serverUpdateId and don't go backwards.
-        for (key, optItem) in update.pages ?? [:] {
-            if let item = optItem {
-                do {
-                    let pageSpec = try PageSpec(self.config, pageKey: key, item)
-                    mutexGuard.state.pages[key] = pageSpec
-                    print("updated key \(key) \(pageSpec)")
-                } catch {
-                    mutexGuard.state.pages[key] = NavPageSpec(
-                            pageKey: key,
-                            title: "Error",
-                            // TODO: Show a better error page.
-                            TextSpec("Error loading page. Please update the app.")
-                    ).toSpec()
-                    optPageError = ApplinError.appError("error processing updated key '\(key)': \(error)")
-                }
-            } else {
-                mutexGuard.state.pages.removeValue(forKey: key)
-                print("removed key \(key)")
-            }
-        }
-        if let newStack = update.stack {
-            mutexGuard.state.stack = newStack
-        }
-        if let vars = update.vars {
-            for (name, jsonValue) in vars {
-                switch jsonValue {
-                case .null:
-                    mutexGuard.state.setVar(name, nil)
-                case let .boolean(value):
-                    mutexGuard.state.setVar(name, .boolean(value))
-                case let .string(value):
-                    mutexGuard.state.setVar(name, .string(value))
-                default:
-                    optPageError = ApplinError.appError("unknown var from server \(name)=\(jsonValue)")
+        try self.mutex.lockThrows { state in
+            // TODO: Set state.serverUpdateId and don't go backwards.
+            for (key, optItem) in update.pages ?? [:] {
+                if let item = optItem {
+                    do {
+                        let pageSpec = try PageSpec(self.config, pageKey: key, item)
+                        state.pages[key] = pageSpec
+                        print("updated key \(key) \(pageSpec)")
+                    } catch {
+                        state.pages[key] = NavPageSpec(
+                                pageKey: key,
+                                title: "Error",
+                                // TODO: Show a better error page.
+                                TextSpec("Error loading page. Please update the app.")
+                        ).toSpec()
+                        optPageError = ApplinError.appError("error processing updated key '\(key)': \(error)")
+                    }
+                } else {
+                    state.pages.removeValue(forKey: key)
+                    print("removed key \(key)")
                 }
             }
-        }
-        if let pageError = optPageError {
-            throw pageError
+            if let newStack = update.stack {
+                state.stack = newStack
+            }
+            if let vars = update.vars {
+                for (name, jsonValue) in vars {
+                    switch jsonValue {
+                    case .null:
+                        state.setVar(name, nil)
+                    case let .boolean(value):
+                        state.setVar(name, .boolean(value))
+                    case let .string(value):
+                        state.setVar(name, .string(value))
+                    default:
+                        optPageError = ApplinError.appError("unknown var from server \(name)=\(jsonValue)")
+                    }
+                }
+            }
+            if let pageError = optPageError {
+                throw pageError
+            }
         }
     }
 
+    func withUpdatesPaused<R>(_ f: () async -> R) async -> R {
+        await self.mutex.lockAsync { (state: inout ApplinState) in
+            assert(!state.pauseUpdates)
+            state.pauseUpdates = true
+            print("pauseUpdates = true")
+        }
+        let result = await f()
+        await self.mutex.lockAsync { (state: inout ApplinState) in
+            assert(state.pauseUpdates)
+            state.pauseUpdates = false
+            print("pauseUpdates = false")
+        }
+        return result
+    }
+
     func doActionsAsync(pageKey: String, _ actions: [ActionSpec]) async -> Bool {
-        let _pauseUpdatesGuard = self.pauseUpdates()
-        loop: for action in actions {
-            switch action {
-            case let .copyToClipboard(string):
-                print("copyToClipboard(\(string))")
-                UIPasteboard.general.string = string
-            case let .launchUrl(url):
-                // TODO: Implement launch-url action
-                print("launchUrl(\(url)) unimplemented")
-            case .logout:
-                // TODO: Implement Logout
-                print("logout unimplemented")
-            case .nothing:
-                print("nothing")
-            case .poll:
-                print("poll")
-                let success = await self.rpcCaller?.interactiveRpc(optPageKey: nil, path: "/", method: "GET")
-                if success != true {
-                    return false
+        await self.actionLock.lockAsync {
+            await self.withUpdatesPaused {
+                for action in actions {
+                    switch action {
+                    case let .copyToClipboard(string):
+                        print("copyToClipboard(\(string))")
+                        UIPasteboard.general.string = string
+                    case let .launchUrl(url):
+                        // TODO: Implement launch-url action
+                        print("launchUrl(\(url)) unimplemented")
+                    case .logout:
+                        // TODO: Implement Logout
+                        print("logout unimplemented")
+                    case .nothing:
+                        print("nothing")
+                    case .poll:
+                        print("poll")
+                        let success = await self.rpcCaller?.interactiveRpc(optPageKey: nil, path: "/", method: "GET")
+                        if success != true {
+                            return false
+                        }
+                    case .pop:
+                        print("pop")
+                        self.mutex.lock { (state: inout ApplinState) in
+                            state.pop()
+                        }
+                    case let .push(key):
+                        print("push(\(key))")
+                        self.mutex.lock { (state: inout ApplinState) in
+                            state.push(pageKey: key)
+                        }
+                    case let .rpc(path):
+                        print("rpc(\(path))")
+                        let success = await self.rpcCaller?.interactiveRpc(optPageKey: pageKey, path: path, method: "POST")
+                        if success != true {
+                            return false
+                        }
+                    }
                 }
-            case .pop:
-                print("pop")
-                self.mutex.lock().state.pop()
-            case let .push(key):
-                print("push(\(key))")
-                self.mutex.lock().state.push(pageKey: key)
-            case let .rpc(path):
-                print("rpc(\(path))")
-                let success = await self.rpcCaller?.interactiveRpc(optPageKey: pageKey, path: path, method: "POST")
-                if success != true {
-                    return false
-                }
+                return true
             }
         }
-        return true
     }
 
     func doActions(pageKey: String, _ actions: [ActionSpec]) {

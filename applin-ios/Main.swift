@@ -63,30 +63,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window!.rootViewController = self.navigationController
         self.window!.makeKeyAndVisible()
         Task(priority: .high) {
-            var optState: ApplinState? = nil
+            var optLoadedState: ApplinState? = nil
             do {
-                optState = try await loadStateFile(self.config)
+                optLoadedState = try await loadStateFile(self.config)
             } catch {
                 print("ERROR: \(error)")
             }
-            if let state = optState {
+            if let loadedState = optLoadedState {
                 print("loaded state file")
-                let mutexGuard = self.session.mutex.lock()
-                mutexGuard.state.pauseUpdates = false
-                mutexGuard.state = state
+                self.session.mutex.lock { state in
+                    state = loadedState
+                    state.pauseUpdates = false
+                }
                 print("saved new state")
             } else {
                 let hasSession = hasSessionCookie(self.config)
                 let defaultPages = self.customConfig.defaultPages(self.config)
-                let mutexGuard = self.session.mutex.lock()
-                mutexGuard.state.pauseUpdates = false
-                mutexGuard.state.pages = defaultPages
-                if hasSession {
-                    print("has session")
-                    mutexGuard.state.stack = [APPLIN_STATE_LOAD_ERROR_PAGE_KEY]
-                } else {
-                    print("no session")
-                    mutexGuard.state.stack = ["/"]
+                self.session.mutex.lock { state in
+                    state.pages = defaultPages
+                    if hasSession {
+                        print("has session")
+                        state.stack = [APPLIN_STATE_LOAD_ERROR_PAGE_KEY]
+                    } else {
+                        print("no session")
+                        state.stack = ["/"]
+                    }
+                    state.pauseUpdates = false
                 }
             }
         }
@@ -95,11 +97,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         print("active")
-        self.session.mutex.lock().state.paused = false
+        self.session.mutex.lock({ state in state.paused = false })
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         print("background")
-        self.session.mutex.lock().state.paused = true
+        self.session.mutex.lock({ state in state.paused = true })
     }
 }
