@@ -38,7 +38,7 @@ struct ApplinState {
     }
 
     // TODO: Clean up unused vars.
-    var paused: Bool = true
+    var paused: Bool = false
     var connectionError: ApplinError?
     var interactiveError: ApplinError?
     var pages: [String: PageSpec] = [:]

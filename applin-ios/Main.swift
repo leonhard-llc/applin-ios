@@ -32,6 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let session: ApplinSession
     let streamer: Streamer
     var window: UIWindow?
+    let initialized = AtomicBool(false)
 
     override init() {
         // Note: This code runs during app prewarming.
@@ -63,6 +64,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window!.rootViewController = self.navigationController
         self.window!.makeKeyAndVisible()
         Task(priority: .high) {
+            defer {
+                _ = self.initialized.store(true)
+            }
             var optLoadedState: ApplinState? = nil
             do {
                 optLoadedState = try await loadStateFile(self.config)
@@ -73,6 +77,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 print("loaded state file")
                 self.session.mutex.lock { state in
                     state = loadedState
+                    state.paused = false
                     state.pauseUpdates = false
                 }
                 print("saved new state")
@@ -88,6 +93,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         print("no session")
                         state.stack = ["/"]
                     }
+                    state.paused = false
                     state.pauseUpdates = false
                 }
             }
@@ -97,7 +103,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         print("active")
-        self.session.mutex.lock({ state in state.paused = false })
+        if self.initialized.load() {
+            self.session.mutex.lock({ state in state.paused = false })
+        }
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
