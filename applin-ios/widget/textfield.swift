@@ -111,9 +111,8 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     static let ERROR_IMAGE = UIImage(systemName: "exclamationmark.circle")
     let container: TappableView
     let label: UILabel
+    let errorView = ErrorView()
     let textview: UITextView
-    let errorImageView: UIImageView
-    let errorLabel: UILabel
     let constraintSet = ConstraintSet()
     var spec: TextfieldSpec
     weak var session: ApplinSession?
@@ -135,14 +134,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         self.label.lineBreakMode = .byWordWrapping
         self.label.numberOfLines = 0
 
-        self.errorImageView = UIImageView(image: Self.ERROR_IMAGE)
-        self.errorImageView.translatesAutoresizingMaskIntoConstraints = false
-        self.errorImageView.tintColor = .systemRed
-
-        self.errorLabel = UILabel()
-        self.errorLabel.translatesAutoresizingMaskIntoConstraints = false
-        self.errorLabel.lineBreakMode = .byWordWrapping
-        self.errorLabel.numberOfLines = 0
+        self.errorView.setText(spec.error)
 
         self.textview = UITextView()
         self.textview.translatesAutoresizingMaskIntoConstraints = false
@@ -211,32 +203,20 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
             self.textview.layer.borderColor = UIColor.systemRed.cgColor
             self.textview.layer.borderWidth = TextfieldWidget.BORDER_WIDTH * 2.0
             self.textview.layer.cornerRadius = 0.0
-            self.errorLabel.text = errorString
-            self.container.addSubview(self.errorImageView)
-            self.container.addSubview(self.errorLabel)
-            NSLayoutConstraint.activate([
-                // TODONT: Don't try to size the image by setting its frame size.  The image will
-                //         randomly ignore this and get stretched.  Use constraints instead.
-                self.errorImageView.heightAnchor.constraint(equalToConstant: 30),
-                self.errorImageView.widthAnchor.constraint(equalTo: self.errorImageView.heightAnchor),
-
-                self.errorImageView.topAnchor.constraint(greaterThanOrEqualTo: prevBottomAnchor, constant: 4.0),
-                self.errorImageView.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 4.0),
-                self.errorImageView.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -4.0),
-
-                self.errorLabel.topAnchor.constraint(greaterThanOrEqualTo: prevBottomAnchor, constant: 4.0),
-                self.errorLabel.leftAnchor.constraint(equalTo: self.errorImageView.rightAnchor, constant: 4.0),
-                self.errorLabel.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -4.0),
-                self.errorLabel.centerYAnchor.constraint(equalTo: self.errorImageView.centerYAnchor),
+            self.errorView.setText(errorString)
+            self.container.addSubview(self.errorView)
+            constraints.append(contentsOf: [
+                self.errorView.topAnchor.constraint(greaterThanOrEqualTo: prevBottomAnchor),
+                self.errorView.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 4.0),
+                self.errorView.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -4.0),
             ])
-            prevBottomAnchor = self.errorLabel.bottomAnchor
+            prevBottomAnchor = self.errorView.bottomAnchor
         } else {
             self.textview.layer.borderColor = TextfieldWidget.BORDER_COLOR.cgColor
             self.textview.layer.borderWidth = TextfieldWidget.BORDER_WIDTH
             self.textview.layer.cornerRadius = TextfieldWidget.CORNER_RADIUS
-            self.errorLabel.text = nil
-            self.errorImageView.removeFromSuperview()
-            self.errorLabel.removeFromSuperview()
+            self.errorView.setText(nil)
+            self.errorView.removeFromSuperview()
         }
 
         // Textview
