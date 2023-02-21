@@ -80,8 +80,9 @@ struct ModalSpec: Equatable {
     }
 
     func toAlert(_ session: ApplinSession) -> AlertController {
-        let errorDetails: String = session.mutex.lockReadOnly({ state in state.errorDetails() })
-        let text = self.text?.replacingOccurrences(of: "${ERROR_DETAILS}", with: errorDetails)
+        let interactiveErrorDetails: String = session.mutex.lockReadOnly({ state in state.interactiveError })?.message()
+                ?? "Error details not found."
+        let text = self.text?.replacingOccurrences(of: "${INTERACTIVE_ERROR_DETAILS}", with: interactiveErrorDetails)
         let alert = AlertController(title: self.title, message: text, preferredStyle: self.kind.style())
         for widget in self.widgets {
             alert.addAction(widget.toAlertAction(session, pageKey: self.pageKey))

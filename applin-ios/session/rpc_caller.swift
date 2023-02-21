@@ -1,6 +1,10 @@
 import Foundation
 
 class RpcCaller {
+    private struct UserError: Codable {
+        var message: String
+    }
+
     private let config: ApplinConfig
     private weak var session: ApplinSession?
     private let interactiveRpcLock = ApplinLock()
@@ -25,7 +29,7 @@ class RpcCaller {
 
     func rpc(optPageKey: String?, path: String, method: String) async throws {
         print("rpc \(path)")
-        try await self.rpcLock.lockAsyncThrows() {
+        try await self.rpcLock.lockAsyncThrows {
             guard let session = self.session else {
                 return
             }
@@ -58,7 +62,9 @@ class RpcCaller {
                 throw ApplinError.networkError("rpc \(path) transport error: \(error)")
             }
             if !(200...299).contains(httpResponse.statusCode) {
-                if httpResponse.contentTypeBase() == "text/plain", let string = String(data: data, encoding: .utf8) {
+                if httpResponse.contentTypeBase() == "application/json", let userError: UserError = try? decodeJson(data) {
+                    throw ApplinError.userError(userError.message)
+                } else if httpResponse.contentTypeBase() == "text/plain", let string = String(data: data, encoding: .utf8) {
                     throw ApplinError.serverError("rpc \(path) server error: \(httpResponse.statusCode) "
                             + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)) \"\(string)\"")
                 } else {
@@ -87,7 +93,7 @@ class RpcCaller {
     }
 
     func interactiveRpc(optPageKey: String?, path: String, method: String) async -> Bool {
-        await self.interactiveRpcLock.lockAsync() {
+        await self.interactiveRpcLock.lockAsync {
             await self.withWorking {
                 guard let session = self.session else {
                     return false
@@ -99,7 +105,7 @@ class RpcCaller {
                     return true
                 } catch let e as ApplinError {
                     print("RpcCaller.interactiveRpc error: \(e)")
-                    session.mutex.lock() { state in
+                    session.mutex.lock { state in
                         state.interactiveError = e
                         switch e {
                         case .appError:

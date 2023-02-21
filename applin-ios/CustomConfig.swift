@@ -100,9 +100,9 @@ class CustomConfig: CustomConfigProto {
             ).toSpec(),
             APPLIN_USER_ERROR_PAGE_KEY: ModalSpec(
                     pageKey: APPLIN_USER_ERROR_PAGE_KEY,
-                    kind: .drawer,
+                    kind: .alert,
                     title: "Problem",
-                    text: "${ERROR_DETAILS}",
+                    text: "${INTERACTIVE_ERROR_DETAILS}",
                     [ModalButtonSpec(text: "OK", isDefault: true, [.pop])]
             ).toSpec(),
         ]

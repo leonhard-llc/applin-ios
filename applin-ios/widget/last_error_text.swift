@@ -41,6 +41,7 @@ struct LastErrorTextSpec: Equatable, Hashable, ToSpec {
 class LastErrorTextWidget: Widget {
     let label: UILabel
     let container: UIView
+    var initialized = false
 
     init() {
         print("LastErrorTextWidget.init")
@@ -76,6 +77,11 @@ class LastErrorTextWidget: Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.label.text = state.errorDetails()
+        if !self.initialized {
+            self.label.text = state.interactiveError?.message()
+                    ?? state.connectionError?.message()
+                    ?? "Error details not found."
+            self.initialized = true
+        }
     }
 }

@@ -4,7 +4,6 @@ import UIKit
 struct Update: Codable {
     var pages: [String: JsonItem?]?
     var stack: [String]?
-    var userError: String?
     var vars: [String: JSON]?
 }
 
@@ -64,15 +63,6 @@ struct ApplinState {
 
     func getConnectionMode() -> ConnectionMode {
         self.getStack().compactMap({ key -> ConnectionMode? in self.pages[key]?.connectionMode }).min() ?? .disconnect
-    }
-
-    func errorDetails() -> String {
-        switch self.interactiveError ?? self.connectionError {
-        case nil:
-            return "Error details not found."
-        case let .appError(e), let .networkError(e), let .serverError(e), let .userError(e):
-            return e
-        }
     }
 
     mutating func pop() {
