@@ -69,7 +69,7 @@ class AlertController: UIAlertController {
     // }
 }
 
-class NavigationController: UINavigationController, ModalDelegate, UIGestureRecognizerDelegate {
+class NavigationController: UINavigationController, UIGestureRecognizerDelegate {
     private enum Entry {
         case modal(AlertController)
         case navPage(NavPageController, WidgetCache)
@@ -98,13 +98,17 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         }
     }
 
-    private class EntryCache {
+    private class EntryCache: CustomStringConvertible {
         private var keyToEntries: [String: [Entry]] = [:]
 
         init(keysAndEntries: [(String, Entry)]) {
             for (key, entry) in keysAndEntries.reversed() {
-                keyToEntries[key, default: []].append(entry)
+                self.keyToEntries[key, default: []].append(entry)
             }
+        }
+
+        var description: String {
+            "EntryCache\(self.keyToEntries)"
         }
 
         func removeEntry(_ key: String) -> Entry? {
@@ -137,43 +141,49 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
         fatalError("unimplemented")
     }
 
-    private func presentModal(_ ctl: UIViewController) {
-        if ctl === self.presentedViewController {
-            return
-        }
-        if let presented = self.presentedViewController {
-            presented.dismiss(animated: false) {
-                self.present(ctl, animated: false)
-            }
-        } else {
-            self.present(ctl, animated: false)
+    @MainActor
+    private func dismissModal() async {
+        if let ctl = self.presentedViewController {
+            //print("dismissing \(ctl)")
+            await ctl.dismissAsync(animated: !(ctl is WorkingView))
+            //print("dismissed \(ctl)")
         }
     }
 
-    private func presentCorrectModal() {
+    @MainActor
+    private func presentCorrectModal() async {
+        if let ctl = self.working, ctl === self.presentedViewController {
+            return
+        }
+        if let ctl = self.top?.controller(), ctl === self.presentedViewController {
+            return
+        }
+        await self.dismissModal()
         if let ctl = self.working {
-            self.presentModal(ctl)
+            //print("presenting working \(ctl)")
+            await self.presentAsync(ctl, animated: false)
         } else if case let .modal(ctl) = self.top {
-            self.presentModal(ctl)
-        } else {
-            self.presentedViewController?.dismiss(animated: false)
+            //print("presenting modal \(ctl)")
+            await self.presentAsync(ctl, animated: true)
         }
     }
 
     @MainActor
     func setWorking(_ text: String?) async {
-        print("setWorking '\(text ?? "nil")'")
-        if let text = text {
-            self.working = WorkingView(text: text)
-        } else {
-            self.working = nil
+        await self.taskLock.lockAsync {
+            print("setWorking '\(text ?? "nil")'")
+            if let text = text {
+                self.working = WorkingView(text: text)
+            } else {
+                self.working = nil
+            }
+            await self.presentCorrectModal()
         }
-        self.presentCorrectModal()
     }
 
     func update(_ session: ApplinSession, _ state: ApplinState) {
         let newPages = state.getStackPages()
-        print("NavigationController update")
+        //print("NavigationController update")
         print("DEBUG newPages \(newPages)")
         precondition(!newPages.isEmpty)
         // TODO: Prevent multiple instances of this task from racing.
@@ -188,8 +198,7 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
                             newEntries.append((key, .modal(ctl)))
                         } else {
                             let ctl = modalSpec.toAlert(session)
-                            ctl.delegate = self
-                            ctl.setAnimated(false)
+                            ctl.setAnimated(true)
                             newEntries.append((key, .modal(ctl)))
                         }
                     case .navPage:
@@ -215,6 +224,7 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
                     }
                 }
                 self.entryCache = EntryCache(keysAndEntries: newEntries)
+                print("entryCache \(self.entryCache)")
                 let newTop = newEntries.last!.1
                 let changedTop = self.top?.controller() !== newTop.controller()
                 self.top = newTop
@@ -233,27 +243,19 @@ class NavigationController: UINavigationController, ModalDelegate, UIGestureReco
                     // "setViewControllers:animated: called on <applin_ios.NavigationController>
                     // while an existing transition or presentation is occurring;
                     // the navigation stack will not be updated."
-                    await self.presentedViewController?.dismissAsync(animated: false)
+                    await self.dismissModal()
                     print("setViewControllers")
                     let animated = changedTop && !appJustStarted
                     self.setViewControllers(newPageControllers, animated: animated)
                     self.pageControllers = newPageControllers
-                } else if changedTop {
-                    await self.presentedViewController?.dismissAsync(animated: false)
-                    self.presentCorrectModal()
                 }
+                await self.presentCorrectModal()
             }
         }
     }
 
     public func topViewController() -> UIViewController? {
         self.top?.controller()
-    }
-
-    // Implements ModalDelegate ----
-
-    internal func modalDismissed() {
-        self.presentCorrectModal()
     }
 
     // Implements UIGestureRecognizerDelegate ----

@@ -77,4 +77,12 @@ extension UIViewController {
             }
         }
     }
+
+    func presentAsync(_ ctl: UIViewController, animated: Bool) async {
+        await withCheckedContinuation() { continuation in
+            self.present(ctl, animated: animated) {
+                continuation.resume()
+            }
+        }
+    }
 }
