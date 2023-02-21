@@ -70,14 +70,6 @@ struct NavPageSpec: Equatable {
         .navPage(self)
     }
 
-    func controllerClass() -> AnyClass {
-        NavPageController.self
-    }
-
-    func newController(_ navController: NavigationController?, _ session: ApplinSession?, _ cache: WidgetCache) -> PageController {
-        NavPageController(navController, session, cache)
-    }
-
     func vars() -> [(String, Var)] {
         self.widget.vars()
     }
@@ -122,7 +114,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
 
     func back() {
         print("back")
-        if self.navController?.topPageController() !== self {
+        if self.navController?.topViewController() !== self {
             return
         }
         guard let spec = self.spec else {

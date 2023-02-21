@@ -32,14 +32,6 @@ struct PlainPageSpec: Equatable {
         .plainPage(self)
     }
 
-    func controllerClass() -> AnyClass {
-        PlainPageController.self
-    }
-
-    func newController() -> PageController {
-        PlainPageController()
-    }
-
     func vars() -> [(String, Var)] {
         self.widget.vars()
     }
