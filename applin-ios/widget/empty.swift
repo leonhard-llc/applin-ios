@@ -46,7 +46,7 @@ class EmptyWidget: Widget {
         print("EmptyWidget.init()")
         self.view = UIView()
         self.view.translatesAutoresizingMaskIntoConstraints = false
-        self.view.backgroundColor = pastelPink
+        //self.view.backgroundColor = pastelPink
     }
 
     func getView() -> UIView {

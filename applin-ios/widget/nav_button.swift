@@ -76,6 +76,7 @@ class NavButtonWidget: Widget {
     private var spec: NavButtonSpec
     private var container: TappableView!
     private var imageView: ImageView?
+    private var labelsContainer: UIView!
     private var label: UILabel!
     private var subLabel: UILabel?
     private var chevron: UIImageView
@@ -89,6 +90,7 @@ class NavButtonWidget: Widget {
         NSLayoutConstraint.activate([
             self.container.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
         ])
+        //self.container.backgroundColor = pastelPeach
 
         let chevronImage = UIImage(systemName: "chevron.forward")
         self.chevron = UIImageView(image: chevronImage)
@@ -102,16 +104,20 @@ class NavButtonWidget: Widget {
             self.chevron.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -Self.INSET),
         ])
 
+        self.labelsContainer = UIView()
+        self.labelsContainer.translatesAutoresizingMaskIntoConstraints = false
+        self.container.addSubview(self.labelsContainer)
+
         self.label = UILabel()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.numberOfLines = 0 // Setting numberOfLines to zero enables word wrap.
         self.label.lineBreakMode = .byWordWrapping
-        self.container.addSubview(self.label)
+        self.label.font = UIFont.systemFont(ofSize: 20)
+        self.labelsContainer.addSubview(self.label)
 
         self.container.onTap = { [weak self] in
             self?.tap()
         }
-        // TODO: Support sub-text.
         // TODO: Support badge and number badge.
     }
 
@@ -137,17 +143,12 @@ class NavButtonWidget: Widget {
         }
         self.spec = navButtonSpec
         self.session = session
-        if self.spec.actions.isEmpty {
-            self.label.textColor = .placeholderText
-            self.chevron.tintColor = .placeholderText
-        } else {
-            self.label.textColor = .label
-            self.chevron.tintColor = .label
-        }
         var newConstraints: [NSLayoutConstraint] = []
+        // Image
         if let photoUrl = self.spec.photoUrl {
             if self.imageView == nil {
                 self.imageView = ImageView(aspectRatio: 1.0)
+                self.imageView!.translatesAutoresizingMaskIntoConstraints = false
                 self.container.addSubview(self.imageView!)
             }
             self.imageView!.update(photoUrl, aspectRatio: 1.0, .fit)
@@ -157,6 +158,27 @@ class NavButtonWidget: Widget {
                 self.imageView = nil
             }
         }
+        // Label
+        self.label.text = self.spec.text
+        // Sub-text label
+        if let subText = self.spec.subText, !subText.isEmpty {
+            if self.subLabel == nil {
+                self.subLabel = UILabel()
+                self.subLabel!.translatesAutoresizingMaskIntoConstraints = false
+                self.subLabel!.font = UIFont.systemFont(ofSize: 16)
+                self.subLabel!.numberOfLines = 0 // Setting numberOfLines to zero enables word wrap.
+                self.subLabel!.lineBreakMode = .byWordWrapping
+                self.labelsContainer.addSubview(self.subLabel!)
+            }
+            self.subLabel!.text = subText
+        } else {
+            if let subLabel = self.subLabel {
+                subLabel.removeFromSuperview()
+                self.subLabel = nil
+            }
+        }
+
+        // Layout
         if let imageView = self.imageView {
             newConstraints.append(contentsOf: [
                 imageView.leftAnchor.constraint(equalTo: self.container.leftAnchor),
@@ -166,22 +188,36 @@ class NavButtonWidget: Widget {
                 imageView.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
             ])
         }
-
-        self.label.text = self.spec.text
-        if let imageView = self.imageView {
-            newConstraints.append(
-                    self.label.leftAnchor.constraint(equalTo: imageView.rightAnchor, constant: Self.INSET))
-        } else {
-            newConstraints.append(
-                    self.label.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: Self.INSET))
-        }
-        newConstraints.append(
-                self.label.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor, constant: -Self.INSET))
         newConstraints.append(contentsOf: [
-            self.label.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor, constant: Self.INSET),
-            self.label.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
-            self.label.topAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -Self.INSET),
+            self.labelsContainer.leftAnchor.constraint(
+                    equalTo: self.imageView?.rightAnchor ?? self.container.leftAnchor, constant: Self.INSET),
+            self.labelsContainer.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor, constant: -Self.INSET),
+            self.labelsContainer.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor, constant: Self.INSET),
+            self.labelsContainer.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
+            self.labelsContainer.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -Self.INSET),
         ])
+        newConstraints.append(contentsOf: [
+            self.label.leftAnchor.constraint(equalTo: self.labelsContainer.leftAnchor),
+            self.label.rightAnchor.constraint(equalTo: self.labelsContainer.rightAnchor),
+            self.label.topAnchor.constraint(equalTo: self.labelsContainer.topAnchor),
+            self.label.bottomAnchor.constraint(equalTo: self.subLabel?.topAnchor ?? self.labelsContainer.bottomAnchor)
+        ])
+        if let subLabel = self.subLabel {
+            newConstraints.append(contentsOf: [
+                subLabel.leftAnchor.constraint(equalTo: self.labelsContainer.leftAnchor),
+                subLabel.rightAnchor.constraint(equalTo: self.labelsContainer.rightAnchor),
+                subLabel.bottomAnchor.constraint(equalTo: self.labelsContainer.bottomAnchor),
+            ])
+        }
         self.constraints.set(newConstraints)
+        if self.spec.actions.isEmpty {
+            self.label.textColor = .placeholderText
+            self.subLabel?.textColor = .placeholderText
+            self.chevron.tintColor = .placeholderText
+        } else {
+            self.label.textColor = .label
+            self.subLabel?.textColor = .secondaryLabel
+            self.chevron.tintColor = .label
+        }
     }
 }
