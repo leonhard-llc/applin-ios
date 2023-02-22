@@ -104,6 +104,8 @@ class NavButtonWidget: Widget {
 
         self.label = UILabel()
         self.label.translatesAutoresizingMaskIntoConstraints = false
+        self.label.numberOfLines = 0 // Setting numberOfLines to zero enables word wrap.
+        self.label.lineBreakMode = .byWordWrapping
         self.container.addSubview(self.label)
 
         self.container.onTap = { [weak self] in
@@ -157,11 +159,11 @@ class NavButtonWidget: Widget {
         }
         if let imageView = self.imageView {
             newConstraints.append(contentsOf: [
-                imageView.topAnchor.constraint(equalTo: self.container.topAnchor),
                 imageView.leftAnchor.constraint(equalTo: self.container.leftAnchor),
                 imageView.widthAnchor.constraint(equalTo: self.container.widthAnchor, multiplier: 0.2),
-                imageView.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor),
+                imageView.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor),
                 imageView.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor),
+                imageView.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
             ])
         }
 
