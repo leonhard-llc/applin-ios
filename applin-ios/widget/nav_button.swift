@@ -71,15 +71,15 @@ struct NavButtonSpec: Equatable, Hashable, ToSpec {
 }
 
 class NavButtonWidget: Widget {
-    static let INSET: CGFloat = 12.0
-    let constraints = ConstraintSet()
-    var spec: NavButtonSpec
-    var container: TappableView!
-    var image: UIImageView?
-    var label: UILabel!
-    var subLabel: UILabel?
-    var chevron: UIImageView
-    weak var session: ApplinSession?
+    private static let INSET: CGFloat = 12.0
+    private let constraints = ConstraintSet()
+    private var spec: NavButtonSpec
+    private var container: TappableView!
+    private var imageView: ImageView?
+    private var label: UILabel!
+    private var subLabel: UILabel?
+    private var chevron: UIImageView
+    private weak var session: ApplinSession?
 
     init(_ spec: NavButtonSpec) {
         print("NavButtonWidget.init(\(spec))")
@@ -105,16 +105,10 @@ class NavButtonWidget: Widget {
         self.label = UILabel()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.container.addSubview(self.label)
-        NSLayoutConstraint.activate([
-            self.label.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor, constant: Self.INSET),
-            self.label.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -Self.INSET),
-            self.label.leftAnchor.constraint(greaterThanOrEqualTo: self.container.leftAnchor, constant: Self.INSET),
-            self.label.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor, constant: -Self.INSET),
-        ])
+
         self.container.onTap = { [weak self] in
             self?.tap()
         }
-        // TODO: Support image.
         // TODO: Support sub-text.
         // TODO: Support badge and number badge.
     }
@@ -141,7 +135,6 @@ class NavButtonWidget: Widget {
         }
         self.spec = navButtonSpec
         self.session = session
-        self.label.text = self.spec.text
         if self.spec.actions.isEmpty {
             self.label.textColor = .placeholderText
             self.chevron.tintColor = .placeholderText
@@ -149,10 +142,44 @@ class NavButtonWidget: Widget {
             self.label.textColor = .label
             self.chevron.tintColor = .label
         }
-        self.constraints.set([
-            self.label.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: Self.INSET),
-            self.label.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor, constant: -Self.INSET),
+        var newConstraints: [NSLayoutConstraint] = []
+        if let photoUrl = self.spec.photoUrl {
+            if self.imageView == nil {
+                self.imageView = ImageView(aspectRatio: 1.0)
+                self.container.addSubview(self.imageView!)
+            }
+            self.imageView!.update(photoUrl, aspectRatio: 1.0, .fit)
+        } else {
+            if let imageView = self.imageView {
+                imageView.removeFromSuperview()
+                self.imageView = nil
+            }
+        }
+        if let imageView = self.imageView {
+            newConstraints.append(contentsOf: [
+                imageView.topAnchor.constraint(equalTo: self.container.topAnchor),
+                imageView.leftAnchor.constraint(equalTo: self.container.leftAnchor),
+                imageView.widthAnchor.constraint(equalTo: self.container.widthAnchor, multiplier: 0.2),
+                imageView.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor),
+                imageView.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor),
+            ])
+        }
+
+        self.label.text = self.spec.text
+        if let imageView = self.imageView {
+            newConstraints.append(
+                    self.label.leftAnchor.constraint(equalTo: imageView.rightAnchor, constant: Self.INSET))
+        } else {
+            newConstraints.append(
+                    self.label.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: Self.INSET))
+        }
+        newConstraints.append(
+                self.label.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor, constant: -Self.INSET))
+        newConstraints.append(contentsOf: [
+            self.label.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor, constant: Self.INSET),
             self.label.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
+            self.label.topAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -Self.INSET),
         ])
+        self.constraints.set(newConstraints)
     }
 }
