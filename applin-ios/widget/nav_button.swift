@@ -181,32 +181,32 @@ class NavButtonWidget: Widget {
         // Layout
         if let imageView = self.imageView {
             newConstraints.append(contentsOf: [
-                imageView.leftAnchor.constraint(equalTo: self.container.leftAnchor), //.withId("imageView.left"),
-                imageView.widthAnchor.constraint(equalTo: self.container.widthAnchor, multiplier: 0.2), //.withId("imageView.width"),
-                imageView.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor), //.withId("imageView.top"),
-                imageView.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor), //.withId("imageView.bottom"),
-                imageView.centerYAnchor.constraint(equalTo: self.container.centerYAnchor), //.withId("imageView.centerY"),
+                imageView.leftAnchor.constraint(equalTo: self.container.leftAnchor),
+                imageView.widthAnchor.constraint(equalTo: self.container.widthAnchor, multiplier: 0.2),
+                imageView.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor),
+                imageView.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor),
+                imageView.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
             ])
         }
         newConstraints.append(contentsOf: [
             self.labelsContainer.leftAnchor.constraint(
-                    equalTo: self.imageView?.rightAnchor ?? self.container.leftAnchor, constant: Self.INSET), //.withId("labelsContainer.left"),
-            self.labelsContainer.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor, constant: -Self.INSET), //.withId("labelsContainer.right"),
-            self.labelsContainer.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor, constant: Self.INSET), //.withId("labelsContainer.top"),
-            self.labelsContainer.centerYAnchor.constraint(equalTo: self.container.centerYAnchor), //.withId("labelsContainer.centerY"),
-            self.labelsContainer.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -Self.INSET), //.withId("labelsContainer.bottom"),
+                    equalTo: self.imageView?.rightAnchor ?? self.container.leftAnchor, constant: Self.INSET),
+            self.labelsContainer.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor, constant: -Self.INSET),
+            self.labelsContainer.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor, constant: Self.INSET),
+            self.labelsContainer.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
+            self.labelsContainer.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -Self.INSET),
         ])
         newConstraints.append(contentsOf: [
-            self.label.leftAnchor.constraint(equalTo: self.labelsContainer.leftAnchor), //.withId("label.left"),
-            self.label.rightAnchor.constraint(equalTo: self.labelsContainer.rightAnchor), //.withId("label.right"),
-            self.label.topAnchor.constraint(equalTo: self.labelsContainer.topAnchor), //.withId("label.top"),
-            self.label.bottomAnchor.constraint(equalTo: self.subLabel?.topAnchor ?? self.labelsContainer.bottomAnchor), //.withId("label.bottom"),
+            self.label.leftAnchor.constraint(equalTo: self.labelsContainer.leftAnchor),
+            self.label.rightAnchor.constraint(equalTo: self.labelsContainer.rightAnchor),
+            self.label.topAnchor.constraint(equalTo: self.labelsContainer.topAnchor),
+            self.label.bottomAnchor.constraint(equalTo: self.subLabel?.topAnchor ?? self.labelsContainer.bottomAnchor),
         ])
         if let subLabel = self.subLabel {
             newConstraints.append(contentsOf: [
-                subLabel.leftAnchor.constraint(equalTo: self.labelsContainer.leftAnchor), //.withId("subLabel.left"),
-                subLabel.rightAnchor.constraint(equalTo: self.labelsContainer.rightAnchor), //.withId("subLabel.right"),
-                subLabel.bottomAnchor.constraint(equalTo: self.labelsContainer.bottomAnchor), //.withId("subLabel.bottom"),
+                subLabel.leftAnchor.constraint(equalTo: self.labelsContainer.leftAnchor),
+                subLabel.rightAnchor.constraint(equalTo: self.labelsContainer.rightAnchor),
+                subLabel.bottomAnchor.constraint(equalTo: self.labelsContainer.bottomAnchor),
             ])
         }
         self.constraints.set(newConstraints)
