@@ -31,6 +31,7 @@ class ImageView: UIView {
     private var aspectRatioConstraint = ConstraintHolder()
     private var containerHelper: SingleViewContainerHelper?
 
+    // TODO: Use ApplinLock.
     private let lock = NSLock()
     private var url: URL?
     private var fetchImageTask: Task<(), Never>?
