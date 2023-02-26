@@ -126,6 +126,7 @@ class JsonItem: Codable {
     var allow: String?
     var aspectRatio: Double?
     var autoCapitalize: String?
+    var badgeText: String?
     var cache: Bool?
     var checkRpc: String?
     // TODO: Split this into separate horizontal and vertical fields.
@@ -169,6 +170,7 @@ class JsonItem: Codable {
         case allow
         case aspectRatio = "aspect-ratio"
         case autoCapitalize = "auto-capitalize"
+        case badgeText = "badge-text"
         case cache
         case checkRpc = "check-rpc"
         case disposition

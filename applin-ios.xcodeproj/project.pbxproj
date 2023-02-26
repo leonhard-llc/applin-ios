@@ -14,6 +14,7 @@
 		36EBC1669D07E90DE864AC7D /* CustomConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC2D560A957291769F677 /* CustomConfig.swift */; };
 		36EBC1693A9EC7BB3155AE5B /* form_button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC960F01F9A285F600570 /* form_button.swift */; };
 		36EBC245A01DDE0A822A6EA4 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 36EBC1440B64839FC0AB1B5D /* logo.png */; };
+		36EBC24A39CD0E548724B73A /* row_view.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCB9E425A5046421FE017 /* row_view.swift */; };
 		36EBC2A8BC0F1877F4CF06F8 /* Weak.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC2A1A90A7DE2FB013A66 /* Weak.swift */; };
 		36EBC389DC6A8BB8BEAEFD19 /* util.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC10D3F4C74A515298A7A /* util.swift */; };
 		36EBC3A535AF66B4D4347E44 /* navigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCBA78DCB4741A74E8072 /* navigation.swift */; };
@@ -26,6 +27,7 @@
 		36EBC7A37F6B6C67CF3ECA1E /* rpc_caller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCE1F366FE724BAC1B0DC /* rpc_caller.swift */; };
 		36EBC81BFB2435508A9829FC /* loading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCCD93DA32787B12A834E /* loading.swift */; };
 		36EBC8512BA87075D55A3D2B /* json_item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC2C3C48EB2D794D16AB7 /* json_item.swift */; };
+		36EBC85FEF1032EFA9B16D0E /* badge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCBAA1300D4F9E03A485B /* badge.swift */; };
 		36EBC894DAA57B20493F7BF5 /* textfield.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC028E3CC54EA8CE9C422 /* textfield.swift */; };
 		36EBC8ADB47CA5094B1FD07B /* error_text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC85CD290F41492E6A681 /* error_text.swift */; };
 		36EBC8C464017332F7DDC833 /* modal_button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCC3CE22617EF9A9D5C19 /* modal_button.swift */; };
@@ -121,7 +123,9 @@
 		36EBCA1D73CB353801F2FAF5 /* media.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = media.swift; sourceTree = "<group>"; };
 		36EBCAD457C2BC103586A70C /* session_status.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = session_status.swift; sourceTree = "<group>"; };
 		36EBCB4C15A9CAE968DBA09F /* widget_util.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = widget_util.swift; sourceTree = "<group>"; };
+		36EBCB9E425A5046421FE017 /* row_view.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = row_view.swift; sourceTree = "<group>"; };
 		36EBCBA78DCB4741A74E8072 /* navigation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = navigation.swift; sourceTree = "<group>"; };
+		36EBCBAA1300D4F9E03A485B /* badge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = badge.swift; sourceTree = "<group>"; };
 		36EBCBB8E0A5A02F501EBC47 /* session.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = session.swift; sourceTree = "<group>"; };
 		36EBCC3CE22617EF9A9D5C19 /* modal_button.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = modal_button.swift; sourceTree = "<group>"; };
 		36EBCC5157A561C09D0B3DA4 /* view_util.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = view_util.swift; sourceTree = "<group>"; };
@@ -202,6 +206,8 @@
 				36EBC9B7DFBEA262202611EE /* image_view.swift */,
 				36EBC7316BBDD036F7A14DB2 /* ErrorView.swift */,
 				36EBCC5157A561C09D0B3DA4 /* view_util.swift */,
+				36EBCB9E425A5046421FE017 /* row_view.swift */,
+				36EBCBAA1300D4F9E03A485B /* badge.swift */,
 			);
 			path = view;
 			sourceTree = "<group>";
@@ -538,6 +544,8 @@
 				36EBC6DDB930B9DF9E71A279 /* ErrorView.swift in Sources */,
 				36EBC8ADB47CA5094B1FD07B /* error_text.swift in Sources */,
 				36EBCF339CD80051D27A7014 /* view_util.swift in Sources */,
+				36EBC24A39CD0E548724B73A /* row_view.swift in Sources */,
+				36EBC85FEF1032EFA9B16D0E /* badge.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

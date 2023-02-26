@@ -4,6 +4,7 @@ import UIKit
 struct NavButtonSpec: Equatable, Hashable, ToSpec {
     static let TYP = "nav-button"
     let actions: [ActionSpec]
+    let badgeText: String?
     let pageKey: String
     let photoUrl: URL?
     let subText: String?
@@ -11,6 +12,7 @@ struct NavButtonSpec: Equatable, Hashable, ToSpec {
 
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
+        self.badgeText = item.badgeText
         self.pageKey = pageKey
         self.photoUrl = try item.optPhotoUrl(config)
         self.subText = item.subText
@@ -20,14 +22,16 @@ struct NavButtonSpec: Equatable, Hashable, ToSpec {
     func toJsonItem() -> JsonItem {
         let item = JsonItem(NavButtonSpec.TYP)
         item.actions = self.actions.map({ action in action.toString() })
+        item.badgeText = self.badgeText
         item.photoUrl = self.photoUrl?.relativeString
         item.subText = self.subText
         item.text = self.text
         return item
     }
 
-    init(pageKey: String, photoUrl: URL? = nil, text: String, subText: String? = nil, _ actions: [ActionSpec]) {
+    init(pageKey: String, photoUrl: URL? = nil, text: String, subText: String? = nil, badge: String? = nil, _ actions: [ActionSpec]) {
         self.actions = actions
+        self.badgeText = badge
         self.pageKey = pageKey
         self.photoUrl = photoUrl
         self.subText = subText
@@ -71,62 +75,150 @@ struct NavButtonSpec: Equatable, Hashable, ToSpec {
 }
 
 class NavButtonWidget: Widget {
-    private static let INSET: CGFloat = 12.0
-    private let constraints = ConstraintSet()
+    private class Label: UIView {
+        private var textLabel: UILabel!
+
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            self.textLabel = UILabel()
+            self.textLabel.translatesAutoresizingMaskIntoConstraints = false
+            self.textLabel.numberOfLines = 0 // Setting numberOfLines to zero enables wrapping.
+            self.textLabel.lineBreakMode = .byWordWrapping
+            self.textLabel.font = UIFont.systemFont(ofSize: 20)
+            self.addSubview(self.textLabel)
+            NSLayoutConstraint.activate([
+                self.textLabel.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+                self.textLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 20),
+                self.textLabel.leftAnchor.constraint(equalTo: self.leftAnchor),
+                self.textLabel.rightAnchor.constraint(lessThanOrEqualTo: self.rightAnchor),
+                self.textLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: NavButtonWidget.SPACING),
+                self.textLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -NavButtonWidget.SPACING),
+            ])
+        }
+
+        convenience init() {
+            print("Label.init")
+            self.init(frame: CGRect.zero)
+        }
+
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        func update(text: String, disabled: Bool) {
+            self.textLabel.text = text
+            self.textLabel.textColor = disabled ? .placeholderText : .label
+        }
+    }
+
+    private class TwoLabels: UIView {
+        private var textLabel: UILabel!
+        private var subTextLabel: UILabel!
+
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            self.textLabel = UILabel()
+            self.textLabel.translatesAutoresizingMaskIntoConstraints = false
+            self.textLabel.numberOfLines = 0 // Setting numberOfLines to zero enables wrapping.
+            self.textLabel.lineBreakMode = .byWordWrapping
+            self.textLabel.font = UIFont.systemFont(ofSize: 20)
+            self.addSubview(self.textLabel)
+
+            self.subTextLabel = UILabel()
+            self.subTextLabel.translatesAutoresizingMaskIntoConstraints = false
+            self.subTextLabel.font = UIFont.systemFont(ofSize: 16)
+            self.subTextLabel.numberOfLines = 0 // Setting numberOfLines to zero enables wrapping.
+            self.subTextLabel.lineBreakMode = .byWordWrapping
+            self.addSubview(self.subTextLabel)
+
+            NSLayoutConstraint.activate([
+                self.textLabel.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+                self.textLabel.leftAnchor.constraint(equalTo: self.leftAnchor),
+                self.textLabel.rightAnchor.constraint(lessThanOrEqualTo: self.rightAnchor),
+                self.textLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: NavButtonWidget.SPACING),
+                self.textLabel.bottomAnchor.constraint(equalTo: self.subTextLabel.topAnchor),
+                self.subTextLabel.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+                self.subTextLabel.leftAnchor.constraint(equalTo: self.leftAnchor),
+                self.subTextLabel.rightAnchor.constraint(lessThanOrEqualTo: self.rightAnchor),
+                self.subTextLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -NavButtonWidget.SPACING),
+            ])
+        }
+
+        convenience init() {
+            print("ColumnView.init")
+            self.init(frame: CGRect.zero)
+        }
+
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        func update(text: String, subText: String, disabled: Bool) {
+            self.textLabel.text = text
+            self.subTextLabel.text = subText
+            self.textLabel.textColor = disabled ? .placeholderText : .label
+            self.subTextLabel.textColor = disabled ? .placeholderText : .secondaryLabel
+        }
+    }
+
+    private enum Labels {
+        case label(Label)
+        case twoLabels(TwoLabels)
+
+        func inner() -> UIView {
+            switch self {
+            case let .label(label):
+                return label
+            case let .twoLabels(twoLabels):
+                return twoLabels
+            }
+        }
+    }
+
+    private static let SPACING: CGFloat = 12.0
     private var spec: NavButtonSpec
-    private var container: TappableView!
+    private var tappableView: TappableView!
+    private var row: RowView!
+    private var rowLeftConstraint = ConstraintHolder()
     private var imageView: ImageView?
-    private var labelsContainer: UIView!
-    private var label: UILabel!
-    private var subLabel: UILabel?
+    private let imageConstraint = ConstraintHolder()
+    private var labels: Labels = .label(Label())
+    private var badge: Badge?
     private var chevron: UIImageView
     private weak var session: ApplinSession?
 
     init(_ spec: NavButtonSpec) {
         print("NavButtonWidget.init(\(spec))")
         self.spec = spec
-        self.container = TappableView()
-        self.container.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            self.container.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
-        ])
-        //self.container.backgroundColor = pastelPeach
+        self.tappableView = TappableView()
+        self.tappableView.translatesAutoresizingMaskIntoConstraints = false
+        //self.tappableView.backgroundColor = pastelPeach
+
+        self.row = RowView()
+        self.row.translatesAutoresizingMaskIntoConstraints = false
+        self.tappableView.addSubview(self.row)
 
         let chevronImage = UIImage(systemName: "chevron.forward")
         self.chevron = UIImageView(image: chevronImage)
-        self.chevron.translatesAutoresizingMaskIntoConstraints = false
-        self.container.addSubview(self.chevron)
+
         NSLayoutConstraint.activate([
+            self.tappableView.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow),
+            self.row.rightAnchor.constraint(equalTo: self.tappableView.rightAnchor, constant: -Self.SPACING),
+            self.row.topAnchor.constraint(equalTo: self.tappableView.topAnchor),
+            self.row.bottomAnchor.constraint(equalTo: self.tappableView.bottomAnchor),
             self.chevron.widthAnchor.constraint(equalToConstant: 12.0),
-            self.chevron.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -Self.INSET),
-            self.chevron.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
-            self.chevron.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor, constant: Self.INSET),
-            self.chevron.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -Self.INSET),
         ])
-
-        self.labelsContainer = UIView()
-        self.labelsContainer.translatesAutoresizingMaskIntoConstraints = false
-        self.container.addSubview(self.labelsContainer)
-
-        self.label = UILabel()
-        self.label.translatesAutoresizingMaskIntoConstraints = false
-        self.label.numberOfLines = 0 // Setting numberOfLines to zero enables word wrap.
-        self.label.lineBreakMode = .byWordWrapping
-        self.label.font = UIFont.systemFont(ofSize: 20)
-        self.labelsContainer.addSubview(self.label)
-
-        self.container.onTap = { [weak self] in
+        self.tappableView.onTap = { [weak self] in
             self?.tap()
         }
-        // TODO: Support badge and number badge.
     }
 
     func getView() -> UIView {
-        self.container
+        self.tappableView
     }
 
     func isFocused() -> Bool {
-        self.container.isPressed
+        self.tappableView.isPressed
     }
 
     @objc func tap() {
@@ -143,81 +235,45 @@ class NavButtonWidget: Widget {
         }
         self.spec = navButtonSpec
         self.session = session
-        var newConstraints: [NSLayoutConstraint] = []
-        // Image
         if let photoUrl = self.spec.photoUrl {
-            if self.imageView == nil {
-                self.imageView = ImageView(aspectRatio: 1.0)
-                self.imageView!.translatesAutoresizingMaskIntoConstraints = false
-                self.container.addSubview(self.imageView!)
-            }
+            self.imageView = self.imageView ?? ImageView(aspectRatio: 1.0)
+            self.imageConstraint.set(self.imageView!.heightAnchor.constraint(equalToConstant: 60.0))
             self.imageView!.update(photoUrl, aspectRatio: 1.0, .fit)
+            self.rowLeftConstraint.set(self.row.leftAnchor.constraint(equalTo: self.tappableView.leftAnchor))
         } else {
-            if let imageView = self.imageView {
-                imageView.removeFromSuperview()
-                self.imageView = nil
-            }
+            self.imageConstraint.set(nil)
+            self.imageView?.removeFromSuperview()
+            self.imageView = nil
+            self.rowLeftConstraint.set(self.row.leftAnchor.constraint(equalTo: self.tappableView.leftAnchor, constant: Self.SPACING))
         }
-        // Label
-        self.label.text = self.spec.text
-        // Sub-text label
+        let disabled = self.spec.actions.isEmpty
         if let subText = self.spec.subText, !subText.isEmpty {
-            if self.subLabel == nil {
-                self.subLabel = UILabel()
-                self.subLabel!.translatesAutoresizingMaskIntoConstraints = false
-                self.subLabel!.font = UIFont.systemFont(ofSize: 16)
-                self.subLabel!.numberOfLines = 0 // Setting numberOfLines to zero enables word wrap.
-                self.subLabel!.lineBreakMode = .byWordWrapping
-                self.labelsContainer.addSubview(self.subLabel!)
+            switch self.labels {
+            case .label:
+                let twoLabels = TwoLabels()
+                twoLabels.update(text: self.spec.text, subText: subText, disabled: disabled)
+                self.labels = .twoLabels(twoLabels)
+            case let .twoLabels(twoLabels):
+                twoLabels.update(text: self.spec.text, subText: subText, disabled: disabled)
             }
-            self.subLabel!.text = subText
         } else {
-            if let subLabel = self.subLabel {
-                subLabel.removeFromSuperview()
-                self.subLabel = nil
+            switch self.labels {
+            case let .label(label):
+                label.update(text: self.spec.text, disabled: disabled)
+            case .twoLabels:
+                let label = Label()
+                label.update(text: self.spec.text, disabled: disabled)
+                self.labels = .label(label)
             }
         }
-
-        // Layout
-        if let imageView = self.imageView {
-            newConstraints.append(contentsOf: [
-                imageView.leftAnchor.constraint(equalTo: self.container.leftAnchor),
-                imageView.widthAnchor.constraint(equalTo: self.container.widthAnchor, multiplier: 0.2),
-                imageView.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor),
-                imageView.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor),
-                imageView.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
-            ])
-        }
-        newConstraints.append(contentsOf: [
-            self.labelsContainer.leftAnchor.constraint(
-                    equalTo: self.imageView?.rightAnchor ?? self.container.leftAnchor, constant: Self.INSET),
-            self.labelsContainer.rightAnchor.constraint(lessThanOrEqualTo: self.chevron.leftAnchor, constant: -Self.INSET),
-            self.labelsContainer.topAnchor.constraint(greaterThanOrEqualTo: self.container.topAnchor, constant: Self.INSET),
-            self.labelsContainer.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
-            self.labelsContainer.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor, constant: -Self.INSET),
-        ])
-        newConstraints.append(contentsOf: [
-            self.label.leftAnchor.constraint(equalTo: self.labelsContainer.leftAnchor),
-            self.label.rightAnchor.constraint(equalTo: self.labelsContainer.rightAnchor),
-            self.label.topAnchor.constraint(equalTo: self.labelsContainer.topAnchor),
-            self.label.bottomAnchor.constraint(equalTo: self.subLabel?.topAnchor ?? self.labelsContainer.bottomAnchor),
-        ])
-        if let subLabel = self.subLabel {
-            newConstraints.append(contentsOf: [
-                subLabel.leftAnchor.constraint(equalTo: self.labelsContainer.leftAnchor),
-                subLabel.rightAnchor.constraint(equalTo: self.labelsContainer.rightAnchor),
-                subLabel.bottomAnchor.constraint(equalTo: self.labelsContainer.bottomAnchor),
-            ])
-        }
-        self.constraints.set(newConstraints)
-        if self.spec.actions.isEmpty {
-            self.label.textColor = .placeholderText
-            self.subLabel?.textColor = .placeholderText
-            self.chevron.tintColor = .placeholderText
+        if let badgeText = self.spec.badgeText, !badgeText.isEmpty {
+            self.badge = self.badge ?? Badge()
+            self.badge!.update(badgeText, disabled: disabled)
         } else {
-            self.label.textColor = .label
-            self.subLabel?.textColor = .secondaryLabel
-            self.chevron.tintColor = .label
+            self.badge = nil
         }
+        self.chevron.tintColor = disabled ? .placeholderText : .label
+        let subViews = [self.imageView, self.labels.inner(), self.badge, self.chevron].compactMap({ $0 })
+        self.row.update(.center, spacing: Float32(Self.SPACING), subviews: subViews)
     }
 }

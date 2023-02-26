@@ -15,6 +15,7 @@ class ColumnView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.isOpaque = false
+        // TODO: Remove here and elsewhere.
         self.translatesAutoresizingMaskIntoConstraints = false
     }
 
@@ -52,6 +53,7 @@ class ColumnView: UIView {
         for subview in subviews {
             if !existingSubviews.contains(subview) {
                 //print("ColumnView.update add \(subview)")
+                subview.translatesAutoresizingMaskIntoConstraints = false
                 self.addSubview(subview)
             }
         }
