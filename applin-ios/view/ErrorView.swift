@@ -19,7 +19,6 @@ class ErrorView: UIView {
 
         super.init(frame: frame)
         self.isOpaque = false
-        self.translatesAutoresizingMaskIntoConstraints = false
         self.addSubview(self.imageView)
         self.addSubview(self.label)
         NSLayoutConstraint.activate([

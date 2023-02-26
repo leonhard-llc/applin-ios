@@ -111,7 +111,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     static let ERROR_IMAGE = UIImage(systemName: "exclamationmark.circle")
     let container: TappableView
     let label: UILabel
-    let errorView = ErrorView()
+    let errorView: ErrorView!
     let textview: UITextView
     let constraintSet = ConstraintSet()
     var spec: TextfieldSpec
@@ -134,6 +134,8 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         self.label.lineBreakMode = .byWordWrapping
         self.label.numberOfLines = 0
 
+        self.errorView = ErrorView()
+        self.errorView.translatesAutoresizingMaskIntoConstraints = false
         self.errorView.setText(spec.error)
 
         self.textview = UITextView()

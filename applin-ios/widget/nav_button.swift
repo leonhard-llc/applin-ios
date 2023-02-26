@@ -237,6 +237,7 @@ class NavButtonWidget: Widget {
         self.session = session
         if let photoUrl = self.spec.photoUrl {
             self.imageView = self.imageView ?? ImageView(aspectRatio: 1.0)
+            self.imageView!.translatesAutoresizingMaskIntoConstraints = false
             self.imageConstraint.set(self.imageView!.heightAnchor.constraint(equalToConstant: 60.0))
             self.imageView!.update(photoUrl, aspectRatio: 1.0, .fit)
             self.rowLeftConstraint.set(self.row.leftAnchor.constraint(equalTo: self.tappableView.leftAnchor))

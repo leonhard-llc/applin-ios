@@ -44,7 +44,6 @@ class ImageView: UIView {
         self.aspectRatio = aspectRatio
         super.init(frame: CGRect.zero)
         self.containerHelper = SingleViewContainerHelper(superView: self)
-        self.translatesAutoresizingMaskIntoConstraints = false
         //self.backgroundColor = pastelYellow
         self.clipsToBounds = true
         NSLayoutConstraint.activate([
