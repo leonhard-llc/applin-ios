@@ -34,6 +34,7 @@ class Spec: Equatable, Hashable, ToSpec {
         case form(FormSpec)
         case formButton(FormButtonSpec)
         case formSection(FormSectionSpec)
+        case groupedRowTable(GroupedRowTableSpec)
         case image(ImageSpec)
         case lastErrorText(LastErrorTextSpec)
         case navButton(NavButtonSpec)
@@ -74,6 +75,8 @@ class Spec: Equatable, Hashable, ToSpec {
             self.value = .formButton(try FormButtonSpec(pageKey: pageKey, item))
         case FormSectionSpec.TYP:
             self.value = .formSection(try FormSectionSpec(config, pageKey: pageKey, item))
+        case GroupedRowTableSpec.TYP:
+            self.value = .groupedRowTable(try GroupedRowTableSpec(config, pageKey: pageKey, item))
         case ImageSpec.TYP:
             self.value = .image(try ImageSpec(config, item))
         case LastErrorTextSpec.TYP:
@@ -110,6 +113,8 @@ class Spec: Equatable, Hashable, ToSpec {
         case let .formButton(inner):
             return inner.toJsonItem()
         case let .formSection(inner):
+            return inner.toJsonItem()
+        case let .groupedRowTable(inner):
             return inner.toJsonItem()
         case let .image(inner):
             return inner.toJsonItem()
@@ -150,6 +155,8 @@ class Spec: Equatable, Hashable, ToSpec {
             return inner.keys()
         case let .formSection(inner):
             return inner.keys()
+        case let .groupedRowTable(inner):
+            return inner.keys()
         case let .image(inner):
             return inner.keys()
         case let .lastErrorText(inner):
@@ -184,6 +191,8 @@ class Spec: Equatable, Hashable, ToSpec {
         case let .formButton(inner):
             return inner.priority()
         case let .formSection(inner):
+            return inner.priority()
+        case let .groupedRowTable(inner):
             return inner.priority()
         case let .image(inner):
             return inner.priority()
@@ -220,6 +229,8 @@ class Spec: Equatable, Hashable, ToSpec {
             return inner.subs()
         case let .formSection(inner):
             return inner.subs()
+        case let .groupedRowTable(inner):
+            return inner.subs()
         case let .image(inner):
             return inner.subs()
         case let .lastErrorText(inner):
@@ -254,6 +265,8 @@ class Spec: Equatable, Hashable, ToSpec {
         case let .formButton(inner):
             return inner.vars()
         case let .formSection(inner):
+            return inner.vars()
+        case let .groupedRowTable(inner):
             return inner.vars()
         case let .image(inner):
             return inner.vars()
@@ -290,6 +303,8 @@ class Spec: Equatable, Hashable, ToSpec {
             return inner.widgetClass()
         case let .formSection(inner):
             return inner.widgetClass()
+        case let .groupedRowTable(inner):
+            return inner.widgetClass()
         case let .image(inner):
             return inner.widgetClass()
         case let .lastErrorText(inner):
@@ -324,6 +339,8 @@ class Spec: Equatable, Hashable, ToSpec {
         case let .formButton(inner):
             return inner.newWidget()
         case let .formSection(inner):
+            return inner.newWidget()
+        case let .groupedRowTable(inner):
             return inner.newWidget()
         case let .image(inner):
             return inner.newWidget()

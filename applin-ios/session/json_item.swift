@@ -150,6 +150,7 @@ class JsonItem: Codable {
     var minWidth: Float32?
     var photoUrl: String?
     var pollSeconds: UInt32?
+    var rowGroups: [[[JsonItem?]]]?
     var rpc: String?
     var spacing: Float32?
     var start: JsonItem?
@@ -185,14 +186,15 @@ class JsonItem: Codable {
         case isDestructive = "is-destructive"
         case label
         case maxChars = "max-chars"
-        case maxLines = "max-lines"
         case maxHeight = "max-height"
+        case maxLines = "max-lines"
         case maxWidth = "max-width"
         case minChars = "min-chars"
         case minHeight = "min-height"
         case minWidth = "min-width"
         case photoUrl = "photo-url"
         case pollSeconds = "poll-seconds"
+        case rowGroups = "row-groups"
         case rpc
         case spacing
         case start
