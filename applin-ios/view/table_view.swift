@@ -122,33 +122,23 @@ class TableView: UIView {
         self.setNeedsDisplay()
     }
 
-    //override func draw(_ rect: CGRect) {
-    //    if let color = self.separatorColor, let ctx = UIGraphicsGetCurrentContext() {
-    //        // Draw a line left-to-right between subviews
-    //        let left = 0.0
-    //        let right = self.bounds.size.width
-    //        ctx.setLineCap(.round)
-    //        ctx.setLineWidth(CGFloat(SEPARATOR_THICKNESS))
-    //        ctx.setStrokeColor(color.cgColor)
-    //        ctx.beginPath()
-    //        if let first = self.subviewRows.first, let sepThickness = self.separatorThickness() {
-    //            let y = first.frame.minY - CGFloat(sepThickness / 2.0)
-    //            ctx.move(to: CGPoint(x: left, y: y))
-    //            ctx.addLine(to: CGPoint(x: right, y: y))
-    //        }
-    //        for (n, a) in self.subviewRows.dropLast(1).enumerated() {
-    //            let b = self.subviewRows[n + 1]
-    //            let y = (a.frame.maxY + b.frame.minY) / 2.0
-    //            //print("TableView.draw (\(left), \(y)) -> (\(right), \(y))")
-    //            ctx.move(to: CGPoint(x: left, y: y))
-    //            ctx.addLine(to: CGPoint(x: right, y: y))
-    //        }
-    //        if let last = self.subviewRows.last, let sepThickness = self.separatorThickness() {
-    //            let y = last.frame.maxY + CGFloat(sepThickness / 2.0)
-    //            ctx.move(to: CGPoint(x: left, y: y))
-    //            ctx.addLine(to: CGPoint(x: right, y: y))
-    //        }
-    //        ctx.strokePath()
-    //    }
-    //}
+    override func draw(_ rect: CGRect) {
+        if !self.rowSeparators.isEmpty, let ctx = UIGraphicsGetCurrentContext() {
+            // Draw a line left-to-right between rows.
+            let left = 0.0 + self.spacing
+            let right = max(0.0, self.bounds.size.width - self.spacing)
+            ctx.setLineCap(.round)
+            ctx.setLineWidth(CGFloat(SEPARATOR_THICKNESS))
+            ctx.setStrokeColor(SEPARATOR_COLOR)
+            ctx.beginPath()
+            for rowSeparator in self.rowSeparators {
+                if let rowSizer = self.rowSizers.get(Int(rowSeparator)) {
+                    let y = rowSizer.frame.minY - CGFloat(SEPARATOR_THICKNESS / 2.0)
+                    ctx.move(to: CGPoint(x: left, y: y))
+                    ctx.addLine(to: CGPoint(x: right, y: y))
+                }
+            }
+            ctx.strokePath()
+        }
+    }
 }
