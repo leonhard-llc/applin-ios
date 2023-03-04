@@ -49,6 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 self.stateFileWriter,
                 self.streamer
         )
+        URLCache.shared = URLCache(memoryCapacity: 10 * 1024 * 1024, diskCapacity: 500 * 1024 * 1024, diskPath: nil)
         super.init()
     }
 
