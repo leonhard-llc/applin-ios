@@ -90,9 +90,12 @@ class CustomConfig: CustomConfigProto {
                         ModalButtonSpec(text: "OK", isDefault: true, [.pop]),
                     ]
             ).toSpec(),
-            APPLIN_STATE_LOAD_ERROR_PAGE_KEY: PlainPageSpec(title: "Connect", ColumnSpec([
-                FormButtonSpec(pageKey: APPLIN_STATE_LOAD_ERROR_PAGE_KEY, text: "Connect", [.poll]),
-            ])).toSpec(),
+            APPLIN_STATE_LOAD_ERROR_PAGE_KEY: ModalSpec(
+                    pageKey: APPLIN_STATE_LOAD_ERROR_PAGE_KEY,
+                    kind: .alert,
+                    title: "Connect to Load App",
+                    [ModalButtonSpec(text: "Connect", isDefault: true, [.poll, .pop])]
+            ).toSpec(),
             APPLIN_PAGE_NOT_FOUND_PAGE_KEY: NavPageSpec(
                     pageKey: APPLIN_PAGE_NOT_FOUND_PAGE_KEY,
                     title: "Not Found",

@@ -282,6 +282,7 @@ class ApplinSession: ObservableObject {
                         state.pages[key] = NavPageSpec(
                                 pageKey: key,
                                 title: "Error",
+                                connectionMode: .pollSeconds(5),
                                 // TODO: Show a better error page.
                                 TextSpec("Error loading page. Please update the app.")
                         ).toSpec()
@@ -335,6 +336,32 @@ class ApplinSession: ObservableObject {
             await self.withUpdatesPaused {
                 for action in actions {
                     switch action {
+                    case let .choosePhoto(path):
+                        print("choosePhoto(\(path))")
+                        if let nav = self.nav {
+                            switch await PhotoPicker.pick(nav) {
+                            case nil:
+                                return false
+                            case let .failure(e):
+                                print("choosePhoto error: \(e)")
+                                await self.mutex.lockAsync { state in
+                                    state.interactiveError = .appError("\(e)")
+                                    state.stack.append(APPLIN_APP_ERROR_PAGE_KEY)
+                                }
+                                return false
+                            case let .success(data):
+                                print("choosePhoto uploading \(data.count) bytes")
+                                let success = await self.rpcCaller?.interactiveRpc(
+                                        optPageKey: nil,
+                                        path: path,
+                                        method: "POST",
+                                        uploadBody: UploadBody(data, contentType: "image/jpeg")
+                                )
+                                if success != true {
+                                    return false
+                                }
+                            }
+                        }
                     case let .copyToClipboard(string):
                         print("copyToClipboard(\(string))")
                         UIPasteboard.general.string = string
@@ -368,6 +395,9 @@ class ApplinSession: ObservableObject {
                         if success != true {
                             return false
                         }
+                    case let .takePhoto(path):
+                        // TODO: Implement take-photo.
+                        print("takePhoto(\(path))")
                     }
                 }
                 return true

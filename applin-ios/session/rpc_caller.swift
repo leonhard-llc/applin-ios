@@ -1,5 +1,15 @@
 import Foundation
 
+class UploadBody {
+    let data: Data
+    let contentType: String
+
+    init(_ data: Data, contentType: String) {
+        self.data = data
+        self.contentType = contentType
+    }
+}
+
 class RpcCaller {
     private struct UserError: Codable {
         var message: String
@@ -27,7 +37,7 @@ class RpcCaller {
         self.urlSession.invalidateAndCancel()
     }
 
-    func rpc(optPageKey: String?, path: String, method: String) async throws {
+    func rpc(optPageKey: String?, path: String, method: String, uploadBody: UploadBody? = nil) async throws {
         print("rpc \(path)")
         try await self.rpcLock.lockAsyncThrows {
             guard let session = self.session else {
@@ -48,9 +58,13 @@ class RpcCaller {
                 }
                 let jsonBody: [String: JSON] = vars.mapValues({ v in v.toJson() })
                 urlRequest.httpBody = try! encodeJson(jsonBody)
+                urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
                 if let bodyString = String(data: urlRequest.httpBody!, encoding: .utf8) {
                     print("DEBUG request body: \(bodyString)")
                 }
+            } else if let uploadBody = uploadBody {
+                urlRequest.httpBody = uploadBody.data
+                urlRequest.addValue(uploadBody.contentType, forHTTPHeaderField: "Content-Type")
             }
             let data: Data
             let httpResponse: HTTPURLResponse
@@ -92,7 +106,7 @@ class RpcCaller {
         return result
     }
 
-    func interactiveRpc(optPageKey: String?, path: String, method: String) async -> Bool {
+    func interactiveRpc(optPageKey: String?, path: String, method: String, uploadBody: UploadBody? = nil) async -> Bool {
         await self.interactiveRpcLock.lockAsync {
             await self.withWorking {
                 guard let session = self.session else {
@@ -100,7 +114,7 @@ class RpcCaller {
                 }
                 let stopwatch = Stopwatch()
                 do {
-                    try await self.rpc(optPageKey: optPageKey, path: path, method: method)
+                    try await self.rpc(optPageKey: optPageKey, path: path, method: method, uploadBody: uploadBody)
                     await stopwatch.waitUntil(seconds: 1.0)
                     return true
                 } catch let e as ApplinError {

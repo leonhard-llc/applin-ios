@@ -2,6 +2,7 @@ import Foundation
 import UIKit
 
 enum ActionSpec: Codable, Equatable, Hashable {
+    case choosePhoto(String)
     case copyToClipboard(String)
     case launchUrl(URL)
     case logout
@@ -11,6 +12,7 @@ enum ActionSpec: Codable, Equatable, Hashable {
     case push(String)
     // TODO: Store pageKey, remove from button and nav-button.
     case rpc(String)
+    case takePhoto(String)
 
     // swiftlint:disable cyclomatic_complexity
     init(_ string: String) throws {
@@ -38,6 +40,8 @@ enum ActionSpec: Codable, Equatable, Hashable {
         }
         let part1 = String(parts[1])
         switch parts[0] {
+        case "choose-photo":
+            self = .choosePhoto(part1)
         case "copy-to-clipboard":
             self = .copyToClipboard(part1)
         case "launch-url":
@@ -50,6 +54,8 @@ enum ActionSpec: Codable, Equatable, Hashable {
             self = .push(part1)
         case "rpc":
             self = .rpc(part1)
+        case "take-photo":
+            self = .takePhoto(part1)
         default:
             throw ApplinError.appError("unknown action: \(string)")
         }
@@ -57,6 +63,8 @@ enum ActionSpec: Codable, Equatable, Hashable {
 
     func toString() -> String {
         switch self {
+        case let .choosePhoto(value):
+            return "choose-photo:\(value)"
         case let .copyToClipboard(value):
             return "copy-to-clipboard:\(value)"
         case let .launchUrl(value):
@@ -73,6 +81,8 @@ enum ActionSpec: Codable, Equatable, Hashable {
             return "push:\(value)"
         case let .rpc(value):
             return "rpc:\(value)"
+        case let .takePhoto(value):
+            return "take-photo:\(value)"
         }
     }
 }
