@@ -76,6 +76,7 @@ class PlainPageController: UIViewController, PageController {
         self.view.backgroundColor = .systemBackground
         let widget = cache.updateAll(session, state, plainPageSpec.widget)
         let subView = widget.getView()
+        subView.translatesAutoresizingMaskIntoConstraints = false
         self.helper.update(subView) {
             [
                 subView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),

@@ -125,6 +125,7 @@ class ScrollWidget: Widget {
         }
         let sub = subs[0]
         let subView = sub.getView()
+        subView.translatesAutoresizingMaskIntoConstraints = false
         self.helper.update(subView) {
             [
                 subView.topAnchor.constraint(equalTo: self.scrollView.topAnchor),

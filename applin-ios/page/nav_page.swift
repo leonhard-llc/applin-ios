@@ -222,6 +222,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         }
         let widget = cache.updateAll(session, state, navPageSpec.widget)
         let subView = widget.getView()
+        subView.translatesAutoresizingMaskIntoConstraints = false
         self.helper.update(subView) {
             [
                 self.navBar.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
