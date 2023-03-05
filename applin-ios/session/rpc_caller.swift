@@ -51,14 +51,13 @@ class RpcCaller {
             )
             urlRequest.httpMethod = method
             if let pageKey = optPageKey {
-                urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
                 guard let vars: [String: Var] = session.mutex.lockReadOnly({ state in state.pageVars(pageKey: pageKey) }) else {
                     print("WARN cancelling rpc for missing page '\(pageKey)'")
                     return
                 }
                 let jsonBody: [String: JSON] = vars.mapValues({ v in v.toJson() })
                 urlRequest.httpBody = try! encodeJson(jsonBody)
-                urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
+                urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
                 if let bodyString = String(data: urlRequest.httpBody!, encoding: .utf8) {
                     print("DEBUG request body: \(bodyString)")
                 }
