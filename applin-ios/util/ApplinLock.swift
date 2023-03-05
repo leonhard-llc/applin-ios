@@ -6,6 +6,17 @@ class ApplinLock {
     private let locked = AtomicBool(false)
     private let nsLock = NSLock()
 
+    // This function exists to avoid the warning (and error):
+    // "Instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in Swift 6"
+    // https://forums.swift.org/t/what-does-use-async-safe-scoped-locking-instead-even-mean/61029/15
+    private func lock_nsLock() {
+        self.nsLock.lock()
+    }
+
+    private func lock_nsLock(before: Date) -> Bool {
+        self.nsLock.lock(before: before)
+    }
+
     func unsafeLock() {
         self.nsLock.lock()
         let wasLocked = self.locked.store(true)
@@ -19,10 +30,10 @@ class ApplinLock {
                     // TODO: See if we can use `withCheckedContinuation` and eliminate the spin lock.
                     try await Task.sleep(nanoseconds: 50_000_000)
                 } catch {
-                    self.nsLock.lock()
+                    self.lock_nsLock()
                     break
                 }
-            } else if self.nsLock.lock(before: Date.now + TimeInterval(0.050)) {
+            } else if self.lock_nsLock(before: Date.now + TimeInterval(0.050)) {
                 break
             }
         }

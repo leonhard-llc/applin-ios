@@ -14,6 +14,13 @@ class ApplinPromise<T> {
         self.applinLock.unsafeLock()
     }
 
+    // This function exists to avoid the warning (and error):
+    // "Instance method 'lock' is unavailable from asynchronous contexts; Use async-safe scoped locking instead; this is an error in Swift 6"
+    // https://forums.swift.org/t/what-does-use-async-safe-scoped-locking-instead-even-mean/61029/15
+    private func lock_resultLock() {
+        self.resultLock.lock()
+    }
+
     func complete(value: T) {
         self.resultLock.lock()
         switch self.result {
@@ -30,7 +37,7 @@ class ApplinPromise<T> {
 
     func value() async -> T {
         await self.applinLock.lockAsync({
-            self.resultLock.lock()
+            self.lock_resultLock()
             defer {
                 self.resultLock.unlock()
             }
