@@ -60,7 +60,6 @@ class ImageView: UIView {
     private func applyAspectRatio(_ aspectRatio: Double) {
         self.aspectRatioConstraint.set(
                 self.widthAnchor.constraint(equalTo: self.heightAnchor, multiplier: aspectRatio))
-        //self.setNeedsLayout()
     }
 
     private func applySymbol(_ symbol: Symbol) {
@@ -108,7 +107,6 @@ class ImageView: UIView {
                 ]
             })
         }
-        //self.setNeedsLayout()
     }
 
     @MainActor

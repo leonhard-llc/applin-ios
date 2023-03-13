@@ -13,6 +13,7 @@ class TableView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        //self.backgroundColor = pastelYellow
         self.isOpaque = false
     }
 
@@ -119,7 +120,6 @@ class TableView: UIView {
             }
         }
         self.constraintSet.set(newConstraints)
-        self.setNeedsDisplay()
     }
 
     override func draw(_ rect: CGRect) {

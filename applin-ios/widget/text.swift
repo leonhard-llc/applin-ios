@@ -48,16 +48,41 @@ struct TextSpec: Equatable, Hashable, ToSpec {
     }
 }
 
+// https://stackoverflow.com/questions/48211895/how-to-fix-uilabel-intrinsiccontentsize-on-ios-11
+// https://stackoverflow.com/questions/17491376/ios-autolayout-multi-line-uilabel/26181894#26181894
+// If we use UILabel directly, and we have a Text widget in a TableView, then
+// the autolayout picks one of the labels and makes it the maximum width, even if it should be narrow.
+// Then on the second layout, it fixes the intrinsic width and displays it the correct width.
+// This is a bug in Apple's UILabel class where it sets intrinsicWidth to the max value. XCode View Debugger
+// shows the intrinsic width is 65536.  I wasted three hours on this. :(
+// A workaround is to set preferredMaxLayoutWidth before updating constraints.
+class UILabelWithIntrinsicSizeFix: UILabel {
+    override var bounds: CGRect {
+        didSet {
+            if (bounds.size.width != oldValue.size.width) {
+                self.setNeedsUpdateConstraints();
+            }
+        }
+    }
+
+    override func updateConstraints() {
+        if (self.preferredMaxLayoutWidth != self.bounds.size.width) {
+            self.preferredMaxLayoutWidth = self.bounds.size.width
+        }
+        super.updateConstraints()
+    }
+}
+
 class TextWidget: Widget {
     let container: UIView
-    let label: UILabel
+    let label: UILabelWithIntrinsicSizeFix
 
     init() {
         print("TextWidget.init()")
         self.container = UIView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
 
-        self.label = UILabel()
+        self.label = UILabelWithIntrinsicSizeFix()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.font = UIFont.preferredFont(forTextStyle: .body)
         self.label.numberOfLines = 0
@@ -75,7 +100,7 @@ class TextWidget: Widget {
             self.label.leadingAnchor.constraint(equalTo: self.container.leadingAnchor, constant: 8.0),
             self.label.trailingAnchor.constraint(equalTo: self.container.trailingAnchor, constant: -8.0),
             self.label.topAnchor.constraint(equalTo: self.container.topAnchor, constant: 8.0),
-            self.label.bottomAnchor.constraint(equalTo: self.container.bottomAnchor, constant: -8.0)
+            self.label.bottomAnchor.constraint(equalTo: self.container.bottomAnchor, constant: -8.0),
         ])
     }
 

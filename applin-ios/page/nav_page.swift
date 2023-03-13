@@ -84,7 +84,6 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     var hasPrevPage: Bool = false
     var navBar: UINavigationBar
     var optOriginalBackButton: UIBarButtonItem?
-    var subView: UIView?
 
     init(_ navController: NavigationController?, _ session: ApplinSession?, _ cache: WidgetCache?) {
         print("NavPageController.init")
