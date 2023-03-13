@@ -75,12 +75,12 @@ struct NavButtonSpec: Equatable, Hashable, ToSpec {
 }
 
 class NavButtonWidget: Widget {
-    private class Label: UIView {
-        private var textLabel: UILabel!
+    private class OneLabel: UIView {
+        private var textLabel: Label!
 
         override init(frame: CGRect) {
             super.init(frame: frame)
-            self.textLabel = UILabel()
+            self.textLabel = Label()
             self.textLabel.translatesAutoresizingMaskIntoConstraints = false
             self.textLabel.numberOfLines = 0 // Setting numberOfLines to zero enables wrapping.
             self.textLabel.lineBreakMode = .byWordWrapping
@@ -97,7 +97,7 @@ class NavButtonWidget: Widget {
         }
 
         convenience init() {
-            print("Label.init")
+            print("OneLabel.init")
             self.init(frame: CGRect.zero)
         }
 
@@ -112,19 +112,19 @@ class NavButtonWidget: Widget {
     }
 
     private class TwoLabels: UIView {
-        private var textLabel: UILabel!
-        private var subTextLabel: UILabel!
+        private var textLabel: Label!
+        private var subTextLabel: Label!
 
         override init(frame: CGRect) {
             super.init(frame: frame)
-            self.textLabel = UILabel()
+            self.textLabel = Label()
             self.textLabel.translatesAutoresizingMaskIntoConstraints = false
             self.textLabel.numberOfLines = 0 // Setting numberOfLines to zero enables wrapping.
             self.textLabel.lineBreakMode = .byWordWrapping
             self.textLabel.font = UIFont.systemFont(ofSize: 20)
             self.addSubview(self.textLabel)
 
-            self.subTextLabel = UILabel()
+            self.subTextLabel = Label()
             self.subTextLabel.translatesAutoresizingMaskIntoConstraints = false
             self.subTextLabel.font = UIFont.systemFont(ofSize: 16)
             self.subTextLabel.numberOfLines = 0 // Setting numberOfLines to zero enables wrapping.
@@ -162,12 +162,12 @@ class NavButtonWidget: Widget {
     }
 
     private enum Labels {
-        case label(Label)
+        case oneLabel(OneLabel)
         case twoLabels(TwoLabels)
 
         func inner() -> UIView {
             switch self {
-            case let .label(label):
+            case let .oneLabel(label):
                 return label
             case let .twoLabels(twoLabels):
                 return twoLabels
@@ -182,7 +182,7 @@ class NavButtonWidget: Widget {
     private var rowLeftConstraint = ConstraintHolder()
     private var imageView: ImageView?
     private let imageConstraint = ConstraintHolder()
-    private var labels: Labels = .label(Label())
+    private var labels: Labels = .oneLabel(OneLabel())
     private var badge: Badge?
     private var chevron: UIImageView
     private weak var session: ApplinSession?
@@ -250,7 +250,7 @@ class NavButtonWidget: Widget {
         let disabled = self.spec.actions.isEmpty
         if let subText = self.spec.subText, !subText.isEmpty {
             switch self.labels {
-            case .label:
+            case .oneLabel:
                 let twoLabels = TwoLabels()
                 twoLabels.update(text: self.spec.text, subText: subText, disabled: disabled)
                 self.labels = .twoLabels(twoLabels)
@@ -259,12 +259,12 @@ class NavButtonWidget: Widget {
             }
         } else {
             switch self.labels {
-            case let .label(label):
-                label.update(text: self.spec.text, disabled: disabled)
+            case let .oneLabel(oneLabel):
+                oneLabel.update(text: self.spec.text, disabled: disabled)
             case .twoLabels:
-                let label = Label()
+                let label = OneLabel()
                 label.update(text: self.spec.text, disabled: disabled)
-                self.labels = .label(label)
+                self.labels = .oneLabel(label)
             }
         }
         if let badgeText = self.spec.badgeText, !badgeText.isEmpty {

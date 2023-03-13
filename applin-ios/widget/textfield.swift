@@ -110,7 +110,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     static let CORNER_RADIUS: CGFloat = 10.0
     static let ERROR_IMAGE = UIImage(systemName: "exclamationmark.circle")
     let container: TappableView
-    let label: UILabel
+    let label: Label
     let errorView: ErrorView!
     let textview: UITextView
     let constraintSet = ConstraintSet()
@@ -129,7 +129,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         self.container.translatesAutoresizingMaskIntoConstraints = false
         //self.container.backgroundColor = pastelPink
 
-        self.label = UILabel()
+        self.label = Label()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.lineBreakMode = .byWordWrapping
         self.label.numberOfLines = 0

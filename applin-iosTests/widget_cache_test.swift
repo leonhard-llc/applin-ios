@@ -45,7 +45,7 @@ class WidgetCacheTests: XCTestCase {
                 ApplinState.loading(),
                 ScrollSpec(TextSpec("t1")).toSpec()
         ) as! ScrollWidget
-        let label1 = scroll1.scrollView.subviews.first!.subviews.first! as! UILabel
+        let label1 = scroll1.scrollView.subviews.first!.subviews.first! as! Label
         XCTAssertEqual(label1.text, "t1")
         let scroll2 = cache.updateAll(
                 self.session!,
@@ -53,7 +53,7 @@ class WidgetCacheTests: XCTestCase {
                 ScrollSpec(TextSpec("t2")).toSpec()
         ) as! ScrollWidget
         XCTAssert(scroll1 === scroll2)
-        let label2 = scroll1.scrollView.subviews.first!.subviews.first! as! UILabel
+        let label2 = scroll1.scrollView.subviews.first!.subviews.first! as! Label
         XCTAssertEqual(label2.text, "t2")
         XCTAssert(label1 === label2)
     }
@@ -65,7 +65,7 @@ class WidgetCacheTests: XCTestCase {
                 ApplinState.loading(),
                 ColumnSpec([TextSpec("t1")]).toSpec()
         ) as! ColumnWidget
-        let label1 = column1.columnView.orderedSubviews.first!.subviews.first! as! UILabel
+        let label1 = column1.columnView.orderedSubviews.first!.subviews.first! as! Label
         XCTAssertEqual(label1.text, "t1")
         let column2 = cache.updateAll(
                 self.session!,
@@ -73,8 +73,8 @@ class WidgetCacheTests: XCTestCase {
                 ColumnSpec([TextSpec("t2"), TextSpec("t1")]).toSpec()
         ) as! ColumnWidget
         XCTAssert(column1 === column2)
-        let label2a = column2.columnView.orderedSubviews[0].subviews.first as! UILabel
-        let label2b = column2.columnView.orderedSubviews[1].subviews.first as! UILabel
+        let label2a = column2.columnView.orderedSubviews[0].subviews.first as! Label
+        let label2b = column2.columnView.orderedSubviews[1].subviews.first as! Label
         XCTAssert(label1 !== label2a)
         XCTAssertEqual(label2a.text, "t2")
         XCTAssert(label1 === label2b)

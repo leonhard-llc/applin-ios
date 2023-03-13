@@ -2,8 +2,8 @@ import UIKit
 
 class TestController: UIViewController {
     var state: Bool = false
-    var label1: UILabel?
-    var label2: UILabel?
+    var label1: Label?
+    var label2: Label?
     var textField: UITextField?
     var constraints: [NSLayoutConstraint] = []
 
@@ -31,14 +31,14 @@ class TestController: UIViewController {
         NSLayoutConstraint.deactivate(self.constraints)
         self.constraints.removeAll()
         if self.label1 == nil {
-            self.label1 = UILabel()
+            self.label1 = Label()
             self.label1!.text = "label1"
             self.label1!.translatesAutoresizingMaskIntoConstraints = false
             self.view.addSubview(self.label1!)
         }
         if self.state {
             if self.label2 == nil {
-                self.label2 = UILabel()
+                self.label2 = Label()
                 self.label2!.text = "label2"
                 self.label2!.translatesAutoresizingMaskIntoConstraints = false
                 self.view.addSubview(self.label2!)

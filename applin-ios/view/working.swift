@@ -9,7 +9,7 @@ class WorkingView: UIViewController {
         indicator.translatesAutoresizingMaskIntoConstraints = false
         indicator.startAnimating()
         self.view.addSubview(indicator)
-        let label = UILabel()
+        let label = Label()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = text
         self.view.addSubview(label)

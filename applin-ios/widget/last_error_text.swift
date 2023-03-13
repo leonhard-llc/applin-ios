@@ -39,13 +39,13 @@ struct LastErrorTextSpec: Equatable, Hashable, ToSpec {
 }
 
 class LastErrorTextWidget: Widget {
-    let label: UILabel
+    let label: Label
     let container: UIView
     var initialized = false
 
     init() {
         print("LastErrorTextWidget.init")
-        self.label = UILabel()
+        self.label = Label()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.font = UIFont.preferredFont(forTextStyle: .body)
         self.label.numberOfLines = 0

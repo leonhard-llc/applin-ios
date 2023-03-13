@@ -55,7 +55,7 @@ struct FormSectionSpec: Equatable, Hashable, ToSpec {
 class FormSectionWidget: Widget {
     let container: UIView
     let header: UIView
-    let label: UILabel
+    let label: Label
     let columnView: ColumnView
 
     init() {
@@ -69,7 +69,7 @@ class FormSectionWidget: Widget {
         self.header.backgroundColor = .systemGroupedBackground
         self.container.addSubview(self.header)
 
-        self.label = UILabel()
+        self.label = Label()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.font = UIFont.preferredFont(forTextStyle: .caption1)
         self.label.numberOfLines = 0

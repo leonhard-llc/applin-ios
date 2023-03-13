@@ -4,7 +4,7 @@ import UIKit
 /// Displays some text with a warning icon.
 class ErrorView: UIView {
     private let imageView: UIImageView
-    private let label: UILabel
+    private let label: Label
 
     override init(frame: CGRect) {
         let image = UIImage(systemName: "exclamationmark.circle")
@@ -12,7 +12,7 @@ class ErrorView: UIView {
         self.imageView.translatesAutoresizingMaskIntoConstraints = false
         self.imageView.tintColor = .systemRed
 
-        self.label = UILabel()
+        self.label = Label()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.lineBreakMode = .byWordWrapping
         self.label.numberOfLines = 0
