@@ -70,7 +70,7 @@ class AlertController: UIAlertController {
 }
 
 class NavigationController: UINavigationController, UIGestureRecognizerDelegate {
-    private enum Entry {
+    private enum Entry: CustomStringConvertible {
         case modal(AlertController)
         case navPage(NavPageController, WidgetCache)
         case plainPage(PlainPageController, WidgetCache)
@@ -94,6 +94,17 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
                 return ctl.allowBackSwipe()
             case let .plainPage(ctl, _):
                 return ctl.allowBackSwipe()
+            }
+        }
+
+        public var description: String {
+            switch self {
+            case let .modal(ctl):
+                return "Entry.modal{\(ctl)}"
+            case let .navPage(ctl, _):
+                return "Entry.modal{\(ctl)}"
+            case let .plainPage(ctl, _):
+                return "Entry.modal{\(ctl)}"
             }
         }
     }
@@ -256,6 +267,10 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
 
     public func topViewController() -> UIViewController? {
         self.top?.controller()
+    }
+
+    override public var description: String {
+        "NavigationController{\(self.address)}"
     }
 
     // Implements UIGestureRecognizerDelegate ----

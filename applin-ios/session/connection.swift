@@ -1,6 +1,6 @@
 import Foundation
 
-enum ConnectionMode: Equatable, Comparable {
+enum ConnectionMode: CustomStringConvertible, Equatable, Comparable {
     case stream
     case pollSeconds(UInt32)
     case disconnect
@@ -36,6 +36,17 @@ enum ConnectionMode: Equatable, Comparable {
             return nil
         case let .pollSeconds(seconds):
             return seconds
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .stream:
+            return "stream"
+        case let .pollSeconds(n):
+            return "pollSeconds(\(n))"
+        case .disconnect:
+            return "disconnect"
         }
     }
 }

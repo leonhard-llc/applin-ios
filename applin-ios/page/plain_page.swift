@@ -86,4 +86,8 @@ class PlainPageController: UIViewController, PageController {
             ]
         }
     }
+
+    override var description: String {
+        "PlainPageController{title=\(self.title ?? "")}"
+    }
 }

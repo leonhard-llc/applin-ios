@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-enum ActionSpec: Codable, Equatable, Hashable {
+enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
     case choosePhoto(String)
     case copyToClipboard(String)
     case launchUrl(URL)
@@ -83,6 +83,31 @@ enum ActionSpec: Codable, Equatable, Hashable {
             return "rpc:\(value)"
         case let .takePhoto(value):
             return "take-photo:\(value)"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case let .choosePhoto(value):
+            return "choosePhoto(\(value))"
+        case let .copyToClipboard(value):
+            return "copyToClipboard(\(value))"
+        case let .launchUrl(value):
+            return "launchUrl(\(value))"
+        case .logout:
+            return "logout"
+        case .nothing:
+            return "nothing"
+        case .pop:
+            return "pop"
+        case .poll:
+            return "poll"
+        case let .push(value):
+            return "push(\(value))"
+        case let .rpc(value):
+            return "rpc(\(value))"
+        case let .takePhoto(value):
+            return "takePhoto(\(value))"
         }
     }
 }

@@ -24,7 +24,7 @@ enum ModalKind: String {
     }
 }
 
-struct ModalSpec: Equatable {
+struct ModalSpec: CustomStringConvertible, Equatable {
     let connectionMode: ConnectionMode
     let kind: ModalKind
     let pageKey: String
@@ -92,6 +92,10 @@ struct ModalSpec: Equatable {
 
     func vars() -> [(String, Var)] {
         []
+    }
+
+    public var description: String {
+        "ModalSpec{\(self.kind) title=\(self.title)}"
     }
 }
 

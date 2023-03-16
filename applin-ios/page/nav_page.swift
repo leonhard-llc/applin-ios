@@ -234,4 +234,8 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             ]
         }
     }
+
+    override var description: String {
+        "NavPageController{title=\(self.title ?? "")}"
+    }
 }

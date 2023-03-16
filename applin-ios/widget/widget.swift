@@ -23,7 +23,7 @@ protocol ToSpec {
 ///
 /// It is a reference-counted wrapper around the enum, to prevent unnecessary copies of the widget tree.
 /// This changes algorithms that would take O(n^2) memory into O(n).
-class Spec: Equatable, Hashable, ToSpec {
+class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
     enum Value: Equatable, Hashable {
         case backButton(BackButtonSpec)
         case button(ButtonSpec)
@@ -354,6 +354,43 @@ class Spec: Equatable, Hashable, ToSpec {
             return inner.newWidget()
         case let .text(inner):
             return inner.newWidget()
+        }
+    }
+
+    var description: String {
+        switch self.value {
+        case let .backButton(inner):
+            return "\(inner)"
+        case let .button(inner):
+            return "\(inner)"
+        case let .checkbox(inner):
+            return "\(inner)"
+        case let .column(inner):
+            return "\(inner)"
+        case let .empty(inner):
+            return "\(inner)"
+        case let .errorText(inner):
+            return "\(inner)"
+        case let .form(inner):
+            return "\(inner)"
+        case let .formButton(inner):
+            return "\(inner)"
+        case let .formSection(inner):
+            return "\(inner)"
+        case let .groupedRowTable(inner):
+            return "\(inner)"
+        case let .image(inner):
+            return "\(inner)"
+        case let .lastErrorText(inner):
+            return "\(inner)"
+        case let .navButton(inner):
+            return "\(inner)"
+        case let .textfield(inner):
+            return "\(inner)"
+        case let .scroll(inner):
+            return "\(inner)"
+        case let .text(inner):
+            return "\(inner)"
         }
     }
 

@@ -19,10 +19,8 @@ extension UIColor {
 
 extension NSObject {
     var address: String {
-        get {
-            withUnsafePointer(to: self) { p in
-                String(format: "%x", UInt(bitPattern: p))
-            }
+        withUnsafePointer(to: self) { p in
+            String(format: "%x", UInt(bitPattern: p))
         }
     }
 }

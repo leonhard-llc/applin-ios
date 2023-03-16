@@ -51,7 +51,7 @@ enum ApplinDisposition: Equatable, Hashable {
     case cover
 }
 
-enum ApplinHAlignment: Equatable, Hashable {
+enum ApplinHAlignment: CustomStringConvertible, Equatable, Hashable {
     case start
     case center
     case end
@@ -66,9 +66,20 @@ enum ApplinHAlignment: Equatable, Hashable {
             return .centerEnd
         }
     }
+
+    var description: String {
+        switch self {
+        case .start:
+            return "start"
+        case .center:
+            return "center"
+        case .end:
+            return "end"
+        }
+    }
 }
 
-enum ApplinVAlignment: Equatable, Hashable {
+enum ApplinVAlignment: CustomStringConvertible, Equatable, Hashable {
     case top
     case center
     case bottom
@@ -83,9 +94,20 @@ enum ApplinVAlignment: Equatable, Hashable {
             return .bottomCenter
         }
     }
+
+    var description: String {
+        switch self {
+        case .top:
+            return "top"
+        case .center:
+            return "center"
+        case .bottom:
+            return "bottom"
+        }
+    }
 }
 
-enum ApplinAlignment: Equatable, Hashable {
+enum ApplinAlignment: CustomStringConvertible, Equatable, Hashable {
     case topStart
     case topCenter
     case topEnd
@@ -115,6 +137,29 @@ enum ApplinAlignment: Equatable, Hashable {
             return .center
         case .bottomStart, .bottomCenter, .bottomEnd:
             return .bottom
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .topStart:
+            return "topStart"
+        case .topCenter:
+            return "topCenter"
+        case .topEnd:
+            return "topEnd"
+        case .centerStart:
+            return "centerStart"
+        case .center:
+            return "center"
+        case .centerEnd:
+            return "centerEnd"
+        case .bottomStart:
+            return "bottomStart"
+        case .bottomCenter:
+            return "bottomCenter"
+        case .bottomEnd:
+            return "bottomEnd"
         }
     }
 }

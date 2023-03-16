@@ -7,7 +7,7 @@ protocol PageController: UIViewController {
     func update(_ session: ApplinSession, _ cache: WidgetCache, _ state: ApplinState, _ newPageSpec: PageSpec, hasPrevPage: Bool)
 }
 
-enum PageSpec: Equatable {
+enum PageSpec: CustomStringConvertible, Equatable {
     case modal(ModalSpec)
     case navPage(NavPageSpec)
     case plainPage(PlainPageSpec)
@@ -28,15 +28,13 @@ enum PageSpec: Equatable {
     }
 
     var connectionMode: ConnectionMode {
-        get {
-            switch self {
-            case let .modal(inner):
-                return inner.connectionMode
-            case let .navPage(inner):
-                return inner.connectionMode
-            case let .plainPage(inner):
-                return inner.connectionMode
-            }
+        switch self {
+        case let .modal(inner):
+            return inner.connectionMode
+        case let .navPage(inner):
+            return inner.connectionMode
+        case let .plainPage(inner):
+            return inner.connectionMode
         }
     }
 
@@ -59,6 +57,17 @@ enum PageSpec: Equatable {
             return inner.vars()
         case let .plainPage(inner):
             return inner.vars()
+        }
+    }
+
+    var description: String {
+        switch self {
+        case let .modal(inner):
+            return "\(inner)"
+        case let .navPage(inner):
+            return "\(inner)"
+        case let .plainPage(inner):
+            return "\(inner)"
         }
     }
 }
