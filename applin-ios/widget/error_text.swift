@@ -48,7 +48,7 @@ class ErrorTextWidget: Widget {
 
     init(_ spec: ErrorTextSpec) {
         print("ErrorTextWidget.init(\(spec))")
-        self.errorView.setText(spec.text)
+        self.errorView.text = spec.text
     }
 
     func getView() -> UIView {
@@ -66,6 +66,6 @@ class ErrorTextWidget: Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.errorView.setText(errorTextSpec.text)
+        self.errorView.text = errorTextSpec.text
     }
 }

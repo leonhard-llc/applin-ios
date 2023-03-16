@@ -53,18 +53,18 @@ struct FormSectionSpec: Equatable, Hashable, ToSpec {
 }
 
 class FormSectionWidget: Widget {
-    let container: UIView
-    let header: UIView
+    let container: NamedUIView
+    let header: NamedUIView
     let label: Label
     let columnView: ColumnView
 
     init() {
         print("FormSectionWidget.init()")
-        self.container = UIView()
+        self.container = NamedUIView(name: "FormSectionWidget.container")
         self.container.translatesAutoresizingMaskIntoConstraints = false
         //self.container.backgroundColor = pastelBlue
 
-        self.header = UIView()
+        self.header = NamedUIView(name: "FormSectionWidget.header")
         self.header.translatesAutoresizingMaskIntoConstraints = false
         self.header.backgroundColor = .systemGroupedBackground
         self.container.addSubview(self.header)
@@ -115,6 +115,8 @@ class FormSectionWidget: Widget {
             throw "Expected .formSection got: \(spec)"
         }
         self.label.text = formSectionSpec.optTitle?.uppercased()
+        self.container.name = "FormSection{\(self.label.text ?? "")}.container"
+        self.header.name = "FormSection{\(self.label.text ?? "")}.header"
         self.columnView.update(
                 .start,
                 separator: .separator,

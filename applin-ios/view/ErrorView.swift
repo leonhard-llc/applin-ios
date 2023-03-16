@@ -45,7 +45,16 @@ class ErrorView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public func setText(_ text: String?) {
-        self.label.text = text
+    var text: String? {
+        set(value) {
+            self.label.text = value
+        }
+        get {
+            self.label.text
+        }
+    }
+
+    override public var description: String {
+        "ErrorView{\(self.address) \(self.label)}"
     }
 }

@@ -17,8 +17,8 @@ class RowView: UIView {
     }
 
     convenience init() {
-        print("RowView.init")
         self.init(frame: CGRect.zero)
+        print("\(self).init")
     }
 
     required init?(coder: NSCoder) {
@@ -75,5 +75,9 @@ class RowView: UIView {
         }
         self.constraintSet.set(newConstraints)
         self.setNeedsDisplay()
+    }
+
+    override public var description: String {
+        "RowView{\(self.address) \(self.orderedSubviews.count) cols}"
     }
 }

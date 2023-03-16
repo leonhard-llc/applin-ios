@@ -2,20 +2,20 @@ import Foundation
 import UIKit
 
 class Badge: UIView {
-    private var label: Label!
+    private var label: Label
 
     override init(frame: CGRect) {
-        super.init(frame: frame)
         let inset = 4.0
-        self.layer.cornerRadius = 12
-        self.layer.masksToBounds = true
         self.label = Label()
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.textColor = .white
         self.label.font = UIFont.boldSystemFont(ofSize: 16)
         self.label.numberOfLines = 0 // Setting numberOfLines to zero enables wrapping.
         self.label.lineBreakMode = .byCharWrapping
+        super.init(frame: frame)
         self.addSubview(self.label)
+        self.layer.cornerRadius = 12
+        self.layer.masksToBounds = true
         NSLayoutConstraint.activate([
             self.widthAnchor.constraint(equalToConstant: 0.0).withPriority(.defaultLow),
             self.widthAnchor.constraint(greaterThanOrEqualTo: self.heightAnchor),
@@ -45,5 +45,9 @@ class Badge: UIView {
         } else {
             self.backgroundColor = UIColor(rgb: 0xE44800)
         }
+    }
+
+    override public var description: String {
+        "Badge{\(self.address) \(self.label)}"
     }
 }

@@ -10,6 +10,12 @@ import UIKit
 // shows the intrinsic width is 65536.  I wasted three hours on this. :(
 // A workaround is to set preferredMaxLayoutWidth before updating constraints.
 class Label: UILabel {
+    public var name: String?
+
+    override public var description: String {
+        self.name ?? "Label{\(self.address) \(self.text ?? "")}"
+    }
+
     override var bounds: CGRect {
         didSet {
             if (bounds.size.width != oldValue.size.width) {

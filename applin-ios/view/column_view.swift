@@ -119,4 +119,8 @@ class ColumnView: UIView {
             ctx.strokePath()
         }
     }
+
+    override public var description: String {
+        "ColumnView{\(self.address) \(self.orderedSubviews.count) rows}"
+    }
 }

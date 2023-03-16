@@ -46,11 +46,12 @@ class LastErrorTextWidget: Widget {
     init() {
         print("LastErrorTextWidget.init")
         self.label = Label()
+        self.label.name = "LastErrorTextWidget.label"
         self.label.translatesAutoresizingMaskIntoConstraints = false
         self.label.font = UIFont.preferredFont(forTextStyle: .body)
         self.label.numberOfLines = 0
         self.label.text = ""
-        self.container = UIView()
+        self.container = NamedUIView(name: "LastErrorTextWidget.container")
         self.container.translatesAutoresizingMaskIntoConstraints = false
         self.container.addSubview(label)
         //self.container.backgroundColor = pastelYellow

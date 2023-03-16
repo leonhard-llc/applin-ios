@@ -136,7 +136,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
 
         self.errorView = ErrorView()
         self.errorView.translatesAutoresizingMaskIntoConstraints = false
-        self.errorView.setText(spec.error)
+        self.errorView.text = spec.error
 
         self.textview = UITextView()
         self.textview.translatesAutoresizingMaskIntoConstraints = false
@@ -205,7 +205,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
             self.textview.layer.borderColor = UIColor.systemRed.cgColor
             self.textview.layer.borderWidth = TextfieldWidget.BORDER_WIDTH * 2.0
             self.textview.layer.cornerRadius = 0.0
-            self.errorView.setText(errorString)
+            self.errorView.text = errorString
             self.container.addSubview(self.errorView)
             constraints.append(contentsOf: [
                 self.errorView.topAnchor.constraint(greaterThanOrEqualTo: prevBottomAnchor),
@@ -217,7 +217,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
             self.textview.layer.borderColor = TextfieldWidget.BORDER_COLOR.cgColor
             self.textview.layer.borderWidth = TextfieldWidget.BORDER_WIDTH
             self.textview.layer.cornerRadius = TextfieldWidget.CORNER_RADIUS
-            self.errorView.setText(nil)
+            self.errorView.text = nil
             self.errorView.removeFromSuperview()
         }
 

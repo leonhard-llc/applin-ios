@@ -30,6 +30,7 @@ class ImageView: UIView {
 
     private var aspectRatioConstraint = ConstraintHolder()
     private var containerHelper: SingleViewContainerHelper?
+    private var name: String = "ImageView"
 
     // TODO: Use ApplinLock.
     private let lock = NSLock()
@@ -39,10 +40,11 @@ class ImageView: UIView {
     private var symbol: Symbol
 
     init(aspectRatio: Double) {
-        print("ImageView.init")
         self.symbol = .loading(Self.makeIndicator())
         self.aspectRatio = aspectRatio
         super.init(frame: CGRect.zero)
+        self.name = "ImageView{\(self.address)}"
+        print("\(self).init")
         self.containerHelper = SingleViewContainerHelper(superView: self)
         //self.backgroundColor = pastelYellow
         self.clipsToBounds = true
@@ -123,6 +125,7 @@ class ImageView: UIView {
 
     func fetchImage(_ url: URL, _ disposition: ApplinDisposition) async {
         print("ImageView.fetchImage(\(url.absoluteString))")
+        self.name = "ImageView{\(self.address) \(url.absoluteString)}"
         let indicator = Self.makeIndicator()
         Task { @MainActor in
             self.setSymbol(.loading(indicator))
@@ -234,5 +237,9 @@ class ImageView: UIView {
                 self.applySymbol(symbol)
             }
         }
+    }
+
+    override public var description: String {
+        self.name
     }
 }

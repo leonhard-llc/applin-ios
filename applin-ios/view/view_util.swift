@@ -16,3 +16,13 @@ extension UIColor {
         self.init(red: CGFloat(red) / 256.0, green: CGFloat(green) / 256.0, blue: CGFloat(blue) / 256.0, alpha: 1.0)
     }
 }
+
+extension NSObject {
+    var address: String {
+        get {
+            withUnsafePointer(to: self) { p in
+                String(format: "%x", UInt(bitPattern: p))
+            }
+        }
+    }
+}

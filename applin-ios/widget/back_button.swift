@@ -57,6 +57,6 @@ class BackButtonWidget: Widget {
     }
 
     func getView() -> UIView {
-        UIView()
+        NamedUIView(name: "BackButtonWidget")
     }
 }

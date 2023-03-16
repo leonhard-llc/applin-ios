@@ -55,7 +55,7 @@ class TableView: UIView {
         let numRows = max(1, self.subviewRows.count)
         print("TableView numColumns=\(numColumns) numRows=\(numRows)")
         while self.colSizers.count < numColumns {
-            let view = UIView()
+            let view = NamedUIView(name: "\(self).colSizer\(self.colSizers.count)")
             view.translatesAutoresizingMaskIntoConstraints = false
             view.backgroundColor = pastelBlue
             self.addSubview(view)
@@ -65,7 +65,7 @@ class TableView: UIView {
             self.colSizers.popLast()?.removeFromSuperview()
         }
         while self.rowSizers.count < numRows {
-            let view = UIView()
+            let view = NamedUIView(name: "\(self).rowSizer\(self.rowSizers.count)")
             view.translatesAutoresizingMaskIntoConstraints = false
             view.backgroundColor = pastelGreen
             // view.isHidden = true
@@ -140,5 +140,9 @@ class TableView: UIView {
             }
             ctx.strokePath()
         }
+    }
+
+    override public var description: String {
+        "TableView{\(self.address) \(self.colSizers.count)x\(self.rowSizers.count)}"
     }
 }
