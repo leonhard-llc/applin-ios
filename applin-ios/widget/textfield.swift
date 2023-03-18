@@ -113,6 +113,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     let label: Label
     let errorView: ErrorView!
     let textview: UITextView
+    let toolbar: UIToolbar
     let constraintSet = ConstraintSet()
     var spec: TextfieldSpec
     weak var session: ApplinSession?
@@ -148,6 +149,26 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         // A tinted rectangle looks better, but has lower contrast:
         //self.textview.layer.backgroundColor = UIColor.systemGray6.cgColor
         self.container.addSubview(textview)
+
+        // https://stackoverflow.com/a/28339340
+        self.toolbar = UIToolbar(frame: CGRect.init(x: 0, y: 0, width: 0, height: 200))
+
+        super.init()
+        self.textview.delegate = self
+        self.container.onTap = { [weak self] in
+            self?.textview.becomeFirstResponder()
+        }
+
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneButton = UIBarButtonItem(
+                barButtonSystemItem: UIBarButtonItem.SystemItem.done,
+                target: self /* Selector targets are weak references. */,
+                action: #selector(self.doneButtonPressed)
+        )
+        self.toolbar.items = [flexSpace, doneButton]
+        self.toolbar.sizeToFit()
+        self.textview.inputAccessoryView = self.toolbar
+
         NSLayoutConstraint.activate([
             self.container.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
             self.textview.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultHigh),
@@ -155,11 +176,6 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
             self.textview.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -4.0),
             self.textview.bottomAnchor.constraint(equalTo: self.container.bottomAnchor, constant: -4.0),
         ])
-        super.init()
-        self.textview.delegate = self
-        self.container.onTap = { [weak self] in
-            self?.textview.becomeFirstResponder()
-        }
     }
 
     func getView() -> UIView {
@@ -168,6 +184,12 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
 
     func isFocused() -> Bool {
         self.textview.isFirstResponder
+    }
+
+    @objc
+    func doneButtonPressed() {
+        print("Done button pressed")
+        self.textview.resignFirstResponder()
     }
 
     func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
