@@ -13,11 +13,28 @@ To use:
 5. Use XCode or other tools to build and test your app
 
 ## License
-This project will use the [Brandeis-2023 license](https://github.com/mleonhard/brandeis-license).
+You may use Applin to build and test your app without a license.
+To release or distribute your app, you must obtain a valid license.
+See https://www.applin.dev/ .
+
+When Applin for iOS is built in `Release` mode, it:
+- When the license key is missing or invalid, Applin shows an error dialog to the user.  The user cannot use the app.
+- When the license key is more than 1 month past its expiration date, Applin shows a warning dialog to the user.
+  The user can dismiss the dialog and use the app.
+- Reports its app ID and license key to Leonhard LLC.  Approximately 1% of app installs per month will do this.
+You may not disable or interfere with these functions.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ## Development Progress
 
-This project is not yet usable.  It is not production-ready.
+This project is still under development.
 
 - Pages
   - `nav-page`
