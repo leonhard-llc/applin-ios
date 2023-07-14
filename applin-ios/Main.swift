@@ -57,7 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
             if let loadedState = optLoadedState {
                 print("loaded state file")
-                self.session.mutex.lock { state in
+                self.session.mutex.lockAndUpdate { state in
                     state = loadedState
                     state.paused = false
                     state.pauseUpdates = false
@@ -86,12 +86,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidBecomeActive(_ application: UIApplication) {
         print("active")
         if self.initialized.load() {
-            self.session.mutex.lock({ state in state.paused = false })
+            self.session.mutex.lockAndUpdate({ state in state.paused = false })
         }
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         print("background")
-        self.session.mutex.lock({ state in state.paused = true })
+        self.session.mutex.lockAndUpdate({ state in state.paused = true })
     }
 }

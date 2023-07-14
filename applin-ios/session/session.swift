@@ -177,7 +177,7 @@ class ApplinSession: ObservableObject {
             self.session?.updateDeps(state)
         }
 
-        func lock<R>(_ f: (inout ApplinState) -> R) -> R {
+        func lockAndUpdate<R>(_ f: (inout ApplinState) -> R) -> R {
             self.applinMutex.lock({ state in
                 let result = f(&state)
                 self.update(&state)
@@ -381,12 +381,12 @@ class ApplinSession: ObservableObject {
                         }
                     case .pop:
                         print("pop")
-                        self.mutex.lock { (state: inout ApplinState) in
+                        self.mutex.lockAndUpdate { (state: inout ApplinState) in
                             state.pop()
                         }
                     case let .push(key):
                         print("push(\(key))")
-                        self.mutex.lock { (state: inout ApplinState) in
+                        self.mutex.lockAndUpdate { (state: inout ApplinState) in
                             state.push(pageKey: key)
                         }
                     case let .rpc(path):

@@ -127,7 +127,7 @@ class CheckboxWidget: Widget {
     }
 
     func setChecked(_ checked: Bool?) {
-        self.session?.mutex.lock({ state in state.setBoolVar(self.spec.varName, checked) })
+        self.session?.mutex.lockAndUpdate({ state in state.setBoolVar(self.spec.varName, checked) })
         self.updateImage()
     }
 

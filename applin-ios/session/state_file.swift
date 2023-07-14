@@ -131,7 +131,7 @@ class StateFileWriter {
                 lastWrittenId = contentsId
             } catch {
                 print("ERROR StateFileWriter: \(error)")
-                self.session?.mutex.lock { state in
+                self.session?.mutex.lockAndUpdate { state in
                     state.connectionError = .appError(
                             "Error saving data to device.  Is your storage full?  Details: \(error)")
                 }

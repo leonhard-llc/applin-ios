@@ -118,7 +118,7 @@ class RpcCaller {
                     return true
                 } catch let e as ApplinError {
                     print("RpcCaller.interactiveRpc error: \(e)")
-                    session.mutex.lock { state in
+                    session.mutex.lockAndUpdate { state in
                         state.interactiveError = e
                         switch e {
                         case .appError:
@@ -133,7 +133,7 @@ class RpcCaller {
                     }
                 } catch let e {
                     print("RpcCaller.interactiveRpc unexpected error: \(e)")
-                    session.mutex.lock { state in
+                    session.mutex.lockAndUpdate { state in
                         state.interactiveError = .appError("\(e)")
                         state.stack.append(APPLIN_CLIENT_ERROR_PAGE_KEY)
                     }

@@ -106,10 +106,10 @@ class Streamer {
                 try await self.connectOnce()
             } catch let e as ApplinError {
                 print("Streamer error: \(e)")
-                self.session?.mutex.lock({ state in state.connectionError = e })
+                self.session?.mutex.lockAndUpdate({ state in state.connectionError = e })
             } catch let e {
                 print("Streamer unexpected error: \(e)")
-                self.session?.mutex.lock({ state in state.connectionError = .appError("\(e)") })
+                self.session?.mutex.lockAndUpdate({ state in state.connectionError = .appError("\(e)") })
             }
             if !Task.isCancelled {
                 await sleep(ms: Int.random(in: 2_500...7_500))
