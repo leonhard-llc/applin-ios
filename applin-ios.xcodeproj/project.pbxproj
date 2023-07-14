@@ -75,7 +75,6 @@
 		CE62D8DC2824A279001E16B9 /* markdown_page.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE62D8DB2824A279001E16B9 /* markdown_page.swift */; };
 		CE62D8DE2824A299001E16B9 /* nav_page.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE62D8DD2824A299001E16B9 /* nav_page.swift */; };
 		CE62D8E02824A2B0001E16B9 /* plain_page.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE62D8DF2824A2B0001E16B9 /* plain_page.swift */; };
-		CE66199A286442A400307EEE /* spinner.gif in Resources */ = {isa = PBXBuildFile; fileRef = CE661999286442A400307EEE /* spinner.gif */; };
 		CE68B8E9280004DE000B7761 /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B8E8280004DE000B7761 /* Main.swift */; };
 		CE68B8ED280004E1000B7761 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE68B8EC280004E1000B7761 /* Assets.xcassets */; };
 		CE68B8FA280004E1000B7761 /* applin_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B8F9280004E1000B7761 /* applin_iosTests.swift */; };
@@ -171,7 +170,6 @@
 		CE62D8DB2824A279001E16B9 /* markdown_page.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = markdown_page.swift; sourceTree = "<group>"; };
 		CE62D8DD2824A299001E16B9 /* nav_page.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = nav_page.swift; sourceTree = "<group>"; };
 		CE62D8DF2824A2B0001E16B9 /* plain_page.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = plain_page.swift; sourceTree = "<group>"; };
-		CE661999286442A400307EEE /* spinner.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = spinner.gif; sourceTree = "<group>"; };
 		CE68B8E5280004DE000B7761 /* applin-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "applin-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE68B8E8280004DE000B7761 /* Main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Main.swift; sourceTree = "<group>"; };
 		CE68B8EC280004E1000B7761 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -326,7 +324,6 @@
 				CE68B902280004E1000B7761 /* applin-iosUITests */,
 				CE68B8E6280004DE000B7761 /* Products */,
 				36EBC5430B831FFCC6098B08 /* .swiftlint.yml */,
-				CE661999286442A400307EEE /* spinner.gif */,
 			);
 			sourceTree = "<group>";
 		};
@@ -484,7 +481,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE68B8ED280004E1000B7761 /* Assets.xcassets in Resources */,
-				CE66199A286442A400307EEE /* spinner.gif in Resources */,
 				36EBC011C10A02B3F9525F35 /* .swiftlint.yml in Resources */,
 				36EBC245A01DDE0A822A6EA4 /* logo.png in Resources */,
 			);
