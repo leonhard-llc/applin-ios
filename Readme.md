@@ -4,25 +4,26 @@ Copy this iOS app and customize it to connect to your
 
 To use:
 1. Clone this repo.
-   - [Do not make a GitHub fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/what-happens-to-forks-when-a-repository-is-deleted-or-changes-visibility).
-2. Replace the AppIcon
-3. Edit [`CustomConfig.swift`](applin-ios/CustomConfig.swift).
-   - Enter your server's prod URL
-   - Customize the pages that your app shows before it connects to the server the first time.
-4. Replace [`logo.png`](applin-ios/CustomConfig.swift) if your initial screen uses it.
+   [Do not make a GitHub fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/what-happens-to-forks-when-a-repository-is-deleted-or-changes-visibility).
+2. Change the app name, icon, and [`applin-ios/logo.png`](applin-ios/logo.png).
+3. Edit [`applin-ios/ApplinCustomConfig.swift`](applin-ios/ApplinCustomConfig.swift).
+   - Customize the page that your app shows when it starts up, before connecting to your server.
+   - Before making a Release build, enter your license key.
 5. Use XCode or other tools to build and test your app
 
 ## License
-You may use Applin to build and test your app without a license.
-To release or distribute your app, you must obtain a valid license.
+You may use Applin to build and test apps.
+To release or distribute an app, you must obtain a valid license.
 See https://www.applin.dev/ .
 
-When Applin for iOS is built in `Release` mode, it:
-- When the license key is missing or invalid, Applin shows an error dialog to the user.  The user cannot use the app.
-- When the license key is more than 1 month past its expiration date, Applin shows a warning dialog to the user.
-  The user can dismiss the dialog and use the app.
-- Reports its app ID and license key to Leonhard LLC.  Approximately 1% of app installs per month will do this.
+When you build in `Release` mode:
+- Applin checks the license key.  If the key is missing or invalid, it will not start.
+- Applin reports its app ID and license key to Leonhard LLC.  Approximately 1% of app installs per month will do this.
+
 You may not disable or interfere with these functions.
+
+Licenses expire, but keys do not contain the expiration date.  An app with an expired license will work.
+It is your responsibility to renew your license or disable your app before its license expires.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,

@@ -11,12 +11,6 @@ func checkLicenseKey(_ key: String) throws -> URL {
     guard let url = URL(string: url_string) else {
         throw "error in license key: url is invalid"
     }
-    #if DEBUG
-    precondition(url.scheme == "http" || url.scheme == "https")
-    if sig_string == "TEST" {
-        return url
-    }
-    #endif
     precondition(url.scheme == "https")
     if sig_string.isEmpty {
         throw "error in license key: signature part is empty"

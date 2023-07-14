@@ -122,11 +122,11 @@ class RpcCaller {
                         state.interactiveError = e
                         switch e {
                         case .appError:
-                            state.stack.append(APPLIN_APP_ERROR_PAGE_KEY)
+                            state.stack.append(APPLIN_CLIENT_ERROR_PAGE_KEY)
                         case .networkError:
                             state.stack.append(APPLIN_NETWORK_ERROR_PAGE_KEY)
                         case .serverError:
-                            state.stack.append(APPLIN_RPC_ERROR_PAGE_KEY)
+                            state.stack.append(APPLIN_SERVER_ERROR_PAGE_KEY)
                         case .userError:
                             state.stack.append(APPLIN_USER_ERROR_PAGE_KEY)
                         }
@@ -135,7 +135,7 @@ class RpcCaller {
                     print("RpcCaller.interactiveRpc unexpected error: \(e)")
                     session.mutex.lock { state in
                         state.interactiveError = .appError("\(e)")
-                        state.stack.append(APPLIN_APP_ERROR_PAGE_KEY)
+                        state.stack.append(APPLIN_CLIENT_ERROR_PAGE_KEY)
                     }
                 }
                 await stopwatch.waitUntil(seconds: 1.0)

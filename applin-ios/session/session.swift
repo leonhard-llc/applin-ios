@@ -346,7 +346,7 @@ class ApplinSession: ObservableObject {
                                 print("choosePhoto error: \(e)")
                                 await self.mutex.lockAsync { state in
                                     state.interactiveError = .appError("\(e)")
-                                    state.stack.append(APPLIN_APP_ERROR_PAGE_KEY)
+                                    state.stack.append(APPLIN_CLIENT_ERROR_PAGE_KEY)
                                 }
                                 return false
                             case let .success(data):
