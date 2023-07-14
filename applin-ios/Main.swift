@@ -65,9 +65,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 print("saved new state")
             } else {
                 let hasSession = hasSessionCookie(self.config)
-                //self.session.mutex.lockAndUpdate { state in
-                self.session.mutex.lock { state in
-                    state.pages = self.config.static_pages
+                let default_pages = self.config.staticPages()
+                self.session.mutex.lockAndUpdate { state in
+                    state.pages = default_pages
                     if hasSession {
                         print("has session")
                         state.stack = [APPLIN_STATE_LOAD_ERROR_PAGE_KEY]

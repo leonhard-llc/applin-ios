@@ -405,12 +405,10 @@ class ApplinConfig {
     }
 
     let dataDirPath: String
-    let static_pages: [String: (_ config: ApplinConfig) -> PageSpec]
     let url: URL
 
     init(dataDirPath: String) throws {
         self.dataDirPath = dataDirPath
-        self.static_pages = ApplinCustomConfig.STATIC_PAGES
         #if DEBUG
         self.url = ApplinCustomConfig.URL_FOR_DEBUG_BUILDS
         #elseif targetEnvironment(simulator)
@@ -423,5 +421,14 @@ class ApplinConfig {
 
     func appstoreUrl() -> URL {
         URL(string: "itms-apps://itunes.apple.com/app/id\(ApplinCustomConfig.APPSTORE_APP_ID)")!
+    }
+
+    func staticPages() -> [String: PageSpec] {
+        // Swift's Dictionary.mapValues doesn't pass the key. :(
+        // I guess this is because Swift has no way to ensure the keys don't get mutated, because the language's
+        // type system is insufficient and doesn't provide immutable types.
+        Dictionary(uniqueKeysWithValues: ApplinCustomConfig.STATIC_PAGES.map { key, spec_fn in
+            (key, spec_fn(self))
+        })
     }
 }
