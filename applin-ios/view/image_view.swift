@@ -32,8 +32,7 @@ class ImageView: UIView {
     private var containerHelper: SingleViewContainerHelper?
     private var name: String = "ImageView"
 
-    // TODO: Use ApplinLock.
-    private let lock = NSLock()
+    private let lock = ApplinLock()
     private var url: URL?
     private var fetchImageTask: Task<(), Never>?
     private var aspectRatio: Double
@@ -59,11 +58,13 @@ class ImageView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    @MainActor
     private func applyAspectRatio(_ aspectRatio: Double) {
         self.aspectRatioConstraint.set(
                 self.widthAnchor.constraint(equalTo: self.heightAnchor, multiplier: aspectRatio))
     }
 
+    @MainActor
     private func applySymbol(_ symbol: Symbol) {
         switch symbol {
         case let .loading(indicator):
@@ -113,23 +114,19 @@ class ImageView: UIView {
 
     @MainActor
     private func setSymbol(_ symbol: Symbol) {
-        self.lock.lock()
         let changed = self.symbol != symbol
         self.symbol = symbol
-        self.lock.unlock()
-
         if changed {
             self.applySymbol(symbol)
         }
     }
 
-    func fetchImage(_ url: URL, _ disposition: ApplinDisposition) async {
+    @MainActor
+    private func fetchImage(_ url: URL, _ disposition: ApplinDisposition) async {
         print("ImageView.fetchImage(\(url.absoluteString))")
         self.name = "ImageView{\(self.address) \(url.absoluteString)}"
         let indicator = Self.makeIndicator()
-        Task { @MainActor in
-            self.setSymbol(.loading(indicator))
-        }
+        self.setSymbol(.loading(indicator))
         // TODO: Merge concurrent fetches of the same URL.  Maybe the ios library does this already?
         //  https://developer.apple.com/documentation/uikit/views_and_controls/table_views/asynchronously_loading_images_into_table_and_collection_views#3637628
         // TODO: When retrying multiple URLs at same server, round-robin the URLs.  Maybe the ios library does this already?
@@ -171,9 +168,7 @@ class ImageView: UIView {
                 }
                 print("ImageView.fetchImage(\(url.absoluteString)) done")
                 let uiImageView = UIImageView(image: image)
-                Task { @MainActor in
-                    self.setSymbol(.image(uiImageView, disposition))
-                }
+                self.setSymbol(.image(uiImageView, disposition))
                 return
             } catch {
                 print("ImageView.fetchImage(\(url.absoluteString) error: \(error)")
@@ -182,12 +177,10 @@ class ImageView: UIView {
         }
         print("ImageView.fetchImage(\(url.absoluteString) giving up")
         let image = NoIntrinsicSizeImageView(image: UIImage(systemName: "xmark"))
-        Task { @MainActor in
-            self.setSymbol(.error(image))
-        }
+        self.setSymbol(.error(image))
     }
 
-    func loadImageBundleFile(filepath: String, _ disposition: ApplinDisposition) async {
+    private func loadImageBundleFile(filepath: String, _ disposition: ApplinDisposition) async {
         do {
             print("ImageView.loadImageBundleFile(\(filepath))")
             let data = try await readBundleFile(filepath: filepath)
@@ -209,33 +202,29 @@ class ImageView: UIView {
     }
 
     func update(_ url: URL, aspectRatio: Double, _ disposition: ApplinDisposition) {
-        //print("ImageView.update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        if self.aspectRatio != aspectRatio {
-            self.aspectRatio = aspectRatio
-            Task { @MainActor in
-                self.applyAspectRatio(aspectRatio)
-            }
-        }
-        if self.url != url {
-            self.url = url
-            self.fetchImageTask?.cancel()
-            self.fetchImageTask = Task {
-                if url.scheme == "asset" {
-                    await self.loadImageBundleFile(filepath: url.path, disposition)
-                } else {
-                    await self.fetchImage(url, disposition)
+        Task { @MainActor in
+            await self.lock.lockAsync({
+                //print("ImageView.update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
+                if self.aspectRatio != aspectRatio {
+                    self.aspectRatio = aspectRatio
+                    self.applyAspectRatio(aspectRatio)
                 }
-            }
-        } else if case let .image(image, oldDisposition) = self.symbol, oldDisposition != disposition {
-            let symbol: Symbol = .image(image, disposition)
-            self.symbol = symbol
-            Task { @MainActor in
-                self.applySymbol(symbol)
-            }
+                if self.url != url {
+                    self.url = url
+                    self.fetchImageTask?.cancel()
+                    self.fetchImageTask = Task {
+                        if url.scheme == "asset" {
+                            await self.loadImageBundleFile(filepath: url.path, disposition)
+                        } else {
+                            await self.fetchImage(url, disposition)
+                        }
+                    }
+                } else if case let .image(image, oldDisposition) = self.symbol, oldDisposition != disposition {
+                    let symbol: Symbol = .image(image, disposition)
+                    self.symbol = symbol
+                    self.applySymbol(symbol)
+                }
+            })
         }
     }
 
