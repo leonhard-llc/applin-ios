@@ -23,6 +23,7 @@
 		36EBC3F07F4086BE23679458 /* PaddedLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCEC4C43AFED5577C486E /* PaddedLabel.swift */; };
 		36EBC4070A102794E027A329 /* Label.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC543186223D5D8658270 /* Label.swift */; };
 		36EBC4E051232DB8DDC410D9 /* NamedUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC4730E9638622C66BCC5 /* NamedUIView.swift */; };
+		36EBC6318E1601208F677EFD /* ResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC7311505CED4BEE98473 /* ResponseCache.swift */; };
 		36EBC6DDB930B9DF9E71A279 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC7316BBDD036F7A14DB2 /* ErrorView.swift */; };
 		36EBC71B27C372E434D0368B /* table_view.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCA28048CD239C2BBB461 /* table_view.swift */; };
 		36EBC71BD57C2B7370EA5FE1 /* image_view.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC9B7DFBEA262202611EE /* image_view.swift */; };
@@ -122,6 +123,7 @@
 		36EBC543186223D5D8658270 /* Label.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Label.swift; sourceTree = "<group>"; };
 		36EBC666FE3459E173C71AAF /* grouped_row_table.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = grouped_row_table.swift; sourceTree = "<group>"; };
 		36EBC6C3A01FADBD0060FDB8 /* checkbox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = checkbox.swift; sourceTree = "<group>"; };
+		36EBC7311505CED4BEE98473 /* ResponseCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ResponseCache.swift; path = cache/ResponseCache.swift; sourceTree = "<group>"; };
 		36EBC7316BBDD036F7A14DB2 /* ErrorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		36EBC78AD550612C0B7D301D /* action.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = action.swift; sourceTree = "<group>"; };
 		36EBC7AD7ED8C71B8B9DD53A /* column_view.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = column_view.swift; sourceTree = "<group>"; };
@@ -350,6 +352,7 @@
 				36EBC2D560A957291769F677 /* ApplinCustomConfig.swift */,
 				36EBC1440B64839FC0AB1B5D /* logo.png */,
 				36EBC4E83FB9588C73211CF7 /* util */,
+				36EBC7311505CED4BEE98473 /* ResponseCache.swift */,
 			);
 			path = "applin-ios";
 			sourceTree = "<group>";
@@ -574,6 +577,7 @@
 				36EBCC50AE7DCB0892294E03 /* Protocol.md in Sources */,
 				36EBC30FFDF21FC311E8BA8D /* LicenseKey.swift in Sources */,
 				36EBCFD48688E39498BDFC0B /* ApplinConfig.swift in Sources */,
+				36EBC6318E1601208F677EFD /* ResponseCache.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

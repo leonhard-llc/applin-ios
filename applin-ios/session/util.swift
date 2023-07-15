@@ -154,6 +154,16 @@ extension Array {
 extension String: Error {
 }
 
+extension String {
+    func removeSuffix(_ suffix: String) -> String {
+        if self.hasSuffix(suffix) {
+            return String(self.dropLast(suffix.count))
+        } else {
+            return self
+        }
+    }
+}
+
 // class Weak<T: AnyObject> {
 //    weak var value: T?
 //
