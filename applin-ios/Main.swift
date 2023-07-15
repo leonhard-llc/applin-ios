@@ -73,7 +73,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         state.stack = [APPLIN_STATE_LOAD_ERROR_PAGE_KEY]
                     } else {
                         print("no session")
-                        state.stack = ["/"]
+                        state.stack = [ApplinCustomConfig.SHOW_PAGE_ON_FIRST_STARTUP]
                     }
                     state.paused = false
                     state.pauseUpdates = false
