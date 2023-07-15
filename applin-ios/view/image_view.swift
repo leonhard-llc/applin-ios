@@ -24,7 +24,7 @@ class ImageView: UIView {
 
     private enum Symbol: Equatable {
         case loading(NoIntrinsicSizeActivityView)
-        case image(UIImageView, ApplinDisposition)
+        case image(UIImageView)
         case error(NoIntrinsicSizeImageView)
     }
 
@@ -36,6 +36,7 @@ class ImageView: UIView {
     private var url: URL?
     private var fetchImageTask: Task<(), Never>?
     private var aspectRatio: Double
+    private var disposition: ApplinDisposition = .cover
     private var symbol: Symbol
 
     init(aspectRatio: Double) {
@@ -51,7 +52,7 @@ class ImageView: UIView {
             self.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow + 1.0),
         ])
         self.applyAspectRatio(aspectRatio)
-        self.applySymbol(self.symbol)
+        self.setSymbol(self.symbol)
     }
 
     required init?(coder: NSCoder) {
@@ -65,7 +66,8 @@ class ImageView: UIView {
     }
 
     @MainActor
-    private func applySymbol(_ symbol: Symbol) {
+    private func setSymbol(_ symbol: Symbol) {
+        self.symbol = symbol
         switch symbol {
         case let .loading(indicator):
             print("ImageView.applyUpdate .loading")
@@ -76,10 +78,10 @@ class ImageView: UIView {
                     indicator.centerYAnchor.constraint(equalTo: self.centerYAnchor),
                 ]
             })
-        case let .image(image, disposition):
+        case let .image(image):
             print("ImageView.applyUpdate .image")
             image.translatesAutoresizingMaskIntoConstraints = false
-            switch disposition {
+            switch self.disposition {
             case .fit:
                 image.contentMode = .scaleAspectFit
             case .stretch:
@@ -113,16 +115,7 @@ class ImageView: UIView {
     }
 
     @MainActor
-    private func setSymbol(_ symbol: Symbol) {
-        let changed = self.symbol != symbol
-        self.symbol = symbol
-        if changed {
-            self.applySymbol(symbol)
-        }
-    }
-
-    @MainActor
-    private func fetchImage(_ url: URL, _ disposition: ApplinDisposition) async {
+    private func fetchImage(_ url: URL) async {
         print("ImageView.fetchImage(\(url.absoluteString))")
         self.name = "ImageView{\(self.address) \(url.absoluteString)}"
         let indicator = Self.makeIndicator()
@@ -168,7 +161,7 @@ class ImageView: UIView {
                 }
                 print("ImageView.fetchImage(\(url.absoluteString)) done")
                 let uiImageView = UIImageView(image: image)
-                self.setSymbol(.image(uiImageView, disposition))
+                self.setSymbol(.image(uiImageView))
                 return
             } catch {
                 print("ImageView.fetchImage(\(url.absoluteString) error: \(error)")
@@ -180,7 +173,7 @@ class ImageView: UIView {
         self.setSymbol(.error(image))
     }
 
-    private func loadImageBundleFile(filepath: String, _ disposition: ApplinDisposition) async {
+    private func loadImageBundleFile(filepath: String) async {
         do {
             print("ImageView.loadImageBundleFile(\(filepath))")
             let data = try await readBundleFile(filepath: filepath)
@@ -190,7 +183,7 @@ class ImageView: UIView {
             print("ImageView.loadImageBundleFile(\(filepath)) done")
             let uiImageView = UIImageView(image: image)
             Task { @MainActor in
-                self.setSymbol(.image(uiImageView, disposition))
+                self.setSymbol(.image(uiImageView))
             }
         } catch {
             print("ImageView.loadImageBundleFile(\(filepath)) error: \(error)")
@@ -214,15 +207,14 @@ class ImageView: UIView {
                     self.fetchImageTask?.cancel()
                     self.fetchImageTask = Task {
                         if url.scheme == "asset" {
-                            await self.loadImageBundleFile(filepath: url.path, disposition)
+                            await self.loadImageBundleFile(filepath: url.path)
                         } else {
-                            await self.fetchImage(url, disposition)
+                            await self.fetchImage(url)
                         }
                     }
-                } else if case let .image(image, oldDisposition) = self.symbol, oldDisposition != disposition {
-                    let symbol: Symbol = .image(image, disposition)
-                    self.symbol = symbol
-                    self.applySymbol(symbol)
+                } else if self.disposition != disposition {
+                    self.disposition = disposition
+                    self.setSymbol(self.symbol)
                 }
             })
         }
