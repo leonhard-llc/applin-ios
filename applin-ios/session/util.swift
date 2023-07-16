@@ -17,13 +17,21 @@ func createDir(_ path: String) async throws {
 }
 
 func decodeJson<T: Decodable>(_ data: Data) throws -> T {
-    let decoder = JSONDecoder()
-    return try decoder.decode(T.self, from: data)
+    do {
+        let decoder = JSONDecoder()
+        return try decoder.decode(T.self, from: data)
+    } catch {
+        throw "error decoding \(data.count) bytes as JSON to \(String(describing: T.self)): \(error)"
+    }
 }
 
 func encodeJson<T: Encodable>(_ item: T) throws -> Data {
-    let encoder = JSONEncoder()
-    return try encoder.encode(item)
+    do {
+        let encoder = JSONEncoder()
+        return try encoder.encode(item)
+    } catch {
+        throw "error encoding \(String(describing: item)) as JSON: \(error)"
+    }
 }
 
 func deleteFile(path: String) async throws {

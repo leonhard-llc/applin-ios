@@ -1,7 +1,14 @@
 import Foundation
 import OSLog
 
-class ResponseInfo {
+struct ResponseInfo: Codable {
+    let absoluteUrl: String
+    let eTag: String
+    let deleteTime: UInt64
+    let refreshTime: UInt64
+}
+
+class CachedResponse {
     let infoFilePath: String
     let dataFilePath: String
     let absoluteUrl: String
@@ -27,19 +34,31 @@ class ResponseInfo {
 }
 
 class ResponseCache {
-    struct InfoFileContent: Codable {
-        let absoluteUrl: String
-        let eTag: String
-        let deleteTime: UInt64
-        let refreshTime: UInt64
+    private static let FILENAME_PREFIX = "ResponseCache."
+    private static let INFO_SUFFIX = ".info"
+    private static let DATA_SUFFIX = ".data"
+    private static let logger = Logger(subsystem: "Applin", category: "ResponseCache")
+
+    private static func removeFile(path: String) throws {
+        do {
+            try FileManager.default.removeItem(atPath: path)
+            Self.logger.info("removed file: \(path)")
+        } catch {
+            throw "error removing file '\(path)': \(error)"
+        }
     }
 
-    static let FILENAME_PREFIX = "ResponseCache."
-    static let INFO_SUFFIX = ".info"
-    static let DATA_SUFFIX = ".data"
-    static let logger = Logger(subsystem: "Applin", category: "ResponseCache")
-    let dirPath: String
-    var urlToInfo: [String: ResponseInfo]
+    private static func writeFile(path: String, _ data: Data) throws {
+        do {
+            try data.write(to: URL(fileURLWithPath: path))
+            Self.logger.info("wrote \(data.count) bytes to file: \(path)")
+        } catch {
+            throw "error writing \(data.count) bytes to file '\(path)': \(error)"
+        }
+    }
+
+    private let dirPath: String
+    private var urlToResponse: [String: CachedResponse]
 
     init(dirPath: String) throws {
         self.dirPath = dirPath
@@ -63,7 +82,7 @@ class ResponseCache {
             }
             return (path, dataPath)
         })
-        let infos: [ResponseInfo] = filePairs.compactMap({ (infoPath, dataPath) in
+        let responses: [CachedResponse] = filePairs.compactMap({ (infoPath, dataPath) in
             let bytes: Data
             do {
                 bytes = try Data(contentsOf: URL(fileURLWithPath: infoPath))
@@ -71,14 +90,14 @@ class ResponseCache {
                 Self.logger.error("error reading info file '\(infoPath)': \(error)")
                 return nil
             }
-            let content: InfoFileContent
+            let content: ResponseInfo
             do {
                 content = try decodeJson(bytes)
             } catch {
                 Self.logger.error("error decoding info file '\(infoPath)': \(error)")
                 return nil
             }
-            return ResponseInfo(
+            return CachedResponse(
                     infoFilePath: infoPath,
                     dataFilePath: dataPath,
                     absoluteUrl: content.absoluteUrl,
@@ -87,17 +106,62 @@ class ResponseCache {
                     refreshTime: content.refreshTime
             )
         })
-        let pathsToKeep = Set(infos.flatMap({ info in [info.infoFilePath, info.dataFilePath] }))
+        let pathsToKeep = Set(responses.flatMap({ r in [r.infoFilePath, r.dataFilePath] }))
         for path in cacheFiles {
             if !pathsToKeep.contains(path) {
                 do {
-                    try FileManager.default.removeItem(atPath: path)
-                    Self.logger.info("removed file: \(path)")
+                    try Self.removeFile(path: path)
                 } catch {
-                    Self.logger.error("error removing file '\(path)': \(error)")
+                    Self.logger.error("\(error)")
                 }
             }
         }
-        self.urlToInfo = Dictionary(uniqueKeysWithValues: infos.map({ info in (info.absoluteUrl, info) }))
+        self.urlToResponse = Dictionary(uniqueKeysWithValues: responses.map({ r in (r.absoluteUrl, r) }))
+    }
+
+    private func removeIgnoringError(url: String) {
+        if let cachedResponse = self.urlToResponse.removeValue(forKey: url) {
+            do {
+                try Self.removeFile(path: cachedResponse.infoFilePath)
+                try Self.removeFile(path: cachedResponse.dataFilePath)
+            } catch {
+                Self.logger.error("\(error)")
+            }
+        }
+    }
+
+    func addIgnoringError(_ info: ResponseInfo, _ data: Data) {
+        do {
+            self.removeIgnoringError(url: info.absoluteUrl)
+            let randomInt = UInt64.random(in: 1...UInt64.max)
+            let randomCode = String(randomInt, radix: 16, uppercase: true)
+            let pathPrefix = "\(self.dirPath)/\(Self.FILENAME_PREFIX)\(randomCode)"
+            let infoFilePath = "\(pathPrefix)\(Self.INFO_SUFFIX)"
+            let dataFilePath = "\(pathPrefix)\(Self.DATA_SUFFIX)"
+            let bytes: Data
+            bytes = try encodeJson(info)
+            try Self.writeFile(path: infoFilePath, bytes)
+            try Self.writeFile(path: dataFilePath, data)
+            let cachedResponse = CachedResponse(
+                    infoFilePath: infoFilePath,
+                    dataFilePath: dataFilePath,
+                    absoluteUrl: info.absoluteUrl,
+                    eTag: info.eTag,
+                    deleteTime: info.deleteTime,
+                    refreshTime: info.refreshTime
+            )
+            self.urlToResponse[info.absoluteUrl] = cachedResponse
+        } catch {
+            Self.logger.error("\(error)")
+        }
+    }
+
+    func filter(f: (CachedResponse) -> Bool) {
+        // Swift's Dictionary type is a value type, so this iterates over a copy of the dictionary and is safe.
+        for (url, response) in self.urlToResponse {
+            if !f(response) {
+                self.removeIgnoringError(url: url)
+            }
+        }
     }
 }
