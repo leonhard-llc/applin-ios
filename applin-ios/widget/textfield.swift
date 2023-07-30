@@ -12,11 +12,11 @@ struct TextfieldSpec: Equatable, Hashable, ToSpec {
     let maxChars: UInt32?
     let maxLines: UInt32?
     let minChars: UInt32?
-    let pageKey: String
+    // TODO: Change this to `refreshPageDelayMs`
     let rpc: String?
     let varName: String
 
-    init(pageKey: String, _ item: JsonItem) throws {
+    init(_ item: JsonItem) throws {
         self.allow = item.optAllow() ?? .all
         self.autoCapitalize = item.optAutoCapitalize()
         self.error = item.error
@@ -25,7 +25,6 @@ struct TextfieldSpec: Equatable, Hashable, ToSpec {
         self.maxChars = item.maxChars
         self.maxLines = item.maxLines
         self.minChars = item.minChars
-        self.pageKey = pageKey
         self.rpc = item.rpc
         self.varName = try item.requireVar()
     }
@@ -46,7 +45,6 @@ struct TextfieldSpec: Equatable, Hashable, ToSpec {
     }
 
     init(
-            pageKey: String,
             varName: String,
             allow: ApplinAllow? = nil,
             autoCapitalize: ApplinAutoCapitalize? = nil,
@@ -66,7 +64,6 @@ struct TextfieldSpec: Equatable, Hashable, ToSpec {
         self.maxChars = maxChars
         self.maxLines = maxLines
         self.minChars = minChars
-        self.pageKey = pageKey
         self.rpc = rpc
         self.varName = varName
     }
@@ -99,8 +96,11 @@ struct TextfieldSpec: Equatable, Hashable, ToSpec {
         TextfieldWidget.self
     }
 
-    func newWidget() -> Widget {
-        TextfieldWidget(self)
+    func newWidget(_ ctx: PageContext) -> Widget {
+        TextfieldWidget(ctx, self)
+    }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
     }
 }
 
@@ -115,15 +115,16 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     let textview: UITextView
     let toolbar: UIToolbar
     let constraintSet = ConstraintSet()
+    let ctx: PageContext
     var spec: TextfieldSpec
-    weak var session: ApplinSession?
     var initialized = false
 
     private let lock = NSLock()
     private var rpcTask: Task<Void, Never>?
 
-    init(_ spec: TextfieldSpec) {
+    init(_ ctx: PageContext, _ spec: TextfieldSpec) {
         print("TextfieldWidget.init(\(spec))")
+        self.ctx = ctx
         self.spec = spec
 
         self.container = TappableView()
@@ -192,7 +193,10 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         self.textview.resignFirstResponder()
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
+        guard let varSet = self.ctx.varSet else {
+            return
+        }
         guard case let .textfield(textfieldSpec) = spec.value else {
             throw "Expected .text got: \(spec)"
         }
@@ -201,9 +205,8 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         }
         print("TextfieldWidget.update(\(textfieldSpec))")
         self.spec = textfieldSpec
-        self.session = session
         if !self.initialized {
-            self.textview.text = state.getStringVar(self.spec.varName) ?? self.spec.initialString ?? ""
+            self.textview.text = varSet.string(self.spec.varName) ?? self.spec.initialString ?? ""
             self.initialized = true
         }
         var constraints: [NSLayoutConstraint] = []
@@ -273,28 +276,27 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
 
     func textViewDidChange(_: UITextView) {
         //print("textViewDidChange")
-        self.session?.mutex.lockAndUpdate({ state in
-            state.setStringVar(self.spec.varName, self.textview.text.isEmpty ? nil : self.textview.text)
-        })
-        if let rpcPath = self.spec.rpc {
-            self.lock.lock()
-            defer {
-                self.lock.unlock()
-            }
-            self.rpcTask?.cancel()
-            self.rpcTask = Task { @MainActor in
-                await sleep(ms: 3_000)
-                if Task.isCancelled {
-                    return
-                }
-                do {
-                    _ = try await self.session?.rpcCaller?.rpc(optPageKey: self.spec.pageKey, path: rpcPath, method: "POST")
-                } catch let e as ApplinError {
-                    print("TextField rpc error: \(e)")
-                } catch let e {
-                    print("TextField rpc unexpected error: \(e)")
-                }
-            }
-        }
+        //let value = self.textview.text.isEmpty ? nil : self.textview.text
+        //self.ctx.varSet?.setString(self.spec.varName, value)
+        //if let rpcPath = self.spec.rpc {
+        //    self.lock.lock()
+        //    defer {
+        //        self.lock.unlock()
+        //    }
+        //    self.rpcTask?.cancel()
+        //    self.rpcTask = Task {
+        //        await sleep(ms: 3_000)
+        //        if Task.isCancelled {
+        //            return
+        //        }
+        //        do {
+        //            try await self.ctx.serverCaller?.call(path: rpcPath, sourcePageKey: self.ctx.pageKey)
+        //        } catch let e as ApplinError {
+        //            print("TextField rpc error: \(e)")
+        //        } catch let e {
+        //            print("TextField rpc unexpected error: \(e)")
+        //        }
+        //    }
+        //}
     }
 }

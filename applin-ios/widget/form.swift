@@ -10,8 +10,8 @@ struct FormSpec: Equatable, Hashable, ToSpec {
     static let TYP = "form"
     let widgets: [Spec]
 
-    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
-        self.widgets = try item.optWidgets(config, pageKey: pageKey)?.filter({ spec in !spec.is_empty() }) ?? []
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
+        self.widgets = try item.optWidgets(config)?.filter({ spec in !spec.is_empty() }) ?? []
     }
 
     func toJsonItem() -> JsonItem {
@@ -51,6 +51,10 @@ struct FormSpec: Equatable, Hashable, ToSpec {
     func newWidget() -> Widget {
         FormWidget()
     }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        self.widgets.forEach({ widget in widget.visitActions(f) })
+    }
 }
 
 class FormWidget: Widget {
@@ -75,7 +79,7 @@ class FormWidget: Widget {
         false
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
         guard case .form = spec.value else {
             throw "Expected .form got: \(spec)"
         }

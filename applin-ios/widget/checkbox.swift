@@ -3,14 +3,12 @@ import UIKit
 
 struct CheckboxSpec: Equatable, Hashable, ToSpec {
     static let TYP = "checkbox"
-    let pageKey: String
     let initialBool: Bool?
     let rpc: String?
     let text: String?
     let varName: String
 
-    init(pageKey: String, _ item: JsonItem) throws {
-        self.pageKey = pageKey
+    init(_ item: JsonItem) throws {
         self.initialBool = item.initialBool
         self.rpc = item.rpc
         self.text = item.text
@@ -26,8 +24,7 @@ struct CheckboxSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    init(pageKey: String, varName: String, initialBool: Bool? = nil, text: String? = nil, rpc: String? = nil) {
-        self.pageKey = pageKey
+    init(varName: String, initialBool: Bool? = nil, text: String? = nil, rpc: String? = nil) {
         self.initialBool = initialBool
         self.rpc = rpc
         self.text = text
@@ -54,38 +51,41 @@ struct CheckboxSpec: Equatable, Hashable, ToSpec {
         CheckboxWidget.self
     }
 
-    func newWidget() -> Widget {
-        CheckboxWidget(self)
+    func newWidget(_ ctx: PageContext) -> Widget {
+        CheckboxWidget(self, ctx)
     }
 
     func vars() -> [(String, Var)] {
-        [(self.varName, .boolean(self.initialBool ?? false))]
+        [(self.varName, .bool(self.initialBool ?? false))]
+    }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
     }
 }
 
 class CheckboxWidget: Widget {
+    let checked = UIImage(systemName: "checkmark.square.fill")!
+    let unchecked = UIImage(systemName: "square")!
     var container: TappableView
-    let checked: UIImage
-    let unchecked: UIImage
     var spec: CheckboxSpec
     var button: UIButton!
-    weak var session: ApplinSession?
+    let ctx: PageContext
 
-    init(_ spec: CheckboxSpec) {
+    init(_ spec: CheckboxSpec, _ ctx: PageContext) {
         print("CheckboxWidget.init(\(spec))")
         self.container = TappableView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
-
-        self.checked = UIImage(systemName: "checkmark.square.fill")!
-        self.unchecked = UIImage(systemName: "square")!
         self.spec = spec
+        self.ctx = ctx
         // For unknown reasons, when the handler takes `[weak self]`, the first
         // checkbox on the page gets self set to 'nil'.  The strange work
         // around is to bind `weak self` before creating the handler.
         weak var weakSelf: CheckboxWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
             print("CheckboxWidget(\(weakSelf?.spec.varName ?? "nil")) UIAction")
-            weakSelf?.tap()
+            Task {
+                await weakSelf?.tap()
+            }
         })
         var config = UIButton.Configuration.borderless()
         config.imagePadding = 8.0
@@ -93,8 +93,10 @@ class CheckboxWidget: Widget {
         self.button.translatesAutoresizingMaskIntoConstraints = false
         self.button.setImage(self.checked, for: .highlighted)
         self.container.addSubview(self.button)
-        self.container.onTap = { [weak self] in
-            self?.tap()
+        self.container.onTap = { [weakSelf] in
+            Task {
+                await weakSelf?.tap()
+            }
         }
 
         NSLayoutConstraint.activate([
@@ -115,41 +117,39 @@ class CheckboxWidget: Widget {
         self.button.isFocused
     }
 
-    func updateImage() {
-        let checked = self.session?.mutex.lockReadOnly({ state in state.getBoolVar(self.spec.varName) })
-                ?? self.spec.initialBool
-                ?? false
+    @MainActor
+    private func updateButton(checked: Bool, title: String?) {
         if checked {
             self.button.setImage(self.checked, for: .normal)
         } else {
             self.button.setImage(self.unchecked, for: .normal)
         }
+        self.button.setTitle(title, for: .normal)
     }
 
-    func setChecked(_ checked: Bool?) {
-        self.session?.mutex.lockAndUpdate({ state in state.setBoolVar(self.spec.varName, checked) })
-        self.updateImage()
-    }
-
-    func tap() {
-        guard let session = self.session else {
-            print("WARN CheckboxWidget(\(self.spec.varName)).tap session is nil")
+    @MainActor
+    private func tap() async {
+        guard let varSet = self.ctx.varSet, let pageStack = self.ctx.pageStack else {
             return
         }
-        let oldBoolVar = session.mutex.lockReadOnly({ state in state.getBoolVar(self.spec.varName) })
-        let checked = oldBoolVar ?? self.spec.initialBool ?? false
-        self.setChecked(!checked)
+        let originalVarValue: Bool? = varSet.bool(self.spec.varName)
+        let originalValue = originalVarValue ?? self.spec.initialBool ?? false
+        let newValue: Bool = !originalValue
+        varSet.set(self.spec.varName, .bool(newValue))
+        self.updateButton(checked: newValue, title: self.spec.text)
         if let rpc = self.spec.rpc {
-            Task { @MainActor in
-                let ok = await session.doActionsAsync(pageKey: self.spec.pageKey, [.rpc(rpc)])
-                if !ok {
-                    self.setChecked(oldBoolVar)
-                }
+            let ok = await pageStack.doActions(pageKey: self.ctx.pageKey, [.rpc(rpc)])
+            if !ok {
+                varSet.setBool(self.spec.varName, originalVarValue)
+                self.updateButton(checked: !newValue, title: self.spec.text)
             }
         }
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
+        guard let varSet = self.ctx.varSet else {
+            return
+        }
         guard case let .checkbox(checkboxSpec) = spec.value else {
             throw "Expected .checkbox got: \(spec)"
         }
@@ -157,8 +157,10 @@ class CheckboxWidget: Widget {
             throw "Expected no subs got: \(subs)"
         }
         self.spec = checkboxSpec
-        self.session = session
         self.button.setTitle(self.spec.text, for: .normal)
-        self.updateImage()
+        let checked = varSet.bool(self.spec.varName) ?? self.spec.initialBool ?? false
+        Task {
+            await self.updateButton(checked: checked, title: self.spec.text)
+        }
     }
 }

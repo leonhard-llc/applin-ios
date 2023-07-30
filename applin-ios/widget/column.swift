@@ -7,8 +7,8 @@ struct ColumnSpec: Equatable, Hashable, ToSpec {
     let alignment: ApplinHAlignment
     let spacing: Float32
 
-    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
-        self.widgets = try item.optWidgets(config, pageKey: pageKey) ?? []
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
+        self.widgets = try item.optWidgets(config) ?? []
         self.alignment = item.optAlign() ?? .start
         self.spacing = item.spacing ?? 0.0
     }
@@ -54,6 +54,10 @@ struct ColumnSpec: Equatable, Hashable, ToSpec {
         print("ColumnSpec.newWidget()")
         return ColumnWidget()
     }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        self.widgets.forEach({ widget in widget.visitActions(f) })
+    }
 }
 
 class ColumnWidget: Widget {
@@ -77,7 +81,7 @@ class ColumnWidget: Widget {
         false
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .column(columnSpec) = spec.value else {
             throw "Expected .column got: \(spec)"
         }

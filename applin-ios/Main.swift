@@ -4,34 +4,25 @@ import UIKit
 @main
 class Main: UIResponder, UIApplicationDelegate {
     static let logger = Logger(subsystem: "Applin", category: "Main")
-    let config: ApplinConfig
     let navigationController = NavigationController()
-    let poller: Poller
+    let clock = LamportClock()
+    let config: ApplinConfig
     let responseCache: ResponseCache
-    let rpcCaller: RpcCaller
-    let stateFileWriter: StateFileWriter
-    let session: ApplinSession
-    let streamer: Streamer
+    //let streamer: Streamer
+    var varSet: VarSet?
+    var pageStack: PageStack?
+    var poller: Poller?
+    var serverCaller: ServerCaller?
+    var stateFileOwner: StateFileOwner?
     var window: UIWindow?
-    let initialized = AtomicBool(false)
 
     override init() {
         // Note: This code runs during app prewarming.
         do {
-            self.config = try ApplinConfig(dataDirPath: getDataDirPath())
-            self.responseCache = try ResponseCache(dirPath: self.config.dataDirPath)
-            self.session = ApplinSession(self.config, ApplinState.loading(), self.navigationController)
-            self.rpcCaller = RpcCaller(config, self.session)
-            self.poller = Poller(config, self.rpcCaller, self.session)
-            self.stateFileWriter = StateFileWriter(config, self.session)
-            self.streamer = Streamer(config, self.session)
-            self.session.setDeps(
-                    self.poller,
-                    self.rpcCaller,
-                    self.stateFileWriter,
-                    self.streamer
-            )
             URLCache.shared = URLCache(memoryCapacity: 10 * 1024 * 1024, diskCapacity: 500 * 1024 * 1024, diskPath: nil)
+            self.config = try ApplinConfig(dataDirPath: getDataDirPath())
+            self.responseCache = try ResponseCache(self.config, dirPath: self.config.dataDirPath)
+            //self.streamer = Streamer(config, self.session)
             super.init()
         } catch let e {
             Self.logger.fault("error starting app: \(e)")
@@ -51,37 +42,29 @@ class Main: UIResponder, UIApplicationDelegate {
         self.window!.rootViewController = self.navigationController
         self.window!.makeKeyAndVisible()
         Task(priority: .high) {
-            defer {
-                _ = self.initialized.store(true)
-            }
-            var optLoadedState: ApplinState? = nil
-            do {
-                optLoadedState = try await loadStateFile(self.config)
-            } catch {
-                Self.logger.error("\(error)")
-            }
-            if let loadedState = optLoadedState {
-                Self.logger.info("loaded state file")
-                self.session.mutex.lockAndUpdate { state in
-                    state = loadedState
-                    state.paused = false
-                    state.pauseUpdates = false
+            let optState = await StateFileOwner.read(self.config)
+            self.varSet = VarSet(optState?.boolVars ?? [:], optState?.stringVars ?? [:])
+            var pageKeys: [String]
+            if let state = optState {
+                pageKeys = state.pageKeys ?? []
+                if pageKeys.isEmpty {
+                    pageKeys = ["/"]
                 }
-                Self.logger.info("saved new state")
+            } else if hasSessionCookie(self.config) {
+                Self.logger.info("has session")
+                pageKeys = [APPLIN_STATE_LOAD_ERROR_PAGE_KEY]
             } else {
-                let hasSession = hasSessionCookie(self.config)
-                let default_pages = self.config.staticPages()
-                self.session.mutex.lockAndUpdate { state in
-                    state.pages = default_pages
-                    if hasSession {
-                        Self.logger.info("has session")
-                        state.stack = [APPLIN_STATE_LOAD_ERROR_PAGE_KEY]
-                    } else {
-                        Self.logger.info("no session")
-                        state.stack = [ApplinCustomConfig.SHOW_PAGE_ON_FIRST_STARTUP]
-                    }
-                    state.paused = false
-                    state.pauseUpdates = false
+                Self.logger.info("no session")
+                pageKeys = [ApplinCustomConfig.SHOW_PAGE_ON_FIRST_STARTUP]
+            }
+            self.pageStack = PageStack(self.responseCache, clock, self.navigationController, varSet)
+            self.serverCaller = ServerCaller(self.config, self.responseCache, self.pageStack, self.varSet)
+            self.pageStack!.weakServerCaller = self.serverCaller
+            self.poller = Poller(self.config, self.responseCache, self.pageStack, self.serverCaller)
+            self.stateFileOwner = StateFileOwner(self.config, self.varSet, self.pageStack)
+            Task {
+                while self.pageStack!.isEmpty() {
+                    let _ = await self.pageStack!.doActions(pageKey: "/", pageKeys.map({ pageKey in .push(pageKey) }))
                 }
             }
         }
@@ -90,13 +73,13 @@ class Main: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         Self.logger.info("active")
-        if self.initialized.load() {
-            self.session.mutex.lockAndUpdate({ state in state.paused = false })
-        }
+        self.poller?.start()
+        self.stateFileOwner?.start()
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         Self.logger.info("background")
-        self.session.mutex.lockAndUpdate({ state in state.paused = true })
+        self.stateFileOwner?.stop()
+        self.poller?.stop()
     }
 }

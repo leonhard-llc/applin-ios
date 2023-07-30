@@ -469,9 +469,9 @@ class JsonItem: Codable {
         }
     }
 
-    func optEnd(_ config: ApplinConfig, pageKey: String) throws -> Spec? {
+    func optEnd(_ config: ApplinConfig) throws -> Spec? {
         if let item = self.end {
-            return try Spec(config, pageKey: pageKey, item)
+            return try Spec(config, item)
         }
         return nil
     }
@@ -592,9 +592,9 @@ class JsonItem: Codable {
         return nil
     }
 
-    func optStart(_ config: ApplinConfig, pageKey: String) throws -> Spec? {
+    func optStart(_ config: ApplinConfig) throws -> Spec? {
         if let item = self.start {
-            return try Spec(config, pageKey: pageKey, item)
+            return try Spec(config, item)
         }
         return nil
     }
@@ -623,20 +623,20 @@ class JsonItem: Codable {
         throw ApplinError.appError("missing \(self.typ).url")
     }
 
-    func requireWidget(_ config: ApplinConfig, pageKey: String) throws -> Spec {
+    func requireWidget(_ config: ApplinConfig) throws -> Spec {
         if let value = self.widget {
-            return try Spec(config, pageKey: pageKey, value)
+            return try Spec(config, value)
         }
         throw ApplinError.appError("missing \(self.typ).widget")
     }
 
-    func optWidgets(_ config: ApplinConfig, pageKey: String) throws -> [Spec]? {
-        try self.widgets?.map({ value in try Spec(config, pageKey: pageKey, value) })
+    func optWidgets(_ config: ApplinConfig) throws -> [Spec]? {
+        try self.widgets?.map({ value in try Spec(config, value) })
     }
 
     func requireWidgets(_ config: ApplinConfig, pageKey: String) throws -> [Spec] {
         if let values = self.widgets {
-            return try values.map({ value in try Spec(config, pageKey: pageKey, value) })
+            return try values.map({ value in try Spec(config, value) })
         }
         throw ApplinError.appError("missing \(self.typ).widgets")
     }

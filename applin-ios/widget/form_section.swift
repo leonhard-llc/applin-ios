@@ -6,9 +6,9 @@ struct FormSectionSpec: Equatable, Hashable, ToSpec {
     let optTitle: String?
     let widgets: [Spec]
 
-    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.optTitle = item.title
-        self.widgets = try item.optWidgets(config, pageKey: pageKey)?.filter({ spec in !spec.is_empty() }) ?? []
+        self.widgets = try item.optWidgets(config)?.filter({ spec in !spec.is_empty() }) ?? []
     }
 
     func toJsonItem() -> JsonItem {
@@ -49,6 +49,10 @@ struct FormSectionSpec: Equatable, Hashable, ToSpec {
 
     func newWidget() -> Widget {
         FormSectionWidget()
+    }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        self.widgets.forEach({ widget in widget.visitActions(f) })
     }
 }
 
@@ -110,7 +114,7 @@ class FormSectionWidget: Widget {
         false
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .formSection(formSectionSpec) = spec.value else {
             throw "Expected .formSection got: \(spec)"
         }

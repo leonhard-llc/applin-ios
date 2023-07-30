@@ -1,147 +1,114 @@
 import Foundation
-
-func stateFilePath(_ config: ApplinConfig) -> String {
-    config.dataDirPath + "/state.json"
-}
+import OSLog
 
 struct StateFileContents: Codable {
     var boolVars: [String: Bool]?
     var stringVars: [String: String]?
-    var pages: [String: JsonItem]?
-    var stack: [String]?
+    var pageKeys: [String]?
 }
 
-func loadStateFile(_ config: ApplinConfig) async throws -> ApplinState? {
-    let path = stateFilePath(config)
-    // Swift's standard library provides no documented way to tell if a file read error is due to file not found.
-    // So we check for file existence separately.
-    if !(await fileExists(path: path)) {
-        return nil
-    }
-    let bytes: Data
-    do {
-        bytes = try Data(contentsOf: URL(fileURLWithPath: path))
-    } catch {
-        throw "error reading state file '\(path)': \(error)"
-    }
-    //print("state file contents: ")
-    //FileHandle.standardOutput.write(bytes)
-    //print("")
-    let contents: StateFileContents
-    do {
-        contents = try decodeJson(bytes)
-    } catch {
-        throw "error decoding state file '\(path)': \(error)"
-    }
-    var state = ApplinState()
-    for (name, value) in contents.boolVars ?? [:] {
-        state.vars[name] = .boolean(value)
-    }
-    for (name, value) in contents.stringVars ?? [:] {
-        state.vars[name] = .string(value)
-    }
-    for (key, item) in contents.pages ?? [:] {
+/// This class has two jobs:
+/// 1. Periodically save app state in case the phone crashes.
+/// 2. Save state when the app is put in the background or closed.
+class StateFileOwner {
+    static let logger = Logger(subsystem: "Applin", category: "StateFileOwner")
+
+    static func read(_ config: ApplinConfig) async -> StateFileContents? {
+        let path = config.stateFilePath()
+        // Swift's standard library provides no documented way to tell if a file read error is due to file not found.
+        // So we check for file existence separately.
+        if !(await fileExists(path: path)) {
+            return nil
+        }
         do {
-            state.pages[key] = try PageSpec(config, pageKey: key, item)
+            let bytes = try await readFile(path: path)
+            let contents: StateFileContents = try decodeJson(bytes)
+            return contents
         } catch {
-            throw "error decoding state file '\(path)': error in page '\(key)': \(error)"
+            Self.logger.error("error reading state file '\(path)': \(error)")
+            return nil
         }
     }
-    state.stack = contents.stack ?? ["/"]
-    return state
-}
 
-class StateFileWriter {
-    private let config: ApplinConfig
-    private var lock = NSLock()
-    private weak var session: ApplinSession?
-    private var task: Task<(), Never>?
+    private let fileBytesHash = AtomicUInt64(0)
+    private let lock = ApplinLock()
+    private let path: String
+    private weak var weakVarSet: VarSet?
+    private weak var weakPageStack: PageStack?
+    private var periodicTask: Task<(), Never>?
+    private var stopTask: Task<(), Never>?
 
-    public init(_ config: ApplinConfig, _ session: ApplinSession?) {
-        print("StateFileWriter")
-        self.config = config
-        self.session = session
+    public init(_ config: ApplinConfig, _ varSet: VarSet?, _ pageStack: PageStack?) {
+        self.path = config.stateFilePath()
+        self.weakVarSet = varSet
+        self.weakPageStack = pageStack
+        Self.logger.info("path=\(String(describing: self.path))")
     }
 
     deinit {
-        self.task?.cancel()
+        self.periodicTask?.cancel()
     }
 
-    func update(_ state: ApplinState) {
-        self.lock.lock()
-        defer {
-            self.lock.unlock()
-        }
-        if self.task?.isCancelled != false {
-            let lastWrittenId: UInt64 = state.fileUpdateId
-            self.task = Task(priority: .low) {
-                await self.writer(lastWrittenId)
-            }
-        }
-    }
-
-    private func writer(_ lastWrittenId: UInt64) async {
-        print("StateFileWriter starting")
-        var lastWrittenId: UInt64 = 0
-        while !Task.isCancelled {
-            await sleep(ms: 1_000)
-            var contents: StateFileContents = StateFileContents()
-            var contentsId: UInt64 = 0
-            guard let session = self.session else {
-                break
-            }
-            let needsWrite = session.mutex.lockReadOnly { state -> Bool in
-                if state.fileUpdateId == lastWrittenId {
-                    return false
-                }
-                contentsId = state.fileUpdateId
-                let boolVars: [String: Bool] = state.vars.compactMapValues({ v in
-                    if case let .boolean(value) = v {
-                        return value
-                    } else {
-                        return nil
-                    }
-                })
-                let stringVars: [String: String] = state.vars.compactMapValues({ v in
-                    if case let .string(value) = v {
-                        return value
-                    } else {
-                        return nil
-                    }
-                })
-                let pages = state.pages.mapValues({ page in page.toJsonItem() })
-                let stack = state.stack
-                contents = StateFileContents(boolVars: boolVars, stringVars: stringVars, pages: pages, stack: stack)
-                return true
-            }
-            if !needsWrite {
-                continue
-            }
-            do {
-                let bytes = try encodeJson(contents)
-                // TODO: Keep hash of file contents and don't write if file contents won't change.
-                try await createDir(self.config.dataDirPath)
-                let path = stateFilePath(config)
-                let tmpPath = path + ".tmp"
-                try await deleteFile(path: tmpPath)
-                try await writeFile(data: bytes, path: tmpPath)
-                // Swift has no atomic file replace function.
-                try await deleteFile(path: path)
-                try await moveFile(atPath: tmpPath, toPath: path)
-                lastWrittenId = contentsId
-            } catch {
-                print("ERROR StateFileWriter: \(error)")
-                self.session?.mutex.lockAndUpdate { state in
-                    state.connectionError = .appError(
-                            "Error saving data to device.  Is your storage full?  Details: \(error)")
-                }
+    func start() {
+        self.stopTask?.cancel()
+        self.periodicTask?.cancel()
+        self.periodicTask = Task(priority: .low) {
+            Self.logger.info("periodic writer task starting")
+            while !Task.isCancelled {
+                await sleep(ms: 10_000)
                 if Task.isCancelled {
                     break
-                } else {
-                    await sleep(ms: 60_000)
+                }
+                do {
+                    try await self.write()
+                } catch {
+                    Self.logger.error("error saving state, will retry: \(error)")
                 }
             }
+            Self.logger.info("periodic writer task stopping")
         }
-        print("StateStore.writeLoop stopping")
+    }
+
+    func stop() {
+        self.periodicTask?.cancel()
+        self.stopTask?.cancel()
+        self.stopTask = Task(priority: .high) {
+            do {
+                try await self.write()
+            } catch {
+                Self.logger.error("failed saving state before stop: \(error)")
+            }
+        }
+    }
+
+    func write() async throws {
+        try await self.lock.lockAsyncThrows({
+            var contents: StateFileContents = StateFileContents()
+            if let varSet = self.weakVarSet {
+                contents.boolVars = varSet.bools()
+                contents.stringVars = varSet.strings()
+            }
+            if let pageStack = self.weakPageStack {
+                if pageStack.isEmpty() {
+                    throw "pageStack is empty"
+                }
+                contents.pageKeys = pageStack.preloadPageKeys()
+            }
+            let bytes = try encodeJson(contents)
+            let hash = bytes.hashValue
+            if self.fileBytesHash.load() == hash {
+                Self.logger.info("file contents unchanged, skipping writing file")
+                return
+            }
+            let dirPath = (self.path as NSString).deletingLastPathComponent
+            try await createDir(dirPath)
+            let tmpPath = self.path + ".tmp"
+            try await deleteFile(path: tmpPath)
+            try await writeFile(data: bytes, path: tmpPath)
+            // Swift has no atomic file replace function.
+            try await deleteFile(path: self.path)
+            try await moveFile(atPath: tmpPath, toPath: self.path)
+            Self.logger.info("wrote file")
+        })
     }
 }

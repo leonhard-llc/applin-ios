@@ -36,6 +36,9 @@ struct LastErrorTextSpec: Equatable, Hashable, ToSpec {
     func vars() -> [(String, Var)] {
         []
     }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+    }
 }
 
 class LastErrorTextWidget: Widget {
@@ -71,7 +74,10 @@ class LastErrorTextWidget: Widget {
         false
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
+        guard let varSet = ctx.varSet else {
+            return
+        }
         guard case .lastErrorText = spec.value else {
             throw "Expected .lastErrorText got: \(spec)"
         }
@@ -79,8 +85,8 @@ class LastErrorTextWidget: Widget {
             throw "Expected no subs got: \(subs)"
         }
         if !self.initialized {
-            self.label.text = state.interactiveError?.message()
-                    ?? state.connectionError?.message()
+            self.label.text = varSet.getInteractiveError()?.message()
+                    ?? varSet.getConnectionError()?.message()
                     ?? "Error details not found."
             self.initialized = true
         }

@@ -36,11 +36,13 @@ struct EmptySpec: Equatable, Hashable, ToSpec {
     func newWidget() -> Widget {
         EmptyWidget()
     }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+    }
 }
 
 class EmptyWidget: Widget {
     let view: UIView
-    weak var session: ApplinSession?
 
     init() {
         print("EmptyWidget.init()")
@@ -57,7 +59,7 @@ class EmptyWidget: Widget {
         false
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
         guard case .empty = spec.value else {
             throw "Expected .empty got: \(spec)"
         }

@@ -54,6 +54,9 @@ struct ImageSpec: Equatable, Hashable, ToSpec {
     func vars() -> [(String, Var)] {
         []
     }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+    }
 }
 
 class ImageWidget: Widget {
@@ -71,7 +74,7 @@ class ImageWidget: Widget {
         false
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .image(imageSpec) = spec.value else {
             throw "Expected .image got: \(spec)"
         }

@@ -44,10 +44,12 @@ struct ModalButtonSpec: Equatable, Hashable {
         }
     }
 
-    func toAlertAction(_ session: ApplinSession, pageKey: String) -> UIAlertAction {
-        let handler = { [weak session] (_: UIAlertAction) in
-            print("modal-button actions")
-            session?.doActions(pageKey: pageKey, self.actions)
+    func toAlertAction(_ ctx: PageContext, pageKey: String) -> UIAlertAction {
+        let handler = { (_: UIAlertAction) -> Void in
+            Task {
+                print("modal-button actions")
+                let _ = await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.actions)
+            }
         }
         let action = UIAlertAction(title: self.text, style: self.style(), handler: handler)
         action.isEnabled = !self.actions.isEmpty

@@ -22,7 +22,7 @@ class RowView: UIView {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("init(coder:) is not implemented")
     }
 
     func update(_ alignment: ApplinVAlignment, spacing: Float32, subviews: [UIView]) {

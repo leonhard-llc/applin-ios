@@ -4,11 +4,9 @@ import UIKit
 struct ButtonSpec: Equatable, Hashable, ToSpec {
     static let TYP = "button"
     let actions: [ActionSpec]
-    let pageKey: String
     let text: String
 
-    init(pageKey: String, _ item: JsonItem) throws {
-        self.pageKey = pageKey
+    init(_ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
         self.text = try item.requireText()
     }
@@ -20,8 +18,7 @@ struct ButtonSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    init(pageKey: String, text: String, actions: [ActionSpec] = []) {
-        self.pageKey = pageKey
+    init(text: String, actions: [ActionSpec] = []) {
         self.text = text
         self.actions = actions
     }
@@ -46,23 +43,28 @@ struct ButtonSpec: Equatable, Hashable, ToSpec {
         ButtonWidget.self
     }
 
-    func newWidget() -> Widget {
-        ButtonWidget(self)
+    func newWidget(_ ctx: PageContext) -> Widget {
+        ButtonWidget(self, ctx)
     }
 
     func vars() -> [(String, Var)] {
         []
+    }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        self.actions.forEach(f)
     }
 }
 
 class ButtonWidget: Widget {
     var spec: ButtonSpec
     var button: UIButton!
-    weak var session: ApplinSession?
+    let ctx: PageContext
 
-    init(_ spec: ButtonSpec) {
+    init(_ spec: ButtonSpec, _ ctx: PageContext) {
         print("ButtonWidget.init(\(spec))")
         self.spec = spec
+        self.ctx = ctx
         weak var weakSelf: ButtonWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
             print("button UIAction")
@@ -82,7 +84,9 @@ class ButtonWidget: Widget {
 
     func tap() {
         print("button actions")
-        self.session?.doActions(pageKey: self.spec.pageKey, self.spec.actions)
+        Task {
+            await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.spec.actions)
+        }
     }
 
     func getView() -> UIView {
@@ -93,7 +97,7 @@ class ButtonWidget: Widget {
         self.button.isFocused
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .button(buttonSpec) = spec.value else {
             throw "Expected .button got: \(spec)"
         }
@@ -101,7 +105,6 @@ class ButtonWidget: Widget {
             throw "Expected no subs got: \(subs)"
         }
         self.spec = buttonSpec
-        self.session = session
         self.button.setTitle("  \(buttonSpec.text)  ", for: .normal)
         self.button.isEnabled = !self.spec.actions.isEmpty
         self.button.layer.borderColor = self.spec.actions.isEmpty ? UIColor.systemGray.cgColor : UIColor.tintColor.cgColor

@@ -28,11 +28,11 @@ private class DoneNode {
     var subs: [DoneNode]
     weak var optSuper: DoneNode?
 
-    init(_ roughNode: RoughNode) {
+    init(_ ctx: PageContext, _ roughNode: RoughNode) {
         self.keys = roughNode.keys
         self.spec = roughNode.spec
-        self.subs = roughNode.subs.compactMap({ subNode in DoneNode(subNode) })
-        self.widget = roughNode.optOldNode?.widget ?? roughNode.spec.newWidget()
+        self.subs = roughNode.subs.compactMap({ subNode in DoneNode(ctx, subNode) })
+        self.widget = roughNode.optOldNode?.widget ?? roughNode.spec.newWidget(ctx)
         for sub in self.subs {
             sub.optSuper = self
         }
@@ -143,16 +143,16 @@ class WidgetCache {
         return node.optOldNode?.optSuper
     }
 
-    private func updateNode(_ session: ApplinSession, _ state: ApplinState, _ node: DoneNode) {
+    private func updateNode(_ ctx: PageContext, _ node: DoneNode) {
         for subNode in node.subs {
-            self.updateNode(session, state, subNode)
+            self.updateNode(ctx, subNode)
         }
         let subWidgets = node.subs.map({ subNode in subNode.widget })
         // TODO(mleonhard) Find a way to make this type-safe and eliminate the exception.
-        try! node.widget.update(session, state, node.spec, subWidgets)
+        try! node.widget.update(ctx, node.spec, subWidgets)
     }
 
-    func updateAll(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec) -> Widget {
+    func updateAll(_ ctx: PageContext, _ spec: Spec) -> Widget {
         let roughRoot = RoughNode(spec)
         _ = self.visitNode(.post, roughRoot) { node in
             if node.spec.priority() == .focusable, let oldNode = self.table.find(node) {
@@ -166,10 +166,10 @@ class WidgetCache {
         _ = self.visitNode(.post, roughRoot, { node in node.spec.priority() == .stateful ? self.table.find(node) : nil })
         _ = self.visitNode(.post, roughRoot, { node in self.table.find(node) })
         _ = self.visitNode(.pre, roughRoot, { node in self.table.findOldSibling(node) })
-        let doneRoot = DoneNode(roughRoot)
+        let doneRoot = DoneNode(ctx, roughRoot)
         self.table.removeAll()
         self.table.insert(doneRoot)
-        self.updateNode(session, state, doneRoot)
+        self.updateNode(ctx, doneRoot)
         return doneRoot.widget
     }
 }

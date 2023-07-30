@@ -10,7 +10,7 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
     case poll
     case pop
     case push(String)
-    // TODO: Store pageKey, remove from button and nav-button.
+    case pushPreloaded(String)
     case rpc(String)
     case takePhoto(String)
 
@@ -52,6 +52,8 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             }
         case "push":
             self = .push(part1)
+        case "push-preloaded":
+            self = .push(part1)
         case "rpc":
             self = .rpc(part1)
         case "take-photo":
@@ -79,6 +81,8 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "poll"
         case let .push(value):
             return "push:\(value)"
+        case let .pushPreloaded(value):
+            return "push-preloaded:\(value)"
         case let .rpc(value):
             return "rpc:\(value)"
         case let .takePhoto(value):
@@ -104,6 +108,8 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "poll"
         case let .push(value):
             return "push(\(value))"
+        case let .pushPreloaded(value):
+            return "pushPreloaded(\(value))"
         case let .rpc(value):
             return "rpc(\(value))"
         case let .takePhoto(value):

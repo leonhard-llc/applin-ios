@@ -3,20 +3,20 @@ import UIKit
 
 struct ScrollSpec: Equatable, Hashable, ToSpec {
     static let TYP = "scroll"
-    let sub: Spec
+    let widget: Spec
 
-    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
-        self.sub = try item.requireWidget(config, pageKey: pageKey)
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
+        self.widget = try item.requireWidget(config)
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ScrollSpec.TYP)
-        item.widget = self.sub.toJsonItem()
+        item.widget = self.widget.toJsonItem()
         return item
     }
 
     init(_ sub: ToSpec) {
-        self.sub = sub.toSpec()
+        self.widget = sub.toSpec()
     }
 
     func toSpec() -> Spec {
@@ -32,11 +32,11 @@ struct ScrollSpec: Equatable, Hashable, ToSpec {
     }
 
     func subs() -> [Spec] {
-        [self.sub]
+        [self.widget]
     }
 
     func vars() -> [(String, Var)] {
-        self.sub.vars()
+        self.widget.vars()
     }
 
     func widgetClass() -> AnyClass {
@@ -45,6 +45,10 @@ struct ScrollSpec: Equatable, Hashable, ToSpec {
 
     func newWidget() -> Widget {
         ScrollWidget()
+    }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        self.widget.visitActions(f)
     }
 }
 
@@ -73,7 +77,7 @@ class KeyboardAvoidingScrollView: UIScrollView {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("init(coder:) is not implemented")
     }
 
     @objc func adjustForKeyboard(notification: Notification) {
@@ -116,7 +120,7 @@ class ScrollWidget: Widget {
         false
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
         guard case .scroll = spec.value else {
             throw "Expected .scroll got: \(spec)"
         }

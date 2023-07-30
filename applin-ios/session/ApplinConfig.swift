@@ -7,6 +7,7 @@ let APPLIN_NETWORK_ERROR_PAGE_KEY = "/applin-network-error"
 /// Applin pushes this modal when it fails to load the state file.
 /// Show the user a Connect button so they can retry and deal with auto errors.
 let APPLIN_STATE_LOAD_ERROR_PAGE_KEY = "/applin-state-load-error"
+// TODO: Remove APPLIN_PAGE_NOT_FOUND_PAGE_KEY.
 /// Applin pushes this page the page key is not found in the page set.
 let APPLIN_PAGE_NOT_FOUND_PAGE_KEY = "/applin-page-not-found"
 /// Applin pushes this page when the server returns a user error message.
@@ -83,19 +84,17 @@ class ApplinConfig {
     }
 
     static func defaultSupportPage(_ config: ApplinConfig) -> PageSpec {
-        ModalSpec(
-                pageKey: APPLIN_SUPPORT_PAGE_KEY,
-                kind: .drawer,
-                title: "Support",
-                text: "",
-                [
-                    // TODO: Support including error code in url.
-                    // ModalButtonSpec(text: "Support Chat", [.launchUrl(URL(string: "https://www.example.com/support")!)]),
-                    ModalButtonSpec(text: "Email Support", [.launchUrl(URL(string: "mailto:support@example.com")!)]),
-                    // ModalButtonSpec(text: "Text Support", [.launchUrl(URL(string: "sms:000-000-0000")!)]),
-                    ModalButtonSpec(text: "OK", isDefault: true, [.pop]),
-                ]
-        ).toSpec()
+        var buttons: [ModalButtonSpec] = []
+        // TODO: Support including error code in urls.
+        if let url = ApplinCustomConfig.SUPPORT_CHAT_URL {
+            buttons.append(ModalButtonSpec(text: "Support Chat", [.launchUrl(url)]))
+        }
+        buttons.append(ModalButtonSpec(text: "Email Support", [.launchUrl(URL(string: "mailto:\(ApplinCustomConfig.SUPPORT_EMAIL_ADDRESS)")!)]))
+        if let tel = ApplinCustomConfig.SUPPORT_SMS_TEL {
+            buttons.append(ModalButtonSpec(text: "Text Support", [.launchUrl(URL(string: "sms:\(tel)")!)]))
+        }
+        buttons.append(ModalButtonSpec(text: "OK", isDefault: true, [.pop]))
+        return ModalSpec(pageKey: APPLIN_SUPPORT_PAGE_KEY, kind: .drawer, title: "Support", text: "", buttons).toSpec()
     }
 
     static func defaultStateLoadErrorPage(_ config: ApplinConfig) -> PageSpec {
@@ -130,10 +129,10 @@ class ApplinConfig {
             ImageSpec(config, url: "asset:///logo.png", aspectRatio: 1.67, disposition: .fit),
             TextSpec("To use this app, you must agree to the Terms of Use and be at least 18 years old."),
             FormSpec([
-                NavButtonSpec(pageKey: "/", text: "Terms of Use", [.push("/terms")]),
-                NavButtonSpec(pageKey: "/", text: "Privacy Policy", [.push("/privacy")]),
+                NavButtonSpec(text: "Terms of Use", [.push("/terms")]),
+                NavButtonSpec(text: "Privacy Policy", [.push("/privacy")]),
             ]),
-            FormButtonSpec(pageKey: "/", text: "I Agree and I am 18+ Years Old", [.poll]),
+            FormButtonSpec(text: "I Agree and I am 18+ Years Old", [.poll]),
         ])).toSpec()
     }
 
@@ -423,12 +422,7 @@ class ApplinConfig {
         URL(string: "itms-apps://itunes.apple.com/app/id\(ApplinCustomConfig.APPSTORE_APP_ID)")!
     }
 
-    func staticPages() -> [String: PageSpec] {
-        // Swift's Dictionary.mapValues doesn't pass the key. :(
-        // I guess this is because Swift has no way to ensure the keys don't get mutated, because the language's
-        // type system is insufficient and doesn't provide immutable types.
-        Dictionary(uniqueKeysWithValues: ApplinCustomConfig.STATIC_PAGES.map { key, spec_fn in
-            (key, spec_fn(self))
-        })
+    func stateFilePath() -> String {
+        self.dataDirPath + "/state.json"
     }
 }

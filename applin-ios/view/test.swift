@@ -12,7 +12,7 @@ class TestController: UIViewController {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("unimplemented")
+        fatalError("init(coder:) is not implemented")
     }
 
     override func viewDidLoad() {

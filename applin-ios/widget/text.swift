@@ -46,6 +46,9 @@ struct TextSpec: Equatable, Hashable, ToSpec {
     func newWidget() -> Widget {
         TextWidget()
     }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+    }
 }
 
 class TextWidget: Widget {
@@ -65,7 +68,7 @@ class TextWidget: Widget {
         false
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .text(textSpec) = spec.value else {
             throw "Expected .text got: \(spec)"
         }

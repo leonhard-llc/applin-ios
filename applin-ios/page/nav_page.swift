@@ -15,11 +15,10 @@ struct NavPageSpec: Equatable {
     let title: String
     let widget: Spec
 
-    // TODO: Remove `pageKey` param.
-    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
-        self.end = try item.optEnd(config, pageKey: pageKey)
-        switch try item.optStart(config, pageKey: pageKey)?.value {
+        self.end = try item.optEnd(config)
+        switch try item.optStart(config)?.value {
         case let .backButton(inner):
             self.start = .backButton(inner)
         case .none:
@@ -30,7 +29,7 @@ struct NavPageSpec: Equatable {
             throw ApplinError.appError("bad \(item.typ).start: \(other)")
         }
         self.title = try item.requireTitle()
-        self.widget = try item.requireWidget(config, pageKey: pageKey)
+        self.widget = try item.requireWidget(config)
     }
 
     func toJsonItem() -> JsonItem {
@@ -73,23 +72,25 @@ struct NavPageSpec: Equatable {
     func vars() -> [(String, Var)] {
         self.widget.vars()
     }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        self.end?.visitActions(f)
+        self.widget.visitActions(f)
+    }
 }
 
 class NavPageController: UIViewController, UINavigationBarDelegate, PageController {
     weak var navController: NavigationController?
-    weak var weakSession: ApplinSession?
-    weak var weakCache: WidgetCache?
+    let ctx: PageContext
     var helper: SingleViewContainerHelper!
     var spec: NavPageSpec?
-    var hasPrevPage: Bool = false
     var navBar: UINavigationBar
     var optOriginalBackButton: UIBarButtonItem?
 
-    init(_ navController: NavigationController?, _ session: ApplinSession?, _ cache: WidgetCache?) {
+    init(_ navController: NavigationController?, _ ctx: PageContext) {
         print("NavPageController.init")
         self.navController = navController
-        self.weakSession = session
-        self.weakCache = cache
+        self.ctx = ctx
         // PlainPageController cannot do self.navigationItem.navBarHidden = true,
         // because Apple didn't add support for that.
         // Instead, we must show/hide UINavigationController's navbar whenever the top
@@ -108,7 +109,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     }
 
     required init?(coder: NSCoder) {
-        fatalError("unimplemented")
+        fatalError("init(coder:) is not implemented")
     }
 
     func back() {
@@ -121,12 +122,12 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         }
         switch spec.start {
         case let .backButton(inner):
-            if let session = self.weakSession, let cache = self.weakCache {
-                print("back inner.tap()")
-                inner.tap(session, cache)
-            }
+            print("back inner.tap()")
+            inner.tap(self.ctx)
         case .defaultBackButton:
-            self.weakSession?.mutex.lockAndUpdate({ state in state.pop() })
+            Task {
+                let _ = await self.ctx.pageStack?.doActions(pageKey: self.ctx.pageKey, [.pop])
+            }
         case .empty:
             break
         }
@@ -178,19 +179,15 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         NavPageController.self
     }
 
-    func update(
-            _ session: ApplinSession,
-            _ cache: WidgetCache,
-            _ state: ApplinState,
-            _ newPageSpec: PageSpec,
-            hasPrevPage: Bool
-    ) {
+    func update(_ ctx: PageContext, _ newPageSpec: PageSpec) {
+        guard let cache = ctx.cache else {
+            return
+        }
         guard case let .navPage(navPageSpec) = newPageSpec else {
             print("FATAL: NavPageController.update called with newPageSpec=\(newPageSpec)")
             abort() // This should never happen.
         }
         self.spec = navPageSpec
-        self.hasPrevPage = hasPrevPage
         self.title = navPageSpec.title
 
         if let originalBackButton = self.optOriginalBackButton {
@@ -210,7 +207,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
                 self.navBar.items = [UINavigationItem(title: "Back"), self.navigationItem]
             }
         case .defaultBackButton:
-            if hasPrevPage {
+            if ctx.hasPrevPage {
                 self.navBar.items = [UINavigationItem(title: "Back"), self.navigationItem]
             } else {
                 self.navBar.items = [self.navigationItem]
@@ -219,7 +216,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             self.navigationItem.hidesBackButton = true
             self.navBar.items = [self.navigationItem]
         }
-        let widget = cache.updateAll(session, state, navPageSpec.widget)
+        let widget = cache.updateAll(ctx, navPageSpec.widget)
         let subView = widget.getView()
         subView.translatesAutoresizingMaskIntoConstraints = false
         self.helper.update(subView) {

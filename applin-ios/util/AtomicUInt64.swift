@@ -16,11 +16,12 @@ class AtomicUInt64 {
         return self.value
     }
 
-    public func increment() {
+    public func increment() -> UInt64 {
         self.nsLock.lock()
         defer {
             self.nsLock.unlock()
         }
         self.value += 1
+        return self.value
     }
 }

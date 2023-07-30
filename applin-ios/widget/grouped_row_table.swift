@@ -6,12 +6,12 @@ struct GroupedRowTableSpec: Equatable, Hashable, ToSpec {
     let rowGroups: [[[Spec?]]]
     let spacing: Float32
 
-    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.rowGroups = try item.rowGroups?.map({ rows in
             try rows.map({ row in
                 try row.map({ optItem in
                     if let item = optItem {
-                        return try Spec(config, pageKey: pageKey, item)
+                        return try Spec(config, item)
                     } else {
                         return nil
                     }
@@ -61,6 +61,10 @@ struct GroupedRowTableSpec: Equatable, Hashable, ToSpec {
         print("GroupedRowTableWidget.newWidget()")
         return GroupedRowTableWidget()
     }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        self.rowGroups.forEach({ rowGroup in rowGroup.forEach({ row in row.forEach({ widget in widget?.visitActions(f) }) }) })
+    }
 }
 
 class GroupedRowTableWidget: Widget {
@@ -84,7 +88,7 @@ class GroupedRowTableWidget: Widget {
         false
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .groupedRowTable(groupedRowTableSpec) = spec.value else {
             throw "Expected .groupedRowTable got: \(spec)"
         }

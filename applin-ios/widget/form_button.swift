@@ -5,13 +5,11 @@ struct FormButtonSpec: Equatable, Hashable, ToSpec {
     static let TYP = "form-button"
     let actions: [ActionSpec]
     let alignment: ApplinHAlignment?
-    let pageKey: String
     let text: String
 
-    init(pageKey: String, _ item: JsonItem) throws {
+    init(_ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
         self.alignment = item.optAlign()
-        self.pageKey = pageKey
         self.text = try item.requireText()
     }
 
@@ -23,10 +21,9 @@ struct FormButtonSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    init(pageKey: String, text: String, _ actions: [ActionSpec]) {
+    init(text: String, _ actions: [ActionSpec]) {
         self.actions = actions
         self.alignment = .center
-        self.pageKey = pageKey
         self.text = text
     }
 
@@ -50,12 +47,16 @@ struct FormButtonSpec: Equatable, Hashable, ToSpec {
         FormButtonWidget.self
     }
 
-    func newWidget() -> Widget {
-        FormButtonWidget(self)
+    func newWidget(_ ctx: PageContext) -> Widget {
+        FormButtonWidget(self, ctx)
     }
 
     func vars() -> [(String, Var)] {
         []
+    }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        self.actions.forEach(f)
     }
 }
 
@@ -65,11 +66,12 @@ class FormButtonWidget: Widget {
     var spec: FormButtonSpec
     var container: TappableView!
     var button: UIButton!
-    weak var session: ApplinSession?
+    let ctx: PageContext
 
-    init(_ spec: FormButtonSpec) {
+    init(_ spec: FormButtonSpec, _ ctx: PageContext) {
         print("FormButtonWidget.init(\(spec))")
         self.spec = spec
+        self.ctx = ctx
 
         self.container = TappableView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
@@ -105,8 +107,10 @@ class FormButtonWidget: Widget {
         if self.spec.actions.isEmpty {
             return
         }
-        print("form-button \(String(describing: spec.text)) tap")
-        self.session?.doActions(pageKey: self.spec.pageKey, self.spec.actions)
+        Task {
+            print("form-button \(String(describing: spec.text)) tap")
+            let _ = await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.spec.actions)
+        }
     }
 
     func getView() -> UIView {
@@ -117,12 +121,11 @@ class FormButtonWidget: Widget {
         self.button.isFocused
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .formButton(formButtonSpec) = spec.value else {
             throw "Expected .formButton got: \(spec)"
         }
         self.spec = formButtonSpec
-        self.session = session
         self.button.setTitle("  \(formButtonSpec.text)  ", for: .normal)
         self.button.isEnabled = !self.spec.actions.isEmpty
         switch self.spec.alignment {

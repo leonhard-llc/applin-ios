@@ -12,7 +12,7 @@ enum WidgetPriority {
 protocol Widget {
     func getView() -> UIView
     func isFocused() -> Bool
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws
 }
 
 protocol ToSpec {
@@ -55,38 +55,38 @@ class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         self.value = value
     }
 
-    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
         switch item.typ {
         case BackButtonSpec.TYP:
-            self.value = .backButton(try BackButtonSpec(pageKey: pageKey, item))
+            self.value = .backButton(try BackButtonSpec(item))
         case ButtonSpec.TYP:
-            self.value = .button(try ButtonSpec(pageKey: pageKey, item))
+            self.value = .button(try ButtonSpec(item))
         case CheckboxSpec.TYP:
-            self.value = .checkbox(try CheckboxSpec(pageKey: pageKey, item))
+            self.value = .checkbox(try CheckboxSpec(item))
         case ColumnSpec.TYP:
-            self.value = .column(try ColumnSpec(config, pageKey: pageKey, item))
+            self.value = .column(try ColumnSpec(config, item))
         case EmptySpec.TYP:
             self.value = .empty(EmptySpec())
         case ErrorTextSpec.TYP:
             self.value = .errorText(try ErrorTextSpec(item))
         case FormSpec.TYP:
-            self.value = .form(try FormSpec(config, pageKey: pageKey, item))
+            self.value = .form(try FormSpec(config, item))
         case FormButtonSpec.TYP:
-            self.value = .formButton(try FormButtonSpec(pageKey: pageKey, item))
+            self.value = .formButton(try FormButtonSpec(item))
         case FormSectionSpec.TYP:
-            self.value = .formSection(try FormSectionSpec(config, pageKey: pageKey, item))
+            self.value = .formSection(try FormSectionSpec(config, item))
         case GroupedRowTableSpec.TYP:
-            self.value = .groupedRowTable(try GroupedRowTableSpec(config, pageKey: pageKey, item))
+            self.value = .groupedRowTable(try GroupedRowTableSpec(config, item))
         case ImageSpec.TYP:
             self.value = .image(try ImageSpec(config, item))
         case LastErrorTextSpec.TYP:
             self.value = .lastErrorText(LastErrorTextSpec())
         case NavButtonSpec.TYP:
-            self.value = .navButton(try NavButtonSpec(config, pageKey: pageKey, item))
+            self.value = .navButton(try NavButtonSpec(config, item))
         case TextfieldSpec.TYP:
-            self.value = .textfield(try TextfieldSpec(pageKey: pageKey, item))
+            self.value = .textfield(try TextfieldSpec(item))
         case ScrollSpec.TYP:
-            self.value = .scroll(try ScrollSpec(config, pageKey: pageKey, item))
+            self.value = .scroll(try ScrollSpec(config, item))
         case TextSpec.TYP:
             self.value = .text(try TextSpec(item))
         default:
@@ -283,6 +283,43 @@ class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         }
     }
 
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        switch self.value {
+        case let .backButton(inner):
+            return inner.visitActions(f)
+        case let .button(inner):
+            return inner.visitActions(f)
+        case let .checkbox(inner):
+            return inner.visitActions(f)
+        case let .column(inner):
+            return inner.visitActions(f)
+        case let .empty(inner):
+            return inner.visitActions(f)
+        case let .errorText(inner):
+            return inner.visitActions(f)
+        case let .form(inner):
+            return inner.visitActions(f)
+        case let .formButton(inner):
+            return inner.visitActions(f)
+        case let .formSection(inner):
+            return inner.visitActions(f)
+        case let .groupedRowTable(inner):
+            return inner.visitActions(f)
+        case let .image(inner):
+            return inner.visitActions(f)
+        case let .lastErrorText(inner):
+            return inner.visitActions(f)
+        case let .navButton(inner):
+            return inner.visitActions(f)
+        case let .textfield(inner):
+            return inner.visitActions(f)
+        case let .scroll(inner):
+            return inner.visitActions(f)
+        case let .text(inner):
+            return inner.visitActions(f)
+        }
+    }
+
     func widgetClass() -> AnyClass {
         switch self.value {
         case let .backButton(inner):
@@ -320,14 +357,14 @@ class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         }
     }
 
-    func newWidget() -> Widget {
+    func newWidget(_ ctx: PageContext) -> Widget {
         switch self.value {
         case let .backButton(inner):
             return inner.newWidget()
         case let .button(inner):
-            return inner.newWidget()
+            return inner.newWidget(ctx)
         case let .checkbox(inner):
-            return inner.newWidget()
+            return inner.newWidget(ctx)
         case let .column(inner):
             return inner.newWidget()
         case let .empty(inner):
@@ -337,7 +374,7 @@ class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .form(inner):
             return inner.newWidget()
         case let .formButton(inner):
-            return inner.newWidget()
+            return inner.newWidget(ctx)
         case let .formSection(inner):
             return inner.newWidget()
         case let .groupedRowTable(inner):
@@ -347,9 +384,9 @@ class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .lastErrorText(inner):
             return inner.newWidget()
         case let .navButton(inner):
-            return inner.newWidget()
+            return inner.newWidget(ctx)
         case let .textfield(inner):
-            return inner.newWidget()
+            return inner.newWidget(ctx)
         case let .scroll(inner):
             return inner.newWidget()
         case let .text(inner):

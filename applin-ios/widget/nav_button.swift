@@ -5,15 +5,13 @@ struct NavButtonSpec: Equatable, Hashable, ToSpec {
     static let TYP = "nav-button"
     let actions: [ActionSpec]
     let badgeText: String?
-    let pageKey: String
     let photoUrl: URL?
     let subText: String?
     let text: String
 
-    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
         self.badgeText = item.badgeText
-        self.pageKey = pageKey
         self.photoUrl = try item.optPhotoUrl(config)
         self.subText = item.subText
         self.text = try item.requireText()
@@ -29,10 +27,9 @@ struct NavButtonSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    init(pageKey: String, photoUrl: URL? = nil, text: String, subText: String? = nil, badge: String? = nil, _ actions: [ActionSpec]) {
+    init(photoUrl: URL? = nil, text: String, subText: String? = nil, badge: String? = nil, _ actions: [ActionSpec]) {
         self.actions = actions
         self.badgeText = badge
-        self.pageKey = pageKey
         self.photoUrl = photoUrl
         self.subText = subText
         self.text = text
@@ -65,12 +62,16 @@ struct NavButtonSpec: Equatable, Hashable, ToSpec {
         NavButtonWidget.self
     }
 
-    func newWidget() -> Widget {
-        NavButtonWidget(self)
+    func newWidget(_ ctx: PageContext) -> Widget {
+        NavButtonWidget(self, ctx)
     }
 
     func vars() -> [(String, Var)] {
         []
+    }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        self.actions.forEach(f)
     }
 }
 
@@ -102,7 +103,7 @@ class NavButtonWidget: Widget {
         }
 
         required init?(coder: NSCoder) {
-            fatalError("init(coder:) has not been implemented")
+            fatalError("init(coder:) is not implemented")
         }
 
         func update(text: String, disabled: Bool) {
@@ -150,7 +151,7 @@ class NavButtonWidget: Widget {
         }
 
         required init?(coder: NSCoder) {
-            fatalError("init(coder:) has not been implemented")
+            fatalError("init(coder:) is not implemented")
         }
 
         func update(text: String, subText: String, disabled: Bool) {
@@ -185,11 +186,12 @@ class NavButtonWidget: Widget {
     private var labels: Labels = .oneLabel(OneLabel())
     private var badge: Badge?
     private var chevron: UIImageView
-    private weak var session: ApplinSession?
+    private let ctx: PageContext
 
-    init(_ spec: NavButtonSpec) {
+    init(_ spec: NavButtonSpec, _ ctx: PageContext) {
         print("NavButtonWidget.init(\(spec))")
         self.spec = spec
+        self.ctx = ctx
         self.tappableView = TappableView()
         self.tappableView.translatesAutoresizingMaskIntoConstraints = false
         //self.tappableView.backgroundColor = pastelPeach
@@ -223,10 +225,12 @@ class NavButtonWidget: Widget {
 
     @objc func tap() {
         print("NavButtonWidget.tap")
-        self.session?.doActions(pageKey: self.spec.pageKey, self.spec.actions)
+        Task {
+            let _ = await self.ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.spec.actions)
+        }
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
         guard case let .navButton(navButtonSpec) = spec.value else {
             throw "Expected .navButton got: \(spec)"
         }
@@ -234,7 +238,6 @@ class NavButtonWidget: Widget {
             throw "Expected no subs got: \(subs)"
         }
         self.spec = navButtonSpec
-        self.session = session
         if let photoUrl = self.spec.photoUrl {
             self.imageView = self.imageView ?? ImageView(aspectRatio: 1.0)
             self.imageView!.translatesAutoresizingMaskIntoConstraints = false

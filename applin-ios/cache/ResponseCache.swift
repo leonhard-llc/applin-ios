@@ -57,10 +57,12 @@ class ResponseCache {
         }
     }
 
+    private let config: ApplinConfig
     private let dirPath: String
     private var urlToResponse: [String: CachedResponse]
 
-    init(dirPath: String) throws {
+    init(_ config: ApplinConfig, dirPath: String) throws {
+        self.config = config
         self.dirPath = dirPath
         Self.logger.info("dataDirPath=\(self.dirPath)")
         let cacheFiles: Set<String>
@@ -97,6 +99,10 @@ class ResponseCache {
                 Self.logger.error("error decoding info file '\(infoPath)': \(error)")
                 return nil
             }
+            // TODO: Delete files while app is running, not just during startup.
+            if content.deleteTime < Date.now.secondsSinceEpoch() {
+                return nil
+            }
             return CachedResponse(
                     infoFilePath: infoPath,
                     dataFilePath: dataPath,
@@ -119,7 +125,7 @@ class ResponseCache {
         self.urlToResponse = Dictionary(uniqueKeysWithValues: responses.map({ r in (r.absoluteUrl, r) }))
     }
 
-    private func removeIgnoringError(url: String) {
+    func remove(url: String) {
         if let cachedResponse = self.urlToResponse.removeValue(forKey: url) {
             do {
                 try Self.removeFile(path: cachedResponse.infoFilePath)
@@ -130,9 +136,9 @@ class ResponseCache {
         }
     }
 
-    func addIgnoringError(_ info: ResponseInfo, _ data: Data) {
+    func add(_ info: ResponseInfo, _ data: Data) {
         do {
-            self.removeIgnoringError(url: info.absoluteUrl)
+            self.remove(url: info.absoluteUrl)
             let randomInt = UInt64.random(in: 1...UInt64.max)
             let randomCode = String(randomInt, radix: 16, uppercase: true)
             let pathPrefix = "\(self.dirPath)/\(Self.FILENAME_PREFIX)\(randomCode)"
@@ -156,12 +162,41 @@ class ResponseCache {
         }
     }
 
-    func filter(f: (CachedResponse) -> Bool) {
-        // Swift's Dictionary type is a value type, so this iterates over a copy of the dictionary and is safe.
-        for (url, response) in self.urlToResponse {
-            if !f(response) {
-                self.removeIgnoringError(url: url)
+    func get(url: String) -> ResponseInfo? {
+        if let cachedResponse = self.urlToResponse[url] {
+            if cachedResponse.deleteTime < Date.now.secondsSinceEpoch() {
+                return nil
             }
+            return ResponseInfo(
+                    absoluteUrl: cachedResponse.absoluteUrl,
+                    eTag: cachedResponse.eTag,
+                    deleteTime: cachedResponse.deleteTime,
+                    refreshTime: cachedResponse.refreshTime
+            )
+        } else {
+            return nil
         }
+    }
+
+    func getSpec(pageKey: String) async -> PageSpec? {
+        let url = self.config.url.appendingPathComponent(pageKey).absoluteString
+        guard let cachedResponse = self.urlToResponse[url] else {
+            return nil
+        }
+        if cachedResponse.deleteTime < Date.now.secondsSinceEpoch() {
+            return nil
+        }
+        do {
+            let data = try Data(contentsOf: URL(fileURLWithPath: cachedResponse.dataFilePath))
+            let jsonItem: JsonItem = try decodeJson(data)
+            return try PageSpec(self.config, pageKey: pageKey, jsonItem)
+        } catch {
+            Self.logger.error("error reading spec from file '\(cachedResponse.dataFilePath)': \(error)")
+            return nil
+        }
+    }
+
+    func urls() -> [String] {
+        Array(self.urlToResponse.keys)
     }
 }

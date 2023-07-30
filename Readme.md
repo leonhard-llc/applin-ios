@@ -288,3 +288,35 @@ This project is still under development.
   - <https://www.avanderlee.com/swift/urlsession-common-pitfalls-with-background-download-upload-tasks/>
 - [ ] Reduce memory usage of pages that are not visible.
 - [ ] Warn when two widgets use the same 'id'.
+
+TODO:
+* If a page is not visible, fetch and display it.
+* Get a list of all visible pages and prefetch links, this is the set of cacheable pages.
+  Fetch them all and keep them up-to-date.
+  * Use a single async task.
+  * Re-fetch some pages a little early and in parallel to reduce battery usage.
+    Beware refreshing pages too early if their max age is already short.
+* When a visible page expires and is re-fetched, do the fetch silently.
+  If the user starts an interaction that could update the page (action list includes rpc or pop) then
+  pause updates to the current page.  If the page was updated then discard any re-fetched version.
+* Implement pull to refresh.
+* Push notifications can include a list of dirty pages.  Mark these pages dirty and try to refetch them.
+* Support testing apps with push notifications.  Use SSE.  Build support for this into the server libraries.
+* Do a single batch fetch for non-foreground pages.  Build support for this into the server libraries.
+* Optional simplified version: mark all client pages as dirty.  This would be fine for apps with few cacheable pages.
+  Then server needs to store only one dirty timestamp per client.
+
+# Architecture
+Prevent races between operations:
+* Execute an action list
+  * Prevent updates to visible pages during actions
+  * Prevent rollbacks of pages: Use a monotonic clock, save time interval of executing or executed action list,
+    then discard any fetch for that page that overlapped the interval.  Interaction Hold (IxHold).
+* Fetch visible pages
+  * Loading a visible page makes an interactive hold.
+* Re-fetch and update visible pages
+  * Add an interaction hold after the update, to reject interactions right after the update and show feedback.
+  * Don't refetch pages with an interactive hold.
+* Re-fetch cacheable pages
+  * Don't refetch pages with an interactive hold.
+* Lamport clock: Just a class that holds an int.  Checking the time increases it by one.

@@ -30,7 +30,7 @@ class PaddedLabel: UIView {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("init(coder:) is not implemented")
     }
 
     override public var description: String {

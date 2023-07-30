@@ -45,7 +45,7 @@
 //class MediaWidget: Widget {
 //    var spec: MediaSpec
 //    var subViewController: UIHostingController<AnyView>
-//    weak var session: ApplinSession?
+//    let ctx: PageContext
 //
 //    init(_ spec: MediaSpec) {
 //        print("MediaWidget.init(\(spec))")

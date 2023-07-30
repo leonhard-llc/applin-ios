@@ -4,11 +4,9 @@ import UIKit
 struct BackButtonSpec: Equatable, Hashable {
     static let TYP = "back-button"
     let actions: [ActionSpec]
-    let pageKey: String
 
-    init(pageKey: String, _ item: JsonItem) throws {
+    init(_ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
-        self.pageKey = pageKey
     }
 
     func toJsonItem() -> JsonItem {
@@ -42,9 +40,15 @@ struct BackButtonSpec: Equatable, Hashable {
         return BackButtonWidget()
     }
 
-    func tap(_ session: ApplinSession, _ cache: WidgetCache) {
+    func tap(_ ctx: PageContext) {
         print("back-button tap")
-        session.doActions(pageKey: self.pageKey, self.actions)
+        Task {
+            await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.actions)
+        }
+    }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        self.actions.forEach(f)
     }
 }
 
@@ -53,7 +57,7 @@ class BackButtonWidget: Widget {
         false
     }
 
-    func update(_ session: ApplinSession, _ state: ApplinState, _ spec: Spec, _ subs: [Widget]) throws {
+    func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
     }
 
     func getView() -> UIView {

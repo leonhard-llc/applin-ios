@@ -1,13 +1,31 @@
 import Foundation
 import UIKit
 
+class PageContext {
+    weak var cache: WidgetCache?
+    let hasPrevPage: Bool
+    let pageKey: String
+    weak var pageStack: PageStack?
+    weak var serverCaller: ServerCaller?
+    weak var varSet: VarSet?
+
+    init(_ cache: WidgetCache, hasPrevPage: Bool, pageKey: String, _ pageStack: PageStack, _ varSet: VarSet) {
+        self.cache = cache
+        self.hasPrevPage = hasPrevPage
+        self.pageKey = pageKey
+        self.pageStack = pageStack
+        self.varSet = varSet
+    }
+}
+
 protocol PageController: UIViewController {
     func allowBackSwipe() -> Bool
     func klass() -> AnyClass
-    func update(_ session: ApplinSession, _ cache: WidgetCache, _ state: ApplinState, _ newPageSpec: PageSpec, hasPrevPage: Bool)
+    func update(_ ctx: PageContext, _ newPageSpec: PageSpec)
 }
 
 enum PageSpec: CustomStringConvertible, Equatable {
+    case loadingPage
     case modal(ModalSpec)
     case navPage(NavPageSpec)
     case plainPage(PlainPageSpec)
@@ -19,7 +37,7 @@ enum PageSpec: CustomStringConvertible, Equatable {
         case ModalKind.drawer.typ():
             self = try .modal(ModalSpec(pageKey: pageKey, .drawer, item))
         case NavPageSpec.TYP:
-            self = try .navPage(NavPageSpec(config, pageKey: pageKey, item))
+            self = try .navPage(NavPageSpec(config, item))
         case PlainPageSpec.TYP:
             self = try .plainPage(PlainPageSpec(config, pageKey: pageKey, item))
         default:
@@ -29,45 +47,53 @@ enum PageSpec: CustomStringConvertible, Equatable {
 
     var connectionMode: ConnectionMode {
         switch self {
+        case .loadingPage:
+            return .disconnect
         case let .modal(inner):
             return inner.connectionMode
         case let .navPage(inner):
             return inner.connectionMode
         case let .plainPage(inner):
             return inner.connectionMode
-        }
-    }
-
-    func toJsonItem() -> JsonItem {
-        switch self {
-        case let .modal(inner):
-            return inner.toJsonItem()
-        case let .navPage(inner):
-            return inner.toJsonItem()
-        case let .plainPage(inner):
-            return inner.toJsonItem()
-        }
-    }
-
-    func vars() -> [(String, Var)] {
-        switch self {
-        case let .modal(inner):
-            return inner.vars()
-        case let .navPage(inner):
-            return inner.vars()
-        case let .plainPage(inner):
-            return inner.vars()
         }
     }
 
     var description: String {
         switch self {
+        case .loadingPage:
+            return "loadingPage"
         case let .modal(inner):
             return "\(inner)"
         case let .navPage(inner):
             return "\(inner)"
         case let .plainPage(inner):
             return "\(inner)"
+        }
+    }
+
+    func vars() -> [(String, Var)] {
+        switch self {
+        case .loadingPage:
+            return []
+        case let .modal(inner):
+            return inner.vars()
+        case let .navPage(inner):
+            return inner.vars()
+        case let .plainPage(inner):
+            return inner.vars()
+        }
+    }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        switch self {
+        case .loadingPage:
+            break
+        case let .modal(inner):
+            return inner.visitActions(f)
+        case let .navPage(inner):
+            return inner.visitActions(f)
+        case let .plainPage(inner):
+            return inner.visitActions(f)
         }
     }
 }

@@ -79,15 +79,23 @@ struct ModalSpec: CustomStringConvertible, Equatable {
         .modal(self)
     }
 
-    func toAlert(_ session: ApplinSession) -> AlertController {
-        let interactiveErrorDetails: String = session.mutex.lockReadOnly({ state in state.interactiveError })?.message()
+    func toAlert(_ ctx: PageContext) -> AlertController {
+        let interactiveErrorDetails: String = ctx.varSet?.getInteractiveError()?.message()
                 ?? "Error details not found."
         let text = self.text?.replacingOccurrences(of: "${INTERACTIVE_ERROR_DETAILS}", with: interactiveErrorDetails)
         let alert = AlertController(title: self.title, message: text, preferredStyle: self.kind.style())
         for widget in self.widgets {
-            alert.addAction(widget.toAlertAction(session, pageKey: self.pageKey))
+            alert.addAction(widget.toAlertAction(ctx, pageKey: self.pageKey))
         }
         return alert
+    }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        for button in self.widgets {
+            for action in button.actions {
+                f(action)
+            }
+        }
     }
 
     func vars() -> [(String, Var)] {
@@ -97,6 +105,69 @@ struct ModalSpec: CustomStringConvertible, Equatable {
     public var description: String {
         "ModalSpec{\(self.kind) title=\(self.title)}"
     }
+}
+
+class AlertController: UIAlertController {
+    var animated = false
+
+    func allowBackSwipe() -> Bool {
+        false
+    }
+
+    func setAnimated(_ animated: Bool) {
+        self.animated = animated
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if !self.animated {
+            UIView.setAnimationsEnabled(false)
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        UIView.setAnimationsEnabled(true)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if !self.animated {
+            UIView.setAnimationsEnabled(false)
+        }
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        UIView.setAnimationsEnabled(true)
+        //self.delegate?.modalDismissed()
+    }
+
+    // TODONT: Don't add a constructor.
+    //         Our constructor cannot call the "convenience" constructor which is
+    //         the only known way to properly initialize the class.
+    // let preferredStyleOverride: UIAlertController.Style
+    // // https://stackoverflow.com/a/45895513
+    // override var preferredStyle: UIAlertController.Style {
+    //     return self.preferredStyleOverride
+    // }
+    // init(title: String?, message: String?, preferredStyle: UIAlertController.Style) {
+    //     self.preferredStyleOverride = preferredStyle
+    //     // After calling this constructor, the class will throw
+    //     // "Unable to simultaneously satisfy constraints" errors and display
+    //     // the dialog with maximum height.  Strangely, displaying a second
+    //     // dialog causes the one underneath to display properly.
+    //     super.init(nibName: nil, bundle: nil)
+    //     self.title = title
+    //     self.message = message
+    // }
+
+    // TODONT: Don't try to intercept `dismiss` calls because it doesn't work.
+    //         UIViewController does not call this when a button is tapped.
+    // override func dismiss(animated flag: Bool, completion: (() -> ())?) {
+    //     print("dismiss")
+    //     super.dismiss(animated: flag, completion: completion)
+    // }
 }
 
 // TODONT: Don't make each page controller present the modals above it.

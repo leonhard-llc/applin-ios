@@ -10,7 +10,7 @@ struct PlainPageSpec: Equatable {
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
         self.title = item.title
-        self.widget = try item.requireWidget(config, pageKey: pageKey)
+        self.widget = try item.requireWidget(config)
     }
 
     func toJsonItem() -> JsonItem {
@@ -35,6 +35,10 @@ struct PlainPageSpec: Equatable {
     func vars() -> [(String, Var)] {
         self.widget.vars()
     }
+
+    func visitActions(_ f: (ActionSpec) -> ()) {
+        self.widget.visitActions(f)
+    }
 }
 
 class PlainPageController: UIViewController, PageController {
@@ -48,7 +52,7 @@ class PlainPageController: UIViewController, PageController {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("unimplemented")
+        fatalError("init(coder:) is not implemented")
     }
 
     // Implement PageController -----------------
@@ -61,20 +65,17 @@ class PlainPageController: UIViewController, PageController {
         PlainPageController.self
     }
 
-    func update(
-            _ session: ApplinSession,
-            _ cache: WidgetCache,
-            _ state: ApplinState,
-            _ newPageSpec: PageSpec,
-            hasPrevPage: Bool
-    ) {
+    func update(_ ctx: PageContext, _ newPageSpec: PageSpec) {
+        guard let cache = ctx.cache else {
+            return
+        }
         guard case let .plainPage(plainPageSpec) = newPageSpec else {
             print("FATAL: PlainPageController.update() called with newPageSpec=\(newPageSpec)")
             abort()
         }
         self.title = plainPageSpec.title
         self.view.backgroundColor = .systemBackground
-        let widget = cache.updateAll(session, state, plainPageSpec.widget)
+        let widget = cache.updateAll(ctx, plainPageSpec.widget)
         let subView = widget.getView()
         subView.translatesAutoresizingMaskIntoConstraints = false
         self.helper.update(subView) {
