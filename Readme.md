@@ -41,98 +41,120 @@ This project is still under development.
   - `nav-page`
     - [X] `title`
     - [X] `widget`
-    - [X] custom back button actions
-    - [ ] Use name of previous page, not "Back"
-    - [ ] Swipe to go back with custom back button
-    - [X] `stream` bool
-    - [X] `poll-seconds`
+    - [X] `start` widget
+      - [X] `null` or missing means default back button
+      - [X] `back-button` widget
+      - [X] `empty` widget
+    - [ ] `end` widget
   - [X] `plain-page`
+    - [X] `widget`
   - `alert-modal`, `drawer-modal`
     - [X] `title`
     - [X] `text`
-    - [X] `widgets` (only `modal-button` are allowed)
+    - [X] `widgets`, must be `modal-button` widgets
   - `media-page`
     - [ ] `title`
     - [ ] `url`
-    - [ ] `cache` boolean
+    - [ ] Markdown
+    - [ ] Video
+    - [ ] Audio
+    - [ ] Proto
 - Widgets
   - [X] Preserve widget data across page updates
-  - [ ] Preserve widget data across app launches
+  - [X] Preserve widget data across app launches
     - <https://developer.apple.com/documentation/uikit/view_controllers/preserving_your_app_s_ui_across_launches>
   - `back-button`
     - [X] `actions`
     - [ ] Use name of previous page, not "Back"
+    - [ ] Swipe to go back with custom back button
   - `button`
     - [X] `text`
     - [X] `actions`
-    - [ ] `actions-ios`
+  - `checkbox`
+    - [X] `var`
+    - [X] `initial-bool`
+    - [X] `text`
+    - [X] `rpc` to call when the user clicks
   - `column`
     - [X] `align`: `start`, `center`, `end`
     - [X] `spacing`
     - [X] `widgets`
   - [X] `empty`
-  - [X] `error-details`
-  - `form`
+  - [X] `error-text` is a label with a red error icon
+  - `form` is a column that separates widgets with horizontal lines
     - [X] `widgets`
-  - `form-button`
+  - `form-button` is an iOS-style button that appears as blue text
     - [X] `text`
     - [X] `actions`
-    - [ ] `actions-ios`
-  - `form-checkbox`
-    - [X] `initial-bool`
-    - [X] `rpc`
-    - [X] `text`
-    - [X] `var`
-  - `form-detail`
-    - [X] `actions`
-    - [X] `photo-url`
-      - [ ] animated loading placeholder
-      - [ ] retry
-    - [X] `sub-text`
-    - [X] `text`
-  - `form-error`
-    - [X] `text`
-  - `form-section`
-    - [X] `text`
+    - [X] `align`: `start`, `center`, `end`
+  - `form-section` is a column with a header, separates widgets with horizontal lines
+    - [X] `title`
     - [X] `widgets`
-  - `form-textfield`
-    - [ ] `allow`: `ascii`, `email`, `numbers`, `tel`
-    - [ ] `auto-capitalize`: `names`, `sentences`
-    - [ ] `check-rpc`
-    - [X] `initial-string`
-    - [ ] `label`
-    - [ ] `max-chars`
-    - [ ] `max-lines`
-    - [ ] `min-chars`
-    - [X] `var`
-    - [ ] clear button
-  - [ ] `expand` with `min-height`, `min-width`, `max-height`, `max-width`, `widget`
-  - [ ] `expand.alignment`: `top-start`, `top-center`, `top-end`, `center-start`, `center`, `center-end`, `bottom-start`, `bottom-center`, `bottom-end`
-  - [ ] `date-picker`
-  - [ ] `date-time-picker`
-  - `horizontal-scroll`
-    - [ ] `widget`
+  - `grouped-row-table` is a table that can can group certain rows together
+    - [X] `row-groups` is a triple-nested array of widgets
+    - [X] `spacing`
   - `image`
+    - [X] `url`
+    - [X] `aspect-ratio` (prevents UI shifts when image loads)
+    - [ ] `disposition`: `fit`, `cover`, `stretch`
     - [ ] `icon`
-    - [ ] `url`
-    - [ ] `alpha` 0-1.0
-    - [ ] `color`: #rrggbb
-    - [ ] dimensions
-    - [ ] `disposition`: `cover`, `fit`, `stretch`
-    - [ ] animated loading placeholder
-    - [ ] retry
-    - [ ] zoom
-    - [ ] cache
+    - [ ] `alpha`
+    - [ ] `color` (for monochrome images)
+    - [ ] `preload` bool
+    - [ ] `allow-zoom`
+  - [X] `last-error-text`
   - [ ] `media`
     - [ ] `url`
-    - [ ] `cache` bool
+    - [ ] `aspect-ratio`
+    - [ ] `preload` bool
   - `modal-button`
     - [X] `text`
     - [X] `actions`
-    - [ ] `actions-ios`
     - [X] `is-cancel`
     - [X] `is-default`
     - [X] `is-destructive`
+  - `nav-button` shows an iOS style navigation button with a text label and a chevron
+    - [X] `text`
+    - [X] `sub-text`
+    - [X] `actions`
+    - [X] `photo-url`
+      - [x] animated loading placeholder
+      - [x] retry
+      - [ ] tap to retry
+  - `scroll`
+    - [X] `widget`
+  - `text` a text label
+    - [X] `text`
+    - [ ] `text` should not show markdown-formatting
+    - [ ] `scale` float
+    - [ ] `overflow`: `wrap`, `ellipsis`
+    - [ ] `align`
+  - `textfield`
+    - [X] `label`
+    - [X] `var`
+    - [X] `initial-string`
+    - [X] `error` label with error icon
+    - `max-lines`
+      - [X] 1 for single line, >1 for multi-line
+      - [ ] constrain lines
+    - `allow`: `all`, `ascii`, `email`, `numbers`, `tel`
+      - [X] show correct keyboard type
+      - [ ] constrain content
+    - [X] `auto-capitalize`: `names`, `sentences`
+    - [ ] `check-rpc`
+    - [ ] `max-chars`
+    - [ ] `min-chars`
+    - [ ] `regex`
+    - [ ] clear button
+    - [ ] `rpc` to call when the user changes the text
+  - [ ] `date-picker`
+  - [ ] `date-time-picker`
+    - [ ] `granularity-seconds`
+    - [ ] `min-epoch-seconds`
+    - [ ] `max-epoch-seconds`
+    - [ ] `epoch-seconds-var`
+    - [ ] `timezone-var`
+  - `horizontal-scroll`
   - `single-option`
     - [ ] `style`
       - [ ] `radio`
@@ -140,61 +162,36 @@ This project is still under development.
       - [ ] `menu`
     - [ ] `initial-id`
     - [ ] `label`
-    - [ ] `options` list of `option`
+    - [ ] `options` is `{'id': String, 'label': String}`
     - [ ] `var`
-  - `option`
-    - [ ] `label`
-    - [ ] `id` string
   - `row`
     - [ ] `align`: `top`, `center`, `bottom`
     - [ ] `spacing`
     - [ ] `widgets`
     - [ ] `wrap` bool
-  - `scroll`
-    - [X] `widget`
   - `table`
     - [ ] headers: `[string]`
     - [ ] cells: `[[widget]]`
-  - `text`
-    - [X] `text`
-    - [ ] `text` should not show markdown-formatting
-    - [ ] `scale` float
-    - [ ] `overflow`: `wrap`, `ellipsis`
-  - `date-time-picker`
-    - [ ] `granularity-seconds`
-    - [ ] `min-epoch-seconds`
-    - [ ] `max-epoch-seconds`
-    - [ ] `epoch-seconds-var`
-    - [ ] `timezone-var`
 - Actions:
   - `copy-to-clipboard`
     - [X] implement
     - [ ] show confirmation popover
-  - `hilight:WIDGET_ID`
-    - [ ] show flashing highlight
-    - [ ] scroll the widget into view
-  - [ ] `launch-url:URL`
-  - [ ] `logout`
-    - <https://developer.apple.com/documentation/foundation/urlsession/1411479-reset>
   - [X] `pop`
   - [X] `push:PAGE_KEY`
-  - [ ] `reload-media` action
   - `rpc:/PATH`
     - [X] call server
     - [X] send cookies, receive & save cookies
     - [ ] send page stack to server
     - [X] send page variables to server in JSON request body
-    - [ ] Ephemeral client data, to allow an RPC to include data from multiple pages
-    - [ ] Option to automatically perform RPC when data changes, after a delay
-    - [ ] Prevent overlapping RPCs or actions
-    - [X] Show "working" modal to prevent race between user changing widgets and server changing UI in RPC response
+    - [X] Show "working" modal
     - [X] response can update pages
     - [ ] response can update stack
-    - [ ] show network error dialog
+    - [X] show network error dialog
     - [X] show server error dialog
-    - [ ] show user error dialog
-  - `pick-photo` action
-    - [ ] `upload-url`
+    - [X] show user error dialog
+  - `choose-photo:URL` to choose a photo and upload it to the given URL
+    - [X] Let user choose photo from library
+    - [ ] Upload photo to URL, use HTTP PUT
     - [ ] `aspect-ratio` float, width / height
     - [ ] `max-bytes`
     - [ ] `max-height`
@@ -205,118 +202,51 @@ This project is still under development.
     - [ ] preserve metadata
     - [ ] zoom
     - [ ] rotate
+  - [X] `poll` to refresh the page
   - [ ] `take-photo` action
-- Style
-  - Pick one:
-    - Each widget gets values from the style subsystem
-    - Each widget has normal attributes for style.
-      - Styles are a kind of JSON overlay which replace attributes.  This is like class inheritance.
-      - Implement styles entirely on the server.
-        This could make tests more verbose.
-        This would simplify debugging. <--- This one.
-  - [ ] `default-style` key
-  - [ ] `style` attribute on pages and widgets
-  - [ ] `style` widget
-  - Text:
-    - [ ] size
-    - [ ] font
-    - [ ] weight
-    - [ ] color
-    - [ ] effects
-    - [ ] auto-size, with min & max
-    - [ ] auto-size group
-  - Box
-    - [ ] width, height, min & max & preferred
-    - [ ] padding
-    - [ ] margin
-    - Border
-      - [ ] color
-      - [ ] width
-      - [ ] corner radius
-      - [ ] pattern
-    - Shadow
-    - Background
-      - [ ] color
-      - [ ] pattern
-      - [ ] gradient
-    - Background image
-      - [ ] disposition
-      - [ ] origin
-      - [ ] opacity
-      - [ ] effects
-  - Navigation bar
-    - [ ] title text style
-    - [ ] button text style
-  - Markdown
-  - Other widget-specific settings
+  - [ ] `launch-url:URL`
+  - [ ] `logout`
+    - <https://developer.apple.com/documentation/foundation/urlsession/1411479-reset>
+  - `hilight:WIDGET_ID`
+    - [ ] show flashing highlight
+    - [ ] scroll the widget into view
+- [ ] style and layout
 - Connect to server
   - [X] Receive page updates
-  - [ ] Receive page stack updates
-  - [ ] Receive actions to execute immediately
-  - [ ] Always apply diffs from connection and RPCs in correct order.
-  - [ ] Avoid downloading all pages on new connection, use cached data
-  - [X] Connect only when app is active.  Disconnect when in background, after a delay.
-  - [X] Let pages specify "don't connect", "connect automatically" or "poll this RPC on this interval".
+  - [X] Cache pages
+  - [X] Automatically cache and refresh all pages reachable via `push-preload` action from a visible page
+  - [X] When a visible page expires and is re-fetched, do the fetch silently.
+    If the user starts an interaction that could update the page (action list includes rpc or pop) then
+    pause updates to the current page.  Discard any refresh updates that could possibly revert the page.
+  - [ ] Add an interaction hold after the update, to reject interactions right after the update and show feedback.
+  - [ ] Send eTag and If-None-Match headers
+  - [ ] Refresh some pages a little early and in parallel to reduce battery usage.
+        Avoid refreshing pages too early if their max age is already short.
+  - [ ] Do a single batch fetch for non-foreground pages.  Build support for this into the server libraries.
+  - [ ] Connect only when app is active.  Disconnect when in background, after a delay.
+  - [ ] Let pages specify that they need a live connection to the server to receive updates
   - [ ] Add pull to refresh <https://stackoverflow.com/questions/26071528/refreshcontrol-with-programatic-uitableview-without-uitableviewcontroller>
 - Save data
-  - [X] pages
-  - [X] Write pages after 10s delay, to reduce power usage
   - [X] stack
-  - [X] cookies
+  - [X] user-entered data
+  - [X] cookies - the iOS HTTP library saves these automatically
+  - [X] Save data after 10s delay, to reduce power usage
+  - [X] Save when app is being shut down
 - Notifications
+  - [ ] include list of pages to refresh
+  - [ ] allow server to send header with list of pages to refresh
+  - [ ] allow refreshing all app pages
   - [ ] action to request notifications
   - [ ] subscribe to notifications
   - [ ] Tap a notification to open the target page
   - [ ] Display received notifications while using app
-- Logging
-  - [ ] Replace `print` calls with proper logging: <https://developer.apple.com/documentation/os/logging>
-  - [ ] gzip
-  - [ ] log crashes
-  - [ ] log JSON
-  - [ ] encrypt with public key
-  - [ ] max file size bytes
-  - [ ] max file interval seconds
-  - [ ] upload url
+  - [ ] Support testing apps with push notifications.  Use SSE.  Build support for this into the server libraries.
+- Log properly, not using `print`.  See <https://developer.apple.com/documentation/os/logging>
 - Test coverage: ??
-- Integration tests
-- [X] Load `default.json` on startup
+- [X] Check license key on startup, require for Release builds
 - Respond to memory pressure warnings
   <https://developer.apple.com/documentation/uikit/app_and_environment/managing_your_app_s_life_cycle/responding_to_memory_warnings>
   - [ ] Release non-visible images
-  - [ ] Write cache since app may get terminated
+  - [ ] Save data since app may get terminated
 - [ ] Download media in background task
   - <https://www.avanderlee.com/swift/urlsession-common-pitfalls-with-background-download-upload-tasks/>
-- [ ] Reduce memory usage of pages that are not visible.
-- [ ] Warn when two widgets use the same 'id'.
-
-TODO:
-* If a page is not visible, fetch and display it.
-* Get a list of all visible pages and prefetch links, this is the set of cacheable pages.
-  Fetch them all and keep them up-to-date.
-  * Use a single async task.
-  * Re-fetch some pages a little early and in parallel to reduce battery usage.
-    Beware refreshing pages too early if their max age is already short.
-* When a visible page expires and is re-fetched, do the fetch silently.
-  If the user starts an interaction that could update the page (action list includes rpc or pop) then
-  pause updates to the current page.  If the page was updated then discard any re-fetched version.
-* Implement pull to refresh.
-* Push notifications can include a list of dirty pages.  Mark these pages dirty and try to refetch them.
-* Support testing apps with push notifications.  Use SSE.  Build support for this into the server libraries.
-* Do a single batch fetch for non-foreground pages.  Build support for this into the server libraries.
-* Optional simplified version: mark all client pages as dirty.  This would be fine for apps with few cacheable pages.
-  Then server needs to store only one dirty timestamp per client.
-
-# Architecture
-Prevent races between operations:
-* Execute an action list
-  * Prevent updates to visible pages during actions
-  * Prevent rollbacks of pages: Use a monotonic clock, save time interval of executing or executed action list,
-    then discard any fetch for that page that overlapped the interval.  Interaction Hold (IxHold).
-* Fetch visible pages
-  * Loading a visible page makes an interactive hold.
-* Re-fetch and update visible pages
-  * Add an interaction hold after the update, to reject interactions right after the update and show feedback.
-  * Don't refetch pages with an interactive hold.
-* Re-fetch cacheable pages
-  * Don't refetch pages with an interactive hold.
-* Lamport clock: Just a class that holds an int.  Checking the time increases it by one.
