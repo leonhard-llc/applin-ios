@@ -2,16 +2,20 @@ import Foundation
 
 // TODO: Put all of these inside a Util class.
 
-func createDir(_ path: String) async throws {
-    let task = Task {
-        do {
-            if FileManager.default.fileExists(atPath: path) {
-                return
-            }
-            try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
-        } catch {
-            throw ApplinError.appError("error creating directory '\(path)': \(error)")
+func createDir(_ path: String) throws {
+    do {
+        if FileManager.default.fileExists(atPath: path) {
+            return
         }
+        try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+    } catch {
+        throw ApplinError.appError("error creating directory '\(path)': \(error)")
+    }
+}
+
+func createDirAsync(_ path: String) async throws {
+    let task = Task {
+        try createDir(path)
     }
     try await task.value
 }

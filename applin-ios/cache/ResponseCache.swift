@@ -58,21 +58,19 @@ class ResponseCache {
     }
 
     private let config: ApplinConfig
-    private let dirPath: String
     private var urlToResponse: [String: CachedResponse]
 
-    init(_ config: ApplinConfig, dirPath: String) throws {
+    init(_ config: ApplinConfig) throws {
         self.config = config
-        self.dirPath = dirPath
-        Self.logger.info("dataDirPath=\(self.dirPath)")
+        Self.logger.info("cacheDirPath=\(self.config.cacheDirPath)")
         let cacheFiles: Set<String>
         do {
             cacheFiles = Set(try FileManager.default
-                    .contentsOfDirectory(atPath: self.dirPath)
+                    .contentsOfDirectory(atPath: self.config.cacheDirPath)
                     .filter({ path in path.components(separatedBy: "/").last?.starts(with: Self.FILENAME_PREFIX) ?? false })
             )
         } catch {
-            throw "error listing directory '\(self.dirPath)': \(error)"
+            throw "error listing directory '\(self.config.cacheDirPath)': \(error)"
         }
         let filePairs: [(String, String)] = cacheFiles.compactMap({ path in
             if !path.hasSuffix(Self.INFO_SUFFIX) {
@@ -141,7 +139,7 @@ class ResponseCache {
             self.remove(url: info.absoluteUrl)
             let randomInt = UInt64.random(in: 1...UInt64.max)
             let randomCode = String(randomInt, radix: 16, uppercase: true)
-            let pathPrefix = "\(self.dirPath)/\(Self.FILENAME_PREFIX)\(randomCode)"
+            let pathPrefix = "\(self.config.cacheDirPath)/\(Self.FILENAME_PREFIX)\(randomCode)"
             let infoFilePath = "\(pathPrefix)\(Self.INFO_SUFFIX)"
             let dataFilePath = "\(pathPrefix)\(Self.DATA_SUFFIX)"
             let bytes: Data

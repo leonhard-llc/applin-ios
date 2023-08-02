@@ -38,6 +38,7 @@
 		36EBC81BFB2435508A9829FC /* LoadingPageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCCD93DA32787B12A834E /* LoadingPageController.swift */; };
 		36EBC8512BA87075D55A3D2B /* json_item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC2C3C48EB2D794D16AB7 /* json_item.swift */; };
 		36EBC85FEF1032EFA9B16D0E /* badge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCBAA1300D4F9E03A485B /* badge.swift */; };
+		36EBC8924FEAFCAA06D6E1E8 /* StaticPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC8B8BE4DDE8D85894749 /* StaticPages.swift */; };
 		36EBC894DAA57B20493F7BF5 /* textfield.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC028E3CC54EA8CE9C422 /* textfield.swift */; };
 		36EBC8ADB47CA5094B1FD07B /* error_text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBC85CD290F41492E6A681 /* error_text.swift */; };
 		36EBC8C464017332F7DDC833 /* modal_button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBCC3CE22617EF9A9D5C19 /* modal_button.swift */; };
@@ -132,6 +133,7 @@
 		36EBC7AD7ED8C71B8B9DD53A /* column_view.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = column_view.swift; sourceTree = "<group>"; };
 		36EBC85CD290F41492E6A681 /* error_text.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = error_text.swift; sourceTree = "<group>"; };
 		36EBC8629F4380E1C84057A9 /* widget_cache_test.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = widget_cache_test.swift; sourceTree = "<group>"; };
+		36EBC8B8BE4DDE8D85894749 /* StaticPages.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StaticPages.swift; sourceTree = "<group>"; };
 		36EBC960F01F9A285F600570 /* form_button.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = form_button.swift; sourceTree = "<group>"; };
 		36EBC9B7DFBEA262202611EE /* image_view.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = image_view.swift; sourceTree = "<group>"; };
 		36EBC9DA4842ED3BDAFF6E7F /* LicenseKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LicenseKey.swift; sourceTree = "<group>"; };
@@ -254,6 +256,7 @@
 				36EBCA8D493FD4D2A05270EE /* PageStack.swift */,
 				36EBCB44B9E60E57772293B8 /* VarSet.swift */,
 				36EBC132D262F3A83BEC485E /* Poller.swift */,
+				36EBC8B8BE4DDE8D85894749 /* StaticPages.swift */,
 			);
 			path = session;
 			sourceTree = "<group>";
@@ -586,6 +589,7 @@
 				36EBC51720FFB52CF43600B3 /* PageStack.swift in Sources */,
 				36EBC0D85EEE57EB25AB0983 /* VarSet.swift in Sources */,
 				36EBC0B546459DCC888F9E8D /* Poller.swift in Sources */,
+				36EBC8924FEAFCAA06D6E1E8 /* StaticPages.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

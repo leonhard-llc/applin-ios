@@ -101,7 +101,7 @@ class StateFileOwner {
                 return
             }
             let dirPath = (self.path as NSString).deletingLastPathComponent
-            try await createDir(dirPath)
+            try await createDirAsync(dirPath)
             let tmpPath = self.path + ".tmp"
             try await deleteFile(path: tmpPath)
             try await writeFile(data: bytes, path: tmpPath)

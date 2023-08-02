@@ -26,11 +26,13 @@ class PageStack {
     class State {
         static let logger = Logger(subsystem: "Applin", category: "State")
         private let clock: LamportClock
+        private let config: ApplinConfig
         private var specs: [String: PageSpec] = [:]
         private var stack: [Entry] = []
         private var dirty = false
 
-        init(_ clock: LamportClock) {
+        init(_ clock: LamportClock, _ config: ApplinConfig) {
+            self.config = config
             self.clock = clock
         }
 
@@ -63,10 +65,13 @@ class PageStack {
         }
 
         func tryPush(pageKey: String) throws -> Bool {
+            if self.stack.last?.pageKey == pageKey {
+                return true
+            }
             if self.stack.contains(where: { entry in entry.pageKey == pageKey }) {
                 throw ApplinError.appError("App tried to show a page that is already shown.  Navigate back to it.")
             }
-            if self.specs[pageKey] != nil {
+            if self.config.staticPages[pageKey] != nil || self.specs[pageKey] != nil {
                 self.stack.append(Entry(pageKey: pageKey, updated: self.clock.now()))
                 self.dirty = true
                 return true
@@ -76,6 +81,7 @@ class PageStack {
         }
 
         func trySet(pageKey: String, _ token: Token, _ spec: PageSpec) -> Bool {
+            assert(self.config.staticPages[pageKey] == nil)
             if let entry = self.getEntry(pageKey: pageKey) {
                 if token.instant < entry.updated {
                     return false
@@ -106,12 +112,10 @@ class PageStack {
 
         func stackSpecs() -> [(String, PageSpec)] {
             self.stack.map({ entry -> (String, PageSpec) in
-                if let page = self.specs[entry.pageKey] {
-                    return (entry.pageKey, page)
-                } else {
-                    Self.logger.error("no spec found for pageKey: '\(entry.pageKey)'")
-                    return (entry.pageKey, NavPageSpec(pageKey: entry.pageKey, title: "Not Found", ColumnSpec([TextSpec("Page not found.")])).toSpec())
-                }
+                let spec = self.config.staticPages[entry.pageKey]?(self.config, entry.pageKey) ??
+                        self.specs[entry.pageKey] ??
+                        self.config.pageNotFoundPage(config, entry.pageKey)
+                return (entry.pageKey, spec)
             })
         }
 
@@ -150,18 +154,6 @@ class PageStack {
             self.lock.lock({ f(self.state) })
         }
 
-        func lockReadOnlyThrows<R>(_ f: (State) throws -> R) throws -> R {
-            try self.lock.lockThrows({ try f(self.state) })
-        }
-
-        func lockAsyncReadOnly<R>(_ f: (State) async -> R) async -> R {
-            await self.lock.lockAsync({ await f(self.state) })
-        }
-
-        func lockAsyncThrowsReadOnly<R>(_ f: (State) async throws -> R) async throws -> R {
-            try await self.lock.lockAsyncThrows({ try await f(self.state) })
-        }
-
         func lockAsyncAndUpdate<R>(_ f: (State) -> R) async -> R {
             try! await self.lockAsyncThrowsAndUpdate(f)
         }
@@ -178,14 +170,16 @@ class PageStack {
     }
 
     private var lock = ApplinLock()
+    private let config: ApplinConfig
     private let mutex: StateMutex
     weak var weakCache: ResponseCache?
     weak var weakNav: NavigationController?
     weak var weakServerCaller: ServerCaller?
     weak var weakVarSet: VarSet?
 
-    init(_ cache: ResponseCache?, _ clock: LamportClock, _ nav: NavigationController?, _ varSet: VarSet?) {
-        self.mutex = StateMutex(state: State(clock), nav, varSet)
+    init(_ cache: ResponseCache?, _ clock: LamportClock, _ config: ApplinConfig, _ nav: NavigationController?, _ varSet: VarSet?) {
+        self.config = config
+        self.mutex = StateMutex(state: State(clock, config), nav, varSet)
         self.mutex.weakPageStack = self
         self.weakCache = cache
         self.weakNav = nav
@@ -211,6 +205,9 @@ class PageStack {
     }
 
     func doPollAction(pageKey: String) async throws {
+        if self.config.staticPages[pageKey] != nil {
+            return
+        }
         guard let cache = self.weakCache, let serverCaller = self.weakServerCaller else {
             return
         }
@@ -231,8 +228,11 @@ class PageStack {
     }
 
     func doPushAction(pageKey: String) async throws {
-        let pushed = try await self.mutex.lockAsyncThrowsReadOnly({ state in try state.tryPush(pageKey: pageKey) })
+        let pushed = try await self.mutex.lockAsyncThrowsAndUpdate({ state in try state.tryPush(pageKey: pageKey) })
         if pushed {
+            return
+        }
+        if self.config.staticPages[pageKey] != nil {
             return
         }
         guard let cache = self.weakCache, let serverCaller = self.weakServerCaller else {
@@ -242,7 +242,7 @@ class PageStack {
         try await self.withWorking {
             if let spec = await cache.getSpec(pageKey: pageKey) {
                 let _ = await self.mutex.lockAsyncAndUpdate({ state in state.trySet(pageKey: pageKey, spec) })
-                let pushed = try await self.mutex.lockAsyncThrowsReadOnly({ state in try state.tryPush(pageKey: pageKey) })
+                let pushed = try await self.mutex.lockAsyncThrowsAndUpdate({ state in try state.tryPush(pageKey: pageKey) })
                 if pushed {
                     return
                 }
@@ -263,6 +263,9 @@ class PageStack {
     }
 
     func doRpcAction(pageKey: String, path: String) async throws {
+        if self.config.staticPages[pageKey] != nil {
+            throw ApplinError.appError("rpc used same key as static page: '\(pageKey)")
+        }
         guard let serverCaller = self.weakServerCaller else {
             return
         }
@@ -299,7 +302,7 @@ class PageStack {
                         let _ = await self.mutex.lockAsyncAndUpdate({ state in state.pop() })
                     case let .push(key), let .pushPreloaded(key):
                         Self.logger.info("action push(\(key)) or pushPreloaded")
-                        try await self.doPushAction(pageKey: pageKey)
+                        try await self.doPushAction(pageKey: key)
                     case let .rpc(path):
                         Self.logger.info("action rpc(\(path))")
                         try await self.doRpcAction(pageKey: pageKey, path: path)
@@ -316,18 +319,18 @@ class PageStack {
                     self.weakVarSet?.setInteractiveError(e)
                     switch e {
                     case .appError:
-                        errorPageKey = APPLIN_CLIENT_ERROR_PAGE_KEY
+                        errorPageKey = StaticPageKeys.APPLIN_CLIENT_ERROR
                     case .networkError:
-                        errorPageKey = APPLIN_NETWORK_ERROR_PAGE_KEY
+                        errorPageKey = StaticPageKeys.APPLIN_NETWORK_ERROR
                     case .serverError:
-                        errorPageKey = APPLIN_SERVER_ERROR_PAGE_KEY
+                        errorPageKey = StaticPageKeys.APPLIN_SERVER_ERROR
                     case .userError:
-                        errorPageKey = APPLIN_USER_ERROR_PAGE_KEY
+                        errorPageKey = StaticPageKeys.APPLIN_USER_ERROR
                     }
                 } else {
                     Self.logger.error("unexpected error: \(e)")
                     self.weakVarSet?.setInteractiveError(.appError("\(e)"))
-                    errorPageKey = APPLIN_CLIENT_ERROR_PAGE_KEY
+                    errorPageKey = StaticPageKeys.APPLIN_CLIENT_ERROR
                 }
                 // TODO: Use static error page specs and eliminate the try.
                 try! await self.doPushAction(pageKey: errorPageKey)

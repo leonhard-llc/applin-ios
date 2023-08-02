@@ -20,8 +20,10 @@ class Main: UIResponder, UIApplicationDelegate {
         // Note: This code runs during app prewarming.
         do {
             URLCache.shared = URLCache(memoryCapacity: 10 * 1024 * 1024, diskCapacity: 500 * 1024 * 1024, diskPath: nil)
-            self.config = try ApplinConfig(dataDirPath: getDataDirPath())
-            self.responseCache = try ResponseCache(self.config, dirPath: self.config.dataDirPath)
+            self.config = try ApplinConfig(cacheDirPath: getCacheDirPath(), dataDirPath: getDataDirPath())
+            try createDir(self.config.cacheDirPath)
+            try createDir(self.config.dataDirPath)
+            self.responseCache = try ResponseCache(self.config)
             //self.streamer = Streamer(config, self.session)
             super.init()
         } catch let e {
@@ -52,12 +54,12 @@ class Main: UIResponder, UIApplicationDelegate {
                 }
             } else if hasSessionCookie(self.config) {
                 Self.logger.info("has session")
-                pageKeys = [APPLIN_STATE_LOAD_ERROR_PAGE_KEY]
+                pageKeys = [StaticPageKeys.APPLIN_STATE_LOAD_ERROR]
             } else {
                 Self.logger.info("no session")
-                pageKeys = [ApplinCustomConfig.SHOW_PAGE_ON_FIRST_STARTUP]
+                pageKeys = [config.showPageOnFirstStartup]
             }
-            self.pageStack = PageStack(self.responseCache, clock, self.navigationController, varSet)
+            self.pageStack = PageStack(self.responseCache, clock, self.config, self.navigationController, varSet)
             self.serverCaller = ServerCaller(self.config, self.responseCache, self.pageStack, self.varSet)
             self.pageStack!.weakServerCaller = self.serverCaller
             self.poller = Poller(self.config, self.responseCache, self.pageStack, self.serverCaller)

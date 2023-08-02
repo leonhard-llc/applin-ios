@@ -8,29 +8,20 @@ class ApplinCustomConfig {
     static let SUPPORT_CHAT_URL: URL? = nil // URL(string: "https://www.example.com/support")!
     static let SUPPORT_EMAIL_ADDRESS: String = "info@example.com"
     static let SUPPORT_SMS_TEL: String? = nil // "+15551112222"
-    static let STATUS_MARKDOWN_PAGE_URL: String = "https://example-status.com/index.md"
-    static let STATIC_PAGES: [String: (_ config: ApplinConfig) -> PageSpec] = [
-        APPLIN_NETWORK_ERROR_PAGE_KEY: ApplinConfig.defaultNetworkErrorPage,
-        APPLIN_SERVER_ERROR_PAGE_KEY: ApplinConfig.defaultServerErrorPage,
-        APPLIN_CLIENT_ERROR_PAGE_KEY: ApplinConfig.defaultClientErrorPage,
-        APPLIN_STATE_LOAD_ERROR_PAGE_KEY: ApplinConfig.defaultStateLoadErrorPage,
-        APPLIN_PAGE_NOT_FOUND_PAGE_KEY: ApplinConfig.defaultPageNotFoundPage,
-        APPLIN_USER_ERROR_PAGE_KEY: ApplinConfig.defaultUserErrorPage,
-        APPLIN_ERROR_DETAILS_PAGE_KEY: ApplinConfig.defaultErrorDetailsPage,
-        APPLIN_STATUS_PAGE_KEY: ApplinConfig.defaultStatusPage,
-        APPLIN_SUPPORT_PAGE_KEY: ApplinConfig.defaultSupportPage,
-        "/legal-form": ApplinConfig.defaultLegalFormPage,
-        "/terms": ApplinConfig.defaultTermsPage,
-        "/privacy": ApplinConfig.defaultPrivacyPolicyPage,
-    ]
+    static let STATUS_MARKDOWN_PAGE_URL = URL(string: "https://example-status.com/index.md")!
     static let SHOW_PAGE_ON_FIRST_STARTUP: String = "/legal-form"
-    static let networkErrorPage = ApplinConfig.defaultNetworkErrorPage
-    static let serverErrorPage = ApplinConfig.defaultServerErrorPage
-    static let clientErrorPage = ApplinConfig.defaultClientErrorPage
-    static let stateLoadErrorPage = ApplinConfig.defaultStateLoadErrorPage
-    static let pageNotFoundPage = ApplinConfig.defaultPageNotFoundPage
-    static let userErrorPage = ApplinConfig.defaultUserErrorPage
-    static let errorDetailsPage = ApplinConfig.defaultErrorDetailsPage
-    static let statusPage = ApplinConfig.defaultStatusPage
-    static let supportPage = ApplinConfig.defaultSupportPage
+    static let STATIC_PAGES: [String: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec] = [
+        StaticPageKeys.APPLIN_CLIENT_ERROR: StaticPages.applinClientError,
+        StaticPageKeys.APPLIN_NETWORK_ERROR: StaticPages.applinNetworkError,
+        StaticPageKeys.APPLIN_SERVER_ERROR: StaticPages.applinServerError,
+        StaticPageKeys.APPLIN_STATE_LOAD_ERROR: StaticPages.applinStateLoadError,
+        StaticPageKeys.APPLIN_USER_ERROR: StaticPages.applinUserError,
+        StaticPageKeys.ERROR_DETAILS: StaticPages.errorDetails,
+        StaticPageKeys.SERVER_STATUS: StaticPages.serverStatus,
+        StaticPageKeys.SUPPORT: StaticPages.support,
+        "/legal-form": StaticPages.legalForm,
+        StaticPageKeys.TERMS: StaticPages.terms,
+        StaticPageKeys.PRIVACY_POLICY: StaticPages.privacyPolicy,
+    ]
+    static let pageNotFoundPage = StaticPages.pageNotFound
 }
