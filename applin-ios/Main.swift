@@ -65,9 +65,11 @@ class Main: UIResponder, UIApplicationDelegate {
             self.poller = Poller(self.config, self.responseCache, self.pageStack, self.serverCaller)
             self.stateFileOwner = StateFileOwner(self.config, self.varSet, self.pageStack)
             Task {
+                // TODO: Fix bug where initial page fails to load and user dismisses it, leaving .loadingPage.
                 while self.pageStack!.isEmpty() {
                     let _ = await self.pageStack!.doActions(pageKey: "/", pageKeys.map({ pageKey in .push(pageKey) }))
                 }
+                Self.logger.info("started")
             }
         }
         return true

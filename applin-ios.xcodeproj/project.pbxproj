@@ -84,6 +84,8 @@
 		CE68B8FA280004E1000B7761 /* applin_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B8F9280004E1000B7761 /* applin_iosTests.swift */; };
 		CE68B904280004E1000B7761 /* applin_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B903280004E1000B7761 /* applin_iosUITests.swift */; };
 		CE68B906280004E1000B7761 /* applin_iosUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE68B905280004E1000B7761 /* applin_iosUITestsLaunchTests.swift */; };
+		CE92EF202A7CB58E0045F329 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE92EF1F2A7CB58E0045F329 /* main.swift */; };
+		CE92EF262A7CB6A20045F329 /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = CE92EF252A7CB6A20045F329 /* Swifter */; };
 		CEE0509028076EAE00F68166 /* widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEE0508F28076EAE00F68166 /* widget.swift */; };
 /* End PBXBuildFile section */
 
@@ -103,6 +105,18 @@
 			remoteInfo = "applin-ios";
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		CE92EF1B2A7CB58E0045F329 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		36EBC028E3CC54EA8CE9C422 /* textfield.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = textfield.swift; sourceTree = "<group>"; };
@@ -186,6 +200,8 @@
 		CE68B8FF280004E1000B7761 /* applin-iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "applin-iosUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE68B903280004E1000B7761 /* applin_iosUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = applin_iosUITests.swift; sourceTree = "<group>"; };
 		CE68B905280004E1000B7761 /* applin_iosUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = applin_iosUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		CE92EF1D2A7CB58E0045F329 /* demo-server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "demo-server"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE92EF1F2A7CB58E0045F329 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		CEB78F94280F3D20006F1B51 /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
 		CEE0508F28076EAE00F68166 /* widget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = widget.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -209,6 +225,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CE92EF1A2A7CB58E0045F329 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE92EF262A7CB6A20045F329 /* Swifter in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -333,6 +357,7 @@
 				CE68B8E7280004DE000B7761 /* applin-ios */,
 				CE68B8F8280004E1000B7761 /* applin-iosTests */,
 				CE68B902280004E1000B7761 /* applin-iosUITests */,
+				CE92EF1E2A7CB58E0045F329 /* demo-server */,
 				CE68B8E6280004DE000B7761 /* Products */,
 				36EBC5430B831FFCC6098B08 /* .swiftlint.yml */,
 			);
@@ -344,6 +369,7 @@
 				CE68B8E5280004DE000B7761 /* applin-ios.app */,
 				CE68B8F5280004E1000B7761 /* applin-iosTests.xctest */,
 				CE68B8FF280004E1000B7761 /* applin-iosUITests.xctest */,
+				CE92EF1D2A7CB58E0045F329 /* demo-server */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -382,6 +408,14 @@
 				CE68B905280004E1000B7761 /* applin_iosUITestsLaunchTests.swift */,
 			);
 			path = "applin-iosUITests";
+			sourceTree = "<group>";
+		};
+		CE92EF1E2A7CB58E0045F329 /* demo-server */ = {
+			isa = PBXGroup;
+			children = (
+				CE92EF1F2A7CB58E0045F329 /* main.swift */,
+			);
+			path = "demo-server";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -442,6 +476,26 @@
 			productReference = CE68B8FF280004E1000B7761 /* applin-iosUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		CE92EF1C2A7CB58E0045F329 /* demo-server */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE92EF212A7CB58E0045F329 /* Build configuration list for PBXNativeTarget "demo-server" */;
+			buildPhases = (
+				CE92EF192A7CB58E0045F329 /* Sources */,
+				CE92EF1A2A7CB58E0045F329 /* Frameworks */,
+				CE92EF1B2A7CB58E0045F329 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "demo-server";
+			packageProductDependencies = (
+				CE92EF252A7CB6A20045F329 /* Swifter */,
+			);
+			productName = "demo-server";
+			productReference = CE92EF1D2A7CB58E0045F329 /* demo-server */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -449,7 +503,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1320;
+				LastSwiftUpdateCheck = 1420;
 				LastUpgradeCheck = 1320;
 				TargetAttributes = {
 					CE68B8E4280004DE000B7761 = {
@@ -463,6 +517,9 @@
 						CreatedOnToolsVersion = 13.2.1;
 						TestTargetID = CE68B8E4280004DE000B7761;
 					};
+					CE92EF1C2A7CB58E0045F329 = {
+						CreatedOnToolsVersion = 14.2;
+					};
 				};
 			};
 			buildConfigurationList = CE68B8E0280004DE000B7761 /* Build configuration list for PBXProject "applin-ios" */;
@@ -475,6 +532,7 @@
 			);
 			mainGroup = CE68B8DC280004DE000B7761;
 			packageReferences = (
+				CE92EF242A7CB6A20045F329 /* XCRemoteSwiftPackageReference "swifter" */,
 			);
 			productRefGroup = CE68B8E6280004DE000B7761 /* Products */;
 			projectDirPath = "";
@@ -483,6 +541,7 @@
 				CE68B8E4280004DE000B7761 /* applin-ios */,
 				CE68B8F4280004E1000B7761 /* applin-iosTests */,
 				CE68B8FE280004E1000B7761 /* applin-iosUITests */,
+				CE92EF1C2A7CB58E0045F329 /* demo-server */,
 			);
 		};
 /* End PBXProject section */
@@ -608,6 +667,14 @@
 			files = (
 				CE68B906280004E1000B7761 /* applin_iosUITestsLaunchTests.swift in Sources */,
 				CE68B904280004E1000B7761 /* applin_iosUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CE92EF192A7CB58E0045F329 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE92EF202A7CB58E0045F329 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -873,6 +940,30 @@
 			};
 			name = Release;
 		};
+		CE92EF222A7CB58E0045F329 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		CE92EF232A7CB58E0045F329 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -912,7 +1003,35 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		CE92EF212A7CB58E0045F329 /* Build configuration list for PBXNativeTarget "demo-server" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CE92EF222A7CB58E0045F329 /* Debug */,
+				CE92EF232A7CB58E0045F329 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CE92EF242A7CB6A20045F329 /* XCRemoteSwiftPackageReference "swifter" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/httpswift/swifter.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CE92EF252A7CB6A20045F329 /* Swifter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CE92EF242A7CB6A20045F329 /* XCRemoteSwiftPackageReference "swifter" */;
+			productName = Swifter;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CE68B8DD280004DE000B7761 /* Project object */;
 }

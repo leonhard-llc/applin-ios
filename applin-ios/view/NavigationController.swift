@@ -188,7 +188,7 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
             let newTop = newEntries.last!.1
             let changedTop = self.top?.controller() !== newTop.controller()
             self.top = newTop
-            let newPageControllers: [UIViewController] = newEntries.compactMap({ (_key, entry) in
+            var newPageControllers: [UIViewController] = newEntries.compactMap({ (_key, entry) in
                 switch entry {
                 case let .loadingPage(ctl):
                     return ctl
@@ -208,6 +208,10 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
                 await self.dismissModal()
                 print("setViewControllers")
                 let animated = changedTop && !appJustStarted
+                if newPageControllers.isEmpty {
+                    // When home page fails to load, allow popping Error Details page.
+                    newPageControllers = [LoadingPageController()]
+                }
                 self.setViewControllers(newPageControllers, animated: animated)
                 self.pageControllers = newPageControllers
             }

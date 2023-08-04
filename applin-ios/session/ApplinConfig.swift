@@ -26,10 +26,10 @@ class ApplinConfig {
         self.supportSmsTel = ApplinCustomConfig.SUPPORT_SMS_TEL
         self.statusMarkdownPageUrl = ApplinCustomConfig.STATUS_MARKDOWN_PAGE_URL
         self.staticPages = ApplinCustomConfig.STATIC_PAGES
-        #if DEBUG
-        self.url = ApplinCustomConfig.URL_FOR_DEBUG_BUILDS
-        #elseif targetEnvironment(simulator)
+        #if targetEnvironment(simulator)
         self.url = ApplinCustomConfig.URL_FOR_SIMULATOR_BUILDS
+        #elseif DEBUG
+        self.url = ApplinCustomConfig.URL_FOR_DEBUG_BUILDS
         #else
         self.url = try checkLicenseKey(ApplinCustomConfig.APPLIN_LICENSE_KEY)
         #endif

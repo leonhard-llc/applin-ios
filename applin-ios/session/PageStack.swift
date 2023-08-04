@@ -159,13 +159,11 @@ class PageStack {
         }
 
         func lockAsyncThrowsAndUpdate<R>(_ f: (State) throws -> R) async throws -> R {
-            try await self.lock.lockAsyncThrows({
-                let result = try f(self.state)
-                if let nav = self.weakNav, let pageStack = self.weakPageStack, let varSet = self.weakVarSet, let stackSpecs = self.state.stackSpecsForUpdate() {
-                    await nav.update(pageStack, varSet, newPages: stackSpecs)
-                }
-                return result
-            })
+            let result = try await self.lock.lockAsyncThrows({ try f(self.state) })
+            if let nav = self.weakNav, let pageStack = self.weakPageStack, let varSet = self.weakVarSet, let stackSpecs = self.state.stackSpecsForUpdate() {
+                await nav.update(pageStack, varSet, newPages: stackSpecs)
+            }
+            return result
         }
     }
 
