@@ -11,11 +11,14 @@ class ApplinCustomConfig {
     static let STATUS_MARKDOWN_PAGE_URL = URL(string: "https://example-status.com/index.md")!
     static let SHOW_PAGE_ON_FIRST_STARTUP: String = "/legal-form"
     static let STATIC_PAGES: [String: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec] = [
+        // Required
         StaticPageKeys.APPLIN_CLIENT_ERROR: StaticPages.applinClientError,
+        StaticPageKeys.APPLIN_PAGE_NOT_LOADED: StaticPages.pageNotLoaded,
         StaticPageKeys.APPLIN_NETWORK_ERROR: StaticPages.applinNetworkError,
         StaticPageKeys.APPLIN_SERVER_ERROR: StaticPages.applinServerError,
         StaticPageKeys.APPLIN_STATE_LOAD_ERROR: StaticPages.applinStateLoadError,
         StaticPageKeys.APPLIN_USER_ERROR: StaticPages.applinUserError,
+        // Optional
         StaticPageKeys.ERROR_DETAILS: StaticPages.errorDetails,
         StaticPageKeys.SERVER_STATUS: StaticPages.serverStatus,
         StaticPageKeys.SUPPORT: StaticPages.support,

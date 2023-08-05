@@ -27,13 +27,15 @@ class PageStack {
         static let logger = Logger(subsystem: "Applin", category: "State")
         private let clock: LamportClock
         private let config: ApplinConfig
-        private var specs: [String: PageSpec] = [:]
-        private var stack: [Entry] = []
-        private var dirty = false
+        private var specs: [String: PageSpec]
+        private var stack: [Entry]
+        private var dirty = true
 
-        init(_ clock: LamportClock, _ config: ApplinConfig) {
+        init(_ clock: LamportClock, _ config: ApplinConfig, pageKeys: [String]) {
             self.config = config
             self.clock = clock
+            self.specs = pageKeys.map({ key in (key, config.applinPageNotLoadedPage(config, key)) }).toDictionary()
+            self.stack = pageKeys.map({ key in Entry(pageKey: key, updated: clock.now()) })
         }
 
         func getEntry(pageKey: String) -> Entry? {
@@ -45,39 +47,56 @@ class PageStack {
             return nil
         }
 
-        func getSpec(pageKey: String) -> PageSpec? {
-            self.specs[pageKey]
+        func hasSpec(pageKey: String) -> Bool {
+            self.config.staticPages[pageKey] != nil || self.specs[pageKey] != nil
         }
 
-        func pop() {
-            if let entry = self.stack.popLast() {
-                self.dirty = true
-                self.specs.removeValue(forKey: entry.pageKey)
+        func getSpec(pageKey: String) -> PageSpec {
+            self.config.staticPages[pageKey]?(self.config, pageKey) ??
+                    self.specs[pageKey] ??
+                    self.config.pageNotFoundPage(self.config, pageKey)
+        }
+
+        func tryReplaceAll(pageKey: String) -> Bool {
+            if !self.hasSpec(pageKey: pageKey) {
+                return false
             }
-            if self.stack.isEmpty {
-                if self.specs["/"] == nil {
-                    // Poller will load this page.
-                    // TODO: Make poller load this page first.
-                    self.specs["/"] = .loadingPage
+            var updated: LamportInstant?
+            for entry in self.stack {
+                if entry.pageKey == pageKey {
+                    updated = entry.updated
+                } else {
+                    self.specs.removeValue(forKey: entry.pageKey)
                 }
-                let _ = try! self.tryPush(pageKey: "/")
             }
+            self.stack.removeAll()
+            self.stack.append(Entry(pageKey: pageKey, updated: updated ?? self.clock.now()))
+            self.dirty = true
+            Self.logger.info("stack is \(self.stack.map({ entry in String(describing: entry.pageKey) }))")
+            return true
+        }
+
+        func pop() throws {
+            if self.stack.count < 2 {
+                throw ApplinError.appError("The app tried to pop the last page.")
+            }
+            let entry = self.stack.popLast()!
+            self.specs.removeValue(forKey: entry.pageKey)
+            self.dirty = true
+            Self.logger.info("stack is \(self.stack.map({ entry in String(describing: entry.pageKey) }))")
         }
 
         func tryPush(pageKey: String) throws -> Bool {
-            if self.stack.last?.pageKey == pageKey {
-                return true
-            }
             if self.stack.contains(where: { entry in entry.pageKey == pageKey }) {
                 throw ApplinError.appError("App tried to show a page that is already shown.  Navigate back to it.")
             }
-            if self.config.staticPages[pageKey] != nil || self.specs[pageKey] != nil {
-                self.stack.append(Entry(pageKey: pageKey, updated: self.clock.now()))
-                self.dirty = true
-                return true
-            } else {
+            if !self.hasSpec(pageKey: pageKey) {
                 return false
             }
+            self.stack.append(Entry(pageKey: pageKey, updated: self.clock.now()))
+            self.dirty = true
+            Self.logger.info("stack is \(self.stack.map({ entry in String(describing: entry.pageKey) }))")
+            return true
         }
 
         func trySet(pageKey: String, _ token: Token, _ spec: PageSpec) -> Bool {
@@ -102,21 +121,12 @@ class PageStack {
             return true
         }
 
-        func stackIsEmpty() -> Bool {
-            self.stack.isEmpty
-        }
-
         func stackPageKeys() -> [String] {
             self.stack.map({ entry in entry.pageKey })
         }
 
         func stackSpecs() -> [(String, PageSpec)] {
-            self.stack.map({ entry -> (String, PageSpec) in
-                let spec = self.config.staticPages[entry.pageKey]?(self.config, entry.pageKey) ??
-                        self.specs[entry.pageKey] ??
-                        self.config.pageNotFoundPage(config, entry.pageKey)
-                return (entry.pageKey, spec)
-            })
+            self.stack.map({ entry -> (String, PageSpec) in (entry.pageKey, self.getSpec(pageKey: entry.pageKey)) })
         }
 
         func stackSpecsForUpdate() -> [(String, PageSpec)]? {
@@ -175,9 +185,15 @@ class PageStack {
     weak var weakServerCaller: ServerCaller?
     weak var weakVarSet: VarSet?
 
-    init(_ cache: ResponseCache?, _ clock: LamportClock, _ config: ApplinConfig, _ nav: NavigationController?, _ varSet: VarSet?) {
+    init(_ cache: ResponseCache?,
+         _ clock: LamportClock,
+         _ config: ApplinConfig,
+         _ nav: NavigationController?,
+         _ varSet: VarSet?,
+         pageKeys: [String]
+    ) {
         self.config = config
-        self.mutex = StateMutex(state: State(clock, config), nav, varSet)
+        self.mutex = StateMutex(state: State(clock, config, pageKeys: pageKeys), nav, varSet)
         self.mutex.weakPageStack = self
         self.weakCache = cache
         self.weakNav = nav
@@ -204,6 +220,8 @@ class PageStack {
 
     func doPollAction(pageKey: String) async throws {
         if self.config.staticPages[pageKey] != nil {
+            // Show first page on startup.
+            await self.mutex.lockAsyncAndUpdate({ state in })
             return
         }
         guard let cache = self.weakCache, let serverCaller = self.weakServerCaller else {
@@ -228,9 +246,6 @@ class PageStack {
     func doPushAction(pageKey: String) async throws {
         let pushed = try await self.mutex.lockAsyncThrowsAndUpdate({ state in try state.tryPush(pageKey: pageKey) })
         if pushed {
-            return
-        }
-        if self.config.staticPages[pageKey] != nil {
             return
         }
         guard let cache = self.weakCache, let serverCaller = self.weakServerCaller else {
@@ -260,10 +275,46 @@ class PageStack {
         }
     }
 
-    func doRpcAction(pageKey: String, path: String) async throws {
-        if self.config.staticPages[pageKey] != nil {
-            throw ApplinError.appError("rpc used same key as static page: '\(pageKey)")
+    func doReplaceAllAction(pageKey: String) async throws {
+        let success = await self.mutex.lockAsyncAndUpdate({ state in state.tryReplaceAll(pageKey: pageKey) })
+        if success {
+            return
         }
+        guard let cache = self.weakCache, let serverCaller = self.weakServerCaller else {
+            return
+        }
+        let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
+        try await self.withWorking {
+            if let spec = await cache.getSpec(pageKey: pageKey) {
+                let _ = await self.mutex.lockAsyncAndUpdate({ state in state.trySet(pageKey: pageKey, spec) })
+                let success = await self.mutex.lockAsyncAndUpdate({ state in state.tryReplaceAll(pageKey: pageKey) })
+                if success {
+                    return
+                }
+            }
+            let token = self.mutex.token()
+            let optUpdate = try await serverCaller.call(path: pageKey, varNamesAndValues: varNamesAndValues)
+            guard let update = optUpdate else {
+                throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
+            }
+            let success = await self.mutex.lockAsyncAndUpdate({ state in
+                let success = state.trySet(pageKey: pageKey, token, update.spec)
+                if !success {
+                    return false
+                }
+                return state.tryReplaceAll(pageKey: pageKey)
+            })
+            if success {
+                if let responseInfo = update.responseInfo {
+                    cache.add(responseInfo, update.data)
+                }
+            } else {
+                throw ApplinError.appError("error replacing all pages with: \(String(describing: pageKey))")
+            }
+        }
+    }
+
+    func doRpcAction(pageKey: String, path: String) async throws {
         guard let serverCaller = self.weakServerCaller else {
             return
         }
@@ -277,36 +328,34 @@ class PageStack {
         await self.lock.lockAsync({
             do {
                 for action in actions {
+                    Self.logger.info("action \(action.description)")
                     switch action {
                     case let .choosePhoto(path):
-                        Self.logger.info("action choosePhoto(\(path))")
                         try await self.doChoosePhotoAction(path: path);
                     case let .copyToClipboard(string):
                         Self.logger.info("action copyToClipboard(\(string))")
                         UIPasteboard.general.string = string
                     case let .launchUrl(url):
                         // TODO: Implement launch-url action
-                        Self.logger.info("action launchUrl(\(url)) unimplemented")
+                        Self.logger.info("action not implemented")
                     case .logout:
                         // TODO: Implement Logout
-                        Self.logger.info("action logout unimplemented")
+                        Self.logger.info("action not implemented")
                     case .nothing:
-                        Self.logger.info("action nothing")
+                        break
                     case .poll:
-                        Self.logger.info("action poll")
                         try await self.doPollAction(pageKey: pageKey)
                     case .pop:
-                        Self.logger.info("action pop")
-                        let _ = await self.mutex.lockAsyncAndUpdate({ state in state.pop() })
+                        try await self.mutex.lockAsyncThrowsAndUpdate({ state in try state.pop() })
                     case let .push(key), let .pushPreloaded(key):
-                        Self.logger.info("action push(\(key)) or pushPreloaded")
                         try await self.doPushAction(pageKey: key)
+                    case let .replaceAll(key):
+                        try await self.doReplaceAllAction(pageKey: key)
                     case let .rpc(path):
-                        Self.logger.info("action rpc(\(path))")
                         try await self.doRpcAction(pageKey: pageKey, path: path)
                     case let .takePhoto(path):
                         // TODO: Implement take-photo.
-                        Self.logger.info("action takePhoto(\(path))")
+                        Self.logger.info("action not implemented")
                     }
                 }
                 return true
@@ -337,8 +386,8 @@ class PageStack {
         })
     }
 
-    func isEmpty() -> Bool {
-        self.mutex.lockReadOnly({ state in state.stackIsEmpty() })
+    func stackPageKeys() -> [String] {
+        self.mutex.lockReadOnly({ state in state.stackPageKeys() })
     }
 
     func tryUpdate(pageKey: String, _ token: Token, spec: PageSpec) async -> Bool {
@@ -355,7 +404,8 @@ class PageStack {
             var preload = Set<String>()
             while let key = unvisited.popLast() {
                 let (inserted, _) = preload.insert(key)
-                if inserted, let spec = state.getSpec(pageKey: key) {
+                if inserted {
+                    let spec = state.getSpec(pageKey: key)
                     spec.visitActions({ action in
                         if case let .pushPreloaded(newKey) = action {
                             unvisited.append(newKey)
@@ -376,7 +426,7 @@ class PageStack {
             return []
         }
         let namesAndDefaultValues: [(String, Var)] = self.mutex.lockReadOnly({ state in
-            state.getSpec(pageKey: pageKey)?.vars() ?? []
+            state.getSpec(pageKey: pageKey).vars()
         })
         let namesAndValues: [(String, Var)] = namesAndDefaultValues.compactMap({ (name, defaultValue) in
             guard let value = varSet.get(name) else {

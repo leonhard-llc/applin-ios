@@ -13,6 +13,12 @@ class ApplinConfig {
     let statusMarkdownPageUrl: URL
     let staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec]
     let url: URL
+    let applinClientErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    let applinPageNotLoadedPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    let applinNetworkErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    let applinServerErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    let applinStateLoadErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    let applinUserErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
 
     init(cacheDirPath: String, dataDirPath: String) throws {
         self.appStoreAppId = ApplinCustomConfig.APPSTORE_APP_ID
@@ -26,6 +32,12 @@ class ApplinConfig {
         self.supportSmsTel = ApplinCustomConfig.SUPPORT_SMS_TEL
         self.statusMarkdownPageUrl = ApplinCustomConfig.STATUS_MARKDOWN_PAGE_URL
         self.staticPages = ApplinCustomConfig.STATIC_PAGES
+        self.applinClientErrorPage = self.staticPages[StaticPageKeys.APPLIN_CLIENT_ERROR]!
+        self.applinPageNotLoadedPage = self.staticPages[StaticPageKeys.APPLIN_PAGE_NOT_LOADED]!
+        self.applinNetworkErrorPage = self.staticPages[StaticPageKeys.APPLIN_NETWORK_ERROR]!
+        self.applinServerErrorPage = self.staticPages[StaticPageKeys.APPLIN_SERVER_ERROR]!
+        self.applinStateLoadErrorPage = self.staticPages[StaticPageKeys.APPLIN_STATE_LOAD_ERROR]!
+        self.applinUserErrorPage = self.staticPages[StaticPageKeys.APPLIN_USER_ERROR]!
         #if targetEnvironment(simulator)
         self.url = ApplinCustomConfig.URL_FOR_SIMULATOR_BUILDS
         #elseif DEBUG

@@ -18,7 +18,7 @@ struct ButtonSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    init(text: String, actions: [ActionSpec] = []) {
+    init(text: String, _ actions: [ActionSpec] = []) {
         self.text = text
         self.actions = actions
     }

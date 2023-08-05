@@ -5,14 +5,14 @@ class Poller {
     static let logger = Logger(subsystem: "Applin", category: "Poller")
 
     private let taskLock = ApplinLock()
-    private let serverUrl: URL
+    private let config: ApplinConfig
     private weak var cache: ResponseCache?
     private weak var pageStack: PageStack?
     private weak var serverCaller: ServerCaller?
     private var task: Task<(), Never>?
 
     public init(_ config: ApplinConfig, _ cache: ResponseCache?, _ pageStack: PageStack?, _ serverCaller: ServerCaller?) {
-        self.serverUrl = config.url
+        self.config = config
         self.cache = cache
         self.pageStack = pageStack
         self.serverCaller = serverCaller
@@ -52,7 +52,10 @@ class Poller {
             }
             let keys = pageStack.preloadPageKeys().reversed()
             for key in keys {
-                let url = self.serverUrl.appendingPathComponent(key).absoluteString
+                if self.config.staticPages[key] != nil {
+                    continue
+                }
+                let url = self.config.url.appendingPathComponent(key).absoluteString
                 if let responseInfo = cache.get(url: url) {
                     if Date.now.secondsSinceEpoch() < responseInfo.refreshTime {
                         continue

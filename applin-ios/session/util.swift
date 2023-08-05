@@ -180,6 +180,12 @@ extension Dictionary {
     }
 }
 
+extension Array {
+    func toDictionary<K, V>() -> Dictionary<K, V> where Element == (K, V) {
+        Dictionary(uniqueKeysWithValues: self)
+    }
+}
+
 extension HTTPURLResponse {
     func contentTypeBase() -> String? {
         if let mimeType = self.mimeType {

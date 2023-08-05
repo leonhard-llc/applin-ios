@@ -11,6 +11,7 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
     case pop
     case push(String)
     case pushPreloaded(String)
+    case replaceAll(String)
     case rpc(String)
     case takePhoto(String)
 
@@ -54,6 +55,8 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             self = .push(part1)
         case "push-preloaded":
             self = .push(part1)
+        case "replace-all":
+            self = .replaceAll(part1)
         case "rpc":
             self = .rpc(part1)
         case "take-photo":
@@ -83,6 +86,8 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "push:\(value)"
         case let .pushPreloaded(value):
             return "push-preloaded:\(value)"
+        case let .replaceAll(value):
+            return "replace-all:\(value)"
         case let .rpc(value):
             return "rpc:\(value)"
         case let .takePhoto(value):
@@ -110,6 +115,8 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "push(\(value))"
         case let .pushPreloaded(value):
             return "pushPreloaded(\(value))"
+        case let .replaceAll(value):
+            return "replaceAll(\(value))"
         case let .rpc(value):
             return "rpc(\(value))"
         case let .takePhoto(value):

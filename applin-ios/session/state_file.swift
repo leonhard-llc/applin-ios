@@ -89,10 +89,7 @@ class StateFileOwner {
                 contents.stringVars = varSet.strings()
             }
             if let pageStack = self.weakPageStack {
-                if pageStack.isEmpty() {
-                    throw "pageStack is empty"
-                }
-                contents.pageKeys = pageStack.preloadPageKeys()
+                contents.pageKeys = pageStack.stackPageKeys()
             }
             let bytes = try encodeJson(contents)
             let hash = bytes.hashValue

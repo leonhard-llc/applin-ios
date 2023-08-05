@@ -4,6 +4,8 @@ class StaticPageKeys {
     /// Applin pushes this page when the app has an error.
     /// Include an ErrorDetails widget to display the message.
     static let APPLIN_CLIENT_ERROR = "/applin-app-error"
+    /// Applin pushes this page when it starts and fails to load a previously visible page.
+    static let APPLIN_PAGE_NOT_LOADED = "/applin-page-not-loaded"
     /// Applin pushes this page when it fails to make an HTTP request to the server.
     static let APPLIN_NETWORK_ERROR = "/applin-network-error"
     /// Applin pushes this page when the server returns a non-200 response.
@@ -109,8 +111,16 @@ class StaticPages {
                 NavButtonSpec(text: "Terms of Use", [.push(StaticPageKeys.TERMS)]),
                 NavButtonSpec(text: "Privacy Policy", [.push(StaticPageKeys.PRIVACY_POLICY)]),
             ]),
-            FormButtonSpec(text: "I Agree and I am 18+ Years Old", [.pop, .push("/")]),
+            FormButtonSpec(text: "I Agree and I am 18+ Years Old", [.replaceAll("/")]),
         ])).toSpec()
+    }
+
+    static func pageNotLoaded(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+        NavPageSpec(
+                pageKey: pageKey,
+                title: "Page Not Loaded",
+                ColumnSpec([FormButtonSpec(text: "Load Page", [.poll])])
+        ).toSpec()
     }
 
     static func pageNotFound(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {

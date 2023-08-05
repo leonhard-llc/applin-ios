@@ -59,17 +59,13 @@ class Main: UIResponder, UIApplicationDelegate {
                 Self.logger.info("no session")
                 pageKeys = [config.showPageOnFirstStartup]
             }
-            self.pageStack = PageStack(self.responseCache, clock, self.config, self.navigationController, varSet)
+            self.pageStack = PageStack(self.responseCache, clock, self.config, self.navigationController, varSet, pageKeys: pageKeys)
             self.serverCaller = ServerCaller(self.config, self.responseCache, self.pageStack, self.varSet)
             self.pageStack!.weakServerCaller = self.serverCaller
             self.poller = Poller(self.config, self.responseCache, self.pageStack, self.serverCaller)
             self.stateFileOwner = StateFileOwner(self.config, self.varSet, self.pageStack)
             Task {
-                // TODO: Fix bug where initial page fails to load and user dismisses it, leaving .loadingPage.
-                while self.pageStack!.isEmpty() {
-                    let _ = await self.pageStack!.doActions(pageKey: "/", pageKeys.map({ pageKey in .push(pageKey) }))
-                }
-                Self.logger.info("started")
+                await self.pageStack!.doActions(pageKey: pageKeys.last!, [.poll])
             }
         }
         return true
@@ -85,5 +81,6 @@ class Main: UIResponder, UIApplicationDelegate {
         Self.logger.info("background")
         self.stateFileOwner?.stop()
         self.poller?.stop()
+        // TODO: When user kills app, throw away stack.
     }
 }
