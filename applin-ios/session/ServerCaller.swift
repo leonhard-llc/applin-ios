@@ -109,14 +109,14 @@ class ServerCaller {
             if contentTypeBase != "application/json" {
                 throw "content-type is not 'application/json': \(String(describing: contentTypeBase ?? ""))"
             }
-            let eTag = try httpResponse.eTagHeader()
-            let date = try httpResponse.dateHeader()
+            let optETag = httpResponse.eTagHeader()
+            let optDate = try httpResponse.dateHeader()
             let optMaxAgeSeconds = httpResponse.maxAgeHeader()
             let optStaleIfErrorSeconds = httpResponse.staleIfErrorHeader()
             let jsonItem: JsonItem = try decodeJson(data)
             let pageSpec: PageSpec = try PageSpec(self.config, pageKey: path, jsonItem)
             let responseInfo: ResponseInfo?
-            if let maxAgeSeconds = optMaxAgeSeconds {
+            if let eTag = optETag, let date = optDate, let maxAgeSeconds = optMaxAgeSeconds {
                 responseInfo = ResponseInfo(
                         absoluteUrl: url.absoluteString,
                         eTag: eTag,

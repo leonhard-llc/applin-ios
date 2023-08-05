@@ -197,9 +197,9 @@ extension HTTPURLResponse {
         }
     }
 
-    func dateHeader() throws -> Date {
+    func dateHeader() throws -> Date? {
         guard let headerValue = self.value(forHTTPHeaderField: "Date") else {
-            throw ApplinError.serverError("missing 'Date' header")
+            return nil
         }
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -215,12 +215,12 @@ extension HTTPURLResponse {
         return date
     }
 
-    func eTagHeader() throws -> String {
+    func eTagHeader() -> String? {
         guard let headerValue = self.value(forHTTPHeaderField: "eTag") else {
-            throw ApplinError.serverError("missing 'eTag' header")
+            return nil
         }
         if headerValue.isEmpty {
-            throw ApplinError.serverError("'eTag' header is empty")
+            return nil
         }
         return headerValue
     }
