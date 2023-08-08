@@ -23,50 +23,80 @@ Every Applin client is a program that makes requests to a particular Applin serv
 receives page specifications from the server,
 and provides functions for interacting with pages and navigating between pages.
 
-## Server Role
-Every Applin server is an HTTP server that handles requests for app pages:
+Request types:
 - `GET` for a page the client has not previously requested
-  - Response headers
-    - `Content-Type: application/vnd.applin-response`
-    - [Etag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag) with a hash of the response body
-    - [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control)
-      with any of these directives:
-      - `no-cache` to ask the client to refresh the page every time it is displayed.
-        This disables preloading on the page.
-      - `max-age=N` to ask the client to refresh the page every N seconds, when the page is on the stack or preloaded.
-      - `stale-while-revalidate=N` to allow the client to display the cached page while it is refreshing the page.
-        This lets the client display cached pages when the server is unreachable, very important for mobile.
-      - `private` to prevent an intermediate cache from sharing this response with other clients.
-      - When a response has no `Cache-Control` header, the client adds `Cache-Control: max-age=300,stale-if-error=600`.
-  - Response body is a JSON object with format described below.
+  - Request headers
+    - `Accept: application/vnd.applin-response`
+      See [Accept on MDN](https://developer.mozilla.org/docs/Web/HTTP/Headers/Accept).
 - `GET` to refresh a page that has no variables
   - Request headers
-    - `Cache-Control: no-cache` to revalidate the response with the origin server, skipping intermediate caches
-    - [If-None-Match](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-None-Match) request header,
-      with the previously received eTag header value.
-  - Server response
-    - `200 OK` with the updated page
-    - `304 Not Modified` when the page has not changed
-- `POST` for an `rpc` action.
-  - Request headers
-    - `Content-Type: application/vnd.applin-request` request header
-  - Request body is a JSON object with the current page's variables.
-  - Response body
-    - 4xx and 5xx responses may contain a `text/plain` body which is shown to the user
-    - 2xx responses may contain an `application/vnd.applin-response` response or be empty.
-      The client ignores any page update in the response.
+    - `If-None-Match: ETAGVALUE` with the previously received eTag header value.
+      See [If-None-Match on MDN](https://developer.mozilla.org/docs/Web/HTTP/Headers/If-None-Match).
+    - `Accept: application/vnd.applin-response`
 - `POST` to refresh a page that has variables.
   - Request headers
-    - `Content-Type: application/vnd.applin-request` request header
-    - `Cache-Control: no-cache`
     - `If-None-Match: ETAGVALUE`
+    - `Accept: application/vnd.applin-response`
+    - `Content-Type: application/vnd.applin-request` request header
   - Request body is a JSON object with the current page's variables.
-  - Server response
-    - `200 OK` with the updated page
-    - `412 Precondition Failed` when the page has not changed
-    - Do not return 4xx errors for bad user input.  Instead, display problems on the page.
-- [Cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies) - Applin clients receive and send cookies like
-  web browsers.
+- `POST` for a `rpc` action on a button.
+  - Request headers
+    - `Content-Type: application/vnd.applin-request` request header
+  - Request body is a JSON object with the current page's variables.
+- `GET` for page content (images, etc.)
+
+If a server response has no
+[Cache-Control](https://developer.mozilla.org/docs/Web/HTTP/Headers/Cache-Control) header,
+the client adds `Cache-Control: max-age=0 stale-while-revalidate=9999999999`.
+
+## Server Role
+Every Applin server is an HTTP server that handles requests.
+- Requests for pages, when request has the `Accept: application/vnd.applin-response` header
+  - When the client is requesting the page for the first time (no `If-None-Match` header)
+    or the page has changed (the page's `ETag` doesn't match the `If-None-Match` value)
+    - Response headers
+      - `Content-Type: application/vnd.applin-response`
+      - `ETag: VALUE` with the hash of the response body.
+        See [ETag on MDN](https://developer.mozilla.org/docs/Web/HTTP/Headers/ETag).
+    - Response code: `200 OK`
+    - Response body is a JSON object with the format described below.
+  - When the page is unchanged (`ETag` matches `If-None-Match`)
+    - Response codes
+      - `304 Not Modified` for a `GET`
+      - `412 Precondition Failed` for a `POST`
+  - Do not return 4xx errors for bad user input.  Instead, display problems on the page.
+- Form POST (without `Accept: application/vnd.applin-response`)
+  - Response code: `200 OK`
+  - No response body
+- The request is missing a required variable, or a variable has the wrong type
+  - Response code: `400 Bad Request`
+  - Response headers: `Content-Type: text/plain`
+  - Response body: a message for the user
+- User entered data that is unacceptable
+  - Response code: `422 Unprocessable Content`
+  - Response headers: `Content-Type: text/plain`
+  - Response body: a message for the user
+- User is not logged in (session cookie missing or invalid) or does not have permission to view the page
+  - Response code: `403 Forbidden`
+  - Response headers: `Content-Type: text/plain`
+  - Response body: a message for the user
+- Server failed to process the request
+  - Response code: `500 Internal Server Error`
+  - Response headers: `Content-Type: text/plain`
+  - Response body: a message for the user
+- Server is overloaded
+  - Response code: `503 Service Unavailable`
+  - No response body 
+  - The client will retry with backoff.
+
+Applin clients receive and send cookies like web browsers.
+Servers can set and receive cookies for session tokens.
+See [Cookies on MDN](https://developer.mozilla.org/docs/Web/HTTP/Cookies).
+
+## Applin Request Format
+The `application/vnd.applin-request` content-type is a
+[JSON](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON) object encoded in a UTF-8 string.
+It contains key-value pairs for all variables defined on the page.
 
 ## Applin Response Format
 The `application/vnd.applin-response` content-type is a JSON object encoded in a UTF-8 string.
@@ -77,26 +107,32 @@ It may include these keys:
   Decide what to do with any remaining unperformed actions from the page.
 - TODO: Add a way for the server to tell the client to delete pages from the cache.
 
-## Preloaded Pages
-Some widgets can perform actions.  The `push` action takes a relative URL.
-When the user presses a button with a `push` action,
-the client adds that page to the top of the page stack, displaying the page.
-If the page is cached, the client uses the cached version, otherwise it makes a GET request for the page.
+## Prefetch Pages
+Some app pages need to be always available, even when the device is not connected to the network or the server is down.
+And some pages are slow to generate.
+An Applin app can mark certain pages for pre-fetching.
+Then the client will silently fetch these pages and keep them up-to-date in the cache.
+When the user navigates to the page, it displays immediately.
 
-The `push-preloaded` action works the same as `push`, but the client immediately fetches the page
-and keeps it up-to-date according to the page's caching policy.
-For example, if the page response includes an `Cache-control: max-age=60` header, then the client will download
-the page again after about 60 seconds.
-The client sends the `If-None-Match` header to avoid downloading unchanged pages.
+To allow the user to navigate to another page, the page must contain a widget with a `push` action.
+When the user activates the widget, the client adds that page to the top of the page stack, displaying the page.
+If the page is cached, the client uses the cached version, otherwise it fetches the page from the server.
 
-## TODO: Polling
-The client may request some pages earlier than the expiration time to re-load multiple pages at the same time.
-This can make the app use less battery power.
+To mark a page for pre-fetching, the app uses the `push-prefetch` action instead of `push`.
+
+Prefetching is configured on the link from one page to another.
+The client prefetches a page if the page is linked from a page on the stack or from another prefetched page.
+
+If the server sends a `Cache-Control: max-age=N` response header with the page,
+then the client will re-fetch the page after `N` seconds.
+The client ignores any `Cache-Control: stale-while-revalidate=N` value.
+It keeps the cached page as long as it is marked for prefetching.
 
 ## TODO: Foreground and Background Requests
 When the client requests a page that it will immediately show to the user, we call this a "foreground request".
 The user is waiting for the request to complete.  We want the server to respond as quickly as possible.
 
-When the client requests a page because of a `push-preloaded` action, we call this a "background request".
+When the client requests a page or content to display to the user, or to update the currently-visible page,
+we call this a "foreground" request.  All other requests are "background" requests.
 When the server is overloaded, we want it to prioritize processing foreground requests before background requests.
 The client includes the `X-applin-priority: foreground` or `X-applin-priority: background` header to tell the server.
