@@ -9,7 +9,9 @@ To use:
 3. Edit [`applin-ios/ApplinCustomConfig.swift`](applin-ios/ApplinCustomConfig.swift).
    - Customize the page that your app shows when it starts up, before connecting to your server.
    - Before making a Release build, enter your license key.
-5. Use XCode or other tools to build and test your app
+4. Use XCode or other tools to build and test your app
+
+TODO: Change applin-ios into a library that one can import.
 
 ## License
 You may use Applin to build and test apps.

@@ -6,16 +6,21 @@ class Poller {
 
     private let taskLock = ApplinLock()
     private let config: ApplinConfig
-    private weak var cache: ResponseCache?
+    private let wallClock: WallClock
     private weak var pageStack: PageStack?
     private weak var serverCaller: ServerCaller?
     private var task: Task<(), Never>?
 
-    public init(_ config: ApplinConfig, _ cache: ResponseCache?, _ pageStack: PageStack?, _ serverCaller: ServerCaller?) {
+    public init(
+            _ config: ApplinConfig,
+            _ pageStack: PageStack?,
+            _ serverCaller: ServerCaller?,
+            _ wallClock: WallClock
+    ) {
         self.config = config
-        self.cache = cache
         self.pageStack = pageStack
         self.serverCaller = serverCaller
+        self.wallClock = wallClock
     }
 
     deinit {
@@ -32,7 +37,7 @@ class Poller {
                     break
                 }
                 do {
-                    try await self.updatePreloadPages()
+                    try await self.updatePolledPages()
                 } catch {
                     Self.logger.error("error updating, will retry: \(error)")
                 }
@@ -45,28 +50,28 @@ class Poller {
         self.task?.cancel()
     }
 
-    func updatePreloadPages() async throws {
+    func updatePolledPages() async throws {
         try await self.taskLock.lockAsyncThrows({
-            guard let cache = self.cache, let pageStack = self.pageStack else {
+            guard let pageStack = self.pageStack else {
                 return
             }
-            let keys = pageStack.preloadPageKeys().reversed()
-            for key in keys {
-                if self.config.staticPages[key] != nil {
+            let stackPages: [(String, PageSpec, Instant)] = pageStack.stackPages().reversed()
+            for (key, spec, updated) in stackPages {
+                guard case let .pollSeconds(intervalSeconds) = spec.connectionMode else {
                     continue
                 }
-                let url = self.config.url.appendingPathComponent(key).absoluteString
-                if let responseInfo = cache.get(url: url) {
-                    if Date.now.secondsSinceEpoch() < responseInfo.refreshTime {
-                        continue
-                    }
+                let staleTime = updated.secondsSinceEpoch + UInt64(intervalSeconds)
+                if self.wallClock.now().secondsSinceEpoch < staleTime {
+                    continue
+                }
+                if self.config.staticPages[key] != nil {
+                    continue
                 }
                 let varNamesAndValues = pageStack.varNamesAndValues(pageKey: key)
                 let token = pageStack.token()
                 let optUpdate = try await serverCaller?.call(path: key, varNamesAndValues: varNamesAndValues)
                 if let update = optUpdate {
-                    // TODO: Handle 'no-cache' properly.
-                    await pageStack.tryUpdate(pageKey: key, token, spec: update.spec)
+                    let _ = await pageStack.tryUpdate(pageKey: key, token, update.spec)
                 } else {
                     Self.logger.error("got no response body for '\(key)")
                 }

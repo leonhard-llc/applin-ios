@@ -4,10 +4,10 @@ import UIKit
 @main
 class Main: UIResponder, UIApplicationDelegate {
     static let logger = Logger(subsystem: "Applin", category: "Main")
+    let lamportClock = LamportClock()
     let navigationController = NavigationController()
-    let clock = LamportClock()
+    let wallClock = WallClock()
     let config: ApplinConfig
-    let responseCache: ResponseCache
     //let streamer: Streamer
     var varSet: VarSet?
     var pageStack: PageStack?
@@ -23,7 +23,6 @@ class Main: UIResponder, UIApplicationDelegate {
             self.config = try ApplinConfig(cacheDirPath: getCacheDirPath(), dataDirPath: getDataDirPath())
             try createDir(self.config.cacheDirPath)
             try createDir(self.config.dataDirPath)
-            self.responseCache = try ResponseCache(self.config)
             //self.streamer = Streamer(config, self.session)
             super.init()
         } catch let e {
@@ -59,10 +58,10 @@ class Main: UIResponder, UIApplicationDelegate {
                 Self.logger.info("no session")
                 pageKeys = [config.showPageOnFirstStartup]
             }
-            self.pageStack = PageStack(self.responseCache, clock, self.config, self.navigationController, varSet, pageKeys: pageKeys)
-            self.serverCaller = ServerCaller(self.config, self.responseCache, self.pageStack, self.varSet)
+            self.pageStack = PageStack(self.config, self.lamportClock, self.navigationController, varSet, self.wallClock, pageKeys: pageKeys)
+            self.serverCaller = ServerCaller(self.config, self.pageStack, self.varSet)
             self.pageStack!.weakServerCaller = self.serverCaller
-            self.poller = Poller(self.config, self.responseCache, self.pageStack, self.serverCaller)
+            self.poller = Poller(self.config, self.pageStack, self.serverCaller, self.wallClock)
             self.stateFileOwner = StateFileOwner(self.config, self.varSet, self.pageStack)
             self.applicationDidBecomeActive(application)
             Task {

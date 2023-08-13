@@ -196,60 +196,6 @@ extension HTTPURLResponse {
             return nil
         }
     }
-
-    func dateHeader() throws -> Date? {
-        guard let headerValue = self.value(forHTTPHeaderField: "Date") else {
-            return nil
-        }
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date
-        //   Date: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
-        //   Date: Wed, 21 Oct 2015 07:28:00 GMT
-        // https://www.unicode.org/reports/tr35/tr35-31/tr35-dates.html#Date_Format_Patterns
-        formatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss 'GMT'"
-        guard let date = formatter.date(from: headerValue) else {
-            throw ApplinError.serverError("'Date' header has unexpected format: \(String(describing: headerValue))")
-        }
-        return date
-    }
-
-    func eTagHeader() -> String? {
-        guard let headerValue = self.value(forHTTPHeaderField: "eTag") else {
-            return nil
-        }
-        if headerValue.isEmpty {
-            return nil
-        }
-        return headerValue
-    }
-
-    struct CacheControl {
-        let noCache: Bool
-        let maxAge: UInt64?
-        let staleWhileRevalidate: UInt64?
-    }
-
-    func cacheControlHeader() -> CacheControl? {
-        guard let headerValue = self.value(forHTTPHeaderField: "Cache-Control")?.lowercased() else {
-            return nil
-        }
-        var noCache = false
-        var maxAge: UInt64?
-        var staleWhileRevalidate: UInt64?
-        for part in headerValue.split(separator: ",") {
-            // Swift finally got a decent Regex class, but it's only for iOS 16, so we use the old one.
-            if part == "no-cache" {
-                noCache = true
-            } else if let groups = NSRegularExpression("\\bmax-age=([0-9]+)\\b").firstMatchGroups(headerValue) {
-                maxAge = UInt64(groups[1])
-            } else if let groups = NSRegularExpression("\\bstale-while-revalidate=([0-9]+)\\b").firstMatchGroups(headerValue) {
-                staleWhileRevalidate = UInt64(groups[1])
-            }
-        }
-        return CacheControl(noCache: noCache, maxAge: maxAge, staleWhileRevalidate: staleWhileRevalidate)
-    }
 }
 
 extension NSRegularExpression {

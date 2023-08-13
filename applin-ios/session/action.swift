@@ -10,7 +10,6 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
     case poll
     case pop
     case push(String)
-    case pushPreloaded(String)
     case replaceAll(String)
     case rpc(String)
     case takePhoto(String)
@@ -84,8 +83,6 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "poll"
         case let .push(value):
             return "push:\(value)"
-        case let .pushPreloaded(value):
-            return "push-preloaded:\(value)"
         case let .replaceAll(value):
             return "replace-all:\(value)"
         case let .rpc(value):
@@ -113,8 +110,6 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "poll"
         case let .push(value):
             return "push(\(value))"
-        case let .pushPreloaded(value):
-            return "pushPreloaded(\(value))"
         case let .replaceAll(value):
             return "replaceAll(\(value))"
         case let .rpc(value):

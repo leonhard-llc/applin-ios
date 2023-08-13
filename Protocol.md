@@ -30,12 +30,9 @@ Request types:
       See [Accept on MDN](https://developer.mozilla.org/docs/Web/HTTP/Headers/Accept).
 - `GET` to refresh a page that has no variables
   - Request headers
-    - `If-None-Match: ETAGVALUE` with the previously received eTag header value.
-      See [If-None-Match on MDN](https://developer.mozilla.org/docs/Web/HTTP/Headers/If-None-Match).
     - `Accept: application/vnd.applin-response`
 - `POST` to refresh a page that has variables.
   - Request headers
-    - `If-None-Match: ETAGVALUE`
     - `Accept: application/vnd.applin-response`
     - `Content-Type: application/vnd.applin-request` request header
   - Request body is a JSON object with the current page's variables.
@@ -45,26 +42,14 @@ Request types:
   - Request body is a JSON object with the current page's variables.
 - `GET` for page content (images, etc.)
 
-If a server response has no
-[Cache-Control](https://developer.mozilla.org/docs/Web/HTTP/Headers/Cache-Control) header,
-the client adds `Cache-Control: max-age=0 stale-while-revalidate=9999999999`.
-
 ## Server Role
 Every Applin server is an HTTP server that handles requests.
 - Requests for pages, when request has the `Accept: application/vnd.applin-response` header
-  - When the client is requesting the page for the first time (no `If-None-Match` header)
-    or the page has changed (the page's `ETag` doesn't match the `If-None-Match` value)
-    - Response headers
-      - `Content-Type: application/vnd.applin-response`
-      - `ETag: VALUE` with the hash of the response body.
-        See [ETag on MDN](https://developer.mozilla.org/docs/Web/HTTP/Headers/ETag).
+  - Response headers
+    - `Content-Type: application/vnd.applin-response`
     - Response code: `200 OK`
     - Response body is a JSON object with the format described below.
-  - When the page is unchanged (`ETag` matches `If-None-Match`)
-    - Response codes
-      - `304 Not Modified` for a `GET`
-      - `412 Precondition Failed` for a `POST`
-  - Do not return 4xx errors for bad user input.  Instead, display problems on the page.
+    - Do not return 4xx errors for bad user input.  Instead, display problems on the page.
 - Form POST (without `Accept: application/vnd.applin-response`)
   - Response code: `200 OK`
   - No response body
@@ -102,37 +87,3 @@ It contains key-value pairs for all variables defined on the page.
 The `application/vnd.applin-response` content-type is a JSON object encoded in a UTF-8 string.
 It may include these keys:
 - `page` is an Applin page specification
-- TODO: Add a way for the server to set or unset variables.
-- TODO: Add a way for the server to tell the client to perform some actions.
-  Decide what to do with any remaining unperformed actions from the page.
-- TODO: Add a way for the server to tell the client to delete pages from the cache.
-
-## Prefetch Pages
-Some app pages need to be always available, even when the device is not connected to the network or the server is down.
-And some pages are slow to generate.
-An Applin app can mark certain pages for pre-fetching.
-Then the client will silently fetch these pages and keep them up-to-date in the cache.
-When the user navigates to the page, it displays immediately.
-
-To allow the user to navigate to another page, the page must contain a widget with a `push` action.
-When the user activates the widget, the client adds that page to the top of the page stack, displaying the page.
-If the page is cached, the client uses the cached version, otherwise it fetches the page from the server.
-
-To mark a page for pre-fetching, the app uses the `push-prefetch` action instead of `push`.
-
-Prefetching is configured on the link from one page to another.
-The client prefetches a page if the page is linked from a page on the stack or from another prefetched page.
-
-If the server sends a `Cache-Control: max-age=N` response header with the page,
-then the client will re-fetch the page after `N` seconds.
-The client ignores any `Cache-Control: stale-while-revalidate=N` value.
-It keeps the cached page as long as it is marked for prefetching.
-
-## TODO: Foreground and Background Requests
-When the client requests a page that it will immediately show to the user, we call this a "foreground request".
-The user is waiting for the request to complete.  We want the server to respond as quickly as possible.
-
-When the client requests a page or content to display to the user, or to update the currently-visible page,
-we call this a "foreground" request.  All other requests are "background" requests.
-When the server is overloaded, we want it to prioritize processing foreground requests before background requests.
-The client includes the `X-applin-priority: foreground` or `X-applin-priority: background` header to tell the server.

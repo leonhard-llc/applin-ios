@@ -3,12 +3,10 @@ import OSLog
 
 class PageUpdate {
     let data: Data
-    let responseInfo: ResponseInfo?
     let spec: PageSpec
 
-    init(_ data: Data, _ responseInfo: ResponseInfo?, _ spec: PageSpec) {
+    init(_ data: Data, _ spec: PageSpec) {
         self.data = data
-        self.responseInfo = responseInfo
         self.spec = spec
     }
 }
@@ -32,11 +30,10 @@ class ServerCaller {
 
     private let config: ApplinConfig
     private let urlSession: URLSession
-    private weak var cache: ResponseCache?
     private weak var pageStack: PageStack?
     private weak var varSet: VarSet?
 
-    public init(_ config: ApplinConfig, _ cache: ResponseCache?, _ pageStack: PageStack?, _ varSet: VarSet?) {
+    public init(_ config: ApplinConfig, _ pageStack: PageStack?, _ varSet: VarSet?) {
         self.config = config
         let urlSessionConfig = URLSessionConfiguration.default
         urlSessionConfig.timeoutIntervalForRequest = 10.0 /* seconds */
@@ -45,7 +42,6 @@ class ServerCaller {
         urlSessionConfig.httpCookieAcceptPolicy = .always
         urlSessionConfig.httpShouldSetCookies = true
         self.urlSession = URLSession(configuration: urlSessionConfig)
-        self.cache = cache
         self.pageStack = pageStack
         self.varSet = varSet
     }
@@ -109,26 +105,14 @@ class ServerCaller {
             if contentTypeBase != "application/json" {
                 throw "content-type is not 'application/json': \(String(describing: contentTypeBase ?? ""))"
             }
-            let optETag = httpResponse.eTagHeader()
-            let date = try httpResponse.dateHeader() ?? Date.now
-            let dateEpochSeconds = date.secondsSinceEpoch()
-            let optCacheControl = httpResponse.cacheControlHeader()
-            let freshSeconds = optCacheControl?.maxAge ?? 600
-            let refreshTime = dateEpochSeconds + freshSeconds
-            let staleOkSeconds = optCacheControl?.staleWhileRevalidate ?? 0
-            let deleteTime = dateEpochSeconds + freshSeconds + staleOkSeconds
-            let jsonItem: JsonItem = try decodeJson(data)
-            let pageSpec: PageSpec = try PageSpec(self.config, pageKey: path, jsonItem)
-            if optCacheControl?.noCache == true {
-                return PageUpdate(data, nil, pageSpec)
+
+            struct ApplinResponse: Codable {
+                let page: JsonItem
             }
-            let responseInfo = ResponseInfo(
-                    absoluteUrl: url.absoluteString,
-                    optETag: optETag,
-                    deleteTime: deleteTime,
-                    refreshTime: refreshTime
-            )
-            return PageUpdate(data, responseInfo, pageSpec)
+
+            let response: ApplinResponse = try decodeJson(data)
+            let pageSpec: PageSpec = try PageSpec(self.config, pageKey: path, response.page)
+            return PageUpdate(data, pageSpec)
         } catch {
             throw ApplinError.serverError("error processing server response: \(error)")
         }

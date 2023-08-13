@@ -52,6 +52,10 @@ class ApplinConfig {
         URL(string: "itms-apps://itunes.apple.com/app/id\(self.appStoreAppId)")!
     }
 
+    func staticPageSpec(pageKey: String) -> PageSpec? {
+        self.staticPages[pageKey]?(self, pageKey)
+    }
+
     func stateFilePath() -> String {
         self.dataDirPath + "/state.json"
     }
