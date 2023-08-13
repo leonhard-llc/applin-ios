@@ -15,6 +15,7 @@ class PageStack {
 
     class Entry {
         let pageKey: String
+        var noCache: Bool
         var updated: LamportInstant
 
         init(pageKey: String, updated: LamportInstant) {
@@ -51,10 +52,12 @@ class PageStack {
             self.config.staticPages[pageKey] != nil || self.specs[pageKey] != nil
         }
 
+        func tryGetSpec(pageKey: String) -> PageSpec? {
+            self.config.staticPages[pageKey]?(self.config, pageKey) ?? self.specs[pageKey]
+        }
+
         func getSpec(pageKey: String) -> PageSpec {
-            self.config.staticPages[pageKey]?(self.config, pageKey) ??
-                    self.specs[pageKey] ??
-                    self.config.pageNotFoundPage(self.config, pageKey)
+            self.tryGetSpec(pageKey: pageKey) ?? self.config.pageNotFoundPage(self.config, pageKey)
         }
 
         func tryReplaceAll(pageKey: String) -> Bool {
@@ -99,12 +102,13 @@ class PageStack {
             return true
         }
 
-        func trySet(pageKey: String, _ token: Token, _ spec: PageSpec) -> Bool {
+        func trySet(pageKey: String, _ token: Token, _ spec: PageSpec, noCache: Bool) -> Bool {
             assert(self.config.staticPages[pageKey] == nil)
             if let entry = self.getEntry(pageKey: pageKey) {
                 if token.instant < entry.updated {
                     return false
                 }
+                entry.noCache = noCache
                 entry.updated = self.clock.now()
             }
             self.specs[pageKey] = spec
@@ -386,15 +390,25 @@ class PageStack {
         })
     }
 
+    func tryGetSpec(pageKey: String) -> PageSpec? {
+        self.mutex.lockReadOnly({ state in state.tryGetSpec(pageKey: pageKey) })
+    }
+
     func stackPageKeys() -> [String] {
         self.mutex.lockReadOnly({ state in state.stackPageKeys() })
     }
 
-    func tryUpdate(pageKey: String, _ token: Token, spec: PageSpec) async -> Bool {
+    func tryUpdate(pageKey: String, _ token: Token, _ update: PageUpdate) async -> Bool {
+        guard let cache = self.weakCache else {
+            return false
+        }
         await self.lock.lockAsync({
-            await self.mutex.lockAsyncAndUpdate({ state in
-                state.trySet(pageKey: pageKey, token, spec)
+            let success = await self.mutex.lockAsyncAndUpdate({ state in
+                state.trySet(pageKey: pageKey, token, update.spec, noCache: update.responseInfo == nil)
             })
+            if success {
+                cache.add(responseInfo, update.data)
+            }
         })
     }
 

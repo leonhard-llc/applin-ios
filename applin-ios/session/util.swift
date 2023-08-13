@@ -225,26 +225,30 @@ extension HTTPURLResponse {
         return headerValue
     }
 
-    func maxAgeHeader() -> UInt64? {
-        guard let headerValue = self.value(forHTTPHeaderField: "Cache-Control") else {
-            return nil
-        }
-        // Swift finally got a decent Regex class, but it's only for iOS 16, so we use the old one.
-        guard let groups = NSRegularExpression("\\bmax-age=([0-9]+)\\b").firstMatchGroups(headerValue) else {
-            return nil
-        }
-        return UInt64(groups[1])
+    struct CacheControl {
+        let noCache: Bool
+        let maxAge: UInt64?
+        let staleWhileRevalidate: UInt64?
     }
 
-    func staleIfErrorHeader() -> UInt64? {
-        guard let headerValue = self.value(forHTTPHeaderField: "Cache-Control") else {
+    func cacheControlHeader() -> CacheControl? {
+        guard let headerValue = self.value(forHTTPHeaderField: "Cache-Control")?.lowercased() else {
             return nil
         }
-        // Swift finally got a decent Regex class, but it's only for iOS 16, so we use the old one.
-        guard let groups = NSRegularExpression("\\bstale-if-error=([0-9]+)\\b").firstMatchGroups(headerValue) else {
-            return nil
+        var noCache = false
+        var maxAge: UInt64?
+        var staleWhileRevalidate: UInt64?
+        for part in headerValue.split(separator: ",") {
+            // Swift finally got a decent Regex class, but it's only for iOS 16, so we use the old one.
+            if part == "no-cache" {
+                noCache = true
+            } else if let groups = NSRegularExpression("\\bmax-age=([0-9]+)\\b").firstMatchGroups(headerValue) {
+                maxAge = UInt64(groups[1])
+            } else if let groups = NSRegularExpression("\\bstale-while-revalidate=([0-9]+)\\b").firstMatchGroups(headerValue) {
+                staleWhileRevalidate = UInt64(groups[1])
+            }
         }
-        return UInt64(groups[1])
+        return CacheControl(noCache: noCache, maxAge: maxAge, staleWhileRevalidate: staleWhileRevalidate)
     }
 }
 

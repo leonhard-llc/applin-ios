@@ -3,7 +3,7 @@ import OSLog
 
 struct ResponseInfo: Codable {
     let absoluteUrl: String
-    let eTag: String
+    let optETag: String?
     let deleteTime: UInt64
     let refreshTime: UInt64
 }
@@ -12,7 +12,7 @@ class CachedResponse {
     let infoFilePath: String
     let dataFilePath: String
     let absoluteUrl: String
-    let eTag: String
+    let optETag: String?
     let deleteTime: UInt64
     let refreshTime: UInt64
 
@@ -20,14 +20,14 @@ class CachedResponse {
             infoFilePath: String,
             dataFilePath: String,
             absoluteUrl: String,
-            eTag: String,
+            optETag: String?,
             deleteTime: UInt64,
             refreshTime: UInt64
     ) {
         self.infoFilePath = infoFilePath
         self.dataFilePath = dataFilePath
         self.absoluteUrl = absoluteUrl
-        self.eTag = eTag
+        self.optETag = optETag
         self.deleteTime = deleteTime
         self.refreshTime = refreshTime
     }
@@ -105,7 +105,7 @@ class ResponseCache {
                     infoFilePath: infoPath,
                     dataFilePath: dataPath,
                     absoluteUrl: content.absoluteUrl,
-                    eTag: content.eTag,
+                    optETag: content.optETag,
                     deleteTime: content.deleteTime,
                     refreshTime: content.refreshTime
             )
@@ -150,7 +150,7 @@ class ResponseCache {
                     infoFilePath: infoFilePath,
                     dataFilePath: dataFilePath,
                     absoluteUrl: info.absoluteUrl,
-                    eTag: info.eTag,
+                    optETag: info.optETag,
                     deleteTime: info.deleteTime,
                     refreshTime: info.refreshTime
             )
@@ -167,7 +167,7 @@ class ResponseCache {
             }
             return ResponseInfo(
                     absoluteUrl: cachedResponse.absoluteUrl,
-                    eTag: cachedResponse.eTag,
+                    optETag: cachedResponse.optETag,
                     deleteTime: cachedResponse.deleteTime,
                     refreshTime: cachedResponse.refreshTime
             )

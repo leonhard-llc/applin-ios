@@ -65,11 +65,8 @@ class Poller {
                 let token = pageStack.token()
                 let optUpdate = try await serverCaller?.call(path: key, varNamesAndValues: varNamesAndValues)
                 if let update = optUpdate {
-                    let updated = await pageStack.tryUpdate(pageKey: key, token, spec: update.spec)
-                    if updated, let responseInfo = update.responseInfo {
-                        // TODO: Solve race between actions and poller when writing to cache.
-                        cache.add(responseInfo, update.data)
-                    }
+                    // TODO: Handle 'no-cache' properly.
+                    await pageStack.tryUpdate(pageKey: key, token, spec: update.spec)
                 } else {
                     Self.logger.error("got no response body for '\(key)")
                 }

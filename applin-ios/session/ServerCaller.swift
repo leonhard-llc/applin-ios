@@ -110,22 +110,24 @@ class ServerCaller {
                 throw "content-type is not 'application/json': \(String(describing: contentTypeBase ?? ""))"
             }
             let optETag = httpResponse.eTagHeader()
-            let optDate = try httpResponse.dateHeader()
-            let optMaxAgeSeconds = httpResponse.maxAgeHeader()
-            let optStaleIfErrorSeconds = httpResponse.staleIfErrorHeader()
+            let date = try httpResponse.dateHeader() ?? Date.now
+            let dateEpochSeconds = date.secondsSinceEpoch()
+            let optCacheControl = httpResponse.cacheControlHeader()
+            let freshSeconds = optCacheControl?.maxAge ?? 600
+            let refreshTime = dateEpochSeconds + freshSeconds
+            let staleOkSeconds = optCacheControl?.staleWhileRevalidate ?? 0
+            let deleteTime = dateEpochSeconds + freshSeconds + staleOkSeconds
             let jsonItem: JsonItem = try decodeJson(data)
             let pageSpec: PageSpec = try PageSpec(self.config, pageKey: path, jsonItem)
-            let responseInfo: ResponseInfo?
-            if let eTag = optETag, let date = optDate, let maxAgeSeconds = optMaxAgeSeconds {
-                responseInfo = ResponseInfo(
-                        absoluteUrl: url.absoluteString,
-                        eTag: eTag,
-                        deleteTime: date.secondsSinceEpoch() + maxAgeSeconds,
-                        refreshTime: date.secondsSinceEpoch() + (optStaleIfErrorSeconds ?? maxAgeSeconds)
-                )
-            } else {
-                responseInfo = nil
+            if optCacheControl?.noCache == true {
+                return PageUpdate(data, nil, pageSpec)
             }
+            let responseInfo = ResponseInfo(
+                    absoluteUrl: url.absoluteString,
+                    optETag: optETag,
+                    deleteTime: deleteTime,
+                    refreshTime: refreshTime
+            )
             return PageUpdate(data, responseInfo, pageSpec)
         } catch {
             throw ApplinError.serverError("error processing server response: \(error)")
