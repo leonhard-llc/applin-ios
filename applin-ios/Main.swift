@@ -64,6 +64,7 @@ class Main: UIResponder, UIApplicationDelegate {
             self.pageStack!.weakServerCaller = self.serverCaller
             self.poller = Poller(self.config, self.responseCache, self.pageStack, self.serverCaller)
             self.stateFileOwner = StateFileOwner(self.config, self.varSet, self.pageStack)
+            self.applicationDidBecomeActive(application)
             Task {
                 await self.pageStack!.doActions(pageKey: pageKeys.last!, [.poll])
             }
