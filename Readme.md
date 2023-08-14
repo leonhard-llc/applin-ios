@@ -1,17 +1,104 @@
-#  Applin iOS Client
-Copy this iOS app and customize it to connect to your
-[`applin-rs`](https://github.com/mleonhard/applin-rs) server.
+#  Applin&trade; iOS Client Library
 
-To use:
-1. Clone this repo.
-   [Do not make a GitHub fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/what-happens-to-forks-when-a-repository-is-deleted-or-changes-visibility).
-2. Change the app name, icon, and [`applin-ios/logo.png`](applin-ios/logo.png).
-3. Edit [`applin-ios/ApplinCustomConfig.swift`](applin-ios/ApplinCustomConfig.swift).
-   - Customize the page that your app shows when it starts up, before connecting to your server.
-   - Before making a Release build, enter your license key.
-4. Use XCode or other tools to build and test your app
+## How to make a new iOS app with Applin
+1. Create a new iOS app with XCode.  Select SwiftUI.
+1. Delete `ContentView.swift`
+1. Add a `logo.png` file next to your main Swift file
+1. Add `Package.swift`
+   ```swift
+   // swift-tools-version:4.0
+   import PackageDescription
+   
+   let package = Package(
+       name: "ApplinIos",
+       products: [
+           .library(name: "ApplinIos", targets: ["ApplinIos"]),
+       ],
+       dependencies: [
+           .package(url: "https://github.com/mleonhard/applin-ios.git", from: "0.0.0"),
+       ],
+       targets: [
+           .target(
+               name: "ApplinIos",
+               dependencies: ["ApplinIos"]),
+           .testTarget(
+               name: "ApplinIos",
+               dependencies: ["ApplinIos"]),
+       ]
+   )
+   ```
+1. Replace the contents of your main Swift file with:
+   ```swift
+   import ApplinIos
+   import OSLog
+   import UIKit
+   
+   @main
+   class Main: UIResponder, UIApplicationDelegate {
+       static let logger = Logger(subsystem: "Example", category: "Main")
+       let applinApp: ApplinApp
+   
+       override init() {
+           // Note: This code runs during app prewarming.
+           do {
+               URLCache.shared = URLCache(memoryCapacity: 10 * 1024 * 1024, diskCapacity: 500 * 1024 * 1024, diskPath: nil)
+               let config = try ApplinConfig(
+                   // Required
+                   appStoreAppId = 0,
+                   licenseKey = nil, // ApplinLicenseKey("DSCZKrGaWAUymZXezLAA,https://app.example.com/"),
+                   showPageOnFirstStartup = "/new-user",
+                   staticPages = [
+                       // Required
+                       StaticPageKeys.APPLIN_CLIENT_ERROR: StaticPages.applinClientError,
+                       StaticPageKeys.APPLIN_PAGE_NOT_LOADED: StaticPages.pageNotLoaded,
+                       StaticPageKeys.APPLIN_NETWORK_ERROR: StaticPages.applinNetworkError,
+                       StaticPageKeys.APPLIN_SERVER_ERROR: StaticPages.applinServerError,
+                       StaticPageKeys.APPLIN_STATE_LOAD_ERROR: StaticPages.applinStateLoadError,
+                       StaticPageKeys.APPLIN_USER_ERROR: StaticPages.applinUserError,
+                       // Optional
+                       StaticPageKeys.ERROR_DETAILS: StaticPages.errorDetails,
+                       StaticPageKeys.SERVER_STATUS: StaticPages.serverStatus,
+                       StaticPageKeys.SUPPORT: StaticPages.support,
+                       "/new-user": StaticPages.legalForm,
+                       StaticPageKeys.TERMS: StaticPages.terms,
+                       StaticPageKeys.PRIVACY_POLICY: StaticPages.privacyPolicy,
+                   ],
+                   urlForDebugBuilds: URL = URL(string: "http://192.168.0.2:8000/")!,
+                   urlForSimulatorBuilds: URL = URL(string: "http://127.0.0.1:8000/")!,
+                   // Optional
+                   statusPageUrl = URL("https://status.example.com/")!,
+                   supportChatUrl = URL("https://www.example.com/support")!,
+                   supportEmailAddress = "info@example.com",
+                   supportSmsTel = "+10005551111"
+               )
+               self.applinApp = ApplinApp(config)
+           } catch let e {
+               Self.logger.fault("error starting app: \(e)")
+               fatalError("error starting app: \(e)")
+           }
+           super.init()
+       }
+   
+       // impl UIApplicationDelegate
+   
+       func application(
+               _ application: UIApplication,
+               didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+       ) -> Bool {
+           self.applinApp.application(application, didFinishLaunchingWithOptions: launchOptions)
+       }
+   
+       func applicationDidBecomeActive(_ application: UIApplication) {
+           self.applinApp.applicationDidBecomeActive(application)
+       }
+   
+       func applicationDidEnterBackground(_ application: UIApplication) {
+           self.applinApp.applicationDidEnterBackground(application)
+       }
+   }
+   ```
 
-TODO: Change applin-ios into a library that one can import.
+Use your new iOS app to connect to your applin server and develop your app.
 
 ## License
 You may use Applin to build and test apps.
@@ -19,7 +106,7 @@ To release or distribute an app, you must obtain a valid license.
 See https://www.applin.dev/ .
 
 When you build in `Release` mode:
-- Applin checks the license key.  If the key is missing or invalid, it will not start.
+- Applin checks the license key.  If the key is missing or invalid, your app will not start.
 - Applin reports its app ID and license key to Leonhard LLC.  Approximately 1% of app installs per month will do this.
 
 You may not disable or interfere with these functions.

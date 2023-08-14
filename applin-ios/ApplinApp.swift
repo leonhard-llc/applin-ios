@@ -1,9 +1,8 @@
 import OSLog
 import UIKit
 
-@main
-class Main: UIResponder, UIApplicationDelegate {
-    static let logger = Logger(subsystem: "Applin", category: "Main")
+class ApplinApp {
+    static let logger = Logger(subsystem: "Applin", category: "ApplinApp")
     let lamportClock = LamportClock()
     let navigationController = NavigationController()
     let wallClock = WallClock()
@@ -16,22 +15,10 @@ class Main: UIResponder, UIApplicationDelegate {
     var stateFileOwner: StateFileOwner?
     var window: UIWindow?
 
-    override init() {
+    init(_ config: ApplinConfig) {
         // Note: This code runs during app prewarming.
-        do {
-            URLCache.shared = URLCache(memoryCapacity: 10 * 1024 * 1024, diskCapacity: 500 * 1024 * 1024, diskPath: nil)
-            self.config = try ApplinConfig(cacheDirPath: getCacheDirPath(), dataDirPath: getDataDirPath())
-            try createDir(self.config.cacheDirPath)
-            try createDir(self.config.dataDirPath)
-            //self.streamer = Streamer(config, self.session)
-            super.init()
-        } catch let e {
-            Self.logger.fault("error starting app: \(e)")
-            fatalError("error starting app: \(e)")
-        }
+        self.config = config
     }
-
-    // impl UIApplicationDelegate
 
     func application(
             _ application: UIApplication,
@@ -64,8 +51,9 @@ class Main: UIResponder, UIApplicationDelegate {
             self.poller = Poller(self.config, self.pageStack, self.serverCaller, self.wallClock)
             self.stateFileOwner = StateFileOwner(self.config, self.varSet, self.pageStack)
             self.applicationDidBecomeActive(application)
+            let lastPageKey = pageKeys.last!
             Task {
-                await self.pageStack!.doActions(pageKey: pageKeys.last!, [.poll])
+                await self.pageStack!.doActions(pageKey: lastPageKey, [.poll])
             }
         }
         return true

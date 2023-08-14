@@ -2,50 +2,59 @@ import Foundation
 
 class ApplinConfig {
     let appStoreAppId: UInt64
-    let dataDirPath: String
-    let cacheDirPath: String
-    let licenseKey: String?
-    let pageNotFoundPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    let showPageOnFirstStartup: String
-    let supportChatUrl: URL?
-    let supportEmailAddress: String
-    let supportSmsTel: String?
-    let statusMarkdownPageUrl: URL
-    let staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec]
-    let url: URL
     let applinClientErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    let applinPageNotLoadedPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
     let applinNetworkErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    let applinPageNotLoadedPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
     let applinServerErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
     let applinStateLoadErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
     let applinUserErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    let dataDirPath: String
+    let licenseKey: ApplinLicenseKey?
+    let showPageOnFirstStartup: String
+    let staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec]
+    let statusPageUrl: URL?
+    let supportChatUrl: URL?
+    let supportEmailAddress: String?
+    let supportSmsTel: String?
+    let url: URL
 
-    init(cacheDirPath: String, dataDirPath: String) throws {
-        self.appStoreAppId = ApplinCustomConfig.APPSTORE_APP_ID
-        self.cacheDirPath = cacheDirPath
+    init(
+            appStoreAppId: UInt64,
+            dataDirPath: String = getDataDirPath(),
+            showPageOnFirstStartup: String,
+            staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec],
+            urlForDebugBuilds: URL,
+            urlForSimulatorBuilds: URL,
+            licenseKey: ApplinLicenseKey?,
+            statusPageUrl: URL? = nil,
+            supportChatUrl: URL? = nil,
+            supportEmailAddress: String? = nil,
+            supportSmsTel: String? = nil
+    ) throws {
+        self.appStoreAppId = appStoreAppId
         self.dataDirPath = dataDirPath
-        self.licenseKey = ApplinCustomConfig.APPLIN_LICENSE_KEY
-        self.pageNotFoundPage = ApplinCustomConfig.pageNotFoundPage
-        self.showPageOnFirstStartup = ApplinCustomConfig.SHOW_PAGE_ON_FIRST_STARTUP
-        self.supportChatUrl = ApplinCustomConfig.SUPPORT_CHAT_URL
-        self.supportEmailAddress = ApplinCustomConfig.SUPPORT_EMAIL_ADDRESS
-        self.supportSmsTel = ApplinCustomConfig.SUPPORT_SMS_TEL
-        self.statusMarkdownPageUrl = ApplinCustomConfig.STATUS_MARKDOWN_PAGE_URL
-        self.staticPages = ApplinCustomConfig.STATIC_PAGES
+        self.licenseKey = licenseKey
+        self.staticPages = staticPages
         self.applinClientErrorPage = self.staticPages[StaticPageKeys.APPLIN_CLIENT_ERROR]!
-        self.applinPageNotLoadedPage = self.staticPages[StaticPageKeys.APPLIN_PAGE_NOT_LOADED]!
         self.applinNetworkErrorPage = self.staticPages[StaticPageKeys.APPLIN_NETWORK_ERROR]!
+        self.applinPageNotLoadedPage = self.staticPages[StaticPageKeys.APPLIN_PAGE_NOT_LOADED]!
         self.applinServerErrorPage = self.staticPages[StaticPageKeys.APPLIN_SERVER_ERROR]!
         self.applinStateLoadErrorPage = self.staticPages[StaticPageKeys.APPLIN_STATE_LOAD_ERROR]!
         self.applinUserErrorPage = self.staticPages[StaticPageKeys.APPLIN_USER_ERROR]!
+        self.showPageOnFirstStartup = showPageOnFirstStartup
+        self.statusPageUrl = statusPageUrl
+        self.supportChatUrl = supportChatUrl
+        self.supportEmailAddress = supportEmailAddress
+        self.supportSmsTel = supportSmsTel
         #if targetEnvironment(simulator)
-        self.url = ApplinCustomConfig.URL_FOR_SIMULATOR_BUILDS
+        self.url = urlForSimulatorBuilds
         #elseif DEBUG
-        self.url = ApplinCustomConfig.URL_FOR_DEBUG_BUILDS
+        self.url = urlForDebugBuilds
         #else
-        self.url = try checkLicenseKey(ApplinCustomConfig.APPLIN_LICENSE_KEY)
+        self.url = self.licenseKey!.url
         #endif
         print("ApplinConfig dataDirPath=\(dataDirPath) url=\(self.url)")
+        try createDir(self.dataDirPath)
     }
 
     func appstoreUrl() -> URL {
@@ -57,6 +66,6 @@ class ApplinConfig {
     }
 
     func stateFilePath() -> String {
-        self.dataDirPath + "/state.json"
+        self.dataDirPath + "/applin_state.json"
     }
 }
