@@ -1,10 +1,12 @@
 import Foundation
+import OSLog
 import UIKit
 
 /// ColumnView exists because UITableView is incapable of updating widgets
 /// without making them lose focus and dismiss the keyboard.
 class ColumnView: UIView {
     // TODONT: Don't use UIStackView because its API is very difficult to use for dynamic updates.
+    static let logger = Logger(subsystem: "Applin", category: "ColumnView")
     let SEPARATOR_THICKNESS: Float32 = 0.7
     let constraintSet = ConstraintSet()
     var alignment: ApplinHAlignment = .start
@@ -18,7 +20,7 @@ class ColumnView: UIView {
     }
 
     convenience init() {
-        print("ColumnView.init")
+        Self.logger.debug("init")
         self.init(frame: CGRect.zero)
     }
 
@@ -35,7 +37,7 @@ class ColumnView: UIView {
     }
 
     func update(_ alignment: ApplinHAlignment, separator: UIColor?, spacing: Float32, subviews: [UIView]) {
-        //print("ColumnView.update alignment=\(alignment) separator=\(String(describing: separator)) spacing=\(spacing) subviews=\(subviews)")
+        Self.logger.debug("ColumnView.update alignment=\(alignment) separator=\(String(describing: separator)) spacing=\(spacing) subviews=\(subviews)")
         self.alignment = alignment
         self.orderedSubviews = subviews
         self.separatorColor = separator
@@ -43,14 +45,14 @@ class ColumnView: UIView {
         let newSubviews = Set(subviews)
         for subview in self.subviews {
             if !newSubviews.contains(subview) {
-                //print("ColumnView.update remove \(subview)")
+                Self.logger.debug("ColumnView.update remove \(subview)")
                 subview.removeFromSuperview()
             }
         }
         let existingSubviews = Set(self.subviews)
         for subview in subviews {
             if !existingSubviews.contains(subview) {
-                //print("ColumnView.update add \(subview)")
+                Self.logger.debug("ColumnView.update add \(subview)")
                 subview.translatesAutoresizingMaskIntoConstraints = false
                 self.addSubview(subview)
             }

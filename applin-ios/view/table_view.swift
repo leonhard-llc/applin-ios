@@ -1,7 +1,9 @@
 import Foundation
+import OSLog
 import UIKit
 
 class TableView: UIView {
+    static let logger = Logger(subsystem: "Applin", category: "ColumnView")
     let SEPARATOR_THICKNESS: Float32 = 0.7
     let SEPARATOR_COLOR: CGColor = UIColor.separator.cgColor
     let constraintSet = ConstraintSet()
@@ -18,7 +20,7 @@ class TableView: UIView {
     }
 
     convenience init() {
-        print("TableView.init")
+        Self.logger.debug("TableView.init")
         self.init(frame: CGRect.zero)
     }
 
@@ -27,14 +29,14 @@ class TableView: UIView {
     }
 
     func update(rowSeparators: [UInt], spacing: Float32, newSubviewRows: [[UIView?]]) {
-        print("TableView.update rowSeparators=\(String(describing: rowSeparators)) spacing=\(spacing) newSubviewRows=\(newSubviewRows)")
+        Self.logger.debug("TableView.update rowSeparators=\(String(describing: rowSeparators)) spacing=\(spacing) newSubviewRows=\(newSubviewRows)")
         self.rowSeparators = rowSeparators
         self.spacing = CGFloat(spacing)
         let newSubviews = Set(newSubviewRows.flatMap({ $0 }).compactMap({ $0 }))
         for row in self.subviewRows {
             for optSubview in row {
                 if let subview = optSubview, !newSubviews.contains(subview) {
-                    print("TableView.update remove \(subview)")
+                    Self.logger.debug("TableView.update remove \(subview)")
                     subview.removeFromSuperview()
                 }
             }
@@ -44,7 +46,7 @@ class TableView: UIView {
         for subviewRow in self.subviewRows {
             for optSubview in subviewRow {
                 if let subview = optSubview, !existingSubviews.contains(subview) {
-                    //print("TableView.update add \(subview)")
+                    Self.logger.debug("TableView.update add \(subview)")
                     subview.translatesAutoresizingMaskIntoConstraints = false
                     self.addSubview(subview)
                 }
@@ -53,11 +55,12 @@ class TableView: UIView {
         var newConstraints: [NSLayoutConstraint] = []
         let numColumns = max(1, self.subviewRows.map({ row in row.count }).max() ?? 0)
         let numRows = max(1, self.subviewRows.count)
-        print("TableView numColumns=\(numColumns) numRows=\(numRows)")
+        Self.logger.debug("TableView numColumns=\(numColumns) numRows=\(numRows)")
         while self.colSizers.count < numColumns {
             let view = NamedUIView(name: "\(self).colSizer\(self.colSizers.count)")
             view.translatesAutoresizingMaskIntoConstraints = false
-            view.backgroundColor = pastelBlue
+            //view.backgroundColor = pastelBlue
+            view.isHidden = true
             self.addSubview(view)
             self.colSizers.append(view)
         }
@@ -67,15 +70,15 @@ class TableView: UIView {
         while self.rowSizers.count < numRows {
             let view = NamedUIView(name: "\(self).rowSizer\(self.rowSizers.count)")
             view.translatesAutoresizingMaskIntoConstraints = false
-            view.backgroundColor = pastelGreen
-            // view.isHidden = true
+            //view.backgroundColor = pastelGreen
+            view.isHidden = true
             self.addSubview(view)
             self.rowSizers.append(view)
         }
         while self.rowSizers.count > numRows {
             self.rowSizers.popLast()?.removeFromSuperview()
         }
-        print("TableView colSizers.count=\(self.colSizers.count) rowSizers.count=\(self.rowSizers.count)")
+        Self.logger.debug("TableView colSizers.count=\(self.colSizers.count) rowSizers.count=\(self.rowSizers.count)")
         // Sizer dimensions.
         newConstraints.append(contentsOf: self.colSizers.map(
                 { view in view.heightAnchor.constraint(equalToConstant: 0.0) }))
