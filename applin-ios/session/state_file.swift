@@ -92,9 +92,9 @@ class StateFileOwner {
                 contents.pageKeys = pageStack.stackPageKeys()
             }
             let bytes = try encodeJson(contents)
-            let hash = bytes.hashValue
+            let hash = UInt64(truncatingIfNeeded: bytes.hashValue)
             if self.fileBytesHash.load() == hash {
-                Self.logger.info("file contents unchanged, skipping writing file")
+                Self.logger.debug("file contents unchanged, skipping writing file")
                 return
             }
             let dirPath = (self.path as NSString).deletingLastPathComponent
@@ -105,6 +105,7 @@ class StateFileOwner {
             // Swift has no atomic file replace function.
             try await deleteFile(path: self.path)
             try await moveFile(atPath: tmpPath, toPath: self.path)
+            self.fileBytesHash.store(hash)
             Self.logger.info("wrote file")
         })
     }
