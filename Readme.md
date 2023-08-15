@@ -1,7 +1,7 @@
 #  Applin&trade; iOS Client Library
 
 ## How to make a new iOS app with Applin
-1. Create a new iOS app with XCode.  Select SwiftUI.
+1. Open XCode and create a new iOS app.  Select SwiftUI.
 1. Delete `ContentView.swift`
 1. Add a `logo.png` file next to your main Swift file
 1. Add `Package.swift`

@@ -1,6 +1,6 @@
 import XCTest
 
-class applin_iosUITestsLaunchTests: XCTestCase {
+final class UITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

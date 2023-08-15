@@ -1,6 +1,6 @@
 import XCTest
 import UIKit
-@testable import applin_ios
+@testable import ApplinIos
 
 class WidgetCacheTests: XCTestCase {
     var optTempDir: String?
