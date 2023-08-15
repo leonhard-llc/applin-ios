@@ -1,10 +1,10 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.5
 import PackageDescription
 
 let package = Package(
     name: "ApplinIos",
     platforms: [
-        .iOS(.v13),
+        .iOS(.v15),
     ],
     products: [
         .library(name: "ApplinIos", targets: ["ApplinIos"]),

@@ -144,9 +144,13 @@ class StaticPages {
         if let url = config.supportChatUrl {
             buttons.append(ModalButtonSpec(text: "Support Chat", [.launchUrl(url)]))
         }
-        buttons.append(ModalButtonSpec(text: "Email Support", [.launchUrl(URL(string: "mailto:\(config.supportEmailAddress)")!)]))
+        if let email = config.supportEmailAddress {
+            let url = URL(string: "mailto:\(email)")!
+            buttons.append(ModalButtonSpec(text: "Email Support", [.launchUrl(url)]))
+        }
         if let tel = config.supportSmsTel {
-            buttons.append(ModalButtonSpec(text: "Text Support", [.launchUrl(URL(string: "sms:\(tel)")!)]))
+            let url = URL(string: "sms:\(tel)")!
+            buttons.append(ModalButtonSpec(text: "Text Support", [.launchUrl(url)]))
         }
         buttons.append(ModalButtonSpec(text: "OK", isDefault: true, [.pop]))
         return ModalSpec(pageKey: pageKey, kind: .drawer, title: "Support", text: "", buttons).toSpec()
@@ -220,7 +224,7 @@ class StaticPages {
 
                 8. AGE RESTRICTION
 
-                We do not target or allow persons under 18 years of age to use the Service, and we do not knowingly collect information from persons under the age of 16. If you are a parent or legal guardian who discovers that your child has provided us with information without your consent, you may contact us at \(config.supportEmailAddress), and we will promptly delete such information from our files.
+                We do not target or allow persons under 18 years of age to use the Service, and we do not knowingly collect information from persons under the age of 16. If you are a parent or legal guardian who discovers that your child has provided us with information without your consent, you may contact us at \(config.supportEmailAddress ?? "our email address"), and we will promptly delete such information from our files.
 
                 9. DATA RETENTION
 
@@ -238,7 +242,7 @@ class StaticPages {
 
                 12. HOW TO CONTACT US
 
-                If you have any questions about our privacy practices, this Privacy Policy, or how to lodge a complaint with the appropriate authority, please contact us by email at \(config.supportEmailAddress).
+                If you have any questions about our privacy practices, this Privacy Policy, or how to lodge a complaint with the appropriate authority, please contact us by email at \(config.supportEmailAddress ?? "our email address").
                 """
         ))).toSpec()
     }
@@ -345,7 +349,7 @@ class StaticPages {
 
                 9. Other Users’ Content.
 
-                Although the Operators reserve the right to review and remove Content that violates this Agreement, such Content is the sole responsibility of the user who posts it, and the Operators cannot guarantee that all Content will comply with this Agreement. If you see Content on the Service that violates this Agreement, please report it within the Service or via \(config.supportEmailAddress).
+                Although the Operators reserve the right to review and remove Content that violates this Agreement, such Content is the sole responsibility of the user who posts it, and the Operators cannot guarantee that all Content will comply with this Agreement. If you see Content on the Service that violates this Agreement, please report it within the Service or via \(config.supportEmailAddress ?? "our company address").
 
                 10. DIGITAL MILLENNIUM COPYRIGHT ACT
 
@@ -358,7 +362,7 @@ class StaticPages {
                 - A statement that you have a good faith belief that use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law; and
                 - A statement that, under penalty of perjury, the information in the notification is accurate and you are authorized to act on behalf of the owner of the exclusive right that is allegedly infringed.
 
-                Any DMCA Takedown Notices should be sent to: \(config.supportEmailAddress)
+                Any DMCA Takedown Notices should be sent to: \(config.supportEmailAddress ?? "our email address")
 
                 The Operators will terminate the accounts of repeat infringers.
 

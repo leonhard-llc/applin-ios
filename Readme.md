@@ -2,6 +2,11 @@
 
 ## How to make a new iOS app with Applin
 1. Open XCode and create a new iOS app.  Select SwiftUI.
+1. Click menu View > Navigators > Project. 
+   Select the app, which is the top-most item in the panel on the left.
+   Click the General tab.
+  - Change "Supported Destinations" to iPhone and iPad.
+  - Change "Minimum Deployments" to iOS 15.0.
 1. Delete `ContentView.swift`
 1. Add a `logo.png` file next to your main Swift file
 1. Add `Package.swift`
