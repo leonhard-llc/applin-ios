@@ -18,6 +18,6 @@ struct Instant {
 
 class WallClock {
     func now() -> Instant {
-        Instant(secondsSinceEpoch: Date.now.secondsSinceEpoch())
+        Instant(secondsSinceEpoch: Date().secondsSinceEpoch())
     }
 }
