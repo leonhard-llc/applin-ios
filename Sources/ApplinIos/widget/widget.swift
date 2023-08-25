@@ -15,7 +15,7 @@ protocol Widget {
     func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws
 }
 
-protocol ToSpec {
+public protocol ToSpec {
     func toSpec() -> Spec
 }
 
@@ -23,8 +23,8 @@ protocol ToSpec {
 ///
 /// It is a reference-counted wrapper around the enum, to prevent unnecessary copies of the widget tree.
 /// This changes algorithms that would take O(n^2) memory into O(n).
-class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
-    enum Value: Equatable, Hashable {
+public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
+    public enum Value: Equatable, Hashable {
         case backButton(BackButtonSpec)
         case button(ButtonSpec)
         case checkbox(CheckboxSpec)
@@ -43,7 +43,7 @@ class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case text(TextSpec)
     }
 
-    static func ==(lhs: Spec, rhs: Spec) -> Bool {
+    public static func ==(lhs: Spec, rhs: Spec) -> Bool {
         lhs.value == rhs.value
     }
 
@@ -131,7 +131,7 @@ class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         }
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         self
     }
 
@@ -394,7 +394,7 @@ class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         }
     }
 
-    var description: String {
+    public var description: String {
         switch self.value {
         case let .backButton(inner):
             return "\(inner)"
@@ -431,7 +431,7 @@ class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         }
     }
 
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         self.value.hash(into: &hasher)
     }
 

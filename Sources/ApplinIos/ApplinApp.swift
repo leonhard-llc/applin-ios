@@ -1,7 +1,7 @@
 import OSLog
 import UIKit
 
-class ApplinApp {
+public class ApplinApp {
     static let logger = Logger(subsystem: "Applin", category: "ApplinApp")
     let lamportClock = LamportClock()
     let navigationController = NavigationController()
@@ -15,12 +15,12 @@ class ApplinApp {
     var stateFileOwner: StateFileOwner?
     var window: UIWindow?
 
-    init(_ config: ApplinConfig) {
+    public init(_ config: ApplinConfig) {
         // Note: This code runs during app prewarming.
         self.config = config
     }
 
-    func application(
+    public func application(
             _ application: UIApplication,
             didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
@@ -34,6 +34,7 @@ class ApplinApp {
             self.varSet = VarSet(optState?.boolVars ?? [:], optState?.stringVars ?? [:])
             var pageKeys: [String]
             if let state = optState {
+                Self.logger.info("has state")
                 pageKeys = state.pageKeys ?? []
                 if pageKeys.isEmpty {
                     pageKeys = ["/"]
@@ -50,7 +51,6 @@ class ApplinApp {
             self.pageStack!.weakServerCaller = self.serverCaller
             self.poller = Poller(self.config, self.pageStack, self.serverCaller, self.wallClock)
             self.stateFileOwner = StateFileOwner(self.config, self.varSet, self.pageStack)
-            self.applicationDidBecomeActive(application)
             let lastPageKey = pageKeys.last!
             Task {
                 await self.pageStack!.doActions(pageKey: lastPageKey, [.poll])
@@ -59,13 +59,13 @@ class ApplinApp {
         return true
     }
 
-    func applicationDidBecomeActive(_ application: UIApplication) {
+    public func applicationDidBecomeActive(_ application: UIApplication) {
         Self.logger.info("active")
         self.poller?.start()
         self.stateFileOwner?.start()
     }
 
-    func applicationDidEnterBackground(_ application: UIApplication) {
+    public func applicationDidEnterBackground(_ application: UIApplication) {
         Self.logger.info("background")
         self.stateFileOwner?.stop()
         self.poller?.stop()

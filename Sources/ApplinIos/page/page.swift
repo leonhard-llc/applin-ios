@@ -24,7 +24,7 @@ protocol PageController: UIViewController {
     func update(_ ctx: PageContext, _ newPageSpec: PageSpec)
 }
 
-enum PageSpec: CustomStringConvertible, Equatable {
+public enum PageSpec: CustomStringConvertible, Equatable {
     case loadingPage
     case modal(ModalSpec)
     case navPage(NavPageSpec)
@@ -58,7 +58,7 @@ enum PageSpec: CustomStringConvertible, Equatable {
         }
     }
 
-    var description: String {
+    public var description: String {
         switch self {
         case .loadingPage:
             return "loadingPage"

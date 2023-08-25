@@ -1,35 +1,35 @@
 import Foundation
 
-class StaticPageKeys {
+public class StaticPageKeys {
     /// Applin pushes this page when the app has an error.
     /// Include an ErrorDetails widget to display the message.
-    static let APPLIN_CLIENT_ERROR = "/applin-app-error"
+    public static let APPLIN_CLIENT_ERROR = "/applin-app-error"
     /// Applin pushes this page when it starts and fails to load a previously visible page.
-    static let APPLIN_PAGE_NOT_LOADED = "/applin-page-not-loaded"
+    public static let APPLIN_PAGE_NOT_LOADED = "/applin-page-not-loaded"
     /// Applin pushes this page when it fails to make an HTTP request to the server.
-    static let APPLIN_NETWORK_ERROR = "/applin-network-error"
+    public static let APPLIN_NETWORK_ERROR = "/applin-network-error"
     /// Applin pushes this page when the server returns a non-200 response.
-    static let APPLIN_SERVER_ERROR = "/applin-rpc-error-modal"
+    public static let APPLIN_SERVER_ERROR = "/applin-rpc-error-modal"
     /// Applin pushes this modal when it fails to load the state file.
     /// Show the user a Connect button so they can retry and deal with auto errors.
-    static let APPLIN_STATE_LOAD_ERROR = "/applin-state-load-error"
+    public static let APPLIN_STATE_LOAD_ERROR = "/applin-state-load-error"
     /// Applin pushes this page when the server returns a user error message.
     /// Include an ErrorDetails widget to display the message.
-    static let APPLIN_USER_ERROR = "/applin-user-error"
+    public static let APPLIN_USER_ERROR = "/applin-user-error"
     /// The default error pages have an "Error Details" button that pushes this page.
-    static let ERROR_DETAILS = "/error-details"
+    public static let ERROR_DETAILS = "/error-details"
     /// The default first-start (legalForm) page has a "Privacy Policy" button that pushes this page.
-    static let PRIVACY_POLICY = "/privacy-policy"
+    public static let PRIVACY_POLICY = "/privacy-policy"
     /// The default error pages have a "Server Status" button that pushes this page.
-    static let SERVER_STATUS = "/server-status"
+    public static let SERVER_STATUS = "/server-status"
     /// The default error pages have a "Support" button that pushes this page.
-    static let SUPPORT = "/support"
+    public static let SUPPORT = "/support"
     /// The default first-start (legalForm) page has a "Terms of Use" button that pushes this page.
-    static let TERMS = "/terms"
+    public static let TERMS = "/terms"
 }
 
-class StaticPages {
-    static func applinClientError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+public class StaticPages {
+    public static func applinClientError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         ModalSpec(
                 pageKey: pageKey,
                 kind: .alert,
@@ -45,7 +45,7 @@ class StaticPages {
         ).toSpec()
     }
 
-    static func applinNetworkError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func applinNetworkError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         ModalSpec(
                 pageKey: pageKey,
                 kind: .alert,
@@ -61,7 +61,7 @@ class StaticPages {
         ).toSpec()
     }
 
-    static func applinServerError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func applinServerError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         ModalSpec(
                 pageKey: pageKey,
                 kind: .alert,
@@ -78,7 +78,7 @@ class StaticPages {
         ).toSpec()
     }
 
-    static func applinStateLoadError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func applinStateLoadError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         ModalSpec(
                 pageKey: pageKey,
                 kind: .alert,
@@ -87,7 +87,7 @@ class StaticPages {
         ).toSpec()
     }
 
-    static func applinUserError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func applinUserError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         ModalSpec(
                 pageKey: pageKey,
                 kind: .alert,
@@ -97,13 +97,13 @@ class StaticPages {
         ).toSpec()
     }
 
-    static func errorDetails(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func errorDetails(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         NavPageSpec(pageKey: pageKey, title: "Error Details", ScrollSpec(
                 LastErrorTextSpec()
         )).toSpec()
     }
 
-    static func legalForm(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func legalForm(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         PlainPageSpec(title: "Legal Form", ColumnSpec([
             ImageSpec(config, url: "asset:///logo.png", aspectRatio: 1.67, disposition: .fit),
             TextSpec("To use this app, you must agree to the Terms of Use and be at least 18 years old."),
@@ -115,7 +115,7 @@ class StaticPages {
         ])).toSpec()
     }
 
-    static func pageNotLoaded(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func pageNotLoaded(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Page Not Loaded",
@@ -123,7 +123,7 @@ class StaticPages {
         ).toSpec()
     }
 
-    static func pageNotFound(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func pageNotFound(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Not Found",
@@ -131,14 +131,14 @@ class StaticPages {
         ).toSpec()
     }
 
-    static func serverStatus(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func serverStatus(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         NavPageSpec(pageKey: pageKey, title: "Server Status", ScrollSpec(
                 // TODO: Replace this with a markdown page that loads the status markdown URL.
                 TextSpec("Not implemented")
         )).toSpec()
     }
 
-    static func support(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func support(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         var buttons: [ModalButtonSpec] = []
         // TODO: Support including error code in urls.
         if let url = config.supportChatUrl {
@@ -156,7 +156,7 @@ class StaticPages {
         return ModalSpec(pageKey: pageKey, kind: .drawer, title: "Support", text: "", buttons).toSpec()
     }
 
-    static func privacyPolicy(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func privacyPolicy(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         NavPageSpec(pageKey: pageKey, title: "Privacy Policy", ScrollSpec(TextSpec(
                 """
                 PRIVACY POLICY
@@ -247,7 +247,7 @@ class StaticPages {
         ))).toSpec()
     }
 
-    static func terms(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func terms(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
         NavPageSpec(pageKey: pageKey, title: "Terms of Use", ScrollSpec(TextSpec(
                 """
                 TERMS OF USE

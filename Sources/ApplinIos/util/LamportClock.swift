@@ -1,6 +1,6 @@
 import Foundation
 
-public struct LamportInstant: Comparable, Equatable {
+struct LamportInstant: Comparable, Equatable {
     public static func ==(lhs: LamportInstant, rhs: LamportInstant) -> Bool {
         lhs.time == rhs.time
     }

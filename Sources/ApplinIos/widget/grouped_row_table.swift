@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct GroupedRowTableSpec: Equatable, Hashable, ToSpec {
+public struct GroupedRowTableSpec: Equatable, Hashable, ToSpec {
     static let TYP = "grouped-row-table"
     let rowGroups: [[[Spec?]]]
     let spacing: Float32
@@ -33,7 +33,7 @@ struct GroupedRowTableSpec: Equatable, Hashable, ToSpec {
         self.spacing = 0.0
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.groupedRowTable(self))
     }
 

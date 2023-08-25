@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ColumnSpec: Equatable, Hashable, ToSpec {
+public struct ColumnSpec: Equatable, Hashable, ToSpec {
     static let TYP = "column"
     let widgets: [Spec]
     let alignment: ApplinHAlignment
@@ -26,7 +26,7 @@ struct ColumnSpec: Equatable, Hashable, ToSpec {
         self.spacing = 0.0
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.column(self))
     }
 

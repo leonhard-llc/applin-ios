@@ -1,6 +1,6 @@
 import UIKit
 
-struct ErrorTextSpec: Equatable, Hashable, ToSpec {
+public struct ErrorTextSpec: Equatable, Hashable, ToSpec {
     static let TYP = "error-text"
     let text: String
 
@@ -14,7 +14,7 @@ struct ErrorTextSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.errorText(self))
     }
 

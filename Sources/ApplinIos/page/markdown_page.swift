@@ -8,7 +8,7 @@
 //    case ok(String)
 //}
 //
-//struct MarkdownPageSpec: Equatable {
+//public struct MarkdownPageSpec: Equatable {
 //    static func ==(lhs: MarkdownPageSpec, rhs: MarkdownPageSpec) -> Bool {
 //        lhs.title == rhs.title
 //                && lhs.url == rhs.url

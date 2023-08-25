@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct PlainPageSpec: Equatable {
+public struct PlainPageSpec: Equatable {
     static let TYP = "plain-page"
     let connectionMode: ConnectionMode
     let title: String?
@@ -22,7 +22,7 @@ struct PlainPageSpec: Equatable {
         return item
     }
 
-    init(title: String?, connectionMode: ConnectionMode = .disconnect, _ widget: ToSpec) {
+    public init(title: String?, connectionMode: ConnectionMode = .disconnect, _ widget: ToSpec) {
         self.connectionMode = connectionMode
         self.title = title
         self.widget = widget.toSpec()

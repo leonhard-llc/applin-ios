@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ScrollSpec: Equatable, Hashable, ToSpec {
+public struct ScrollSpec: Equatable, Hashable, ToSpec {
     static let TYP = "scroll"
     let widget: Spec
 
@@ -19,7 +19,7 @@ struct ScrollSpec: Equatable, Hashable, ToSpec {
         self.widget = sub.toSpec()
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.scroll(self))
     }
 

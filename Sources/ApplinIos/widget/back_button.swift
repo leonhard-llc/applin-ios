@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct BackButtonSpec: Equatable, Hashable {
+public struct BackButtonSpec: Equatable, Hashable {
     static let TYP = "back-button"
     let actions: [ActionSpec]
 

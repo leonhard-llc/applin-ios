@@ -2,7 +2,7 @@ import Foundation
 
 // TODO: Put all of these inside a Util class.
 
-func createDir(_ path: String) throws {
+public func createDir(_ path: String) throws {
     do {
         if FileManager.default.fileExists(atPath: path) {
             return
@@ -13,14 +13,14 @@ func createDir(_ path: String) throws {
     }
 }
 
-func createDirAsync(_ path: String) async throws {
+public func createDirAsync(_ path: String) async throws {
     let task = Task {
         try createDir(path)
     }
     try await task.value
 }
 
-func decodeJson<T: Decodable>(_ data: Data) throws -> T {
+public func decodeJson<T: Decodable>(_ data: Data) throws -> T {
     do {
         let decoder = JSONDecoder()
         return try decoder.decode(T.self, from: data)
@@ -29,7 +29,7 @@ func decodeJson<T: Decodable>(_ data: Data) throws -> T {
     }
 }
 
-func encodeJson<T: Encodable>(_ item: T) throws -> Data {
+public func encodeJson<T: Encodable>(_ item: T) throws -> Data {
     do {
         let encoder = JSONEncoder()
         return try encoder.encode(item)
@@ -38,7 +38,7 @@ func encodeJson<T: Encodable>(_ item: T) throws -> Data {
     }
 }
 
-func deleteFile(path: String) async throws {
+public func deleteFile(path: String) async throws {
     let task = Task {
         do {
             // Apple's docs don't say what happens when the file doesn't exist.
@@ -65,28 +65,28 @@ func deleteFile(path: String) async throws {
     try await task.value
 }
 
-func fileExists(path: String) async -> Bool {
+public func fileExists(path: String) async -> Bool {
     let task: Task<Bool, Never> = Task {
         FileManager.default.fileExists(atPath: path)
     }
     return await task.value
 }
 
-func getCacheDirPath() -> String {
+public func getCacheDirPath() -> String {
     let urls = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
     return urls[0].path
 }
 
-func getDataDirPath() -> String {
+public func getDataDirPath() -> String {
     let urls = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
     return urls[0].path
 }
 
-func getTempDirPath() -> String {
+public func getTempDirPath() -> String {
     FileManager.default.temporaryDirectory.path
 }
 
-func moveFile(atPath: String, toPath: String) async throws {
+public func moveFile(atPath: String, toPath: String) async throws {
     let task = Task {
         do {
             try FileManager.default.moveItem(atPath: atPath, toPath: toPath)
@@ -97,7 +97,7 @@ func moveFile(atPath: String, toPath: String) async throws {
     try await task.value
 }
 
-func readBundleFile(filepath: String) async throws -> Data {
+public func readBundleFile(filepath: String) async throws -> Data {
     guard let url = Bundle.main.url(forResource: filepath, withExtension: nil)
     else {
         throw ApplinError.appError("bundle file not found: \(filepath)")
@@ -111,7 +111,7 @@ func readBundleFile(filepath: String) async throws -> Data {
     }
 }
 
-func readFile(path: String) async throws -> Data {
+public func readFile(path: String) async throws -> Data {
     let task: Task<Data, Error> = Task {
         do {
             return try Data(contentsOf: URL(fileURLWithPath: path))
@@ -123,7 +123,7 @@ func readFile(path: String) async throws -> Data {
 }
 
 /// Returns early when the task is cancelled.
-func sleep(ms: Int) async {
+public func sleep(ms: Int) async {
     do {
         let nanoseconds = UInt64(ms).saturatingMultiply(1_000_000)
         try await Task.sleep(nanoseconds: nanoseconds)
@@ -131,7 +131,7 @@ func sleep(ms: Int) async {
     }
 }
 
-func writeFile(data: Data, path: String) async throws {
+public func writeFile(data: Data, path: String) async throws {
     let task = Task {
         do {
             try data.write(to: URL(fileURLWithPath: path))

@@ -1,6 +1,6 @@
 import Foundation
 
-class ApplinCustomConfig {
+public class ApplinCustomConfig {
     static let APPSTORE_APP_ID: UInt64 = 0000000000
     static let APPLIN_LICENSE_KEY: String? = nil
     static let URL_FOR_SIMULATOR_BUILDS = URL(string: "http://127.0.0.1:8000/")!

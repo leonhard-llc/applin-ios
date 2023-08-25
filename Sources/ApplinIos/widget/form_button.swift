@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct FormButtonSpec: Equatable, Hashable, ToSpec {
+public struct FormButtonSpec: Equatable, Hashable, ToSpec {
     static let TYP = "form-button"
     let actions: [ActionSpec]
     let alignment: ApplinHAlignment?
@@ -27,7 +27,7 @@ struct FormButtonSpec: Equatable, Hashable, ToSpec {
         self.text = text
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.formButton(self))
     }
 

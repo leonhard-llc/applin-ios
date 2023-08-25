@@ -1,38 +1,31 @@
 #  Applin&trade; iOS Client Library
 
 ## How to make a new iOS app with Applin
-1. Open XCode and create a new iOS app.  Select SwiftUI.
+1. Open XCode and create a new iOS app
+  - Interface: `Storyboard`
+  - Language: `Swift`
+1. Delete
+  - `AppDelegate`
+  - `SceneDelegate`
+  - `ViewController`
+  - `Main`
+  - `LaunchScreen`
 1. Click menu View > Navigators > Project. 
-   Select the app, which is the top-most item in the panel on the left.
-   Click the General tab.
-  - Change "Supported Destinations" to iPhone and iPad.
-  - Change "Minimum Deployments" to iOS 15.0.
-1. Delete `ContentView.swift`
-1. Add a `logo.png` file next to your main Swift file
-1. Add `Package.swift`
-   ```swift
-   // swift-tools-version:4.0
-   import PackageDescription
-   
-   let package = Package(
-       name: "ApplinIos",
-       products: [
-           .library(name: "ApplinIos", targets: ["ApplinIos"]),
-       ],
-       dependencies: [
-           .package(url: "https://github.com/mleonhard/applin-ios.git", from: "0.0.0"),
-       ],
-       targets: [
-           .target(
-               name: "ApplinIos",
-               dependencies: ["ApplinIos"]),
-           .testTarget(
-               name: "ApplinIos",
-               dependencies: ["ApplinIos"]),
-       ]
-   )
-   ```
-1. Replace the contents of your main Swift file with:
+  Select the app, which is the top-most item in the panel on the left.
+  Click on the project, below `PROJECT`.
+  Click the `General` tab
+  - Change "Supported Destinations" to `iPhone` and `iPad`.
+  - Change "Minimum Deployments" to iOS `15.0`.
+1. Open `Info`, open keys
+   `Information Property List` >
+   `Application Scene Manifest` >
+   `Scene Configuration` >
+   `Application Session Role`
+   and delete `Item 0 (Default Configuration)`
+1. Add a `logo.png` file
+1. Add package `https://github.com/mleonhard/applin-ios.git`
+1. Add `ApplinIos` to app targets
+1. Add a new `Main.swift` file with:
    ```swift
    import ApplinIos
    import OSLog
@@ -49,10 +42,9 @@
                URLCache.shared = URLCache(memoryCapacity: 10 * 1024 * 1024, diskCapacity: 500 * 1024 * 1024, diskPath: nil)
                let config = try ApplinConfig(
                    // Required
-                   appStoreAppId = 0,
-                   licenseKey = nil, // ApplinLicenseKey("DSCZKrGaWAUymZXezLAA,https://app.example.com/"),
-                   showPageOnFirstStartup = "/new-user",
-                   staticPages = [
+                   appStoreAppId: 0,
+                   showPageOnFirstStartup: "/new-user",
+                   staticPages: [
                        // Required
                        StaticPageKeys.APPLIN_CLIENT_ERROR: StaticPages.applinClientError,
                        StaticPageKeys.APPLIN_PAGE_NOT_LOADED: StaticPages.pageNotLoaded,
@@ -68,13 +60,14 @@
                        StaticPageKeys.TERMS: StaticPages.terms,
                        StaticPageKeys.PRIVACY_POLICY: StaticPages.privacyPolicy,
                    ],
-                   urlForDebugBuilds: URL = URL(string: "http://192.168.0.2:8000/")!,
-                   urlForSimulatorBuilds: URL = URL(string: "http://127.0.0.1:8000/")!,
+                   urlForDebugBuilds: URL(string: "http://192.168.0.2:8000/")!,
+                   urlForSimulatorBuilds: URL(string: "http://127.0.0.1:8000/")!,
+                   licenseKey:  nil, // ApplinLicenseKey("DSCZKrGaWAUymZXezLAA,https://app.example.com/"),
                    // Optional
-                   statusPageUrl = URL("https://status.example.com/")!,
-                   supportChatUrl = URL("https://www.example.com/support")!,
-                   supportEmailAddress = "info@example.com",
-                   supportSmsTel = "+10005551111"
+                   statusPageUrl: URL(string: "https://status.example.com/")!,
+                   supportChatUrl: URL(string: "https://www.example.com/support")!,
+                   supportEmailAddress: "info@example.com",
+                   supportSmsTel: "+10005551111"
                )
                self.applinApp = ApplinApp(config)
            } catch let e {

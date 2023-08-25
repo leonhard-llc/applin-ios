@@ -1,7 +1,7 @@
 import CryptoKit
 import Foundation
 
-class ApplinLicenseKey {
+public class ApplinLicenseKey {
     static func checkLicenseKey(_ key: String) throws -> URL {
         let key_parts = key.split(separator: ",", omittingEmptySubsequences: false)
         let sig_string = String(key_parts.get(0)!)

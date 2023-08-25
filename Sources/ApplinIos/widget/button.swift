@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ButtonSpec: Equatable, Hashable, ToSpec {
+public struct ButtonSpec: Equatable, Hashable, ToSpec {
     static let TYP = "button"
     let actions: [ActionSpec]
     let text: String
@@ -23,7 +23,7 @@ struct ButtonSpec: Equatable, Hashable, ToSpec {
         self.actions = actions
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.button(self))
     }
 

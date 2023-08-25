@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct FormSectionSpec: Equatable, Hashable, ToSpec {
+public struct FormSectionSpec: Equatable, Hashable, ToSpec {
     static let TYP = "form-section"
     let optTitle: String?
     let widgets: [Spec]
@@ -23,7 +23,7 @@ struct FormSectionSpec: Equatable, Hashable, ToSpec {
         self.widgets = widgets.map({ widget in widget.toSpec() })
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.formSection(self))
     }
 

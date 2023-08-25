@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-enum ModalKind: String {
+public enum ModalKind: String {
     case alert
     case drawer
 
@@ -24,7 +24,7 @@ enum ModalKind: String {
     }
 }
 
-struct ModalSpec: CustomStringConvertible, Equatable {
+public struct ModalSpec: CustomStringConvertible, Equatable {
     let connectionMode: ConnectionMode
     let kind: ModalKind
     let pageKey: String
@@ -65,7 +65,7 @@ struct ModalSpec: CustomStringConvertible, Equatable {
         return item
     }
 
-    init(pageKey: String, kind: ModalKind, title: String, text: String? = nil, _ widgets: [ModalButtonSpec]) {
+    public init(pageKey: String, kind: ModalKind, title: String, text: String? = nil, _ widgets: [ModalButtonSpec]) {
         self.connectionMode = .disconnect
         self.kind = kind
         self.pageKey = pageKey

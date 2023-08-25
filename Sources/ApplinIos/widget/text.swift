@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct TextSpec: Equatable, Hashable, ToSpec {
+public struct TextSpec: Equatable, Hashable, ToSpec {
     static let TYP = "text"
     let text: String
 
@@ -19,7 +19,7 @@ struct TextSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.text(self))
     }
 

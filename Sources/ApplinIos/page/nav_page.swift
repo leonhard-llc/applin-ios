@@ -1,13 +1,13 @@
 import Foundation
 import UIKit
 
-enum StartEnum: Equatable {
+public enum StartEnum: Equatable {
     case backButton(BackButtonSpec)
     case defaultBackButton
     case empty
 }
 
-struct NavPageSpec: Equatable {
+public struct NavPageSpec: Equatable {
     static let TYP = "nav-page"
     let connectionMode: ConnectionMode
     let end: Spec?
@@ -50,7 +50,7 @@ struct NavPageSpec: Equatable {
         return item
     }
 
-    init(
+    public init(
             pageKey: String,
             title: String,
             start: StartEnum = .defaultBackButton,

@@ -6,7 +6,7 @@ import UIKit
 //         Also, the APIs of UITableView, UITableViewDataSource, and UITableViewDiffableDataSource are extremely hard
 //         to use.
 
-struct FormSpec: Equatable, Hashable, ToSpec {
+public struct FormSpec: Equatable, Hashable, ToSpec {
     static let TYP = "form"
     let widgets: [Spec]
 
@@ -24,7 +24,7 @@ struct FormSpec: Equatable, Hashable, ToSpec {
         self.widgets = widgets.map({ widget in widget.toSpec() })
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.form(self))
     }
 

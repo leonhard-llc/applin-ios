@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct EmptySpec: Equatable, Hashable, ToSpec {
+public struct EmptySpec: Equatable, Hashable, ToSpec {
     static let TYP = "empty"
 
     func toJsonItem() -> JsonItem {
@@ -9,7 +9,7 @@ struct EmptySpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.empty(self))
     }
 

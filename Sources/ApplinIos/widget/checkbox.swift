@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct CheckboxSpec: Equatable, Hashable, ToSpec {
+public struct CheckboxSpec: Equatable, Hashable, ToSpec {
     static let TYP = "checkbox"
     let initialBool: Bool?
     let rpc: String?
@@ -31,7 +31,7 @@ struct CheckboxSpec: Equatable, Hashable, ToSpec {
         self.varName = varName
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.checkbox(self))
     }
 

@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ModalButtonSpec: Equatable, Hashable {
+public struct ModalButtonSpec: Equatable, Hashable {
     static let TYP = "modal-button"
     let actions: [ActionSpec]
     let isCancel: Bool

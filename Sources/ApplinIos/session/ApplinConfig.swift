@@ -1,6 +1,6 @@
 import Foundation
 
-class ApplinConfig {
+public class ApplinConfig {
     let appStoreAppId: UInt64
     let applinClientErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
     let applinNetworkErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
@@ -18,7 +18,7 @@ class ApplinConfig {
     let supportSmsTel: String?
     let url: URL
 
-    init(
+    public init(
             appStoreAppId: UInt64,
             dataDirPath: String = getDataDirPath(),
             showPageOnFirstStartup: String,

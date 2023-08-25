@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct TextfieldSpec: Equatable, Hashable, ToSpec {
+public struct TextfieldSpec: Equatable, Hashable, ToSpec {
     static let TYP = "textfield"
 
     let allow: ApplinAllow?
@@ -68,7 +68,7 @@ struct TextfieldSpec: Equatable, Hashable, ToSpec {
         self.varName = varName
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.textfield(self))
     }
 

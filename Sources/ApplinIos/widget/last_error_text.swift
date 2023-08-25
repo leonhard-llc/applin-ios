@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct LastErrorTextSpec: Equatable, Hashable, ToSpec {
+public struct LastErrorTextSpec: Equatable, Hashable, ToSpec {
     static let TYP = "last-error-text"
 
     func toJsonItem() -> JsonItem {
@@ -9,7 +9,7 @@ struct LastErrorTextSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.lastErrorText(self))
     }
 

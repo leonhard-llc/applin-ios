@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct ImageSpec: Equatable, Hashable, ToSpec {
+public struct ImageSpec: Equatable, Hashable, ToSpec {
     static let TYP = "image"
     let aspectRatio: Double
     let disposition: ApplinDisposition?
@@ -27,7 +27,7 @@ struct ImageSpec: Equatable, Hashable, ToSpec {
         self.url = URL(string: url)!
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.image(self))
     }
 

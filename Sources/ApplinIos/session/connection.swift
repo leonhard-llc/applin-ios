@@ -1,6 +1,6 @@
 import Foundation
 
-enum ConnectionMode: CustomStringConvertible, Equatable, Comparable {
+public enum ConnectionMode: CustomStringConvertible, Equatable, Comparable {
     case stream
     case pollSeconds(UInt32)
     case disconnect
@@ -39,7 +39,7 @@ enum ConnectionMode: CustomStringConvertible, Equatable, Comparable {
         }
     }
 
-    var description: String {
+    public var description: String {
         switch self {
         case .stream:
             return "stream"

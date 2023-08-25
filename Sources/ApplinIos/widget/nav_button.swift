@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-struct NavButtonSpec: Equatable, Hashable, ToSpec {
+public struct NavButtonSpec: Equatable, Hashable, ToSpec {
     static let TYP = "nav-button"
     let actions: [ActionSpec]
     let badgeText: String?
@@ -35,7 +35,7 @@ struct NavButtonSpec: Equatable, Hashable, ToSpec {
         self.text = text
     }
 
-    func toSpec() -> Spec {
+    public func toSpec() -> Spec {
         Spec(.navButton(self))
     }
 
