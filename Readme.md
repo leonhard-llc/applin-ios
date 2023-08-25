@@ -2,20 +2,20 @@
 
 ## How to make a new iOS app with Applin
 1. Open XCode and create a new iOS app
-  - Interface: `Storyboard`
-  - Language: `Swift`
+   - Interface: `Storyboard`
+   - Language: `Swift`
 1. Delete
-  - `AppDelegate`
-  - `SceneDelegate`
-  - `ViewController`
-  - `Main`
-  - `LaunchScreen`
+   - `AppDelegate`
+   - `SceneDelegate`
+   - `ViewController`
+   - `Main`
+   - `LaunchScreen`
 1. Click menu View > Navigators > Project. 
-  Select the app, which is the top-most item in the panel on the left.
-  Click on the project, below `PROJECT`.
-  Click the `General` tab
-  - Change "Supported Destinations" to `iPhone` and `iPad`.
-  - Change "Minimum Deployments" to iOS `15.0`.
+   Select the app, which is the top-most item in the panel on the left.
+   Click on the project, below `PROJECT`.
+   Click the `General` tab
+   - Change "Supported Destinations" to `iPhone` and `iPad`.
+   - Change "Minimum Deployments" to iOS `15.0`.
 1. Open `Info`, open keys
    `Information Property List` >
    `Application Scene Manifest` >
