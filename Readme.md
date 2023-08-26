@@ -1,5 +1,7 @@
 #  Applin&trade; iOS Client Library
 
+<https://www.applin.dev/>
+
 ## How to make a new iOS app with Applin
 1. Open XCode and create a new iOS app
    - Interface: `Storyboard`
@@ -23,7 +25,7 @@
    `Application Session Role`
    and delete `Item 0 (Default Configuration)`
 1. Add a `logo.png` file
-1. Add package `https://github.com/mleonhard/applin-ios.git`
+1. Add package `https://github.com/leonhard-llc/applin-ios.git`
 1. Add `ApplinIos` to app targets
 1. Add a new `Main.swift` file with:
    ```swift
@@ -62,7 +64,7 @@
                    ],
                    urlForDebugBuilds: URL(string: "http://192.168.0.2:8000/")!,
                    urlForSimulatorBuilds: URL(string: "http://127.0.0.1:8000/")!,
-                   licenseKey:  nil, // ApplinLicenseKey("DSCZKrGaWAUymZXezLAA,https://app.example.com/"),
+                   licenseKey:  nil, // ApplinLicenseKey("DSZKrGaWAUymZXezLAA,https://app.example.com/"),
                    // Optional
                    statusPageUrl: URL(string: "https://status.example.com/")!,
                    supportChatUrl: URL(string: "https://www.example.com/support")!,
