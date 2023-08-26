@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UIKit
 
 public struct ButtonSpec: Equatable, Hashable, ToSpec {
@@ -57,17 +58,17 @@ public struct ButtonSpec: Equatable, Hashable, ToSpec {
 }
 
 class ButtonWidget: Widget {
+    static let logger = Logger(subsystem: "Applin", category: "ButtonWidget")
     var spec: ButtonSpec
     var button: UIButton!
     let ctx: PageContext
 
     init(_ spec: ButtonSpec, _ ctx: PageContext) {
-        print("ButtonWidget.init(\(spec))")
         self.spec = spec
         self.ctx = ctx
         weak var weakSelf: ButtonWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
-            print("button UIAction")
+            Self.logger.debug("UIAction")
             weakSelf?.tap()
         })
         self.button = UIButton(type: .custom, primaryAction: action)
@@ -83,7 +84,7 @@ class ButtonWidget: Widget {
     }
 
     func tap() {
-        print("button actions")
+        Self.logger.info("tap")
         Task {
             await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.spec.actions)
         }

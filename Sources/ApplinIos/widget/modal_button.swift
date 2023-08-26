@@ -47,7 +47,6 @@ public struct ModalButtonSpec: Equatable, Hashable {
     func toAlertAction(_ ctx: PageContext, pageKey: String) -> UIAlertAction {
         let handler = { (_: UIAlertAction) -> Void in
             Task {
-                print("modal-button actions")
                 let _ = await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.actions)
             }
         }

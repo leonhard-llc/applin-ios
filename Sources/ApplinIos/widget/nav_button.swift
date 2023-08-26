@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UIKit
 
 public struct NavButtonSpec: Equatable, Hashable, ToSpec {
@@ -98,7 +99,6 @@ class NavButtonWidget: Widget {
         }
 
         convenience init() {
-            print("OneLabel.init")
             self.init(frame: CGRect.zero)
         }
 
@@ -146,7 +146,6 @@ class NavButtonWidget: Widget {
         }
 
         convenience init() {
-            print("ColumnView.init")
             self.init(frame: CGRect.zero)
         }
 
@@ -177,6 +176,7 @@ class NavButtonWidget: Widget {
     }
 
     private static let SPACING: CGFloat = 12.0
+    private static let logger = Logger(subsystem: "Applin", category: "NavButtonWidget")
     private var spec: NavButtonSpec
     private var tappableView: TappableView!
     private var row: RowView!
@@ -189,7 +189,6 @@ class NavButtonWidget: Widget {
     private let ctx: PageContext
 
     init(_ spec: NavButtonSpec, _ ctx: PageContext) {
-        print("NavButtonWidget.init(\(spec))")
         self.spec = spec
         self.ctx = ctx
         self.tappableView = TappableView()
@@ -224,7 +223,7 @@ class NavButtonWidget: Widget {
     }
 
     @objc func tap() {
-        print("NavButtonWidget.tap")
+        Self.logger.debug("tap")
         Task {
             let _ = await self.ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.spec.actions)
         }

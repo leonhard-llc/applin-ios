@@ -39,7 +39,7 @@ public class ApplinApp {
                 if pageKeys.isEmpty {
                     pageKeys = ["/"]
                 }
-            } else if hasSessionCookie(self.config) {
+            } else if Cookies.hasSessionCookie(self.config) {
                 Self.logger.info("has session")
                 pageKeys = [StaticPageKeys.APPLIN_STATE_LOAD_ERROR]
             } else {

@@ -13,7 +13,6 @@ class PaddedLabel: UIView {
         self.label.textAlignment = .left
         //self.label.backgroundColor = pastelYellow
         super.init(frame: CGRect.zero)
-        print("\(self).init")
         self.addSubview(label)
         // None of these work.  The docs lie:
         // https://developer.apple.com/documentation/uikit/uiview/positioning_content_within_layout_margins

@@ -51,8 +51,7 @@ public struct ColumnSpec: Equatable, Hashable, ToSpec {
     }
 
     func newWidget() -> Widget {
-        print("ColumnSpec.newWidget()")
-        return ColumnWidget()
+        ColumnWidget()
     }
 
     func visitActions(_ f: (ActionSpec) -> ()) {

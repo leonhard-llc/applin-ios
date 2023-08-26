@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UIKit
 
 public struct ScrollSpec: Equatable, Hashable, ToSpec {
@@ -56,8 +57,9 @@ public struct ScrollSpec: Equatable, Hashable, ToSpec {
 // https://www.hackingwithswift.com/example-code/uikit/how-to-adjust-a-uiscrollview-to-fit-the-keyboard
 
 class KeyboardAvoidingScrollView: UIScrollView {
+    static let logger = Logger(subsystem: "Applin", category: "KeyboardAvoidingScrollView")
+
     init() {
-        print("KeyboardAvoidingScrollView.init()")
         super.init(frame: CGRect.zero)
         let notificationCenter = NotificationCenter.default
         // NOTE: NotificationCenter.default.addObserver will silently do nothing if you pass it
@@ -85,7 +87,7 @@ class KeyboardAvoidingScrollView: UIScrollView {
             return
         }
         let relativeFrame = self.convert(frameNsValue.cgRectValue, from: self.window)
-        print("adjustForKeyboard frameNsValue=\(frameNsValue), relativeFrame=\(relativeFrame)")
+        Self.logger.debug("adjustForKeyboard frameNsValue=\(frameNsValue), relativeFrame=\(String(describing: relativeFrame))")
         if notification.name == UIResponder.keyboardWillHideNotification {
             self.contentInset = .zero
         } else {
@@ -105,7 +107,6 @@ class ScrollWidget: Widget {
     var keyboardInset: CGFloat = 0.0
 
     init() {
-        print("ScrollWidget.init()")
         self.scrollView = KeyboardAvoidingScrollView()
         self.scrollView.translatesAutoresizingMaskIntoConstraints = false
         self.scrollView.keyboardDismissMode = .interactive

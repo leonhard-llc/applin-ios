@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UIKit
 
 public struct TextfieldSpec: Equatable, Hashable, ToSpec {
@@ -109,6 +110,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     static let BORDER_WIDTH: CGFloat = 0.7
     static let CORNER_RADIUS: CGFloat = 10.0
     static let ERROR_IMAGE = UIImage(systemName: "exclamationmark.circle")
+    static let logger = Logger(subsystem: "Applin", category: "TextfieldWidget")
     let container: TappableView
     let label: Label
     let errorView: ErrorView!
@@ -123,7 +125,6 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     private var rpcTask: Task<Void, Never>?
 
     init(_ ctx: PageContext, _ spec: TextfieldSpec) {
-        print("TextfieldWidget.init(\(spec))")
         self.ctx = ctx
         self.spec = spec
 
@@ -189,7 +190,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
 
     @objc
     func doneButtonPressed() {
-        print("Done button pressed")
+        Self.logger.debug("varName=\(self.spec.varName) doneButtonPressed")
         self.textview.resignFirstResponder()
     }
 
@@ -203,7 +204,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        print("TextfieldWidget.update(\(textfieldSpec))")
+        Self.logger.debug("varName=\(self.spec.varName) update spec=\(String(describing: textfieldSpec))")
         self.spec = textfieldSpec
         if !self.initialized {
             self.textview.text = varSet.string(self.spec.varName) ?? self.spec.initialString ?? ""
@@ -256,17 +257,17 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         }
         let keyboardTypeChanged = self.textview.keyboardType != self.spec.keyboardType()
         if keyboardTypeChanged {
-            print("TextfieldWidget(\(self.spec.varName) keyboardType changed \(self.textview.keyboardType) -> \(self.spec.keyboardType())")
+            Self.logger.debug("varName=\(self.spec.varName) keyboardType changed \(String(describing: self.textview.keyboardType)) -> \(String(describing: self.spec.keyboardType()))")
             self.textview.keyboardType = self.spec.keyboardType()
         }
         let newAutocapType = self.spec.autoCapitalize?.textAutocapitalizationType() ?? .none
         let autocapTypeChanged = self.textview.autocapitalizationType != newAutocapType
         if autocapTypeChanged {
-            print("TextfieldWidget(\(self.spec.varName) autocapitalizationType changed \(self.textview.autocapitalizationType) -> \(newAutocapType)")
+            Self.logger.debug("varName=\(self.spec.varName) autocapitalizationType changed \(String(describing: self.textview.autocapitalizationType)) -> \(String(describing: newAutocapType))")
             self.textview.autocapitalizationType = newAutocapType
         }
         if keyboardTypeChanged || autocapTypeChanged {
-            print("TextfieldWidget(\(self.spec.varName) reloadInputViews()")
+            Self.logger.debug("varName=\(self.spec.varName) reloadInputViews")
             self.textview.reloadInputViews()
         }
         self.constraintSet.set(constraints)
@@ -275,7 +276,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     // UITextViewDelegate
 
     func textViewDidChange(_: UITextView) {
-        //print("textViewDidChange")
+        Self.logger.debug("varName=\(self.spec.varName) textViewDidChange")
         //let value = self.textview.text.isEmpty ? nil : self.textview.text
         //self.ctx.varSet?.setString(self.spec.varName, value)
         //if let rpcPath = self.spec.rpc {
@@ -292,9 +293,9 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         //        do {
         //            try await self.ctx.serverCaller?.call(path: rpcPath, sourcePageKey: self.ctx.pageKey)
         //        } catch let e as ApplinError {
-        //            print("TextField rpc error: \(e)")
+        //            Self.logger.warning("varName=\(self.spec.varName)  rpc error: \(e)")
         //        } catch let e {
-        //            print("TextField rpc unexpected error: \(e)")
+        //            Self.logger.warning("varName=\(self.spec.varName)  rpc unexpected error: \(e)")
         //        }
         //    }
         //}

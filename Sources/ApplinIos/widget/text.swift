@@ -55,7 +55,6 @@ class TextWidget: Widget {
     let paddedLabel: PaddedLabel
 
     init() {
-        print("TextWidget.init()")
         self.paddedLabel = PaddedLabel()
         self.paddedLabel.translatesAutoresizingMaskIntoConstraints = false
     }

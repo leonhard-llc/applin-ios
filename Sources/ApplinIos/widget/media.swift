@@ -48,7 +48,6 @@
 //    let ctx: PageContext
 //
 //    init(_ spec: MediaSpec) {
-//        print("MediaWidget.init(\(spec))")
 //        self.spec = spec
 //        self.subViewController = UIHostingController(rootView: AnyView(spec))
 //    }
@@ -96,7 +95,6 @@
 ////                self.text,
 ////                role: self.mediaRole(),
 ////                action: { () in
-////                    print("Media(\(self.text)) action")
 ////                    self.session?.doActions(self.actions)
 ////                }
 ////        )

@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UIKit
 
 public struct CheckboxSpec: Equatable, Hashable, ToSpec {
@@ -64,6 +65,7 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
 }
 
 class CheckboxWidget: Widget {
+    static let logger = Logger(subsystem: "Applin", category: "CheckboxWidget")
     let checked = UIImage(systemName: "checkmark.square.fill")!
     let unchecked = UIImage(systemName: "square")!
     var container: TappableView
@@ -72,7 +74,6 @@ class CheckboxWidget: Widget {
     let ctx: PageContext
 
     init(_ spec: CheckboxSpec, _ ctx: PageContext) {
-        print("CheckboxWidget.init(\(spec))")
         self.container = TappableView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
         self.spec = spec
@@ -82,7 +83,7 @@ class CheckboxWidget: Widget {
         // around is to bind `weak self` before creating the handler.
         weak var weakSelf: CheckboxWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
-            print("CheckboxWidget(\(weakSelf?.spec.varName ?? "nil")) UIAction")
+            Self.logger.debug("UIAction")
             Task {
                 await weakSelf?.tap()
             }
@@ -129,6 +130,7 @@ class CheckboxWidget: Widget {
 
     @MainActor
     private func tap() async {
+        Self.logger.debug("tap")
         guard let varSet = self.ctx.varSet, let pageStack = self.ctx.pageStack else {
             return
         }

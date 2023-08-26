@@ -63,7 +63,6 @@ class FormSectionWidget: Widget {
     let columnView: ColumnView
 
     init() {
-        print("FormSectionWidget.init()")
         self.container = NamedUIView(name: "FormSectionWidget.container")
         self.container.translatesAutoresizingMaskIntoConstraints = false
         //self.container.backgroundColor = pastelBlue

@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UIKit
 
 public struct FormButtonSpec: Equatable, Hashable, ToSpec {
@@ -61,6 +62,7 @@ public struct FormButtonSpec: Equatable, Hashable, ToSpec {
 }
 
 class FormButtonWidget: Widget {
+    static let logger = Logger(subsystem: "Applin", category: "FormButtonWidget")
     static let INSET: CGFloat = 8.0
     let constraints = ConstraintSet()
     var spec: FormButtonSpec
@@ -69,7 +71,6 @@ class FormButtonWidget: Widget {
     let ctx: PageContext
 
     init(_ spec: FormButtonSpec, _ ctx: PageContext) {
-        print("FormButtonWidget.init(\(spec))")
         self.spec = spec
         self.ctx = ctx
 
@@ -79,7 +80,7 @@ class FormButtonWidget: Widget {
 
         weak var weakSelf: FormButtonWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
-            print("form-button \(String(describing: spec.text)) UIAction")
+            Self.logger.debug("UIAction")
             weakSelf?.tap()
         })
         self.button = UIButton(type: .custom, primaryAction: action)
@@ -108,7 +109,7 @@ class FormButtonWidget: Widget {
             return
         }
         Task {
-            print("form-button \(String(describing: spec.text)) tap")
+            Self.logger.info("tap")
             let _ = await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.spec.actions)
         }
     }

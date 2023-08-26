@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UIKit
 
 class NavigationController: UINavigationController, UIGestureRecognizerDelegate {
@@ -70,6 +71,8 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
         }
     }
 
+    static let logger = Logger(subsystem: "Applin", category: "NavigationController")
+
     private var lock = ApplinLock()
     private var entryCache = EntryCache(keysAndEntries: [])
     private var pageControllers: [UIViewController] = []
@@ -94,9 +97,9 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
     @MainActor
     private func dismissModal() async {
         if let ctl = self.presentedViewController {
-            //print("dismissing \(ctl)")
+            Self.logger.debug("dismissing \(ctl)")
             await ctl.dismissAsync(animated: !(ctl is WorkingView))
-            //print("dismissed \(ctl)")
+            Self.logger.debug("dismissed \(ctl)")
         }
     }
 
@@ -110,10 +113,10 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
         }
         await self.dismissModal()
         if let ctl = self.working {
-            //print("presenting working \(ctl)")
+            Self.logger.debug("presenting working \(ctl)")
             await self.presentAsync(ctl, animated: false)
         } else if case let .modal(ctl) = self.top {
-            //print("presenting modal \(ctl)")
+            Self.logger.debug("presenting modal \(ctl)")
             await self.presentAsync(ctl, animated: true)
         }
     }
@@ -121,7 +124,7 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
     @MainActor
     func setWorking(_ text: String?) async {
         await self.lock.lockAsync {
-            print("setWorking '\(text ?? "nil")'")
+            Self.logger.debug("setWorking '\(String(describing: text))")
             if let text = text {
                 self.working = WorkingView(text: text)
             } else {
@@ -133,8 +136,7 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
 
     @MainActor
     func update(_ pageStack: PageStack, _ varSet: VarSet, newPages: [(String, PageSpec)]) async {
-        //print("NavigationController update")
-        print("DEBUG newPages \(newPages)")
+        Self.logger.debug("newPages \(newPages)")
         precondition(!newPages.isEmpty)
         await self.lock.lockAsync {
             let appJustStarted = self.entryCache.isEmpty()
@@ -184,7 +186,7 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
                 }
             }
             self.entryCache = EntryCache(keysAndEntries: newEntries)
-            print("entryCache \(self.entryCache)")
+            Self.logger.debug("entryCache \(self.entryCache)")
             let newTop = newEntries.last!.1
             let changedTop = self.top?.controller() !== newTop.controller()
             self.top = newTop
@@ -206,7 +208,7 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
                 // while an existing transition or presentation is occurring;
                 // the navigation stack will not be updated."
                 await self.dismissModal()
-                print("setViewControllers")
+                Self.logger.debug("setViewControllers")
                 let animated = changedTop && !appJustStarted
                 if newPageControllers.isEmpty {
                     // When home page fails to load, allow popping Error Details page.
@@ -231,7 +233,7 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
 
     internal func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         let result = self.top?.allowBackSwipe() ?? false
-        print("allowBackSwipe \(result)")
+        Self.logger.debug("allowBackSwipe \(result)")
         return result
     }
 }

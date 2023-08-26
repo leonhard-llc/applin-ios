@@ -303,7 +303,13 @@ class PageStack {
                         // TODO: Implement launch-url action
                         Self.logger.info("action not implemented")
                     case .logout:
-                        // TODO: Implement Logout
+                        // TODO: Delete session cookies.
+                        // TODO: Delete state file.
+                        // TODO: Stop state file writer.
+                        // TODO: Erase session saved state.
+                        // TODO: Disconnect streamer.
+                        // TODO: Stop poller.
+                        // TODO: Interrupt sequence of actions.
                         Self.logger.info("action not implemented")
                     case .nothing:
                         break

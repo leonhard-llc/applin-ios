@@ -47,7 +47,6 @@ class LastErrorTextWidget: Widget {
     var initialized = false
 
     init() {
-        print("LastErrorTextWidget.init")
         self.label = Label()
         self.label.name = "LastErrorTextWidget.label"
         self.label.translatesAutoresizingMaskIntoConstraints = false

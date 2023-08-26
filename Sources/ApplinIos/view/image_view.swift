@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UIKit
 
 class NoIntrinsicSizeImageView: UIImageView {
@@ -16,6 +17,8 @@ class NoIntrinsicSizeActivityView: UIActivityIndicatorView {
 /// ImageView loads an image from a URL and display it.
 /// It shows an activity indicator while loading.
 class ImageView: UIView {
+    static let logger = Logger(subsystem: "Applin", category: "ImageView")
+
     private static func makeIndicator() -> NoIntrinsicSizeActivityView {
         let indicator = NoIntrinsicSizeActivityView(style: .medium)
         indicator.startAnimating()
@@ -44,7 +47,6 @@ class ImageView: UIView {
         self.aspectRatio = aspectRatio
         super.init(frame: CGRect.zero)
         self.name = "ImageView{\(self.address)}"
-        print("\(self).init")
         self.containerHelper = SingleViewContainerHelper(superView: self)
         //self.backgroundColor = pastelYellow
         self.clipsToBounds = true
@@ -70,7 +72,7 @@ class ImageView: UIView {
         self.symbol = symbol
         switch symbol {
         case let .loading(indicator):
-            print("ImageView.applyUpdate .loading")
+            Self.logger.debug("\(self) .loading")
             indicator.translatesAutoresizingMaskIntoConstraints = false
             self.containerHelper!.update(indicator, {
                 [
@@ -79,7 +81,7 @@ class ImageView: UIView {
                 ]
             })
         case let .image(image):
-            print("ImageView.applyUpdate .image")
+            Self.logger.debug("\(self) .image")
             image.translatesAutoresizingMaskIntoConstraints = false
             switch self.disposition {
             case .fit:
@@ -98,7 +100,7 @@ class ImageView: UIView {
                 ]
             })
         case let .error(image):
-            print("ImageView.applyUpdate .error")
+            Self.logger.debug("\(self) .error")
             image.translatesAutoresizingMaskIntoConstraints = false
             image.tintColor = .systemGray
             self.containerHelper!.update(image, {
@@ -116,7 +118,7 @@ class ImageView: UIView {
 
     @MainActor
     private func fetchImage(_ url: URL) async {
-        print("ImageView.fetchImage(\(url.absoluteString))")
+        Self.logger.debug("\(self) fetchImage \(url.absoluteString)")
         self.name = "ImageView{\(self.address) \(url.absoluteString)}"
         let indicator = Self.makeIndicator()
         self.setSymbol(.loading(indicator))
@@ -141,7 +143,7 @@ class ImageView: UIView {
             if Task.isCancelled {
                 return
             }
-            print("ImageView.fetchImage(\(url.absoluteString)) start")
+            Self.logger.debug("\(self) start")
             do {
                 let (data, urlResponse) = try await urlSession.data(for: urlRequest)
                 let httpResponse = urlResponse as! HTTPURLResponse
@@ -159,34 +161,34 @@ class ImageView: UIView {
                 guard let image = UIImage(data: data) else {
                     throw "error processing data as image: \(data.count) bytes"
                 }
-                print("ImageView.fetchImage(\(url.absoluteString)) done")
+                Self.logger.debug("\(self) done")
                 let uiImageView = UIImageView(image: image)
                 self.setSymbol(.image(uiImageView))
                 return
             } catch {
-                print("ImageView.fetchImage(\(url.absoluteString) error: \(error)")
+                Self.logger.debug("\(self) error: \(error)")
                 await sleep(ms: 5_000)
             }
         }
-        print("ImageView.fetchImage(\(url.absoluteString) giving up")
+        Self.logger.debug("\(self) giving up")
         let image = NoIntrinsicSizeImageView(image: UIImage(systemName: "xmark"))
         self.setSymbol(.error(image))
     }
 
     private func loadImageBundleFile(filepath: String) async {
         do {
-            print("ImageView.loadImageBundleFile(\(filepath))")
+            Self.logger.debug("\(self) loadImageBundleFile start")
             let data = try await readBundleFile(filepath: filepath)
             guard let image = UIImage(data: data) else {
-                throw "error processing data as image: \(data.count) bytes"
+                throw "error processing bundle file as image: \(String(describing: filepath)) len=\(data.count)"
             }
-            print("ImageView.loadImageBundleFile(\(filepath)) done")
+            Self.logger.debug("\(self) loadImageBundleFile done")
             let uiImageView = UIImageView(image: image)
             Task { @MainActor in
                 self.setSymbol(.image(uiImageView))
             }
         } catch {
-            print("ImageView.loadImageBundleFile(\(filepath)) error: \(error)")
+            Self.logger.error("\(self) loadImageBundleFile error: \(error)")
             let image = NoIntrinsicSizeImageView(image: UIImage(systemName: "xmark"))
             Task { @MainActor in
                 self.setSymbol(.error(image))
@@ -197,7 +199,7 @@ class ImageView: UIView {
     func update(_ url: URL, aspectRatio: Double, _ disposition: ApplinDisposition) {
         Task { @MainActor in
             await self.lock.lockAsync({
-                //print("ImageView.update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
+                Self.logger.debug("\(self) update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
                 if self.aspectRatio != aspectRatio {
                     self.aspectRatio = aspectRatio
                     self.applyAspectRatio(aspectRatio)

@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UIKit
 
 public struct PlainPageSpec: Equatable {
@@ -42,11 +43,12 @@ public struct PlainPageSpec: Equatable {
 }
 
 class PlainPageController: UIViewController, PageController {
+    static let logger = Logger(subsystem: "Applin", category: "PlainPageController")
     var spec: PlainPageSpec?
     var helper: SingleViewContainerHelper!
 
     init() {
-        print("NavPageController.init")
+        Self.logger.debug("init")
         super.init(nibName: nil, bundle: nil)
         self.helper = SingleViewContainerHelper(superView: self.view)
     }
@@ -70,8 +72,8 @@ class PlainPageController: UIViewController, PageController {
             return
         }
         guard case let .plainPage(plainPageSpec) = newPageSpec else {
-            print("FATAL: PlainPageController.update() called with newPageSpec=\(newPageSpec)")
-            abort()
+            // This should never happen.
+            fatalError("update called with non-plainPage spec: \(newPageSpec)")
         }
         self.title = plainPageSpec.title
         self.view.backgroundColor = .systemBackground

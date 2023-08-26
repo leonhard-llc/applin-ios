@@ -30,7 +30,6 @@ class Badge: UIView {
     }
 
     convenience init() {
-        print("ColumnView.init")
         self.init(frame: CGRect.zero)
     }
 

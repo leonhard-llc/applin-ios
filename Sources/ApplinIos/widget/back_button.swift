@@ -1,7 +1,9 @@
 import Foundation
+import OSLog
 import UIKit
 
 public struct BackButtonSpec: Equatable, Hashable {
+    static let logger = Logger(subsystem: "Applin", category: "BackButtonSpec")
     static let TYP = "back-button"
     let actions: [ActionSpec]
 
@@ -36,12 +38,12 @@ public struct BackButtonSpec: Equatable, Hashable {
     }
 
     func newWidget() -> Widget {
-        print("BackButtonSpec.newWidget(\(self))")
+        Self.logger.debug("\(String(describing: self)) newWidget")
         return BackButtonWidget()
     }
 
     func tap(_ ctx: PageContext) {
-        print("back-button tap")
+        Self.logger.debug("\(String(describing: self)) tap")
         Task {
             await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.actions)
         }

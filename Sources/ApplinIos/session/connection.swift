@@ -1,6 +1,9 @@
 import Foundation
+import OSLog
 
 public enum ConnectionMode: CustomStringConvertible, Equatable, Comparable {
+    static let logger = Logger(subsystem: "Applin", category: "ConnectionMode")
+
     case stream
     case pollSeconds(UInt32)
     case disconnect
@@ -14,7 +17,7 @@ public enum ConnectionMode: CustomStringConvertible, Equatable, Comparable {
         case .none:
             self = .disconnect
         case let .some(seconds) where seconds == 0:
-            print("WARNING: Ignoring pollSeconds=0")
+            Self.logger.warning("ignoring pollSeconds=0")
             self = .disconnect
         case let .some(seconds):
             self = .pollSeconds(seconds)
@@ -49,21 +52,4 @@ public enum ConnectionMode: CustomStringConvertible, Equatable, Comparable {
             return "disconnect"
         }
     }
-}
-
-func logout(_ config: ApplinConfig) async throws {
-    print("Logout")
-    HTTPCookieStorage.shared.cookies?.forEach(HTTPCookieStorage.shared.deleteCookie)
-    // TODO: Delete state file.
-    // TODO: Stop state file writer.
-    // TODO: Erase session saved state.
-    // TODO: Disconnect streamer.
-    // TODO: Stop poller.
-    // TODO: Interrupt sequence of actions.
-}
-
-func hasSessionCookie(_ config: ApplinConfig) -> Bool {
-    let cookies = HTTPCookieStorage.shared.cookies(for: config.url) ?? []
-    let session_cookies = cookies.filter({ c in c.name == "session" })
-    return !session_cookies.isEmpty
 }

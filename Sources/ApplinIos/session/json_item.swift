@@ -1,6 +1,7 @@
 // swiftlint:disable file_length
 
 import Foundation
+import OSLog
 import UIKit
 
 enum ApplinAllow {
@@ -165,6 +166,8 @@ enum ApplinAlignment: CustomStringConvertible, Equatable, Hashable {
 }
 
 class JsonItem: Codable {
+    static let logger = Logger(subsystem: "Applin", category: "JsonItem")
+
     var typ: String
     var actions: [String]?
     var align: String?
@@ -285,7 +288,7 @@ class JsonItem: Codable {
         case nil:
             return nil
         default:
-            print("bad \(self.typ).align: \(self.align ?? "")")
+            Self.logger.warning("bad \(self.typ).align: \(String(describing: self.align))")
             return nil
         }
     }
@@ -301,7 +304,7 @@ class JsonItem: Codable {
         case nil:
             return nil
         default:
-            print("bad \(self.typ).align: \(self.align ?? "")")
+            Self.logger.warning("bad \(self.typ).align: \(String(describing: self.align))")
             return nil
         }
     }
@@ -317,7 +320,7 @@ class JsonItem: Codable {
         case nil:
             return nil
         default:
-            print("bad \(self.typ).align: \(self.align ?? "")")
+            Self.logger.warning("bad \(self.typ).align: \(String(describing: self.align))")
             return nil
         }
     }
@@ -386,7 +389,7 @@ class JsonItem: Codable {
         case nil:
             return nil
         default:
-            print("bad \(self.typ).allow: \(self.allow ?? "")")
+            Self.logger.warning("bad \(self.typ).allow: \(String(describing: self.allow))")
             return nil
         }
     }
@@ -409,10 +412,10 @@ class JsonItem: Codable {
     }
 
     func requireAspectRatio() throws -> Double {
-        if let value = self.aspectRatio {
-            return value
+        guard let value = self.aspectRatio else {
+            throw ApplinError.appError("missing \(self.typ).aspect-ratio")
         }
-        throw ApplinError.appError("missing \(self.typ).aspect-ratio")
+        return value
     }
 
     func optAutoCapitalize() -> ApplinAutoCapitalize? {
@@ -424,7 +427,7 @@ class JsonItem: Codable {
         case nil:
             return nil
         default:
-            print("bad \(self.typ).auto-capitalize: \(self.autoCapitalize ?? "")")
+            Self.logger.warning("bad \(self.typ).auto-capitalize: \(String(describing: self.autoCapitalize))")
             return nil
         }
     }
@@ -464,7 +467,7 @@ class JsonItem: Codable {
         case nil:
             return nil
         default:
-            print("bad \(self.typ).disposition: \(self.disposition ?? "")")
+            Self.logger.warning("bad \(self.typ).disposition: \(String(describing: self.disposition))")
             return nil
         }
     }
@@ -477,17 +480,17 @@ class JsonItem: Codable {
     }
 
     func requireId() throws -> String {
-        if let value = self.id {
-            return value
+        guard let value = self.id else {
+            throw ApplinError.appError("missing \(self.typ).id")
         }
-        throw ApplinError.appError("missing \(self.typ).id")
+        return value
     }
 
     func requireLabel() throws -> String {
-        if let value = self.label {
-            return value
+        guard let value = self.label else {
+            throw ApplinError.appError("missing \(self.typ).label")
         }
-        throw ApplinError.appError("missing \(self.typ).label")
+        return value
     }
 
     func getMinMaxHeight() -> (Float32?, Float32?) {
@@ -497,7 +500,7 @@ class JsonItem: Codable {
             } else if min > 0.0 && min < .infinity {
                 optMin = min
             } else {
-                print("bad \(self.typ).min-height: \(min)")
+                Self.logger.warning("bad \(self.typ).min-height: \(String(describing: min))")
             }
         }
         var optMax: Float32?
@@ -506,7 +509,7 @@ class JsonItem: Codable {
             } else if max >= (optMin ?? 0.0) && max < .infinity {
                 optMax = max
             } else {
-                print("bad \(self.typ).max-height: \(max)")
+                Self.logger.warning("bad \(self.typ).max-height: \(String(describing: max))")
             }
         }
         return (optMin, optMax)
@@ -515,10 +518,10 @@ class JsonItem: Codable {
     func getHeight() -> ApplinDimension {
         if let value = self.height {
             if self.minHeight != nil {
-                print("\(self.typ).height found, ignoring min-height")
+                Self.logger.warning("\(self.typ).height found, ignoring min-height")
             }
             if self.maxHeight != nil {
-                print("\(self.typ).height found, ignoring max-height")
+                Self.logger.warning("\(self.typ).height found, ignoring max-height")
             }
             return .value(value)
         }
@@ -543,7 +546,7 @@ class JsonItem: Codable {
             } else if min > 0.0 && min < .infinity {
                 optMin = min
             } else {
-                print("bad \(self.typ).min-width: \(min)")
+                Self.logger.warning("bad \(self.typ).min-width: \(String(describing: min))")
             }
         }
         var optMax: Float32?
@@ -552,7 +555,7 @@ class JsonItem: Codable {
             } else if max >= (optMin ?? 0.0) && max < .infinity {
                 optMax = max
             } else {
-                print("bad \(self.typ).max-width: \(max)")
+                Self.logger.warning("bad \(self.typ).max-width: \(String(describing: max))")
             }
         }
         return (optMin, optMax)
@@ -561,10 +564,10 @@ class JsonItem: Codable {
     func getWidth() -> ApplinDimension {
         if let value = self.width {
             if self.minWidth != nil {
-                print("\(self.typ).width found, ignoring min-width")
+                Self.logger.warning("\(self.typ).width found, ignoring min-width")
             }
             if self.maxWidth != nil {
-                print("\(self.typ).width found, ignoring max-width")
+                Self.logger.warning("\(self.typ).width found, ignoring max-width")
             }
             return .value(value)
         }
@@ -584,10 +587,10 @@ class JsonItem: Codable {
 
     func optPhotoUrl(_ config: ApplinConfig) throws -> URL? {
         if let value = self.photoUrl {
-            if let url = URL(string: value, relativeTo: config.url) {
-                return url
+            guard let url = URL(string: value, relativeTo: config.url) else {
+                throw ApplinError.appError("bad \(self.typ).photo-url: \(value)")
             }
-            throw ApplinError.appError("bad \(self.typ).photo-url: \(value)")
+            return url
         }
         return nil
     }
@@ -600,34 +603,34 @@ class JsonItem: Codable {
     }
 
     func requireText() throws -> String {
-        if let value = self.text {
-            return value
+        guard let value = self.text else {
+            throw ApplinError.appError("missing \(self.typ).text")
         }
-        throw ApplinError.appError("missing \(self.typ).text")
+        return value
     }
 
     func requireTitle() throws -> String {
-        if let value = self.title {
-            return value
+        guard let value = self.title else {
+            throw ApplinError.appError("missing \(self.typ).title")
         }
-        throw ApplinError.appError("missing \(self.typ).title")
+        return value
     }
 
     func requireUrl(_ config: ApplinConfig) throws -> URL {
-        if let value = self.url {
-            if let url = URL(string: value, relativeTo: config.url) {
-                return url
-            }
+        guard let value = self.url else {
+            throw ApplinError.appError("missing \(self.typ).url")
+        }
+        guard let url = URL(string: value, relativeTo: config.url) else {
             throw ApplinError.appError("bad \(self.typ).url: \(value)")
         }
-        throw ApplinError.appError("missing \(self.typ).url")
+        return url
     }
 
     func requireWidget(_ config: ApplinConfig) throws -> Spec {
-        if let value = self.widget {
-            return try Spec(config, value)
+        guard let value = self.widget else {
+            throw ApplinError.appError("missing \(self.typ).widget")
         }
-        throw ApplinError.appError("missing \(self.typ).widget")
+        return try Spec(config, value)
     }
 
     func optWidgets(_ config: ApplinConfig) throws -> [Spec]? {
@@ -635,16 +638,16 @@ class JsonItem: Codable {
     }
 
     func requireWidgets(_ config: ApplinConfig, pageKey: String) throws -> [Spec] {
-        if let values = self.widgets {
-            return try values.map({ value in try Spec(config, value) })
+        guard let values = self.widgets else {
+            throw ApplinError.appError("missing \(self.typ).widgets")
         }
-        throw ApplinError.appError("missing \(self.typ).widgets")
+        return try values.map({ value in try Spec(config, value) })
     }
 
     func requireVar() throws -> String {
-        if let value = self.varName {
-            return value
+        guard let value = self.varName else {
+            throw ApplinError.appError("missing \(self.typ).var")
         }
-        throw ApplinError.appError("missing \(self.typ).var")
+        return value
     }
 }

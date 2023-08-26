@@ -1,6 +1,9 @@
 import Foundation
+import OSLog
 
 public class ApplinConfig {
+    static let logger = Logger(subsystem: "Applin", category: "ApplinConfig")
+
     let appStoreAppId: UInt64
     let applinClientErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
     let applinNetworkErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
@@ -53,7 +56,7 @@ public class ApplinConfig {
         #else
         self.url = self.licenseKey!.url
         #endif
-        print("ApplinConfig dataDirPath=\(dataDirPath) url=\(self.url)")
+        Self.logger.info("dataDirPath=\(dataDirPath) url=\(self.url)")
         try createDir(self.dataDirPath)
     }
 

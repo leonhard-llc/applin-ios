@@ -18,7 +18,6 @@ class RowView: UIView {
 
     convenience init() {
         self.init(frame: CGRect.zero)
-        print("\(self).init")
     }
 
     required init?(coder: NSCoder) {
@@ -26,7 +25,7 @@ class RowView: UIView {
     }
 
     func update(_ alignment: ApplinVAlignment, spacing: Float32, subviews: [UIView]) {
-        //print("RowView.update alignment=\(alignment) separator=\(String(describing: separator)) spacing=\(spacing) subviews=\(subviews)")
+        //Self.logger.debug("update alignment=\(alignment) separator=\(String(describing: separator)) spacing=\(spacing) subviews=\(subviews)")
         self.alignment = alignment
         self.orderedSubviews = subviews
         self.spacing = spacing

@@ -12,7 +12,6 @@ class TappableView: UIView {
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        //print("TouchShowingView.touchesBegan")
         super.touchesBegan(touches, with: event)
         self.originalBackgroundColor = self.backgroundColor
         self.backgroundColor = .systemGray6
@@ -20,7 +19,6 @@ class TappableView: UIView {
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        //print("TouchShowingView.touchesEnded")
         super.touchesEnded(touches, with: event)
         self.backgroundColor = self.originalBackgroundColor
         self.isPressed = false
@@ -30,7 +28,6 @@ class TappableView: UIView {
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        print("TouchShowingView.touchesCancelled")
         super.touchesEnded(touches, with: event)
         self.backgroundColor = self.originalBackgroundColor
         self.isPressed = false

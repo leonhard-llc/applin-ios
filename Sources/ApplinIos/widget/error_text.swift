@@ -50,7 +50,6 @@ class ErrorTextWidget: Widget {
     let errorView = ErrorView()
 
     init(_ spec: ErrorTextSpec) {
-        print("ErrorTextWidget.init(\(spec))")
         self.errorView.text = spec.text
     }
 

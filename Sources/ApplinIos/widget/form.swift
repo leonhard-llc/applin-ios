@@ -61,7 +61,6 @@ class FormWidget: Widget {
     let columnView: ColumnView
 
     init() {
-        print("FormWidget.init()")
         self.columnView = ColumnView()
         self.columnView.translatesAutoresizingMaskIntoConstraints = false
         //self.columnView.backgroundColor = pastelMint
@@ -141,7 +140,6 @@ class FormWidget: Widget {
 //            try await content2.loadImage(session, photoUrl)
 //            DispatchQueue.main.async { [weak self, content2] in
 //                if self?.optPhotoUrl == photoUrl {
-//                    print("image \(photoUrl)")
 //                    self?.contentConfiguration = content2
 //                }
 //            }

@@ -3,7 +3,7 @@ import OSLog
 import UIKit
 
 class TableView: UIView {
-    static let logger = Logger(subsystem: "Applin", category: "ColumnView")
+    static let logger = Logger(subsystem: "Applin", category: "TableView")
     let SEPARATOR_THICKNESS: Float32 = 0.7
     let SEPARATOR_COLOR: CGColor = UIColor.separator.cgColor
     let constraintSet = ConstraintSet()
@@ -20,7 +20,6 @@ class TableView: UIView {
     }
 
     convenience init() {
-        Self.logger.debug("TableView.init")
         self.init(frame: CGRect.zero)
     }
 

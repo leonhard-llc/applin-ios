@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UIKit
 
 public enum StartEnum: Equatable {
@@ -80,6 +81,8 @@ public struct NavPageSpec: Equatable {
 }
 
 class NavPageController: UIViewController, UINavigationBarDelegate, PageController {
+    static let logger = Logger(subsystem: "Applin", category: "NavPageController")
+
     weak var navController: NavigationController?
     let ctx: PageContext
     var helper: SingleViewContainerHelper!
@@ -88,7 +91,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     var optOriginalBackButton: UIBarButtonItem?
 
     init(_ navController: NavigationController?, _ ctx: PageContext) {
-        print("NavPageController.init")
+        Self.logger.debug("NavPageController.init")
         self.navController = navController
         self.ctx = ctx
         // PlainPageController cannot do self.navigationItem.navBarHidden = true,
@@ -113,7 +116,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     }
 
     func back() {
-        print("back")
+        Self.logger.info("back")
         if self.navController?.topViewController() !== self {
             return
         }
@@ -122,7 +125,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         }
         switch spec.start {
         case let .backButton(inner):
-            print("back inner.tap()")
+            Self.logger.debug("back inner.tap()")
             inner.tap(self.ctx)
         case .defaultBackButton:
             Task {
@@ -137,7 +140,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
 
     /// Called when the user taps the Back button.
     func navigationBar(_ navigationBar: UINavigationBar, shouldPop item: UINavigationItem) -> Bool {
-        print("navigationBar shouldPop=\(item)")
+        Self.logger.debug("title=\(String(describing: self.title)) navigationBar shouldPop=\(item)")
         self.back()
         return false  // UINavigationBar should not remove NavigationItem objects.
     }
@@ -145,7 +148,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     /// Called when the user taps the Back button,
     /// or long-presses the Back button and taps Back from the popup menu.
     func navigationBar(_ navigationBar: UINavigationBar, didPop item: UINavigationItem) {
-        print("navigationBar didPop=\(item)")
+        Self.logger.debug("title=\(String(describing: self.title)) navigationBar didPop=\(item)")
         self.back()
     }
 
@@ -153,7 +156,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     /// when the view is removed from the view (isMovingFromParent=true).
     override func viewDidDisappear(_ animated: Bool) {
         // NOTE: UIKit on iOS 15 does not set self.isBeingDismissed=true like the docs claim.
-        print("NavPageController '\(self.title ?? "")' viewDidDisappear isMovingFromParent=\(self.isMovingFromParent)")
+        Self.logger.debug("title=\(String(describing: self.title)) viewDidDisappear isMovingFromParent=\(self.isMovingFromParent)")
         if self.isMovingFromParent {
             self.back()
         }
@@ -184,8 +187,8 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             return
         }
         guard case let .navPage(navPageSpec) = newPageSpec else {
-            print("FATAL: NavPageController.update called with newPageSpec=\(newPageSpec)")
-            abort() // This should never happen.
+            // This should never happen.
+            fatalError("update called with non-navPage spec: \(newPageSpec)")
         }
         self.spec = navPageSpec
         self.title = navPageSpec.title
