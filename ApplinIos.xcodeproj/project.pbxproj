@@ -45,7 +45,6 @@
 		CE7180572A8BF6EF00509251 /* page.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE71801F2A8BF6EF00509251 /* page.swift */; };
 		CE7180582A8BF6EF00509251 /* ApplinCustomConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180202A8BF6EF00509251 /* ApplinCustomConfig.swift */; };
 		CE7180592A8BF6EF00509251 /* Label.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180222A8BF6EF00509251 /* Label.swift */; };
-		CE71805A2A8BF6EF00509251 /* test.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180232A8BF6EF00509251 /* test.swift */; };
 		CE71805B2A8BF6EF00509251 /* row_view.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180242A8BF6EF00509251 /* row_view.swift */; };
 		CE71805C2A8BF6EF00509251 /* session_status.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180252A8BF6EF00509251 /* session_status.swift */; };
 		CE71805D2A8BF6EF00509251 /* column_view.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180262A8BF6EF00509251 /* column_view.swift */; };
@@ -74,7 +73,6 @@
 		CE7180842A8BF81D00509251 /* util.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180742A8BF81D00509251 /* util.swift */; };
 		CE7180852A8BF81D00509251 /* StaticPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180752A8BF81D00509251 /* StaticPages.swift */; };
 		CE7180862A8BF81D00509251 /* error.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180762A8BF81D00509251 /* error.swift */; };
-		CE7180872A8BF81D00509251 /* background_actor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180772A8BF81D00509251 /* background_actor.swift */; };
 		CE7180882A8BF81D00509251 /* ServerCaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180782A8BF81D00509251 /* ServerCaller.swift */; };
 		CE7180892A8BF81D00509251 /* VarSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180792A8BF81D00509251 /* VarSet.swift */; };
 		CE7180932A8BF8AE00509251 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180922A8BF8AE00509251 /* Tests.swift */; };
@@ -83,6 +81,7 @@
 		CE7180A32A8BF8D500509251 /* UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180A22A8BF8D500509251 /* UITestsLaunchTests.swift */; };
 		CE7180A92A8BF8EF00509251 /* applin_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180A72A8BF8EF00509251 /* applin_iosTests.swift */; };
 		CE7180AA2A8BF8EF00509251 /* widget_cache_test.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE7180A82A8BF8EF00509251 /* widget_cache_test.swift */; };
+		CEEB96B82A99B366003B4471 /* cookies.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEEB96B72A99B366003B4471 /* cookies.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -147,7 +146,6 @@
 		CE71801F2A8BF6EF00509251 /* page.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = page.swift; sourceTree = "<group>"; };
 		CE7180202A8BF6EF00509251 /* ApplinCustomConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplinCustomConfig.swift; sourceTree = "<group>"; };
 		CE7180222A8BF6EF00509251 /* Label.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Label.swift; sourceTree = "<group>"; };
-		CE7180232A8BF6EF00509251 /* test.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = test.swift; sourceTree = "<group>"; };
 		CE7180242A8BF6EF00509251 /* row_view.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = row_view.swift; sourceTree = "<group>"; };
 		CE7180252A8BF6EF00509251 /* session_status.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = session_status.swift; sourceTree = "<group>"; };
 		CE7180262A8BF6EF00509251 /* column_view.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = column_view.swift; sourceTree = "<group>"; };
@@ -176,7 +174,6 @@
 		CE7180742A8BF81D00509251 /* util.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = util.swift; sourceTree = "<group>"; };
 		CE7180752A8BF81D00509251 /* StaticPages.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StaticPages.swift; sourceTree = "<group>"; };
 		CE7180762A8BF81D00509251 /* error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = error.swift; sourceTree = "<group>"; };
-		CE7180772A8BF81D00509251 /* background_actor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = background_actor.swift; sourceTree = "<group>"; };
 		CE7180782A8BF81D00509251 /* ServerCaller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerCaller.swift; sourceTree = "<group>"; };
 		CE7180792A8BF81D00509251 /* VarSet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VarSet.swift; sourceTree = "<group>"; };
 		CE71808A2A8BF86000509251 /* Protocol.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Protocol.md; sourceTree = "<group>"; };
@@ -189,6 +186,7 @@
 		CE7180A72A8BF8EF00509251 /* applin_iosTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = applin_iosTests.swift; sourceTree = "<group>"; };
 		CE7180A82A8BF8EF00509251 /* widget_cache_test.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = widget_cache_test.swift; sourceTree = "<group>"; };
 		CE7180AF2A8BF97B00509251 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		CEEB96B72A99B366003B4471 /* cookies.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = cookies.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -331,7 +329,6 @@
 			isa = PBXGroup;
 			children = (
 				CE7180222A8BF6EF00509251 /* Label.swift */,
-				CE7180232A8BF6EF00509251 /* test.swift */,
 				CE7180242A8BF6EF00509251 /* row_view.swift */,
 				CE7180252A8BF6EF00509251 /* session_status.swift */,
 				CE7180262A8BF6EF00509251 /* column_view.swift */,
@@ -353,9 +350,9 @@
 		CE7180322A8BF6EF00509251 /* session */ = {
 			isa = PBXGroup;
 			children = (
+				CEEB96B72A99B366003B4471 /* cookies.swift */,
 				CE71806F2A8BF81D00509251 /* action.swift */,
 				CE71806A2A8BF81D00509251 /* ApplinConfig.swift */,
-				CE7180772A8BF81D00509251 /* background_actor.swift */,
 				CE71806E2A8BF81D00509251 /* connection.swift */,
 				CE7180762A8BF81D00509251 /* error.swift */,
 				CE71806B2A8BF81D00509251 /* json_item.swift */,
@@ -523,14 +520,12 @@
 				CE7180372A8BF6EF00509251 /* empty.swift in Sources */,
 				CE7180832A8BF81D00509251 /* state_file.swift in Sources */,
 				CE7180852A8BF81D00509251 /* StaticPages.swift in Sources */,
-				CE7180872A8BF81D00509251 /* background_actor.swift in Sources */,
 				CE71803E2A8BF6EF00509251 /* media.swift in Sources */,
 				CE7180462A8BF6EF00509251 /* checkbox.swift in Sources */,
 				CE71804F2A8BF6EF00509251 /* ApplinLock.swift in Sources */,
 				CE71805F2A8BF6EF00509251 /* table_view.swift in Sources */,
 				CE7180582A8BF6EF00509251 /* ApplinCustomConfig.swift in Sources */,
 				CE71803C2A8BF6EF00509251 /* grouped_row_table.swift in Sources */,
-				CE71805A2A8BF6EF00509251 /* test.swift in Sources */,
 				CE7180392A8BF6EF00509251 /* widget_util.swift in Sources */,
 				CE7180692A8BF6EF00509251 /* ApplinLicenseKey.swift in Sources */,
 				CE7180452A8BF6EF00509251 /* nav_button.swift in Sources */,
@@ -542,6 +537,7 @@
 				CE71805E2A8BF6EF00509251 /* image_view.swift in Sources */,
 				CE7180602A8BF6EF00509251 /* view_util.swift in Sources */,
 				CE7180882A8BF81D00509251 /* ServerCaller.swift in Sources */,
+				CEEB96B82A99B366003B4471 /* cookies.swift in Sources */,
 				CE7180532A8BF6EF00509251 /* widget_cache.swift in Sources */,
 				CE71807E2A8BF81D00509251 /* connection.swift in Sources */,
 				CE71807F2A8BF81D00509251 /* action.swift in Sources */,
