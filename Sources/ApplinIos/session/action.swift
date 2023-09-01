@@ -53,8 +53,6 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             }
         case "push":
             self = .push(part1)
-        case "push_preloaded":
-            self = .push(part1)
         case "replace_all":
             self = .replaceAll(part1)
         case "rpc":
