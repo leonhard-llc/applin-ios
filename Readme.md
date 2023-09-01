@@ -26,6 +26,7 @@
    and delete `Item 0 (Default Configuration)`
 1. Add a `logo.png` file
 1. Add package `https://github.com/leonhard-llc/applin-ios.git`
+   - Find version numbers at https://github.com/leonhard-llc/applin-ios/tags
 1. Add `ApplinIos` to app targets
 1. Add a new `Main.swift` file with:
    ```swift

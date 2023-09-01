@@ -19,7 +19,7 @@ public class ApplinConfig {
     let supportChatUrl: URL?
     let supportEmailAddress: String?
     let supportSmsTel: String?
-    let url: URL
+    var url: URL
 
     public init(
             appStoreAppId: UInt64,
@@ -70,5 +70,15 @@ public class ApplinConfig {
 
     func stateFilePath() -> String {
         self.dataDirPath + "/applin_state.json"
+    }
+
+    func restrictedSetUrl(_ url: URL) throws {
+        guard let key = self.licenseKey else {
+            throw "licenseKey required"
+        }
+        if !key.string.starts(with: "BdUbQklK") {
+            throw "this method is restricted"
+        }
+        self.url = url
     }
 }

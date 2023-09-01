@@ -31,9 +31,11 @@ public class ApplinLicenseKey {
         }
     }
 
-    let url: URL
+    public let string: String
+    public let url: URL
 
-    init(_ key: String) throws {
+    public init(_ key: String) throws {
+        self.string = key
         self.url = try Self.checkLicenseKey(key)
     }
 }
