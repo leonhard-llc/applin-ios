@@ -8,9 +8,9 @@ public enum ModalKind: String {
     public func typ() -> String {
         switch self {
         case .alert:
-            return "alert-modal"
+            return "alert_modal"
         case .drawer:
-            return "drawer-modal"
+            return "drawer_modal"
         }
     }
 
@@ -34,7 +34,7 @@ public struct ModalSpec: CustomStringConvertible, Equatable {
     let widgets: [ModalButtonSpec]
 
     init(pageKey: String, _ kind: ModalKind, _ item: JsonItem) throws {
-        self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
+        self.connectionMode = ConnectionMode(item.stream, item.poll_seconds)
         self.kind = kind
         self.pageKey = pageKey
         self.text = item.text
@@ -57,7 +57,7 @@ public struct ModalSpec: CustomStringConvertible, Equatable {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(self.kind.typ())
-        item.pollSeconds = self.connectionMode.getPollSeconds()
+        item.poll_seconds = self.connectionMode.getPollSeconds()
         item.stream = self.connectionMode.getStream()
         item.text = self.text
         item.title = self.title

@@ -60,11 +60,11 @@ enum ApplinHAlignment: CustomStringConvertible, Equatable, Hashable {
     func toAlignment() -> ApplinAlignment {
         switch self {
         case .start:
-            return .centerStart
+            return .center_start
         case .center:
             return .center
         case .end:
-            return .centerEnd
+            return .center_end
         }
     }
 
@@ -88,11 +88,11 @@ enum ApplinVAlignment: CustomStringConvertible, Equatable, Hashable {
     func toAlignment() -> ApplinAlignment {
         switch self {
         case .top:
-            return .topCenter
+            return .top_center
         case .center:
             return .center
         case .bottom:
-            return .bottomCenter
+            return .bottom_center
         }
     }
 
@@ -109,58 +109,58 @@ enum ApplinVAlignment: CustomStringConvertible, Equatable, Hashable {
 }
 
 enum ApplinAlignment: CustomStringConvertible, Equatable, Hashable {
-    case topStart
-    case topCenter
-    case topEnd
-    case centerStart
+    case top_start
+    case top_center
+    case top_end
+    case center_start
     case center
-    case centerEnd
-    case bottomStart
-    case bottomCenter
-    case bottomEnd
+    case center_end
+    case bottom_start
+    case bottom_center
+    case bottom_end
 
     public func horizontal() -> ApplinHAlignment {
         switch self {
-        case .topStart, .centerStart, .bottomStart:
+        case .top_start, .center_start, .bottom_start:
             return .start
-        case .topCenter, .center, .bottomCenter:
+        case .top_center, .center, .bottom_center:
             return .center
-        case .topEnd, .centerEnd, .bottomEnd:
+        case .top_end, .center_end, .bottom_end:
             return .end
         }
     }
 
     public func vertical() -> ApplinVAlignment {
         switch self {
-        case .topStart, .topCenter, .topEnd:
+        case .top_start, .top_center, .top_end:
             return .top
-        case .centerStart, .center, .centerEnd:
+        case .center_start, .center, .center_end:
             return .center
-        case .bottomStart, .bottomCenter, .bottomEnd:
+        case .bottom_start, .bottom_center, .bottom_end:
             return .bottom
         }
     }
 
     var description: String {
         switch self {
-        case .topStart:
-            return "topStart"
-        case .topCenter:
-            return "topCenter"
-        case .topEnd:
-            return "topEnd"
-        case .centerStart:
-            return "centerStart"
+        case .top_start:
+            return "top_start"
+        case .top_center:
+            return "top_center"
+        case .top_end:
+            return "top_end"
+        case .center_start:
+            return "center_start"
         case .center:
             return "center"
-        case .centerEnd:
-            return "centerEnd"
-        case .bottomStart:
-            return "bottomStart"
-        case .bottomCenter:
-            return "bottomCenter"
-        case .bottomEnd:
-            return "bottomEnd"
+        case .center_end:
+            return "center_end"
+        case .bottom_start:
+            return "bottom_start"
+        case .bottom_center:
+            return "bottom_center"
+        case .bottom_end:
+            return "bottom_end"
         }
     }
 }
@@ -172,90 +172,45 @@ class JsonItem: Codable {
     var actions: [String]?
     var align: String?
     var allow: String?
-    var aspectRatio: Double?
-    var autoCapitalize: String?
-    var badgeText: String?
+    var aspect_ratio: Double?
+    var auto_capitalize: String?
+    var badge_text: String?
     var cache: Bool?
-    var checkRpc: String?
+    var check_rpc: String?
     // TODO: Split this into separate horizontal and vertical fields.
     var disposition: String?
     var end: JsonItem?
     var error: String?
     var height: Float32?
     var id: String?
-    var initialBool: Bool?
-    var initialString: String?
-    var isCancel: Bool?
-    var isDefault: Bool?
-    var isDestructive: Bool?
+    var initial_bool: Bool?
+    var initial_string: String?
+    var is_cancel: Bool?
+    var is_default: Bool?
+    var is_destructive: Bool?
     var label: String?
-    var maxChars: UInt32?
-    var maxHeight: Float32?
-    var maxLines: UInt32?
-    var maxWidth: Float32?
-    var minChars: UInt32?
-    var minHeight: Float32?
-    var minWidth: Float32?
-    var photoUrl: String?
-    var pollSeconds: UInt32?
-    var rowGroups: [[[JsonItem?]]]?
+    var max_chars: UInt32?
+    var max_height: Float32?
+    var max_lines: UInt32?
+    var max_width: Float32?
+    var min_chars: UInt32?
+    var min_height: Float32?
+    var min_width: Float32?
+    var photo_url: String?
+    var poll_seconds: UInt32?
+    var row_groups: [[[JsonItem?]]]?
     var rpc: String?
     var spacing: Float32?
     var start: JsonItem?
     var stream: Bool?
-    var subText: String?
+    var sub_text: String?
     var text: String?
     var title: String?
     var url: String?
-    var varName: String?
+    var var_name: String?
     var widget: JsonItem?
     var widgets: [JsonItem]?
     var width: Float32?
-
-    enum CodingKeys: String, CodingKey {
-        case typ
-        case actions
-        case align
-        case allow
-        case aspectRatio = "aspect-ratio"
-        case autoCapitalize = "auto-capitalize"
-        case badgeText = "badge-text"
-        case cache
-        case checkRpc = "check-rpc"
-        case disposition
-        case end
-        case error
-        case height
-        case id
-        case initialBool = "initial-bool"
-        case initialString = "initial-string"
-        case isCancel = "is-cancel"
-        case isDefault = "is-default"
-        case isDestructive = "is-destructive"
-        case label
-        case maxChars = "max-chars"
-        case maxHeight = "max-height"
-        case maxLines = "max-lines"
-        case maxWidth = "max-width"
-        case minChars = "min-chars"
-        case minHeight = "min-height"
-        case minWidth = "min-width"
-        case photoUrl = "photo-url"
-        case pollSeconds = "poll-seconds"
-        case rowGroups = "row-groups"
-        case rpc
-        case spacing
-        case start
-        case stream
-        case subText = "sub-text"
-        case text
-        case title
-        case url
-        case varName = "var"
-        case widget
-        case widgets
-        case width
-    }
 
     init(_ typ: String) {
         self.typ = typ
@@ -267,24 +222,24 @@ class JsonItem: Codable {
 
     func optAlign() -> ApplinAlignment? {
         switch self.align {
-        case "top-start":
-            return .topStart
-        case "top-center":
-            return .topCenter
-        case "top-end":
-            return .topEnd
-        case "center-start":
-            return .centerStart
+        case "top_start":
+            return .top_start
+        case "top_center":
+            return .top_center
+        case "top_end":
+            return .top_end
+        case "center_start":
+            return .center_start
         case "center":
             return .center
-        case "center-end":
-            return .centerEnd
-        case "bottom-start":
-            return .bottomStart
-        case "bottom-center":
-            return .bottomCenter
-        case "bottom-end":
-            return .bottomEnd
+        case "center_end":
+            return .center_end
+        case "bottom_start":
+            return .bottom_start
+        case "bottom_center":
+            return .bottom_center
+        case "bottom_end":
+            return .bottom_end
         case nil:
             return nil
         default:
@@ -327,24 +282,24 @@ class JsonItem: Codable {
 
     func setAlign(_ value: ApplinAlignment) {
         switch value {
-        case .topStart:
-            self.align = "top-start"
-        case .topCenter:
-            self.align = "top-center"
-        case .topEnd:
-            self.align = "top-end"
-        case .centerStart:
-            self.align = "center-start"
+        case .top_start:
+            self.align = "top_start"
+        case .top_center:
+            self.align = "top_center"
+        case .top_end:
+            self.align = "top_end"
+        case .center_start:
+            self.align = "center_start"
         case .center:
             self.align = "center"
-        case .centerEnd:
-            self.align = "center-end"
-        case .bottomStart:
-            self.align = "bottom-start"
-        case .bottomCenter:
-            self.align = "bottom-center"
-        case .bottomEnd:
-            self.align = "bottom-end"
+        case .center_end:
+            self.align = "center_end"
+        case .bottom_start:
+            self.align = "bottom_start"
+        case .bottom_center:
+            self.align = "bottom_center"
+        case .bottom_end:
+            self.align = "bottom_end"
         }
     }
 
@@ -412,14 +367,14 @@ class JsonItem: Codable {
     }
 
     func requireAspectRatio() throws -> Double {
-        guard let value = self.aspectRatio else {
-            throw ApplinError.appError("missing \(self.typ).aspect-ratio")
+        guard let value = self.aspect_ratio else {
+            throw ApplinError.appError("missing \(self.typ).aspect_ratio")
         }
         return value
     }
 
     func optAutoCapitalize() -> ApplinAutoCapitalize? {
-        switch self.autoCapitalize {
+        switch self.auto_capitalize {
         case "names":
             return .names
         case "sentences":
@@ -427,7 +382,7 @@ class JsonItem: Codable {
         case nil:
             return nil
         default:
-            Self.logger.warning("bad \(self.typ).auto-capitalize: \(String(describing: self.autoCapitalize))")
+            Self.logger.warning("bad \(self.typ).auto_capitalize: \(String(describing: self.auto_capitalize))")
             return nil
         }
     }
@@ -435,11 +390,11 @@ class JsonItem: Codable {
     func setAutoCapitalize(_ value: ApplinAutoCapitalize?) {
         switch value {
         case .none:
-            self.autoCapitalize = nil
+            self.auto_capitalize = nil
         case .some(.names):
-            self.autoCapitalize = "names"
+            self.auto_capitalize = "names"
         case .some(.sentences):
-            self.autoCapitalize = "sentences"
+            self.auto_capitalize = "sentences"
         }
     }
 
@@ -495,21 +450,21 @@ class JsonItem: Codable {
 
     func getMinMaxHeight() -> (Float32?, Float32?) {
         var optMin: Float32?
-        if let min = self.minHeight {
+        if let min = self.min_height {
             if min == 0.0 {
             } else if min > 0.0 && min < .infinity {
                 optMin = min
             } else {
-                Self.logger.warning("bad \(self.typ).min-height: \(String(describing: min))")
+                Self.logger.warning("bad \(self.typ).min_height: \(String(describing: min))")
             }
         }
         var optMax: Float32?
-        if let max = self.maxHeight {
+        if let max = self.max_height {
             if max == .infinity {
             } else if max >= (optMin ?? 0.0) && max < .infinity {
                 optMax = max
             } else {
-                Self.logger.warning("bad \(self.typ).max-height: \(String(describing: max))")
+                Self.logger.warning("bad \(self.typ).max_height: \(String(describing: max))")
             }
         }
         return (optMin, optMax)
@@ -517,11 +472,11 @@ class JsonItem: Codable {
 
     func getHeight() -> ApplinDimension {
         if let value = self.height {
-            if self.minHeight != nil {
-                Self.logger.warning("\(self.typ).height found, ignoring min-height")
+            if self.min_height != nil {
+                Self.logger.warning("\(self.typ).height found, ignoring min_height")
             }
-            if self.maxHeight != nil {
-                Self.logger.warning("\(self.typ).height found, ignoring max-height")
+            if self.max_height != nil {
+                Self.logger.warning("\(self.typ).height found, ignoring max_height")
             }
             return .value(value)
         }
@@ -534,28 +489,28 @@ class JsonItem: Codable {
         case let .value(value):
             self.height = value
         case let .range(optMin, optMax):
-            self.minHeight = optMin
-            self.maxHeight = optMax
+            self.min_height = optMin
+            self.max_height = optMax
         }
     }
 
     func getMinMaxWidth() -> (Float32?, Float32?) {
         var optMin: Float32?
-        if let min = self.minWidth {
+        if let min = self.min_width {
             if min == 0.0 {
             } else if min > 0.0 && min < .infinity {
                 optMin = min
             } else {
-                Self.logger.warning("bad \(self.typ).min-width: \(String(describing: min))")
+                Self.logger.warning("bad \(self.typ).min_width: \(String(describing: min))")
             }
         }
         var optMax: Float32?
-        if let max = self.maxWidth {
+        if let max = self.max_width {
             if max == .infinity {
             } else if max >= (optMin ?? 0.0) && max < .infinity {
                 optMax = max
             } else {
-                Self.logger.warning("bad \(self.typ).max-width: \(String(describing: max))")
+                Self.logger.warning("bad \(self.typ).max_width: \(String(describing: max))")
             }
         }
         return (optMin, optMax)
@@ -563,11 +518,11 @@ class JsonItem: Codable {
 
     func getWidth() -> ApplinDimension {
         if let value = self.width {
-            if self.minWidth != nil {
-                Self.logger.warning("\(self.typ).width found, ignoring min-width")
+            if self.min_width != nil {
+                Self.logger.warning("\(self.typ).width found, ignoring min_width")
             }
-            if self.maxWidth != nil {
-                Self.logger.warning("\(self.typ).width found, ignoring max-width")
+            if self.max_width != nil {
+                Self.logger.warning("\(self.typ).width found, ignoring max_width")
             }
             return .value(value)
         }
@@ -580,15 +535,15 @@ class JsonItem: Codable {
         case let .value(value):
             self.width = value
         case let .range(optMin, optMax):
-            self.minWidth = optMin
-            self.maxWidth = optMax
+            self.min_width = optMin
+            self.max_width = optMax
         }
     }
 
     func optPhotoUrl(_ config: ApplinConfig) throws -> URL? {
-        if let value = self.photoUrl {
+        if let value = self.photo_url {
             guard let url = URL(string: value, relativeTo: config.url) else {
-                throw ApplinError.appError("bad \(self.typ).photo-url: \(value)")
+                throw ApplinError.appError("bad \(self.typ).photo_url: \(value)")
             }
             return url
         }
@@ -645,7 +600,7 @@ class JsonItem: Codable {
     }
 
     func requireVar() throws -> String {
-        guard let value = self.varName else {
+        guard let value = self.var_name else {
             throw ApplinError.appError("missing \(self.typ).var")
         }
         return value

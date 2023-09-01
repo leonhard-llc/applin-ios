@@ -26,31 +26,31 @@ and provides functions for interacting with pages and navigating between pages.
 Request types:
 - `GET` for a page the client has not previously requested
   - Request headers
-    - `Accept: application/vnd.applin-response`
+    - `Accept: application/vnd.applin_response`
       See [Accept on MDN](https://developer.mozilla.org/docs/Web/HTTP/Headers/Accept).
 - `GET` to refresh a page that has no variables
   - Request headers
-    - `Accept: application/vnd.applin-response`
+    - `Accept: application/vnd.applin_response`
 - `POST` to refresh a page that has variables.
   - Request headers
-    - `Accept: application/vnd.applin-response`
-    - `Content-Type: application/vnd.applin-request` request header
+    - `Accept: application/vnd.applin_response`
+    - `Content-Type: application/json` request header
   - Request body is a JSON object with the current page's variables.
 - `POST` for a `rpc` action on a button.
   - Request headers
-    - `Content-Type: application/vnd.applin-request` request header
+    - `Content-Type: application/json` request header
   - Request body is a JSON object with the current page's variables.
 - `GET` for page content (images, etc.)
 
 ## Server Role
 Every Applin server is an HTTP server that handles requests.
-- Requests for pages, when request has the `Accept: application/vnd.applin-response` header
+- Requests for pages, when request has the `Accept: application/vnd.applin_response` header
   - Response headers
-    - `Content-Type: application/vnd.applin-response`
+    - `Content-Type: application/vnd.applin_response`
     - Response code: `200 OK`
     - Response body is a JSON object with the format described below.
     - Do not return 4xx errors for bad user input.  Instead, display problems on the page.
-- Form POST (without `Accept: application/vnd.applin-response`)
+- Form POST (without `Accept: application/vnd.applin_response`)
   - Response code: `200 OK`
   - No response body
 - The request is missing a required variable, or a variable has the wrong type
@@ -79,11 +79,11 @@ Servers can set and receive cookies for session tokens.
 See [Cookies on MDN](https://developer.mozilla.org/docs/Web/HTTP/Cookies).
 
 ## Applin Request Format
-The `application/vnd.applin-request` content-type is a
+The `application/json` content-type is a
 [JSON](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/JSON) object encoded in a UTF-8 string.
 It contains key-value pairs for all variables defined on the page.
 
 ## Applin Response Format
-The `application/vnd.applin-response` content-type is a JSON object encoded in a UTF-8 string.
+The `application/vnd.applin_response` content-type is a JSON object encoded in a UTF-8 string.
 It may include these keys:
 - `page` is an Applin page specification

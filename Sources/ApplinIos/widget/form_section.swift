@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public struct FormSectionSpec: Equatable, Hashable, ToSpec {
-    static let TYP = "form-section"
+    static let TYP = "form_section"
     let optTitle: String?
     let widgets: [Spec]
 

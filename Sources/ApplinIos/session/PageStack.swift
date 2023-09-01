@@ -300,7 +300,7 @@ class PageStack {
                         Self.logger.info("action copyToClipboard(\(string))")
                         UIPasteboard.general.string = string
                     case .launchUrl(_):
-                        // TODO: Implement launch-url action
+                        // TODO: Implement launch_url action
                         Self.logger.info("action not implemented")
                     case .logout:
                         // TODO: Delete session cookies.
@@ -326,7 +326,7 @@ class PageStack {
                     case let .rpc(path):
                         try await self.doRpcAction(pageKey: pageKey, path: path)
                     case .takePhoto(_):
-                        // TODO: Implement take-photo.
+                        // TODO: Implement take_photo.
                         Self.logger.info("action not implemented")
                     }
                 }

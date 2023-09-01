@@ -45,7 +45,7 @@
                let config = try ApplinConfig(
                    // Required
                    appStoreAppId: 0,
-                   showPageOnFirstStartup: "/new-user",
+                   showPageOnFirstStartup: "/new_user",
                    staticPages: [
                        // Required
                        StaticPageKeys.APPLIN_CLIENT_ERROR: StaticPages.applinClientError,
@@ -58,7 +58,7 @@
                        StaticPageKeys.ERROR_DETAILS: StaticPages.errorDetails,
                        StaticPageKeys.SERVER_STATUS: StaticPages.serverStatus,
                        StaticPageKeys.SUPPORT: StaticPages.support,
-                       "/new-user": StaticPages.legalForm,
+                       "/new_user": StaticPages.legalForm,
                        StaticPageKeys.TERMS: StaticPages.terms,
                        StaticPageKeys.PRIVACY_POLICY: StaticPages.privacyPolicy,
                    ],

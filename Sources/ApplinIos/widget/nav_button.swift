@@ -3,7 +3,7 @@ import OSLog
 import UIKit
 
 public struct NavButtonSpec: Equatable, Hashable, ToSpec {
-    static let TYP = "nav-button"
+    static let TYP = "nav_button"
     let actions: [ActionSpec]
     let badgeText: String?
     let photoUrl: URL?
@@ -12,18 +12,18 @@ public struct NavButtonSpec: Equatable, Hashable, ToSpec {
 
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
-        self.badgeText = item.badgeText
+        self.badgeText = item.badge_text
         self.photoUrl = try item.optPhotoUrl(config)
-        self.subText = item.subText
+        self.subText = item.sub_text
         self.text = try item.requireText()
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(NavButtonSpec.TYP)
         item.actions = self.actions.map({ action in action.toString() })
-        item.badgeText = self.badgeText
-        item.photoUrl = self.photoUrl?.relativeString
-        item.subText = self.subText
+        item.badge_text = self.badgeText
+        item.photo_url = self.photoUrl?.relativeString
+        item.sub_text = self.subText
         item.text = self.text
         return item
     }
@@ -41,12 +41,12 @@ public struct NavButtonSpec: Equatable, Hashable, ToSpec {
     }
 
     func keys() -> [String] {
-        var keys = ["nav-button:actions:\(self.actions)", "nav-button:text:\(self.text)"]
+        var keys = ["nav_button:actions:\(self.actions)", "nav_button:text:\(self.text)"]
         if let photoUrl = self.photoUrl {
-            keys.append("nav-button:photo:\(photoUrl.absoluteString)")
+            keys.append("nav_button:photo:\(photoUrl.absoluteString)")
         }
         if let subText = self.subText {
-            keys.append("nav-button:sub-text:\(subText)")
+            keys.append("nav_button:sub_text:\(subText)")
         }
         return keys
     }

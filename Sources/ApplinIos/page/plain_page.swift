@@ -3,20 +3,20 @@ import OSLog
 import UIKit
 
 public struct PlainPageSpec: Equatable {
-    static let TYP = "plain-page"
+    static let TYP = "plain_page"
     let connectionMode: ConnectionMode
     let title: String?
     let widget: Spec
 
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
-        self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
+        self.connectionMode = ConnectionMode(item.stream, item.poll_seconds)
         self.title = item.title
         self.widget = try item.requireWidget(config)
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(PlainPageSpec.TYP)
-        item.pollSeconds = self.connectionMode.getPollSeconds()
+        item.poll_seconds = self.connectionMode.getPollSeconds()
         item.stream = self.connectionMode.getStream()
         item.title = self.title
         item.widget = self.widget.toJsonItem()

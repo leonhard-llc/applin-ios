@@ -15,7 +15,7 @@ public struct ImageSpec: Equatable, Hashable, ToSpec {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ImageSpec.TYP)
-        item.aspectRatio = self.aspectRatio
+        item.aspect_ratio = self.aspectRatio
         item.setDisposition(self.disposition)
         item.url = self.url.relativeString
         return item

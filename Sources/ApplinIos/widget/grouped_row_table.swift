@@ -2,12 +2,12 @@ import Foundation
 import UIKit
 
 public struct GroupedRowTableSpec: Equatable, Hashable, ToSpec {
-    static let TYP = "grouped-row-table"
+    static let TYP = "grouped_row_table"
     let rowGroups: [[[Spec?]]]
     let spacing: Float32
 
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
-        self.rowGroups = try item.rowGroups?.map({ rows in
+        self.rowGroups = try item.row_groups?.map({ rows in
             try rows.map({ row in
                 try row.map({ optItem in
                     if let item = optItem {
@@ -23,7 +23,7 @@ public struct GroupedRowTableSpec: Equatable, Hashable, ToSpec {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(GroupedRowTableSpec.TYP)
-        item.rowGroups = self.rowGroups.map({ rows in rows.map({ row in row.map({ widget in widget?.toJsonItem() }) }) })
+        item.row_groups = self.rowGroups.map({ rows in rows.map({ row in row.map({ widget in widget?.toJsonItem() }) }) })
         item.spacing = self.spacing
         return item
     }

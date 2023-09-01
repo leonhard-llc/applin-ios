@@ -3,7 +3,7 @@ import OSLog
 import UIKit
 
 public struct FormButtonSpec: Equatable, Hashable, ToSpec {
-    static let TYP = "form-button"
+    static let TYP = "form_button"
     let actions: [ActionSpec]
     let alignment: ApplinHAlignment?
     let text: String
@@ -33,7 +33,7 @@ public struct FormButtonSpec: Equatable, Hashable, ToSpec {
     }
 
     func keys() -> [String] {
-        ["form-button:\(self.actions)", "form-button:\(self.text)"]
+        ["form_button:\(self.actions)", "form_button:\(self.text)"]
     }
 
     func priority() -> WidgetPriority {

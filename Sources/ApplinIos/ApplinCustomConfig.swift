@@ -9,7 +9,7 @@ public class ApplinCustomConfig {
     static let SUPPORT_EMAIL_ADDRESS: String = "info@example.com"
     static let SUPPORT_SMS_TEL: String? = nil // "+15551112222"
     static let STATUS_MARKDOWN_PAGE_URL = URL(string: "https://example-status.com/index.md")!
-    static let SHOW_PAGE_ON_FIRST_STARTUP: String = "/legal-form"
+    static let SHOW_PAGE_ON_FIRST_STARTUP: String = "/legal_form"
     static let STATIC_PAGES: [String: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec] = [
         // Required
         StaticPageKeys.APPLIN_CLIENT_ERROR: StaticPages.applinClientError,
@@ -22,7 +22,7 @@ public class ApplinCustomConfig {
         StaticPageKeys.ERROR_DETAILS: StaticPages.errorDetails,
         StaticPageKeys.SERVER_STATUS: StaticPages.serverStatus,
         StaticPageKeys.SUPPORT: StaticPages.support,
-        "/legal-form": StaticPages.legalForm,
+        "/legal_form": StaticPages.legalForm,
         StaticPageKeys.TERMS: StaticPages.terms,
         StaticPageKeys.PRIVACY_POLICY: StaticPages.privacyPolicy,
     ]

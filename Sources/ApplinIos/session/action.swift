@@ -41,11 +41,11 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
         }
         let part1 = String(parts[1])
         switch parts[0] {
-        case "choose-photo":
+        case "choose_photo":
             self = .choosePhoto(part1)
-        case "copy-to-clipboard":
+        case "copy_to_clipboard":
             self = .copyToClipboard(part1)
-        case "launch-url":
+        case "launch_url":
             if let url = URL(string: part1) {
                 self = .launchUrl(url)
             } else {
@@ -53,13 +53,13 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             }
         case "push":
             self = .push(part1)
-        case "push-preloaded":
+        case "push_preloaded":
             self = .push(part1)
-        case "replace-all":
+        case "replace_all":
             self = .replaceAll(part1)
         case "rpc":
             self = .rpc(part1)
-        case "take-photo":
+        case "take_photo":
             self = .takePhoto(part1)
         default:
             throw ApplinError.appError("unknown action: \(string)")
@@ -69,11 +69,11 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
     func toString() -> String {
         switch self {
         case let .choosePhoto(value):
-            return "choose-photo:\(value)"
+            return "choose_photo:\(value)"
         case let .copyToClipboard(value):
-            return "copy-to-clipboard:\(value)"
+            return "copy_to_clipboard:\(value)"
         case let .launchUrl(value):
-            return "launch-url:\(value)"
+            return "launch_url:\(value)"
         case .logout:
             return "logout"
         case .nothing:
@@ -85,11 +85,11 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
         case let .push(value):
             return "push:\(value)"
         case let .replaceAll(value):
-            return "replace-all:\(value)"
+            return "replace_all:\(value)"
         case let .rpc(value):
             return "rpc:\(value)"
         case let .takePhoto(value):
-            return "take-photo:\(value)"
+            return "take_photo:\(value)"
         }
     }
 

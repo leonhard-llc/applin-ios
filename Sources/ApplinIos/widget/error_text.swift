@@ -1,7 +1,7 @@
 import UIKit
 
 public struct ErrorTextSpec: Equatable, Hashable, ToSpec {
-    static let TYP = "error-text"
+    static let TYP = "error_text"
     let text: String
 
     init(_ item: JsonItem) throws {

@@ -21,11 +21,11 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
         self.allow = item.optAllow() ?? .all
         self.autoCapitalize = item.optAutoCapitalize()
         self.error = item.error
-        self.initialString = item.initialString
+        self.initialString = item.initial_string
         self.label = item.label
-        self.maxChars = item.maxChars
-        self.maxLines = item.maxLines
-        self.minChars = item.minChars
+        self.maxChars = item.max_chars
+        self.maxLines = item.max_lines
+        self.minChars = item.min_chars
         self.rpc = item.rpc
         self.varName = try item.requireVar()
     }
@@ -35,13 +35,13 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
         item.setAllow(self.allow)
         item.setAutoCapitalize(self.autoCapitalize)
         item.error = self.error
-        item.initialString = self.initialString
+        item.initial_string = self.initialString
         item.label = self.label
-        item.maxChars = self.maxChars
-        item.maxLines = self.maxLines
-        item.minChars = self.minChars
+        item.max_chars = self.maxChars
+        item.max_lines = self.maxLines
+        item.min_chars = self.minChars
         item.rpc = self.rpc
-        item.varName = self.varName
+        item.var_name = self.varName
         return item
     }
 

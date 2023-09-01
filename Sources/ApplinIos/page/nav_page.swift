@@ -9,7 +9,7 @@ public enum StartEnum: Equatable {
 }
 
 public struct NavPageSpec: Equatable {
-    static let TYP = "nav-page"
+    static let TYP = "nav_page"
     let connectionMode: ConnectionMode
     let end: Spec?
     let start: StartEnum
@@ -17,7 +17,7 @@ public struct NavPageSpec: Equatable {
     let widget: Spec
 
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
-        self.connectionMode = ConnectionMode(item.stream, item.pollSeconds)
+        self.connectionMode = ConnectionMode(item.stream, item.poll_seconds)
         self.end = try item.optEnd(config)
         switch try item.optStart(config)?.value {
         case let .backButton(inner):
@@ -36,7 +36,7 @@ public struct NavPageSpec: Equatable {
     func toJsonItem() -> JsonItem {
         let item = JsonItem(NavPageSpec.TYP)
         item.end = self.end?.toJsonItem()
-        item.pollSeconds = self.connectionMode.getPollSeconds()
+        item.poll_seconds = self.connectionMode.getPollSeconds()
         item.stream = self.connectionMode.getStream()
         item.title = self.title
         switch self.start {

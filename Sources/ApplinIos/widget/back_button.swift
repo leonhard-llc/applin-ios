@@ -4,7 +4,7 @@ import UIKit
 
 public struct BackButtonSpec: Equatable, Hashable {
     static let logger = Logger(subsystem: "Applin", category: "BackButtonSpec")
-    static let TYP = "back-button"
+    static let TYP = "back_button"
     let actions: [ActionSpec]
 
     init(_ item: JsonItem) throws {

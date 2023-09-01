@@ -3,25 +3,25 @@ import Foundation
 public class StaticPageKeys {
     /// Applin pushes this page when the app has an error.
     /// Include an ErrorDetails widget to display the message.
-    public static let APPLIN_CLIENT_ERROR = "/applin-app-error"
+    public static let APPLIN_CLIENT_ERROR = "/applin_app_error"
     /// Applin pushes this page when it starts and fails to load a previously visible page.
-    public static let APPLIN_PAGE_NOT_LOADED = "/applin-page-not-loaded"
+    public static let APPLIN_PAGE_NOT_LOADED = "/applin_page_not_loaded"
     /// Applin pushes this page when it fails to make an HTTP request to the server.
-    public static let APPLIN_NETWORK_ERROR = "/applin-network-error"
+    public static let APPLIN_NETWORK_ERROR = "/applin_network_error"
     /// Applin pushes this page when the server returns a non-200 response.
-    public static let APPLIN_SERVER_ERROR = "/applin-rpc-error-modal"
+    public static let APPLIN_SERVER_ERROR = "/applin_rpc_error_modal"
     /// Applin pushes this modal when it fails to load the state file.
     /// Show the user a Connect button so they can retry and deal with auto errors.
-    public static let APPLIN_STATE_LOAD_ERROR = "/applin-state-load-error"
+    public static let APPLIN_STATE_LOAD_ERROR = "/applin_state_load_error"
     /// Applin pushes this page when the server returns a user error message.
     /// Include an ErrorDetails widget to display the message.
-    public static let APPLIN_USER_ERROR = "/applin-user-error"
+    public static let APPLIN_USER_ERROR = "/applin_user_error"
     /// The default error pages have an "Error Details" button that pushes this page.
-    public static let ERROR_DETAILS = "/error-details"
+    public static let ERROR_DETAILS = "/error_details"
     /// The default first-start (legalForm) page has a "Privacy Policy" button that pushes this page.
-    public static let PRIVACY_POLICY = "/privacy-policy"
+    public static let PRIVACY_POLICY = "/privacy_policy"
     /// The default error pages have a "Server Status" button that pushes this page.
-    public static let SERVER_STATUS = "/server-status"
+    public static let SERVER_STATUS = "/server_status"
     /// The default error pages have a "Support" button that pushes this page.
     public static let SUPPORT = "/support"
     /// The default first-start (legalForm) page has a "Terms of Use" button that pushes this page.

@@ -10,7 +10,7 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
     let varName: String
 
     init(_ item: JsonItem) throws {
-        self.initialBool = item.initialBool
+        self.initialBool = item.initial_bool
         self.rpc = item.rpc
         self.text = item.text
         self.varName = try item.requireVar()
@@ -18,10 +18,10 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(CheckboxSpec.TYP)
-        item.initialBool = self.initialBool
+        item.initial_bool = self.initialBool
         item.rpc = self.rpc
         item.text = self.text
-        item.varName = self.varName
+        item.var_name = self.varName
         return item
     }
 

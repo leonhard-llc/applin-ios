@@ -61,7 +61,7 @@ class ServerCaller {
             throw ApplinError.networkError("error talking to server at \(urlRequest.url?.absoluteString ?? "") : \(error)")
         }
         if !(200...299).contains(httpResponse.statusCode) {
-            if httpResponse.contentTypeBase() == "application/vnd.applin-response", let userError: UserError = try? decodeJson(data) {
+            if httpResponse.contentTypeBase() == "application/vnd.applin_response", let userError: UserError = try? decodeJson(data) {
                 throw ApplinError.userError(userError.message)
             } else if httpResponse.contentTypeBase() == "text/plain", let string = String(data: data, encoding: .utf8) {
                 throw ApplinError.serverError("server returned error for \(path) : \(httpResponse.statusCode) "
@@ -102,8 +102,8 @@ class ServerCaller {
         }
         Self.logger.debug("\(urlRequest.httpMethod!) \(String(describing: path)) response status=\(httpResponse.statusCode) body=\(String(describing: data))")
         do {
-            if contentTypeBase != "application/vnd.applin-response" {
-                throw "content-type is not 'application/vnd.applin-response': \(String(describing: contentTypeBase ?? ""))"
+            if contentTypeBase != "application/vnd.applin_response" {
+                throw "content-type is not 'application/vnd.applin_response': \(String(describing: contentTypeBase ?? ""))"
             }
 
             struct ApplinResponse: Codable {
