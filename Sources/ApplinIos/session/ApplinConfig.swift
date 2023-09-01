@@ -76,7 +76,7 @@ public class ApplinConfig {
         guard let key = self.licenseKey else {
             throw "licenseKey required"
         }
-        if !key.string.starts(with: "BdUbQklK") {
+        if !key.string.starts(with: "14NNS-2E") {
             throw "this method is restricted"
         }
         self.url = url
