@@ -4,22 +4,22 @@ import OSLog
 public class ApplinConfig {
     static let logger = Logger(subsystem: "Applin", category: "ApplinConfig")
 
-    let appStoreAppId: UInt64
-    let applinClientErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    let applinNetworkErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    let applinPageNotLoadedPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    let applinServerErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    let applinStateLoadErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    let applinUserErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    let dataDirPath: String
-    let licenseKey: ApplinLicenseKey?
-    let showPageOnFirstStartup: String
-    let staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec]
-    let statusPageUrl: URL?
-    let supportChatUrl: URL?
-    let supportEmailAddress: String?
-    let supportSmsTel: String?
-    var url: URL
+    public let appStoreAppId: UInt64
+    public let applinClientErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    public let applinNetworkErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    public let applinPageNotLoadedPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    public let applinServerErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    public let applinStateLoadErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    public let applinUserErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    public let dataDirPath: String
+    public let licenseKey: ApplinLicenseKey?
+    public let showPageOnFirstStartup: String
+    public let staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec]
+    public let statusPageUrl: URL?
+    public let supportChatUrl: URL?
+    public let supportEmailAddress: String?
+    public let supportSmsTel: String?
+    public var url: URL
 
     public init(
             appStoreAppId: UInt64,
@@ -60,19 +60,19 @@ public class ApplinConfig {
         try createDir(self.dataDirPath)
     }
 
-    func appstoreUrl() -> URL {
+    public func appstoreUrl() -> URL {
         URL(string: "itms-apps://itunes.apple.com/app/id\(self.appStoreAppId)")!
     }
 
-    func staticPageSpec(pageKey: String) -> PageSpec? {
+    public func staticPageSpec(pageKey: String) -> PageSpec? {
         self.staticPages[pageKey]?(self, pageKey)
     }
 
-    func stateFilePath() -> String {
+    public func stateFilePath() -> String {
         self.dataDirPath + "/applin_state.json"
     }
 
-    func restrictedSetUrl(_ url: URL) throws {
+    public func restrictedSetUrl(_ url: URL) throws {
         guard let key = self.licenseKey else {
             throw "licenseKey required"
         }
