@@ -13,6 +13,7 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
     case replaceAll(String)
     case rpc(String)
     case takePhoto(String)
+    // TODO: Add a `confirm:MESSAGE` action.
 
     // swiftlint:disable cyclomatic_complexity
     init(_ string: String) throws {
