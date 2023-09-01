@@ -27,7 +27,6 @@ public enum ModalKind: String {
 public struct ModalSpec: CustomStringConvertible, Equatable {
     let connectionMode: ConnectionMode
     let kind: ModalKind
-    let pageKey: String
     let text: String?
     let title: String
     let typ: String
@@ -36,7 +35,6 @@ public struct ModalSpec: CustomStringConvertible, Equatable {
     init(pageKey: String, _ kind: ModalKind, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.poll_seconds)
         self.kind = kind
-        self.pageKey = pageKey
         self.text = item.text
         self.title = try item.requireTitle()
         self.typ = kind.typ()
@@ -68,7 +66,6 @@ public struct ModalSpec: CustomStringConvertible, Equatable {
     public init(pageKey: String, kind: ModalKind, title: String, text: String? = nil, _ widgets: [ModalButtonSpec]) {
         self.connectionMode = .disconnect
         self.kind = kind
-        self.pageKey = pageKey
         self.typ = kind.typ()
         self.title = title
         self.text = text
@@ -85,7 +82,7 @@ public struct ModalSpec: CustomStringConvertible, Equatable {
         let text = self.text?.replacingOccurrences(of: "${INTERACTIVE_ERROR_DETAILS}", with: interactiveErrorDetails)
         let alert = AlertController(title: self.title, message: text, preferredStyle: self.kind.style())
         for widget in self.widgets {
-            alert.addAction(widget.toAlertAction(ctx, pageKey: self.pageKey))
+            alert.addAction(widget.toAlertAction(ctx, pageKey: ctx.pageKey))
         }
         return alert
     }
