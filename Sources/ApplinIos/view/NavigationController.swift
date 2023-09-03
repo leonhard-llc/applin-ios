@@ -2,7 +2,7 @@ import Foundation
 import OSLog
 import UIKit
 
-class NavigationController: UINavigationController, UIGestureRecognizerDelegate {
+public class NavigationController: UINavigationController, UIGestureRecognizerDelegate {
     private enum Entry: CustomStringConvertible {
         case loadingPage(LoadingPageController)
         case modal(AlertController)
@@ -231,7 +231,7 @@ class NavigationController: UINavigationController, UIGestureRecognizerDelegate 
 
     // Implements UIGestureRecognizerDelegate ----
 
-    internal func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         let result = self.top?.allowBackSwipe() ?? false
         Self.logger.debug("allowBackSwipe \(result)")
         return result

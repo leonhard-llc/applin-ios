@@ -4,7 +4,7 @@ import UIKit
 public class ApplinApp {
     static let logger = Logger(subsystem: "Applin", category: "ApplinApp")
     let lamportClock = LamportClock()
-    let navigationController = NavigationController()
+    public let navigationController = NavigationController()
     let wallClock = WallClock()
     let config: ApplinConfig
     //let streamer: Streamer
@@ -13,11 +13,13 @@ public class ApplinApp {
     var poller: Poller?
     var serverCaller: ServerCaller?
     var stateFileOwner: StateFileOwner?
-    var window: UIWindow?
+    public var window: UIWindow
 
     public init(_ config: ApplinConfig) {
         // Note: This code runs during app prewarming.
         self.config = config
+        self.window = UIWindow(frame: UIScreen.main.bounds)
+        self.window.rootViewController = self.navigationController
     }
 
     public func application(
@@ -26,9 +28,7 @@ public class ApplinApp {
     ) -> Bool {
         Self.logger.info("launch")
         // https://betterprogramming.pub/creating-ios-apps-without-storyboards-42a63c50756f
-        self.window = UIWindow(frame: UIScreen.main.bounds)
-        self.window!.rootViewController = self.navigationController
-        self.window!.makeKeyAndVisible()
+        self.window.makeKeyAndVisible()
         Task(priority: .high) {
             let optState = await StateFileOwner.read(self.config)
             self.varSet = VarSet(optState?.boolVars ?? [:], optState?.stringVars ?? [:])

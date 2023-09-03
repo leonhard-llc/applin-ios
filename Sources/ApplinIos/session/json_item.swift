@@ -46,7 +46,7 @@ enum ApplinDimension: Equatable, Hashable {
     case range(Float32?, Float32?)
 }
 
-enum ApplinDisposition: Equatable, Hashable {
+public enum ApplinDisposition: Equatable, Hashable {
     case fit
     case stretch
     case cover

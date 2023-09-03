@@ -56,10 +56,10 @@ public struct ScrollSpec: Equatable, Hashable, ToSpec {
 
 // https://www.hackingwithswift.com/example-code/uikit/how-to-adjust-a-uiscrollview-to-fit-the-keyboard
 
-class KeyboardAvoidingScrollView: UIScrollView {
+public class KeyboardAvoidingScrollView: UIScrollView {
     static let logger = Logger(subsystem: "Applin", category: "KeyboardAvoidingScrollView")
 
-    init() {
+    public init() {
         super.init(frame: CGRect.zero)
         let notificationCenter = NotificationCenter.default
         // NOTE: NotificationCenter.default.addObserver will silently do nothing if you pass it
@@ -104,7 +104,6 @@ class KeyboardAvoidingScrollView: UIScrollView {
 class ScrollWidget: Widget {
     let scrollView: KeyboardAvoidingScrollView
     private let helper: SingleViewContainerHelper
-    var keyboardInset: CGFloat = 0.0
 
     init() {
         self.scrollView = KeyboardAvoidingScrollView()

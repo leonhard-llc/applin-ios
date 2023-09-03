@@ -14,9 +14,9 @@ class NoIntrinsicSizeActivityView: UIActivityIndicatorView {
     }
 }
 
-/// ImageView loads an image from a URL and display it.
+/// ImageView loads an image from a URL and displays it.
 /// It shows an activity indicator while loading.
-class ImageView: UIView {
+public class ImageView: UIView {
     static let logger = Logger(subsystem: "Applin", category: "ImageView")
 
     private static func makeIndicator() -> NoIntrinsicSizeActivityView {
@@ -42,7 +42,7 @@ class ImageView: UIView {
     private var disposition: ApplinDisposition = .cover
     private var symbol: Symbol
 
-    init(aspectRatio: Double) {
+    public init(aspectRatio: Double) {
         self.symbol = .loading(Self.makeIndicator())
         self.aspectRatio = aspectRatio
         super.init(frame: CGRect.zero)
@@ -196,7 +196,7 @@ class ImageView: UIView {
         }
     }
 
-    func update(_ url: URL, aspectRatio: Double, _ disposition: ApplinDisposition) {
+    public func update(_ url: URL, aspectRatio: Double, _ disposition: ApplinDisposition) {
         Task { @MainActor in
             await self.lock.lockAsync({
                 Self.logger.debug("\(self) update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
