@@ -74,6 +74,10 @@ class TextWidget: Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.paddedLabel.text = textSpec.text
+        if textSpec.text.isEmpty == true {
+            self.paddedLabel.text = " "
+        } else {
+            self.paddedLabel.text = textSpec.text
+        }
     }
 }
