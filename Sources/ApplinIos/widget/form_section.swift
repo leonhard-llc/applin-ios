@@ -117,7 +117,12 @@ class FormSectionWidget: Widget {
         guard case let .formSection(formSectionSpec) = spec.value else {
             throw "Expected .formSection got: \(spec)"
         }
-        self.label.text = formSectionSpec.optTitle?.uppercased()
+        let title = formSectionSpec.optTitle?.uppercased() ?? ""
+        if title.isEmpty {
+            self.label.text = " "
+        } else {
+            self.label.text = title
+        }
         self.container.name = "FormSection{\(self.label.text ?? "")}.container"
         self.header.name = "FormSection{\(self.label.text ?? "")}.header"
         self.columnView.update(

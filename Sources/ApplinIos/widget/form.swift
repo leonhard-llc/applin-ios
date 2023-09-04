@@ -2,7 +2,6 @@ import Foundation
 import UIKit
 
 // TODONT: Don't use UITableView because it cannot update its subviews without causing them to lose keyboard focus.
-
 //         Also, the APIs of UITableView, UITableViewDataSource, and UITableViewDiffableDataSource are extremely hard
 //         to use.
 
