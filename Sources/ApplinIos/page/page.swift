@@ -9,7 +9,7 @@ class PageContext {
     weak var serverCaller: ServerCaller?
     weak var varSet: VarSet?
 
-    init(_ cache: WidgetCache, hasPrevPage: Bool, pageKey: String, _ pageStack: PageStack, _ varSet: VarSet) {
+    init(_ cache: WidgetCache?, hasPrevPage: Bool, pageKey: String, _ pageStack: PageStack, _ varSet: VarSet) {
         self.cache = cache
         self.hasPrevPage = hasPrevPage
         self.pageKey = pageKey
