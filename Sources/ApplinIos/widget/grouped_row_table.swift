@@ -58,7 +58,7 @@ public struct GroupedRowTableSpec: Equatable, Hashable, ToSpec {
     }
 
     func newWidget() -> Widget {
-        return GroupedRowTableWidget()
+        GroupedRowTableWidget()
     }
 
     func visitActions(_ f: (ActionSpec) -> ()) {

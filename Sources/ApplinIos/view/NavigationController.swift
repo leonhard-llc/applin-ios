@@ -115,7 +115,7 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
         if let ctl = self.working {
             Self.logger.debug("presenting working \(ctl)")
             await self.presentAsync(ctl, animated: false)
-        } else if case let .modal(ctl) = self.top {
+        } else if case let .modal(ctl, _widgetCache) = self.top {
             Self.logger.debug("presenting modal \(ctl)")
             await self.presentAsync(ctl, animated: true)
         }
@@ -151,13 +151,14 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
                         newEntries.append((key, .loadingPage(LoadingPageController())))
                     }
                 case let .modal(modalSpec):
-                    if case let .modal(ctl) = self.entryCache.removeEntry(key) {
-                        newEntries.append((key, .modal(ctl)))
+                    if case let .modal(ctl, widgetCache) = self.entryCache.removeEntry(key) {
+                        newEntries.append((key, .modal(ctl, widgetCache)))
                     } else {
-                        let ctx = PageContext(WidgetCache(), hasPrevPage: false, pageKey: key, pageStack, varSet)
+                        let widgetCache = WidgetCache()
+                        let ctx = PageContext(widgetCache, hasPrevPage: false, pageKey: key, pageStack, varSet)
                         let ctl = modalSpec.toAlert(ctx)
                         ctl.setAnimated(true)
-                        newEntries.append((key, .modal(ctl)))
+                        newEntries.append((key, .modal(ctl, widgetCache)))
                     }
                 case .navPage:
                     if case let .navPage(ctl, widgetCache) = self.entryCache.removeEntry(key) {
