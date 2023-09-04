@@ -13,13 +13,20 @@ public class ApplinApp {
     var poller: Poller?
     var serverCaller: ServerCaller?
     var stateFileOwner: StateFileOwner?
-    public var window: UIWindow
+    var window: UIWindow?
 
     public init(_ config: ApplinConfig) {
         // Note: This code runs during app prewarming.
         self.config = config
+    }
+
+    public func makeWindow() {
+        if self.window != nil {
+            return
+        }
         self.window = UIWindow(frame: UIScreen.main.bounds)
-        self.window.rootViewController = self.navigationController
+        self.window!.rootViewController = self.navigationController
+        self.window!.makeKeyAndVisible()
     }
 
     public func application(
@@ -28,7 +35,7 @@ public class ApplinApp {
     ) -> Bool {
         Self.logger.info("launch")
         // https://betterprogramming.pub/creating-ios-apps-without-storyboards-42a63c50756f
-        self.window.makeKeyAndVisible()
+        self.makeWindow()
         Task(priority: .high) {
             let optState = await StateFileOwner.read(self.config)
             self.varSet = VarSet(optState?.boolVars ?? [:], optState?.stringVars ?? [:])
