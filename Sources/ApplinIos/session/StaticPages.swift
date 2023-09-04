@@ -1,5 +1,7 @@
 import Foundation
 
+// TODO: Change error modals into navpages.
+// TODO: Make modals dismiss on first button tap.
 public class StaticPageKeys {
     /// Applin pushes this page when the app has an error.
     /// Include an ErrorDetails widget to display the message.

@@ -10,6 +10,7 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
     case poll
     case pop
     case push(String)
+    // TODO: Add push-preload.
     case replaceAll(String)
     case rpc(String)
     case takePhoto(String)

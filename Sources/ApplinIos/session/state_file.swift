@@ -89,6 +89,7 @@ class StateFileOwner {
                 contents.stringVars = varSet.strings()
             }
             if let pageStack = self.weakPageStack {
+                // TODO: Stop before first non-root plain page.
                 contents.pageKeys = pageStack.stackPageKeys()
             }
             let bytes = try encodeJson(contents)

@@ -60,6 +60,8 @@ class ServerCaller {
         } catch {
             throw ApplinError.networkError("error talking to server at \(urlRequest.url?.absoluteString ?? "") : \(error)")
         }
+        // TODO: Handle 400 properly and throw client error.
+        // TODO: Handle 422 Unprocessable Content properly and throw user error.
         if !(200...299).contains(httpResponse.statusCode) {
             if httpResponse.contentTypeBase() == "application/vnd.applin_response", let userError: UserError = try? decodeJson(data) {
                 throw ApplinError.userError(userError.message)
