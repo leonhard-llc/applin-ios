@@ -111,15 +111,12 @@ public func readBundleFile(filepath: String) async throws -> Data {
     }
 }
 
-public func readFile(path: String) async throws -> Data {
-    let task: Task<Data, Error> = Task {
-        do {
-            return try Data(contentsOf: URL(fileURLWithPath: path))
-        } catch {
-            throw ApplinError.appError("error reading file '\(path)': \(error)")
-        }
+public func readFile(path: String) throws -> Data {
+    do {
+        return try Data(contentsOf: URL(fileURLWithPath: path))
+    } catch {
+        throw ApplinError.appError("error reading file '\(path)': \(error)")
     }
-    return try await task.value
 }
 
 /// Returns early when the task is cancelled.

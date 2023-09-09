@@ -13,15 +13,15 @@ struct StateFileContents: Codable {
 class StateFileOwner {
     static let logger = Logger(subsystem: "Applin", category: "StateFileOwner")
 
-    static func read(_ config: ApplinConfig) async -> StateFileContents? {
+    static func read(_ config: ApplinConfig) -> StateFileContents? {
         let path = config.stateFilePath()
         // Swift's standard library provides no documented way to tell if a file read error is due to file not found.
         // So we check for file existence separately.
-        if !(await fileExists(path: path)) {
+        if !(FileManager.default.fileExists(atPath: path)) {
             return nil
         }
         do {
-            let bytes = try await readFile(path: path)
+            let bytes = try readFile(path: path)
             let contents: StateFileContents = try decodeJson(bytes)
             return contents
         } catch {
