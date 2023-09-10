@@ -299,9 +299,11 @@ class PageStack {
                     case let .copyToClipboard(string):
                         Self.logger.info("action copyToClipboard(\(string))")
                         UIPasteboard.general.string = string
-                    case .launchUrl(_):
-                        // TODO: Implement launch_url action
-                        Self.logger.info("action not implemented")
+                    case let .launchUrl(url):
+                        Self.logger.info("action launchUrl(\(url)")
+                        Task { @MainActor in
+                            await UIApplication.shared.open(url)
+                        }
                     case .logout:
                         // TODO: Delete session cookies.
                         // TODO: Delete state file.
