@@ -26,16 +26,11 @@ protocol PageController: UIViewController {
 
 public enum PageSpec: CustomStringConvertible, Equatable {
     case loadingPage
-    case modal(ModalSpec)
     case navPage(NavPageSpec)
     case plainPage(PlainPageSpec)
 
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         switch item.typ {
-        case ModalKind.alert.typ():
-            self = try .modal(ModalSpec(pageKey: pageKey, .alert, item))
-        case ModalKind.drawer.typ():
-            self = try .modal(ModalSpec(pageKey: pageKey, .drawer, item))
         case NavPageSpec.TYP:
             self = try .navPage(NavPageSpec(config, item))
         case PlainPageSpec.TYP:
@@ -49,8 +44,6 @@ public enum PageSpec: CustomStringConvertible, Equatable {
         switch self {
         case .loadingPage:
             return .disconnect
-        case let .modal(inner):
-            return inner.connectionMode
         case let .navPage(inner):
             return inner.connectionMode
         case let .plainPage(inner):
@@ -62,8 +55,6 @@ public enum PageSpec: CustomStringConvertible, Equatable {
         switch self {
         case .loadingPage:
             return "loadingPage"
-        case let .modal(inner):
-            return "\(inner)"
         case let .navPage(inner):
             return "\(inner)"
         case let .plainPage(inner):
@@ -75,8 +66,6 @@ public enum PageSpec: CustomStringConvertible, Equatable {
         switch self {
         case .loadingPage:
             return []
-        case let .modal(inner):
-            return inner.vars()
         case let .navPage(inner):
             return inner.vars()
         case let .plainPage(inner):
@@ -88,8 +77,6 @@ public enum PageSpec: CustomStringConvertible, Equatable {
         switch self {
         case .loadingPage:
             break
-        case let .modal(inner):
-            return inner.visitActions(f)
         case let .navPage(inner):
             return inner.visitActions(f)
         case let .plainPage(inner):

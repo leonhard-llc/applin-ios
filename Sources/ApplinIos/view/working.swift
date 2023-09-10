@@ -3,8 +3,9 @@ import UIKit
 class WorkingView: UIViewController {
     init(text: String) {
         super.init(nibName: nil, bundle: nil)
-        self.modalPresentationStyle = .overCurrentContext
-        self.view.backgroundColor = .secondarySystemBackground.withAlphaComponent(0.5)
+        // TODO: Make the page partially transparent.
+        // This doesn't work: self.view.backgroundColor = .secondarySystemBackground.withAlphaComponent(0.5)
+        self.view.backgroundColor = .secondarySystemBackground
         let indicator = UIActivityIndicatorView()
         indicator.translatesAutoresizingMaskIntoConstraints = false
         indicator.startAnimating()
