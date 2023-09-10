@@ -74,6 +74,11 @@ public class ApplinApp {
         Self.logger.info("background")
         self.stateFileOwner?.stop()
         self.poller?.stop()
-        // TODO: When user kills app, throw away stack.
+    }
+
+    public func applicationWillTerminate(_ application: UIApplication) {
+        // App is running and gets terminated by the user or iOS.
+        Self.logger.info("terminate")
+        self.stateFileOwner?.eraseStack()
     }
 }

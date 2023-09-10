@@ -70,6 +70,50 @@ public extension NSLayoutConstraint {
     }
 }
 
+public class SyncCell<T> {
+    let lock = NSLock()
+    private var value: T
+
+    init(_ value: T) {
+        self.value = value
+    }
+
+    public func get() -> T {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        return self.value
+    }
+
+    public func set(_ newValue: T) -> T {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        let oldValue = self.value
+        self.value = newValue
+        return oldValue
+    }
+}
+
+public extension Task {
+    var resultSync: Result<Success, Failure> {
+        get {
+            let cell = SyncCell<Result<Success, Failure>?>(nil)
+            let semaphore = DispatchSemaphore(value: 0)
+            let task = self
+            Task<(), Never>(priority: .high) {
+                let result = await task.result
+                let _ = cell.set(result)
+                semaphore.signal()
+            }
+            semaphore.wait()
+            return cell.get()!
+        }
+    }
+}
+
 // From https://www.biteinteractive.com/control-target-and-action-in-ios-14/
 extension UIControl {
     func addAction(for event: UIControl.Event, handler: @escaping UIActionHandler) {

@@ -200,7 +200,6 @@ public class ImageView: UIView {
         Task { @MainActor in
             await self.lock.lockAsync({
                 Self.logger.debug("\(self) update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
-                var updated = false
                 if self.aspectRatio != aspectRatio {
                     self.aspectRatio = aspectRatio
                     self.applyAspectRatio(aspectRatio)

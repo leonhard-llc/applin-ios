@@ -36,7 +36,6 @@ class StateFileOwner {
     private weak var weakVarSet: VarSet?
     private weak var weakPageStack: PageStack?
     private var periodicTask: Task<(), Never>?
-    private var stopTask: Task<(), Never>?
 
     public init(_ config: ApplinConfig, _ varSet: VarSet?, _ pageStack: PageStack?) {
         self.path = config.stateFilePath()
@@ -50,7 +49,6 @@ class StateFileOwner {
     }
 
     func start() {
-        self.stopTask?.cancel()
         self.periodicTask?.cancel()
         self.periodicTask = Task(priority: .low) {
             Self.logger.info("periodic writer task starting")
@@ -59,11 +57,7 @@ class StateFileOwner {
                 if Task.isCancelled {
                     break
                 }
-                do {
-                    try await self.write()
-                } catch {
-                    Self.logger.error("error saving state, will retry: \(error)")
-                }
+                await self.write(savePageStack: true)
             }
             Self.logger.info("periodic writer task stopping")
         }
@@ -71,43 +65,52 @@ class StateFileOwner {
 
     func stop() {
         self.periodicTask?.cancel()
-        self.stopTask?.cancel()
-        self.stopTask = Task(priority: .high) {
-            do {
-                try await self.write()
-            } catch {
-                Self.logger.error("failed saving state before stop: \(error)")
-            }
+        Task(priority: .high) {
+            await self.write(savePageStack: true)
         }
     }
 
-    func write() async throws {
-        try await self.lock.lockAsyncThrows({
-            var contents: StateFileContents = StateFileContents()
-            if let varSet = self.weakVarSet {
-                contents.boolVars = varSet.bools()
-                contents.stringVars = varSet.strings()
+    func write(savePageStack: Bool) async {
+        do {
+            try await self.lock.lockAsyncThrows({
+                var contents: StateFileContents = StateFileContents()
+                if let varSet = self.weakVarSet {
+                    contents.boolVars = varSet.bools()
+                    contents.stringVars = varSet.strings()
+                }
+                if savePageStack, let pageStack = self.weakPageStack {
+                    contents.pageKeys = pageStack.stackPageKeys()
+                }
+                let bytes = try encodeJson(contents)
+                let hash = UInt64(truncatingIfNeeded: bytes.hashValue)
+                if self.fileBytesHash.load() == hash {
+                    Self.logger.debug("file contents unchanged, skipping writing file")
+                    return
+                }
+                let dirPath = (self.path as NSString).deletingLastPathComponent
+                try await createDirAsync(dirPath)
+                let tmpPath = self.path + ".tmp"
+                try await deleteFile(path: tmpPath)
+                try await writeFile(data: bytes, path: tmpPath)
+                // Swift has no atomic file replace function.
+                try await deleteFile(path: self.path)
+                try await moveFile(atPath: tmpPath, toPath: self.path)
+                self.fileBytesHash.store(hash)
+                Self.logger.info("wrote file")
+            })
+        } catch {
+            Self.logger.error("failed saving state: \(error)")
+        }
+    }
+
+    func eraseStack() {
+        do {
+            let task = Task(priority: .high) {
+                await self.write(savePageStack: false)
             }
-            if let pageStack = self.weakPageStack {
-                // TODO: Stop before first non-root plain page.
-                contents.pageKeys = pageStack.stackPageKeys()
-            }
-            let bytes = try encodeJson(contents)
-            let hash = UInt64(truncatingIfNeeded: bytes.hashValue)
-            if self.fileBytesHash.load() == hash {
-                Self.logger.debug("file contents unchanged, skipping writing file")
-                return
-            }
-            let dirPath = (self.path as NSString).deletingLastPathComponent
-            try await createDirAsync(dirPath)
-            let tmpPath = self.path + ".tmp"
-            try await deleteFile(path: tmpPath)
-            try await writeFile(data: bytes, path: tmpPath)
-            // Swift has no atomic file replace function.
-            try await deleteFile(path: self.path)
-            try await moveFile(atPath: tmpPath, toPath: self.path)
-            self.fileBytesHash.store(hash)
-            Self.logger.info("wrote file")
-        })
+            try task.resultSync.get()
+        } catch {
+            Self.logger.error("failed saving state: \(error)")
+        }
     }
 }
