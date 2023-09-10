@@ -1,6 +1,5 @@
 import Foundation
 
-// TODO: Change error modals into navpages.
 // TODO: Make modals dismiss on first button tap.
 public class StaticPageKeys {
     /// Applin pushes this page when the app has an error.
@@ -11,9 +10,9 @@ public class StaticPageKeys {
     /// Applin pushes this page when it fails to make an HTTP request to the server.
     public static let APPLIN_NETWORK_ERROR = "/applin_network_error"
     /// Applin pushes this page when the server returns a non-200 response.
-    public static let APPLIN_SERVER_ERROR = "/applin_rpc_error_modal"
-    /// Applin pushes this modal when it fails to load the state file.
-    /// Show the user a Connect button so they can retry and deal with auto errors.
+    public static let APPLIN_SERVER_ERROR = "/applin_rpc_error"
+    /// Applin pushes this page when it fails to load the state file.
+    /// Show the user a Connect button.
     public static let APPLIN_STATE_LOAD_ERROR = "/applin_state_load_error"
     /// Applin pushes this page when the server returns a user error message.
     /// Include an ErrorDetails widget to display the message.
@@ -32,60 +31,54 @@ public class StaticPageKeys {
 
 public class StaticPages {
     public static func applinClientError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
-        ModalSpec(
+        NavPageSpec(
                 pageKey: pageKey,
-                kind: .alert,
                 // TODO: Include error code in title.
                 title: "Error",
-                text: "Error in app.  Please try again, quit and reopen the app. or update the app.",
-                [
-                    ModalButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
-                    ModalButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
-                    ModalButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
-                    ModalButtonSpec(text: "OK", isDefault: true, [.pop]),
-                ]
+                FormSpec([
+                    ErrorTextSpec("Error in app.  Please try again, quit and reopen the app. or update the app."),
+                    FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
+                    FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
+                    FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
+                ])
         ).toSpec()
     }
 
     public static func applinNetworkError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
-        ModalSpec(
+        NavPageSpec(
                 pageKey: pageKey,
-                kind: .alert,
                 title: "Connection Problem",
-                text: "Could not contact server.  Check your connection and try again.",
-                [
-                    ModalButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
-                    ModalButtonSpec(text: "Server Status", [.push(StaticPageKeys.SERVER_STATUS)]),
-                    ModalButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
-                    ModalButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
-                    ModalButtonSpec(text: "OK", isDefault: true, [.pop]),
-                ]
+                FormSpec([
+                    ErrorTextSpec("Could not contact server.  Check your connection and try again."),
+                    FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
+                    FormButtonSpec(text: "Server Status", [.push(StaticPageKeys.SERVER_STATUS)]),
+                    FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
+                    FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
+                ])
         ).toSpec()
     }
 
     public static func applinServerError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
-        ModalSpec(
+        NavPageSpec(
                 pageKey: pageKey,
-                kind: .alert,
-                // TODO: Include error code in title.
                 title: "Error",
-                text: "Problem talking to server.  Please try again or update the app.",
-                [
-                    ModalButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
-                    ModalButtonSpec(text: "Server Status", [.push(StaticPageKeys.SERVER_STATUS)]),
-                    ModalButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
-                    ModalButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
-                    ModalButtonSpec(text: "OK", isDefault: true, [.pop]),
-                ]
+                FormSpec([
+                    ErrorTextSpec("Problem talking to server.  Please try again or update the app."),
+                    FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
+                    FormButtonSpec(text: "Server Status", [.push(StaticPageKeys.SERVER_STATUS)]),
+                    FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
+                    FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
+                ])
         ).toSpec()
     }
 
     public static func applinStateLoadError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
-        ModalSpec(
+        NavPageSpec(
                 pageKey: pageKey,
-                kind: .alert,
                 title: "Connect to Load App",
-                [ModalButtonSpec(text: "Connect", isDefault: true, [.poll, .pop])]
+                FormSpec([
+                    FormButtonSpec(text: "Connect", [.poll]),
+                ])
         ).toSpec()
     }
 
@@ -142,21 +135,20 @@ public class StaticPages {
     }
 
     public static func support(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
-        var buttons: [ModalButtonSpec] = []
+        var buttons: [FormButtonSpec] = []
         // TODO: Support including error code in urls.
         if let url = config.supportChatUrl {
-            buttons.append(ModalButtonSpec(text: "Support Chat", [.launchUrl(url)]))
+            buttons.append(FormButtonSpec(text: "Support Chat", [.launchUrl(url)]))
         }
         if let email = config.supportEmailAddress {
             let url = URL(string: "mailto:\(email)")!
-            buttons.append(ModalButtonSpec(text: "Email Support", [.launchUrl(url)]))
+            buttons.append(FormButtonSpec(text: "Email Support", [.launchUrl(url)]))
         }
         if let tel = config.supportSmsTel {
             let url = URL(string: "sms:\(tel)")!
-            buttons.append(ModalButtonSpec(text: "Text Support", [.launchUrl(url)]))
+            buttons.append(FormButtonSpec(text: "Text Support", [.launchUrl(url)]))
         }
-        buttons.append(ModalButtonSpec(text: "OK", isDefault: true, [.pop]))
-        return ModalSpec(pageKey: pageKey, kind: .drawer, title: "Support", text: "", buttons).toSpec()
+        return NavPageSpec(pageKey: pageKey, title: "Support", FormSpec(buttons)).toSpec()
     }
 
     public static func privacyPolicy(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {

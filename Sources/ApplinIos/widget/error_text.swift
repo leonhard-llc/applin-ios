@@ -14,6 +14,10 @@ public struct ErrorTextSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
+    public init(_ text: String) {
+        self.text = text
+    }
+
     public func toSpec() -> Spec {
         Spec(.errorText(self))
     }
