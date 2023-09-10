@@ -48,11 +48,13 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
     private var entries: [(String, Entry)] = []
     private var pageControllers: [UIViewController] = []
     private var top: Entry?
-    private var optWorking: WorkingView?
+    private var workingHelper:  SingleViewContainerHelper
     private var appJustStarted = true
 
     init() {
+        self.workingHelper = SingleViewContainerHelper()
         super.init(rootViewController: LoadingPageController())
+        self.workingHelper.superView = self.view
         self.setNavigationBarHidden(true, animated: false)
         self.view.backgroundColor = .systemBackground
         self.interactivePopGestureRecognizer?.delegate = self
@@ -68,10 +70,7 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
 
     @MainActor
     private func updateViewControllers() {
-        var newControllers: [UIViewController] = self.entries.map({ (_key, value) in value.controller() })
-        if let working = self.optWorking {
-            newControllers.append(working)
-        }
+        let newControllers: [UIViewController] = self.entries.map({ (_key, value) in value.controller() })
         if self.pageControllers != newControllers {
             Self.logger.debug("setViewControllers \(newControllers)")
             let oldTopController = self.top?.controller()
@@ -88,12 +87,17 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
     func setWorking(_ text: String?) async {
         await self.lock.lockAsync {
             Self.logger.debug("setWorking '\(String(describing: text))")
+            self.workingHelper.clear()
             if let text = text {
-                self.optWorking = WorkingView(text: text)
-            } else {
-                self.optWorking = nil
+                let working = WorkingView(text: text)
+                working.translatesAutoresizingMaskIntoConstraints = false
+                self.workingHelper.update(working, { [
+                    working.topAnchor.constraint(equalTo: self.view.topAnchor),
+                    working.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+                    working.leftAnchor.constraint(equalTo: self.view.leftAnchor),
+                    working.rightAnchor.constraint(equalTo: self.view.rightAnchor),
+                ]})
             }
-            self.updateViewControllers()
         }
     }
 

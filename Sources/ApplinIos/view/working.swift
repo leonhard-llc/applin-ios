@@ -1,24 +1,25 @@
 import UIKit
 
-class WorkingView: UIViewController {
+class WorkingView: UIView {
+    let indicator: UIActivityIndicatorView
+    let label: UILabel
+
     init(text: String) {
-        super.init(nibName: nil, bundle: nil)
-        // TODO: Make the page partially transparent.
-        // This doesn't work: self.view.backgroundColor = .secondarySystemBackground.withAlphaComponent(0.5)
-        self.view.backgroundColor = .secondarySystemBackground
-        let indicator = UIActivityIndicatorView()
-        indicator.translatesAutoresizingMaskIntoConstraints = false
-        indicator.startAnimating()
-        self.view.addSubview(indicator)
-        let label = Label()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = text
-        self.view.addSubview(label)
+        self.indicator = UIActivityIndicatorView()
+        self.indicator.translatesAutoresizingMaskIntoConstraints = false
+        self.indicator.startAnimating()
+        self.label = UILabel()
+        self.label.translatesAutoresizingMaskIntoConstraints = false
+        self.label.text = text
+        super.init(frame: CGRect.zero)
+        self.addSubview(self.indicator)
+        self.addSubview(self.label)
+        self.backgroundColor = .secondarySystemBackground.withAlphaComponent(0.5)
         NSLayoutConstraint.activate([
-            indicator.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            indicator.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
-            label.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            label.topAnchor.constraint(equalToSystemSpacingBelow: indicator.bottomAnchor, multiplier: 1.0)
+            self.indicator.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            self.indicator.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+            self.label.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            self.label.topAnchor.constraint(equalToSystemSpacingBelow: self.indicator.bottomAnchor, multiplier: 1.0)
         ])
     }
 

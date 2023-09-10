@@ -30,12 +30,21 @@ class ConstraintSet {
 }
 
 class SingleViewContainerHelper {
-    private weak var superView: UIView?
+    public weak var superView: UIView?
     private weak var subView: UIView?
     private var constraints: [NSLayoutConstraint] = []
 
+    init() {}
+
     init(superView: UIView) {
         self.superView = superView
+    }
+
+    func clear() {
+        NSLayoutConstraint.deactivate(self.constraints)
+        self.constraints = []
+        self.subView?.removeFromSuperview()
+        self.subView = nil
     }
 
     func update(_ newSubView: UIView, _ constraintsFn: () -> [NSLayoutConstraint]) {
@@ -45,8 +54,7 @@ class SingleViewContainerHelper {
         if newSubView === self.subView {
             return
         }
-        NSLayoutConstraint.deactivate(self.constraints)
-        self.subView?.removeFromSuperview()
+        self.clear()
         superView.addSubview(newSubView)
         self.subView = newSubView
         self.constraints = constraintsFn()
