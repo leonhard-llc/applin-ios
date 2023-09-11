@@ -18,7 +18,7 @@ enum Var {
     }
 }
 
-public class VarSet {
+class VarSet {
     static let logger = Logger(subsystem: "Applin", category: "VarSet")
     private var lock = NSLock()
     private var vars: [String: Var] = [:]

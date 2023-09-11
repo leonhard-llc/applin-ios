@@ -54,7 +54,6 @@ public class ApplinApp {
         }
         self.pageStack = PageStack(self.config, self.lamportClock, self.navigationController, varSet, self.wallClock, pageKeys: pageKeys)
         self.serverCaller = ServerCaller(self.config, self.pageStack, self.varSet)
-        self.navigationController.weakServerCaller = self.serverCaller
         self.pageStack!.weakServerCaller = self.serverCaller
         self.poller = Poller(self.config, self.pageStack, self.serverCaller, self.wallClock)
         self.stateFileOwner = StateFileOwner(self.config, self.varSet, self.pageStack)

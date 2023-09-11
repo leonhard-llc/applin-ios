@@ -2,7 +2,7 @@ import Foundation
 import OSLog
 import UIKit
 
-public class PageStack {
+class PageStack {
     static let logger = Logger(subsystem: "Applin", category: "PageStack")
 
     public class Token {

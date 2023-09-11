@@ -30,6 +30,33 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
             }
         }
 
+        func loadingPageController() -> LoadingPageController? {
+            switch self {
+            case .navPage, .plainPage:
+                return nil
+            case let .loadingPage(ctl):
+                return ctl
+            }
+        }
+
+        func navPageController() -> NavPageController? {
+            switch self {
+            case .loadingPage, .plainPage:
+                return nil
+            case let .navPage(ctl, _):
+                return ctl
+            }
+        }
+
+        func plainPageController() -> PlainPageController? {
+            switch self {
+            case .loadingPage, .navPage:
+                return nil
+            case let .plainPage(ctl, _):
+                return ctl
+            }
+        }
+
         func widgetCache() -> WidgetCache? {
             switch self {
             case .loadingPage:
@@ -53,7 +80,6 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
 
     static let logger = Logger(subsystem: "Applin", category: "NavigationController")
 
-    public weak var weakServerCaller: ServerCaller?
     private var lock = ApplinLock()
     private var entries: [(String, Entry)] = []
     private var pageControllers: [UIViewController] = []
@@ -117,61 +143,27 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
     func update(_ pageStack: PageStack, _ varSet: VarSet, newPages: [(String, PageSpec)]) async {
         precondition(!newPages.isEmpty)
         await self.lock.lockAsync {
-            //for (key, pageSpec) in self.entries {
-            //    Self.logger.trace("old page '\(key)' = \(pageSpec)")
-            //}
-            //for (key, pageSpec) in newPages {
-            //    Self.logger.trace("new page '\(key)' = \(pageSpec)")
-            //}
+            //for (key, pageSpec) in self.entries { Self.logger.trace("old page '\(key)' = \(pageSpec)") }
+            //for (key, pageSpec) in newPages { Self.logger.trace("new page '\(key)' = \(pageSpec)") }
             Self.logger.debug("old page keys: \(self.entries.map({ $0.0 }))")
             Self.logger.debug("new page keys: \(newPages.map({ $0.0 }))")
             var keyToEntry: [String: Entry] = self.entries.toDictionary()
             self.entries = []
             for (key, pageSpec) in newPages {
                 let hasPrevPage = !self.entries.isEmpty
+                let optEntry = keyToEntry.removeValue(forKey: key)
+                let widgetCache = optEntry?.widgetCache() ?? WidgetCache()
+                let ctx = PageContext(widgetCache, hasPrevPage: hasPrevPage, pageKey: key, pageStack, varSet)
                 switch pageSpec {
                 case .loadingPage:
-                    if case let .loadingPage(ctl) = keyToEntry.removeValue(forKey: key) {
-                        self.entries.append((key, .loadingPage(ctl)))
-                    } else {
-                        self.entries.append((key, .loadingPage(LoadingPageController())))
-                    }
+                    let ctl = optEntry?.loadingPageController() ?? LoadingPageController()
+                    self.entries.append((key, .loadingPage(ctl)))
                 case .navPage:
-                    let optEntry = keyToEntry.removeValue(forKey: key)
-                    let widgetCache = optEntry?.widgetCache() ?? WidgetCache()
-                    let ctx = PageContext(
-                            widgetCache,
-                            hasPrevPage: hasPrevPage,
-                            pageKey: key,
-                            pageStack,
-                            self.weakServerCaller,
-                            varSet
-                    )
-                    let ctl: NavPageController
-                    if case let .navPage(existingCtl, _) = optEntry {
-                        ctl = existingCtl
-                    } else {
-                        ctl = NavPageController(self, ctx)
-                    }
+                    let ctl = optEntry?.navPageController() ?? NavPageController(self, ctx)
                     ctl.update(ctx, pageSpec)
                     self.entries.append((key, .navPage(ctl, widgetCache)))
                 case .plainPage:
-                    let optEntry = keyToEntry.removeValue(forKey: key)
-                    let widgetCache = optEntry?.widgetCache() ?? WidgetCache()
-                    let ctx = PageContext(
-                            widgetCache,
-                            hasPrevPage: hasPrevPage,
-                            pageKey: key,
-                            pageStack,
-                            self.weakServerCaller,
-                            varSet
-                    )
-                    let ctl: PlainPageController
-                    if case let .plainPage(existingCtl, _) = optEntry {
-                        ctl = existingCtl
-                    } else {
-                        ctl = PlainPageController()
-                    }
+                    let ctl = optEntry?.plainPageController() ?? PlainPageController()
                     ctl.update(ctx, pageSpec)
                     self.entries.append((key, .plainPage(ctl, widgetCache)))
                 }

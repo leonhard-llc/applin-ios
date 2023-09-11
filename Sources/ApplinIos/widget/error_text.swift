@@ -72,7 +72,7 @@ class ErrorTextWidget: Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        let message = ctx.serverCaller?.lastInteractiveError?.message() ?? "No error"
+        let message = ctx.varSet?.getInteractiveError()?.message() ?? "No error"
         let substitutedMessage =
                 errorTextSpec.text.replacingOccurrences(of: "${INTERACTIVE_ERROR_DETAILS}", with: message)
         self.errorView.text = substitutedMessage

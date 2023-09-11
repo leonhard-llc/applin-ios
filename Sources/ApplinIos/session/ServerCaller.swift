@@ -21,15 +21,13 @@ class UploadBody {
     }
 }
 
-public class ServerCaller {
+class ServerCaller {
     static let logger = Logger(subsystem: "Applin", category: "ServerCaller")
 
     private let config: ApplinConfig
     private let urlSession: URLSession
     private weak var pageStack: PageStack?
     private weak var varSet: VarSet?
-    // TODO: Remove this and the complicated PageStack initialization, use VarSet.interactiveError instead.
-    public var lastInteractiveError: ApplinError?
 
     public init(_ config: ApplinConfig, _ pageStack: PageStack?, _ varSet: VarSet?) {
         self.config = config
@@ -83,7 +81,8 @@ public class ServerCaller {
             }
         } catch let e as ApplinError {
             if interactive {
-                self.lastInteractiveError = e
+                self.varSet?.setInteractiveError(e)
+                self.varSet?.setConnectionError(e)
             }
             throw e
         }
