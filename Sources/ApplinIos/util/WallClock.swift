@@ -1,6 +1,8 @@
 import Foundation
 
 struct Instant {
+    public static let EARLIEST = Self(secondsSinceEpoch: 0)
+
     public static func ==(lhs: Instant, rhs: Instant) -> Bool {
         lhs.secondsSinceEpoch == rhs.secondsSinceEpoch
     }

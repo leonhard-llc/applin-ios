@@ -39,10 +39,18 @@ public class PageStack {
             self.config = config
             self.lamportClock = lamportClock
             self.wallClock = wallClock
-            let instant = self.wallClock.now()
+            let now = self.wallClock.now()
             let lamportInstant = self.lamportClock.now()
             self.stack = pageKeys.map({ key in
-                let spec = config.staticPageSpec(pageKey: key) ?? config.applinPageNotLoadedPage(config, key)
+                let instant: Instant
+                let spec: PageSpec
+                if let staticPageSpec = config.staticPageSpec(pageKey: key) {
+                    spec = staticPageSpec
+                    instant = now
+                } else {
+                    spec = config.applinPageNotLoadedPage(config, key)
+                    instant = Instant.EARLIEST
+                }
                 return Entry(pageKey: key, spec, instant, lamportInstant)
             })
         }

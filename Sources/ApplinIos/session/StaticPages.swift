@@ -115,10 +115,10 @@ public class StaticPages {
     }
 
     public static func pageNotLoaded(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
-        // TODO: Investigate bug where user taps "Load Page" and then the app shows only the "Applin Demo" header and no widgets.
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Page Not Loaded",
+                connectionMode: .pollSeconds(30),
                 ColumnSpec([FormButtonSpec(text: "Load Page", [.poll])])
         ).toSpec()
     }
