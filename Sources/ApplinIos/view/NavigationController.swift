@@ -8,6 +8,17 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
         case navPage(NavPageController, WidgetCache)
         case plainPage(PlainPageController, WidgetCache)
 
+        func allowBackSwipe() -> Bool {
+            switch self {
+            case .loadingPage:
+                return true
+            case let .navPage(ctl, _):
+                return ctl.allowBackSwipe()
+            case let .plainPage(ctl, _):
+                return ctl.allowBackSwipe()
+            }
+        }
+
         func controller() -> UIViewController {
             switch self {
             case let .loadingPage(ctl):
@@ -19,14 +30,12 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
             }
         }
 
-        func allowBackSwipe() -> Bool {
+        func widgetCache() -> WidgetCache? {
             switch self {
             case .loadingPage:
-                return true
-            case let .navPage(ctl, _):
-                return ctl.allowBackSwipe()
-            case let .plainPage(ctl, _):
-                return ctl.allowBackSwipe()
+                return nil
+            case let .navPage(_, widgetCache), let .plainPage(_, widgetCache):
+                return widgetCache
             }
         }
 
@@ -44,11 +53,12 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
 
     static let logger = Logger(subsystem: "Applin", category: "NavigationController")
 
+    public weak var weakServerCaller: ServerCaller?
     private var lock = ApplinLock()
     private var entries: [(String, Entry)] = []
     private var pageControllers: [UIViewController] = []
     private var top: Entry?
-    private var workingHelper:  SingleViewContainerHelper
+    private var workingHelper: SingleViewContainerHelper
     private var appJustStarted = true
 
     init() {
@@ -91,12 +101,14 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
             if let text = text {
                 let working = WorkingView(text: text)
                 working.translatesAutoresizingMaskIntoConstraints = false
-                self.workingHelper.update(working, { [
-                    working.topAnchor.constraint(equalTo: self.view.topAnchor),
-                    working.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
-                    working.leftAnchor.constraint(equalTo: self.view.leftAnchor),
-                    working.rightAnchor.constraint(equalTo: self.view.rightAnchor),
-                ]})
+                self.workingHelper.update(working, {
+                    [
+                        working.topAnchor.constraint(equalTo: self.view.topAnchor),
+                        working.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+                        working.leftAnchor.constraint(equalTo: self.view.leftAnchor),
+                        working.rightAnchor.constraint(equalTo: self.view.rightAnchor),
+                    ]
+                })
             }
         }
     }
@@ -125,29 +137,43 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
                         self.entries.append((key, .loadingPage(LoadingPageController())))
                     }
                 case .navPage:
-                    if case let .navPage(ctl, widgetCache) = keyToEntry.removeValue(forKey: key) {
-                        let ctx = PageContext(widgetCache, hasPrevPage: hasPrevPage, pageKey: key, pageStack, varSet)
-                        ctl.update(ctx, pageSpec)
-                        self.entries.append((key, .navPage(ctl, widgetCache)))
+                    let optEntry = keyToEntry.removeValue(forKey: key)
+                    let widgetCache = optEntry?.widgetCache() ?? WidgetCache()
+                    let ctx = PageContext(
+                            widgetCache,
+                            hasPrevPage: hasPrevPage,
+                            pageKey: key,
+                            pageStack,
+                            self.weakServerCaller,
+                            varSet
+                    )
+                    let ctl: NavPageController
+                    if case let .navPage(existingCtl, _) = optEntry {
+                        ctl = existingCtl
                     } else {
-                        let widgetCache = WidgetCache()
-                        let ctx = PageContext(widgetCache, hasPrevPage: hasPrevPage, pageKey: key, pageStack, varSet)
-                        let ctl = NavPageController(self, ctx)
-                        ctl.update(ctx, pageSpec)
-                        self.entries.append((key, .navPage(ctl, widgetCache)))
+                        ctl = NavPageController(self, ctx)
                     }
+                    ctl.update(ctx, pageSpec)
+                    self.entries.append((key, .navPage(ctl, widgetCache)))
                 case .plainPage:
-                    if case let .plainPage(ctl, widgetCache) = keyToEntry.removeValue(forKey: key) {
-                        let ctx = PageContext(widgetCache, hasPrevPage: hasPrevPage, pageKey: key, pageStack, varSet)
-                        ctl.update(ctx, pageSpec)
-                        self.entries.append((key, .plainPage(ctl, widgetCache)))
+                    let optEntry = keyToEntry.removeValue(forKey: key)
+                    let widgetCache = optEntry?.widgetCache() ?? WidgetCache()
+                    let ctx = PageContext(
+                            widgetCache,
+                            hasPrevPage: hasPrevPage,
+                            pageKey: key,
+                            pageStack,
+                            self.weakServerCaller,
+                            varSet
+                    )
+                    let ctl: PlainPageController
+                    if case let .plainPage(existingCtl, _) = optEntry {
+                        ctl = existingCtl
                     } else {
-                        let widgetCache = WidgetCache()
-                        let ctx = PageContext(widgetCache, hasPrevPage: hasPrevPage, pageKey: key, pageStack, varSet)
-                        let ctl = PlainPageController()
-                        ctl.update(ctx, pageSpec)
-                        self.entries.append((key, .plainPage(ctl, widgetCache)))
+                        ctl = PlainPageController()
                     }
+                    ctl.update(ctx, pageSpec)
+                    self.entries.append((key, .plainPage(ctl, widgetCache)))
                 }
             }
             self.updateViewControllers()

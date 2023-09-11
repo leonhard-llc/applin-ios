@@ -1,6 +1,6 @@
 import Foundation
 
-enum ApplinError: Error {
+public enum ApplinError: Error {
     case appError(String)
     case networkError(String)
     case serverError(String)

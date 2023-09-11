@@ -69,7 +69,11 @@ class Poller {
                 }
                 let varNamesAndValues = pageStack.varNamesAndValues(pageKey: key)
                 let token = pageStack.token()
-                let optUpdate = try await serverCaller?.call(path: key, varNamesAndValues: varNamesAndValues)
+                let optUpdate = try await serverCaller?.poll(
+                        path: key,
+                        varNamesAndValues: varNamesAndValues,
+                        interactive: false
+                )
                 if let update = optUpdate {
                     let _ = await pageStack.tryUpdate(pageKey: key, token, update.spec)
                 } else {

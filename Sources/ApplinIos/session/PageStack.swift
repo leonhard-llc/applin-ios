@@ -2,7 +2,7 @@ import Foundation
 import OSLog
 import UIKit
 
-class PageStack {
+public class PageStack {
     static let logger = Logger(subsystem: "Applin", category: "PageStack")
 
     public class Token {
@@ -224,7 +224,8 @@ class PageStack {
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         try await self.withWorking {
-            let optUpdate = try await serverCaller.call(path: pageKey, varNamesAndValues: varNamesAndValues)
+            let optUpdate =
+                    try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
             guard let update = optUpdate else {
                 throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
             }
@@ -246,7 +247,8 @@ class PageStack {
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         try await self.withWorking {
-            let optUpdate = try await serverCaller.call(path: pageKey, varNamesAndValues: varNamesAndValues)
+            let optUpdate =
+                    try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
             guard let update = optUpdate else {
                 throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
             }
@@ -268,7 +270,8 @@ class PageStack {
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         try await self.withWorking {
-            let optUpdate = try await serverCaller.call(path: pageKey, varNamesAndValues: varNamesAndValues)
+            let optUpdate =
+                    try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
             guard let update = optUpdate else {
                 throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
             }
@@ -284,7 +287,12 @@ class PageStack {
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         try await self.withWorking {
-            let _ = try await serverCaller.call(path: path, varNamesAndValues: varNamesAndValues)
+            let _ = try await serverCaller.call(
+                    .POST,
+                    path: path,
+                    varNamesAndValues: varNamesAndValues,
+                    interactive: true
+            )
         }
     }
 
