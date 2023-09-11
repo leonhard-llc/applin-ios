@@ -199,6 +199,7 @@ class JsonItem: Codable {
     var min_width: Float32?
     var photo_url: String?
     var poll_seconds: UInt32?
+    var pull_to_refresh: Bool?
     var row_groups: [[[JsonItem?]]]?
     var rpc: String?
     var spacing: Float32?

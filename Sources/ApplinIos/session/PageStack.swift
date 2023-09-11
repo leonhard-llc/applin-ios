@@ -233,16 +233,14 @@ public class PageStack {
             return
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
-        try await self.withWorking {
-            let optUpdate =
-                    try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
-            guard let update = optUpdate else {
-                throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
-            }
-            await self.mutex.lockAsyncAndUpdate({ state in
-                state.set(pageKey: pageKey, update.spec)
-            })
+        let optUpdate =
+                try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+        guard let update = optUpdate else {
+            throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
         }
+        await self.mutex.lockAsyncAndUpdate({ state in
+            state.set(pageKey: pageKey, update.spec)
+        })
     }
 
     func doPushAction(pageKey: String) async throws {
@@ -256,16 +254,14 @@ public class PageStack {
             return
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
-        try await self.withWorking {
-            let optUpdate =
-                    try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
-            guard let update = optUpdate else {
-                throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
-            }
-            try await self.mutex.lockAsyncThrowsAndUpdate({ state in
-                try state.push(pageKey: pageKey, update.spec)
-            })
+        let optUpdate =
+                try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+        guard let update = optUpdate else {
+            throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
         }
+        try await self.mutex.lockAsyncThrowsAndUpdate({ state in
+            try state.push(pageKey: pageKey, update.spec)
+        })
     }
 
     func doReplaceAllAction(pageKey: String) async throws {
@@ -279,16 +275,14 @@ public class PageStack {
             return
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
-        try await self.withWorking {
-            let optUpdate =
-                    try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
-            guard let update = optUpdate else {
-                throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
-            }
-            await self.mutex.lockAsyncAndUpdate({ state in
-                state.replaceAll(pageKey: pageKey, update.spec)
-            })
+        let optUpdate =
+                try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+        guard let update = optUpdate else {
+            throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
         }
+        await self.mutex.lockAsyncAndUpdate({ state in
+            state.replaceAll(pageKey: pageKey, update.spec)
+        })
     }
 
     func doRpcAction(pageKey: String, path: String) async throws {
@@ -296,85 +290,102 @@ public class PageStack {
             return
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
-        try await self.withWorking {
-            let _ = try await serverCaller.call(
-                    .POST,
-                    path: path,
-                    varNamesAndValues: varNamesAndValues,
-                    interactive: true
-            )
+        let _ = try await serverCaller.call(
+                .POST,
+                path: path,
+                varNamesAndValues: varNamesAndValues,
+                interactive: true
+        )
+    }
+
+    private func doAction(pageKey: String, _ action: ActionSpec) async throws {
+        Self.logger.info("action \(action.description)")
+        switch action {
+        case let .choosePhoto(path):
+            try await self.doChoosePhotoAction(path: path);
+        case let .copyToClipboard(string):
+            Self.logger.info("action copyToClipboard(\(string))")
+            UIPasteboard.general.string = string
+        case let .launchUrl(url):
+            Self.logger.info("action launchUrl(\(url)")
+            Task { @MainActor in
+                await UIApplication.shared.open(url)
+            }
+        case .logout:
+            // TODO: Delete session cookies.
+            // TODO: Delete state file.
+            // TODO: Stop state file writer.
+            // TODO: Erase session saved state.
+            // TODO: Disconnect streamer.
+            // TODO: Stop poller.
+            // TODO: Interrupt sequence of actions.
+            Self.logger.info("action not implemented")
+        case .nothing:
+            break
+        case .poll:
+            try await self.doPollAction(pageKey: pageKey)
+        case .pop:
+            try await self.mutex.lockAsyncThrowsAndUpdate({ state in
+                try state.pop()
+            })
+        case let .push(key):
+            try await self.doPushAction(pageKey: key)
+        case let .replaceAll(key):
+            try await self.doReplaceAllAction(pageKey: key)
+        case let .rpc(path):
+            try await self.doRpcAction(pageKey: pageKey, path: path)
+        case .takePhoto(_):
+            // TODO: Implement take_photo.
+            Self.logger.info("action not implemented")
         }
     }
 
-    func doActions(pageKey: String, _ actions: [ActionSpec]) async -> Bool {
+    func doActions(pageKey: String, _ actions: [ActionSpec], showWorking: Bool? = nil) async -> Bool {
         await self.lock.lockAsync({
-            do {
-                for action in actions {
-                    Self.logger.info("action \(action.description)")
-                    switch action {
-                    case let .choosePhoto(path):
-                        try await self.doChoosePhotoAction(path: path);
-                    case let .copyToClipboard(string):
-                        Self.logger.info("action copyToClipboard(\(string))")
-                        UIPasteboard.general.string = string
-                    case let .launchUrl(url):
-                        Self.logger.info("action launchUrl(\(url)")
-                        Task { @MainActor in
-                            await UIApplication.shared.open(url)
+            await self.handleInteractiveError({
+                let showWorkingForActions = !actions.filter({ action in action.showWorking }).isEmpty
+                if showWorking ?? showWorkingForActions {
+                    try await self.withWorking({
+                        for action in actions {
+                            try await self.doAction(pageKey: pageKey, action)
                         }
-                    case .logout:
-                        // TODO: Delete session cookies.
-                        // TODO: Delete state file.
-                        // TODO: Stop state file writer.
-                        // TODO: Erase session saved state.
-                        // TODO: Disconnect streamer.
-                        // TODO: Stop poller.
-                        // TODO: Interrupt sequence of actions.
-                        Self.logger.info("action not implemented")
-                    case .nothing:
-                        break
-                    case .poll:
-                        try await self.doPollAction(pageKey: pageKey)
-                    case .pop:
-                        try await self.mutex.lockAsyncThrowsAndUpdate({ state in
-                            try state.pop()
-                        })
-                    case let .push(key):
-                        try await self.doPushAction(pageKey: key)
-                    case let .replaceAll(key):
-                        try await self.doReplaceAllAction(pageKey: key)
-                    case let .rpc(path):
-                        try await self.doRpcAction(pageKey: pageKey, path: path)
-                    case .takePhoto(_):
-                        // TODO: Implement take_photo.
-                        Self.logger.info("action not implemented")
+                    })
+                } else {
+                    for action in actions {
+                        try await self.doAction(pageKey: pageKey, action)
                     }
                 }
                 return true
-            } catch let e {
-                let errorPageKey: String;
-                if let e = e as? ApplinError {
-                    Self.logger.error("\(e)")
-                    self.weakVarSet?.setInteractiveError(e)
-                    switch e {
-                    case .appError:
-                        errorPageKey = StaticPageKeys.APPLIN_CLIENT_ERROR
-                    case .networkError:
-                        errorPageKey = StaticPageKeys.APPLIN_NETWORK_ERROR
-                    case .serverError:
-                        errorPageKey = StaticPageKeys.APPLIN_SERVER_ERROR
-                    case .userError:
-                        errorPageKey = StaticPageKeys.APPLIN_USER_ERROR
-                    }
-                } else {
-                    Self.logger.error("unexpected error: \(e)")
-                    self.weakVarSet?.setInteractiveError(.appError("\(e)"))
-                    errorPageKey = StaticPageKeys.APPLIN_CLIENT_ERROR
-                }
-                try? await self.doPushAction(pageKey: errorPageKey)
-                return false
-            }
+            })
         })
+    }
+
+    func handleInteractiveError(_ f: () async throws -> Bool) async -> Bool {
+        do {
+            return try await f()
+        } catch let e {
+            let errorPageKey: String;
+            if let e = e as? ApplinError {
+                Self.logger.error("\(e)")
+                self.weakVarSet?.setInteractiveError(e)
+                switch e {
+                case .appError:
+                    errorPageKey = StaticPageKeys.APPLIN_CLIENT_ERROR
+                case .networkError:
+                    errorPageKey = StaticPageKeys.APPLIN_NETWORK_ERROR
+                case .serverError:
+                    errorPageKey = StaticPageKeys.APPLIN_SERVER_ERROR
+                case .userError:
+                    errorPageKey = StaticPageKeys.APPLIN_USER_ERROR
+                }
+            } else {
+                Self.logger.error("unexpected error: \(e)")
+                self.weakVarSet?.setInteractiveError(.appError("\(e)"))
+                errorPageKey = StaticPageKeys.APPLIN_CLIENT_ERROR
+            }
+            try? await self.doPushAction(pageKey: errorPageKey)
+            return false
+        }
     }
 
     func nonEphemeralStackPageKeys() -> [String] {
@@ -389,16 +400,16 @@ public class PageStack {
         })
     }
 
+    func token() -> Token {
+        self.mutex.token()
+    }
+
     func tryUpdate(pageKey: String, _ token: Token, _ spec: PageSpec) async -> Bool {
         await self.lock.lockAsync({
             await self.mutex.lockAsyncAndUpdate({ state in
                 state.trySet(pageKey: pageKey, token, spec)
             })
         })
-    }
-
-    func token() -> Token {
-        self.mutex.token()
     }
 
     func varNamesAndValues(pageKey: String) -> [(String, Var)] {

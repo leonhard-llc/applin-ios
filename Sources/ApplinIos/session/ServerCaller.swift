@@ -28,6 +28,7 @@ public class ServerCaller {
     private let urlSession: URLSession
     private weak var pageStack: PageStack?
     private weak var varSet: VarSet?
+    // TODO: Remove this and the complicated PageStack initialization, use VarSet.interactiveError instead.
     public var lastInteractiveError: ApplinError?
 
     public init(_ config: ApplinConfig, _ pageStack: PageStack?, _ varSet: VarSet?) {

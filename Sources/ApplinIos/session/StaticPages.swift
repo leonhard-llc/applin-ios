@@ -97,9 +97,10 @@ public class StaticPages {
     }
 
     public static func errorDetails(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
-        NavPageSpec(pageKey: pageKey, title: "Error Details", ephemeral: true, ScrollSpec(
-                LastErrorTextSpec()
-        )).toSpec()
+        NavPageSpec(pageKey: pageKey, title: "Error Details", ephemeral: true,
+                ScrollSpec(pull_to_refresh: false,
+                        LastErrorTextSpec()
+                )).toSpec()
     }
 
     public static func legalForm(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
@@ -157,7 +158,7 @@ public class StaticPages {
     }
 
     public static func privacyPolicy(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
-        NavPageSpec(pageKey: pageKey, title: "Privacy Policy", ScrollSpec(TextSpec(
+        NavPageSpec(pageKey: pageKey, title: "Privacy Policy", ScrollSpec(pull_to_refresh: false, TextSpec(
                 """
                 PRIVACY POLICY
 
@@ -248,7 +249,7 @@ public class StaticPages {
     }
 
     public static func terms(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
-        NavPageSpec(pageKey: pageKey, title: "Terms of Use", ScrollSpec(TextSpec(
+        NavPageSpec(pageKey: pageKey, title: "Terms of Use", ScrollSpec(pull_to_refresh: false, TextSpec(
                 """
                 TERMS OF USE
 

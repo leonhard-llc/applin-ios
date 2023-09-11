@@ -4,19 +4,23 @@ import UIKit
 
 public struct ScrollSpec: Equatable, Hashable, ToSpec {
     static let TYP = "scroll"
+    let pull_to_refresh: Bool?
     let widget: Spec
 
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
+        self.pull_to_refresh = item.pull_to_refresh
         self.widget = try item.requireWidget(config)
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ScrollSpec.TYP)
+        item.pull_to_refresh = self.pull_to_refresh
         item.widget = self.widget.toJsonItem()
         return item
     }
 
-    init(_ sub: ToSpec) {
+    init(pull_to_refresh: Bool? = nil, _ sub: ToSpec) {
+        self.pull_to_refresh = pull_to_refresh
         self.widget = sub.toSpec()
     }
 
@@ -106,18 +110,35 @@ public class KeyboardAvoidingScrollView: UIScrollView {
 }
 
 class ScrollWidget: Widget {
+    static let logger = Logger(subsystem: "Applin", category: "ScrollWidget")
+    let refreshControl: UIRefreshControl
     let scrollView: KeyboardAvoidingScrollView
     private let helper: SingleViewContainerHelper
+    private var pageKey: String?
+    private weak var weakPageStack: PageStack?
 
     init() {
         self.scrollView = KeyboardAvoidingScrollView()
         self.scrollView.translatesAutoresizingMaskIntoConstraints = false
         self.scrollView.keyboardDismissMode = .interactive
         self.helper = SingleViewContainerHelper(superView: self.scrollView)
+        self.refreshControl = UIRefreshControl()
+        self.refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
     }
 
     func getView() -> UIView {
         self.scrollView
+    }
+
+    @objc func handleRefresh() {
+        guard let pageKey = self.pageKey, let pageStack = self.weakPageStack else {
+            return
+        }
+        Self.logger.info("refresh pageKey=\(pageKey)")
+        Task(priority: .userInitiated) {
+            let _ = await pageStack.doActions(pageKey: pageKey, [.poll], showWorking: false)
+            await self.refreshControl.endRefreshing()
+        }
     }
 
     func isFocused() -> Bool {
@@ -125,7 +146,9 @@ class ScrollWidget: Widget {
     }
 
     func update(_ ctx: PageContext, _ spec: Spec, _ subs: [Widget]) throws {
-        guard case .scroll = spec.value else {
+        self.pageKey = ctx.pageKey
+        self.weakPageStack = ctx.pageStack
+        guard case let .scroll(scrollSpec) = spec.value else {
             throw "Expected .scroll got: \(spec)"
         }
         if subs.count != 1 {
@@ -142,6 +165,11 @@ class ScrollWidget: Widget {
                 subView.rightAnchor.constraint(equalTo: self.scrollView.rightAnchor),
                 subView.widthAnchor.constraint(lessThanOrEqualTo: self.scrollView.widthAnchor),
             ]
+        }
+        if scrollSpec.pull_to_refresh ?? true {
+            self.scrollView.refreshControl = self.refreshControl
+        } else {
+            self.scrollView.refreshControl = nil
         }
     }
 }

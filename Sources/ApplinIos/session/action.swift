@@ -118,6 +118,15 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "takePhoto(\(value))"
         }
     }
+
+    var showWorking: Bool {
+        switch self {
+        case .choosePhoto, .copyToClipboard, .launchUrl, .logout, .nothing, .pop, .takePhoto:
+            return false
+        case .poll, .push, .replaceAll, .rpc:
+            return true
+        }
+    }
 }
 
 extension Array where Element == ActionSpec {
