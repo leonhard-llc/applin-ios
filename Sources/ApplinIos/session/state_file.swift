@@ -79,7 +79,7 @@ class StateFileOwner {
                     contents.stringVars = varSet.strings()
                 }
                 if savePageStack, let pageStack = self.weakPageStack {
-                    contents.pageKeys = pageStack.stackPageKeys()
+                    contents.pageKeys = pageStack.nonEphemeralStackPageKeys()
                 }
                 // TODO: Don't save error pages and ephemeral pages and their subsequents.
                 let bytes = try encodeJson(contents)

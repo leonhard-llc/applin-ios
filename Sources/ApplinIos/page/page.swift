@@ -69,6 +69,17 @@ public enum PageSpec: CustomStringConvertible, Equatable {
         }
     }
 
+    public var isEphemeral: Bool {
+        switch self {
+        case .loadingPage:
+            return true
+        case let .navPage(inner):
+            return inner.ephemeral ?? false
+        case let .plainPage(inner):
+            return inner.ephemeral ?? false
+        }
+    }
+
     func vars() -> [(String, Var)] {
         switch self {
         case .loadingPage:

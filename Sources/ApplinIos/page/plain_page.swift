@@ -5,11 +5,13 @@ import UIKit
 public struct PlainPageSpec: Equatable {
     static let TYP = "plain_page"
     let connectionMode: ConnectionMode
+    let ephemeral: Bool?
     let title: String?
     let widget: Spec
 
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.poll_seconds)
+        self.ephemeral = item.ephemeral
         self.title = item.title
         self.widget = try item.requireWidget(config)
     }
@@ -18,13 +20,20 @@ public struct PlainPageSpec: Equatable {
         let item = JsonItem(PlainPageSpec.TYP)
         item.poll_seconds = self.connectionMode.getPollSeconds()
         item.stream = self.connectionMode.getStream()
+        item.ephemeral = self.ephemeral
         item.title = self.title
         item.widget = self.widget.toJsonItem()
         return item
     }
 
-    public init(title: String?, connectionMode: ConnectionMode = .disconnect, _ widget: ToSpec) {
+    public init(
+            title: String?,
+            connectionMode: ConnectionMode = .disconnect,
+            ephemeral: Bool? = nil,
+            _ widget: ToSpec
+    ) {
         self.connectionMode = connectionMode
+        self.ephemeral = ephemeral
         self.title = title
         self.widget = widget.toSpec()
     }

@@ -12,6 +12,7 @@ public struct NavPageSpec: Equatable {
     static let TYP = "nav_page"
     let connectionMode: ConnectionMode
     let end: Spec?
+    let ephemeral: Bool?
     let start: StartEnum
     let title: String
     let widget: Spec
@@ -19,6 +20,7 @@ public struct NavPageSpec: Equatable {
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.poll_seconds)
         self.end = try item.optEnd(config)
+        self.ephemeral = item.ephemeral
         switch try item.optStart(config)?.value {
         case let .backButton(inner):
             self.start = .backButton(inner)
@@ -36,6 +38,7 @@ public struct NavPageSpec: Equatable {
     func toJsonItem() -> JsonItem {
         let item = JsonItem(NavPageSpec.TYP)
         item.end = self.end?.toJsonItem()
+        item.ephemeral = self.ephemeral
         item.poll_seconds = self.connectionMode.getPollSeconds()
         item.stream = self.connectionMode.getStream()
         item.title = self.title
@@ -57,12 +60,14 @@ public struct NavPageSpec: Equatable {
             start: StartEnum = .defaultBackButton,
             end: Spec? = nil,
             connectionMode: ConnectionMode = .disconnect,
+            ephemeral: Bool? = nil,
             _ widget: ToSpec
     ) {
         self.connectionMode = connectionMode
         self.end = end
         self.start = start
         self.title = title
+        self.ephemeral = ephemeral
         self.widget = widget.toSpec()
     }
 

@@ -180,6 +180,7 @@ class JsonItem: Codable {
     // TODO: Split this into separate horizontal and vertical fields.
     var disposition: String?
     var end: JsonItem?
+    var ephemeral: Bool?
     var error: String?
     var height: Float32?
     var id: String?

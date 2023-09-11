@@ -114,8 +114,10 @@ public class PageStack {
             self.dirty = true
         }
 
-        func stackPageKeys() -> [String] {
-            self.stack.map({ entry in entry.pageKey })
+        func nonEphemeralStackPageKeys() -> [String] {
+            self.stack
+                    .prefix(while: { entry in !entry.spec.isEphemeral })
+                    .map({ entry in entry.pageKey })
         }
 
         func stackPages() -> [(String, PageSpec, Instant)] {
@@ -367,9 +369,9 @@ public class PageStack {
         })
     }
 
-    func stackPageKeys() -> [String] {
+    func nonEphemeralStackPageKeys() -> [String] {
         self.mutex.lockReadOnly({ state in
-            state.stackPageKeys()
+            state.nonEphemeralStackPageKeys()
         })
     }
 

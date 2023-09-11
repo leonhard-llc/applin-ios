@@ -34,6 +34,7 @@ public class StaticPages {
                 pageKey: pageKey,
                 // TODO: Include error code in title.
                 title: "Error",
+                ephemeral: true,
                 FormSpec([
                     ErrorTextSpec("Error in app.  Please try again, quit and reopen the app. or update the app."),
                     FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
@@ -47,6 +48,7 @@ public class StaticPages {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Connection Problem",
+                ephemeral: true,
                 FormSpec([
                     ErrorTextSpec("Could not contact server.  Check your connection and try again."),
                     FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
@@ -61,6 +63,7 @@ public class StaticPages {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Error",
+                ephemeral: true,
                 FormSpec([
                     ErrorTextSpec("Problem talking to server.  Please try again or update the app."),
                     FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
@@ -75,6 +78,7 @@ public class StaticPages {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Connect to Load App",
+                ephemeral: true,
                 FormSpec([
                     FormButtonSpec(text: "Connect", [.poll]),
                 ])
@@ -85,6 +89,7 @@ public class StaticPages {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Problem",
+                ephemeral: true,
                 FormSpec([
                     ErrorTextSpec("${INTERACTIVE_ERROR_DETAILS}"),
                 ])
@@ -92,7 +97,7 @@ public class StaticPages {
     }
 
     public static func errorDetails(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
-        NavPageSpec(pageKey: pageKey, title: "Error Details", ScrollSpec(
+        NavPageSpec(pageKey: pageKey, title: "Error Details", ephemeral: true, ScrollSpec(
                 LastErrorTextSpec()
         )).toSpec()
     }
@@ -122,6 +127,7 @@ public class StaticPages {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Not Found",
+                ephemeral: true,
                 ColumnSpec([TextSpec("Page not found.")])
         ).toSpec()
     }
