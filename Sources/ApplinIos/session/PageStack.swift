@@ -353,11 +353,7 @@ class PageStack {
                     self.weakVarSet?.setInteractiveError(.appError("\(e)"))
                     errorPageKey = StaticPageKeys.APPLIN_CLIENT_ERROR
                 }
-                // TODO: Use static error page specs and eliminate the try.
-                // TODO: Solve crash when user taps OK to dismiss an error dialog and then makes the error show again:
-                //       Fatal error: 'try!' expression unexpectedly raised an error: ApplinIos.ApplinError.appError(
-                //         "App tried to show a page that is already shown.  Navigate back to it.")
-                try! await self.doPushAction(pageKey: errorPageKey)
+                try? await self.doPushAction(pageKey: errorPageKey)
                 return false
             }
         })
