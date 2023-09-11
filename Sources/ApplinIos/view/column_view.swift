@@ -46,7 +46,7 @@ class ColumnView: UIView {
         for subview in self.subviews {
             if !newSubviews.contains(subview) {
                 Self.logger.debug("ColumnView.update remove \(subview)")
-                subview.removeFromSuperview()
+                subview.removeFromSuperview(self)
             }
         }
         let existingSubviews = Set(self.subviews)

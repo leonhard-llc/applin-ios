@@ -36,7 +36,7 @@ class TableView: UIView {
             for optSubview in row {
                 if let subview = optSubview, !newSubviews.contains(subview) {
                     Self.logger.debug("TableView.update remove \(subview)")
-                    subview.removeFromSuperview()
+                    subview.removeFromSuperview(self)
                 }
             }
         }

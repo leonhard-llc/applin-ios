@@ -1,4 +1,7 @@
+import OSLog
 import UIKit
+
+private let LOGGER = Logger(subsystem: "Applin", category: "WidgetUtil")
 
 let pastelYellow = UIColor(hue: 48.0 / 360.0, saturation: 0.56, brightness: 0.96, alpha: 1.0)
 let pastelPeach = UIColor(hue: 19.0 / 360.0, saturation: 0.28, brightness: 1.0, alpha: 1.0)
@@ -34,7 +37,8 @@ class SingleViewContainerHelper {
     private weak var subView: UIView?
     private var constraints: [NSLayoutConstraint] = []
 
-    init() {}
+    init() {
+    }
 
     init(superView: UIView) {
         self.superView = superView
@@ -43,7 +47,7 @@ class SingleViewContainerHelper {
     func clear() {
         NSLayoutConstraint.deactivate(self.constraints)
         self.constraints = []
-        self.subView?.removeFromSuperview()
+        self.subView?.removeFromSuperview(self.superView)
         self.subView = nil
     }
 
@@ -118,6 +122,15 @@ public extension Task {
 extension UIControl {
     func addAction(for event: UIControl.Event, handler: @escaping UIActionHandler) {
         self.addAction(UIAction(handler: handler), for: event)
+    }
+}
+
+public extension UIView {
+    func removeFromSuperview(_ superView: UIView?) {
+        if self.superview === superView {
+            LOGGER.trace("removeFromSuperview superView=\(superView) view=\(self)")
+            self.removeFromSuperview()
+        }
     }
 }
 

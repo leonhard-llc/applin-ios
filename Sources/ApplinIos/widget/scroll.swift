@@ -99,6 +99,10 @@ public class KeyboardAvoidingScrollView: UIScrollView {
             )
         }
     }
+
+    override public var description: String {
+        "KeyboardAvoidingScrollView.\(self.address)"
+    }
 }
 
 class ScrollWidget: Widget {

@@ -2,14 +2,18 @@ import Foundation
 import UIKit
 
 class NamedUIView: UIView {
-    public var name: String?
+    public var name: String
 
-    convenience init(name: String) {
-        self.init()
+    init(name: String) {
         self.name = name
+        super.init(frame: CGRect.zero)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not implemented")
     }
 
     override public var description: String {
-        "\(self.name ?? "NamedUIView"){\(self.address)}"
+        "\(self.name).{\(self.address)}"
     }
 }

@@ -81,6 +81,7 @@ class StateFileOwner {
                 if savePageStack, let pageStack = self.weakPageStack {
                     contents.pageKeys = pageStack.stackPageKeys()
                 }
+                // TODO: Don't save error pages and ephemeral pages and their subsequents.
                 let bytes = try encodeJson(contents)
                 let hash = UInt64(truncatingIfNeeded: bytes.hashValue)
                 if self.fileBytesHash.load() == hash {

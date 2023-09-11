@@ -1,7 +1,5 @@
 import UIKit
 
-// TODO: Track down bug.  Visible page was updated to put Column inside Scroll, showed nothing.
-
 /// A node with `optWidget`, which may be absent.
 private class RoughNode {
     let keys: [String]

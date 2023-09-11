@@ -32,7 +32,7 @@ class RowView: UIView {
         let newSubviews = Set(subviews)
         for subview in self.subviews {
             if !newSubviews.contains(subview) {
-                subview.removeFromSuperview()
+                subview.removeFromSuperview(self)
             }
         }
         let existingSubviews = Set(self.subviews)
