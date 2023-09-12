@@ -92,9 +92,9 @@ class PlainPageController: UIViewController, PageController {
         self.helper.update(subView) {
             [
                 subView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-                subView.bottomAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.bottomAnchor),
+                subView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
                 subView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
-                subView.trailingAnchor.constraint(lessThanOrEqualTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+                subView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
             ]
         }
     }
