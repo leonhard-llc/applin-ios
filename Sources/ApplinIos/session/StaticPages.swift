@@ -9,7 +9,7 @@ public class StaticPageKeys {
     /// Applin pushes this page when it fails to make an HTTP request to the server.
     public static let APPLIN_NETWORK_ERROR = "/applin_network_error"
     /// Applin pushes this page when the server returns a non-200 response.
-    public static let APPLIN_SERVER_ERROR = "/applin_rpc_error"
+    public static let APPLIN_SERVER_ERROR = "/applin_server_error"
     /// Applin pushes this page when it fails to load the state file.
     /// Show the user a Connect button.
     public static let APPLIN_STATE_LOAD_ERROR = "/applin_state_load_error"
