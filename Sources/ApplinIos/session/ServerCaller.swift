@@ -124,7 +124,7 @@ class ServerCaller {
             urlRequest.httpBody = body
             urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
             Self.logger.info("POST \(String(describing: path))")
-            Self.logger.debug("POST \(String(describing: path)) request body=\(String(describing: body))")
+            Self.logger.debug("POST \(String(describing: path)) request body=\(String(describing: String(data: body, encoding: .utf8)))")
         }
         let (httpResponse, data) = try await self.doRequest(path: path, urlRequest, interactive: interactive)
         let contentTypeBase = httpResponse.contentTypeBase()
