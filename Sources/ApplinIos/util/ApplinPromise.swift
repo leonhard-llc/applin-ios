@@ -1,14 +1,14 @@
 import Foundation
 
 class ApplinPromise<T> {
-    private enum PromiseResult<T> {
+    private enum PromiseResult {
         case no
         case yes(T)
     }
 
     private let applinLock = ApplinLock()
     private let resultLock = NSLock()
-    private var result: PromiseResult<T> = .no
+    private var result: PromiseResult = .no
 
     init() {
         self.applinLock.unsafeLock()
