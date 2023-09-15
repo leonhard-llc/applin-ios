@@ -277,8 +277,8 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
 
     func textViewDidChange(_: UITextView) {
         Self.logger.debug("varName=\(self.spec.varName) textViewDidChange")
-        //let value = self.textview.text.isEmpty ? nil : self.textview.text
-        //self.ctx.varSet?.setString(self.spec.varName, value)
+        let value = self.textview.text.isEmpty ? nil : self.textview.text
+        self.ctx.varSet?.setString(self.spec.varName, value)
         //if let rpcPath = self.spec.rpc {
         //    self.lock.lock()
         //    defer {
