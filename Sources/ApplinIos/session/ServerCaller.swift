@@ -119,7 +119,7 @@ class ServerCaller {
             Self.logger.info("GET \(String(describing: path))")
         case .POST:
             let vars: [(String, JSON)] = varNamesAndValues.map({ (name, value) in (name, value.toJson()) })
-            let jsonBody: [String: JSON] = Dictionary(uniqueKeysWithValues: vars)
+            let jsonBody: [String: JSON] = vars.toDictionary()
             let body = try encodeJson(jsonBody)
             urlRequest.httpBody = body
             urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")

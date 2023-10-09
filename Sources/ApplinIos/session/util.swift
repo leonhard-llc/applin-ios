@@ -167,19 +167,23 @@ extension Date {
 
 extension Dictionary {
     func compactMap2<R>(_ f: (Key, Value) -> R?) -> Dictionary<Key, R> {
-        Dictionary<Key, R>(uniqueKeysWithValues: self.compactMap { (key, value) in
+        let keyValueTuples = self.compactMap { (key, value) in
             if let result: R = f(key, value) {
                 return (key, result)
             } else {
                 return nil
             }
-        })
+        }
+        return Dictionary<Key, R>(keyValueTuples, uniquingKeysWith: { (_, last) in last })
     }
 }
 
 extension Array {
+    /// Converts the array of (key, value) tuples into a [key: value] dictionary.
+    /// If there are duplicate keys, uses tuple that appears last in the array.
+    /// - Returns:
     func toDictionary<K, V>() -> Dictionary<K, V> where Element == (K, V) {
-        Dictionary(uniqueKeysWithValues: self)
+        Dictionary(self, uniquingKeysWith: { (_, last) in last })
     }
 }
 
@@ -222,7 +226,7 @@ extension NSRegularExpression {
 // This is impossible in Swift because `extension` does not support type parameters `<K, V>`.
 //extension Sequence where Iterator.Element == (K, V) {
 //    func toDict() -> Dictionary<K, V> {
-//        Dictionary<K, V>(uniqueKeysWithValues: array)
+//        Dictionary<K, V>(array, uniquingKeysWith: { (_, last) in last })
 //    }
 //}
 
