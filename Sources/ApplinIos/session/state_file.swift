@@ -57,7 +57,14 @@ class StateFileOwner {
                 if Task.isCancelled {
                     break
                 }
-                await self.write(savePageStack: true)
+                guard let varSet = self.weakVarSet, let pageStack = self.weakPageStack else {
+                    break
+                }
+                do {
+                    try await self.write(varSet, pageStack)
+                } catch {
+                    Self.logger.error("failed saving state: \(error)")
+                }
             }
             Self.logger.info("periodic writer task stopping")
         }
@@ -65,49 +72,52 @@ class StateFileOwner {
 
     func stop() {
         self.periodicTask?.cancel()
-        Task(priority: .high) {
-            await self.write(savePageStack: true)
+        let task: Task<(), Never> = Task(priority: .high) {
+            if let varSet = self.weakVarSet, let pageStack = self.weakPageStack {
+                do {
+                    try await self.write(varSet, pageStack)
+                } catch {
+                    Self.logger.error("failed saving state: \(error)")
+                }
+            }
         }
+        try! task.resultSync.get()
     }
 
-    func write(savePageStack: Bool) async {
-        do {
-            try await self.lock.lockAsyncThrows({
-                var contents: StateFileContents = StateFileContents()
-                if let varSet = self.weakVarSet {
-                    contents.boolVars = varSet.bools()
-                    contents.stringVars = varSet.strings()
-                }
-                if savePageStack, let pageStack = self.weakPageStack {
-                    contents.pageKeys = pageStack.nonEphemeralStackPageKeys()
-                }
-                // TODO: Don't save error pages and ephemeral pages and their subsequents.
-                let bytes = try encodeJson(contents)
-                let hash = UInt64(truncatingIfNeeded: bytes.hashValue)
-                if self.fileBytesHash.load() == hash {
-                    Self.logger.debug("file contents unchanged, skipping writing file")
-                    return
-                }
-                let dirPath = (self.path as NSString).deletingLastPathComponent
-                try await createDirAsync(dirPath)
-                let tmpPath = self.path + ".tmp"
-                try await deleteFile(path: tmpPath)
-                try await writeFile(data: bytes, path: tmpPath)
-                // Swift has no atomic file replace function.
-                try await deleteFile(path: self.path)
-                try await moveFile(atPath: tmpPath, toPath: self.path)
-                self.fileBytesHash.store(hash)
-                Self.logger.info("wrote file")
-            })
-        } catch {
-            Self.logger.error("failed saving state: \(error)")
-        }
+    func write(_ varSet: VarSet, _ optPageStack: PageStack?) async throws {
+        try await self.lock.lockAsyncThrows({
+            var contents: StateFileContents = StateFileContents()
+            contents.boolVars = varSet.bools()
+            contents.stringVars = varSet.strings()
+            if let pageStack = optPageStack {
+                contents.pageKeys = pageStack.nonEphemeralStackPageKeys()
+            }
+            let bytes = try encodeJson(contents)
+            let hash = UInt64(truncatingIfNeeded: bytes.hashValue)
+            if self.fileBytesHash.load() == hash {
+                Self.logger.debug("file contents unchanged, skipping writing file")
+                return
+            }
+            let dirPath = (self.path as NSString).deletingLastPathComponent
+            try await createDirAsync(dirPath)
+            let tmpPath = self.path + ".tmp"
+            try await deleteFile(path: tmpPath)
+            try await writeFile(data: bytes, path: tmpPath)
+            // Swift has no atomic file replace function.
+            try await deleteFile(path: self.path)
+            try await moveFile(atPath: tmpPath, toPath: self.path)
+            self.fileBytesHash.store(hash)
+            Self.logger.info("wrote file")
+        })
     }
 
     func eraseStack() {
         do {
             let task = Task(priority: .high) {
-                await self.write(savePageStack: false)
+                guard let varSet = self.weakVarSet else {
+                    throw "weakVarSet is nil"
+                }
+                try await self.write(varSet, nil)
             }
             try task.resultSync.get()
         } catch {

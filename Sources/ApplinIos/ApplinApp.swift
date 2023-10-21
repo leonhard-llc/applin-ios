@@ -72,8 +72,8 @@ public class ApplinApp {
 
     public func applicationDidEnterBackground(_ application: UIApplication) {
         Self.logger.info("background")
-        self.stateFileOwner?.stop()
         self.poller?.stop()
+        self.stateFileOwner?.stop()
     }
 
     public func applicationWillTerminate(_ application: UIApplication) {
