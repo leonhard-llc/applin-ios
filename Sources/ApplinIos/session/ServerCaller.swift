@@ -108,7 +108,7 @@ class ServerCaller {
             varNamesAndValues: [(String, Var)],
             interactive: Bool
     ) async throws -> PageUpdate? {
-        let url = self.config.url.appendingPathComponent(path.removePrefix("/"))
+        let url = self.config.baseUrl.appendingPathComponent(path.removePrefix("/"))
         var urlRequest = URLRequest(
                 url: url,
                 cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
@@ -156,7 +156,7 @@ class ServerCaller {
     }
 
     func upload(path: String, uploadBody: UploadBody) async throws {
-        let url = self.config.url.appendingPathComponent(path.removePrefix("/"))
+        let url = self.config.baseUrl.appendingPathComponent(path.removePrefix("/"))
         var urlRequest = URLRequest(
                 url: url,
                 cachePolicy: .reloadIgnoringLocalAndRemoteCacheData

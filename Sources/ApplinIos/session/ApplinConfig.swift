@@ -19,7 +19,7 @@ public class ApplinConfig {
     public let supportChatUrl: URL?
     public let supportEmailAddress: String?
     public let supportSmsTel: String?
-    public var url: URL
+    public var baseUrl: URL
 
     public init(
             appStoreAppId: UInt64,
@@ -50,13 +50,13 @@ public class ApplinConfig {
         self.supportEmailAddress = supportEmailAddress
         self.supportSmsTel = supportSmsTel
         #if targetEnvironment(simulator)
-        self.url = urlForSimulatorBuilds
+        self.baseUrl = urlForSimulatorBuilds
         #elseif DEBUG
-        self.url = urlForDebugBuilds
+        self.baseUrl = urlForDebugBuilds
         #else
-        self.url = self.licenseKey!.url
+        self.baseUrl = self.licenseKey!.url
         #endif
-        Self.logger.info("dataDirPath=\(dataDirPath) url=\(self.url)")
+        Self.logger.info("dataDirPath=\(dataDirPath) baseUrl=\(self.baseUrl)")
         try createDir(self.dataDirPath)
     }
 
@@ -70,15 +70,5 @@ public class ApplinConfig {
 
     public func stateFilePath() -> String {
         self.dataDirPath + "/applin_state.json"
-    }
-
-    public func restrictedSetUrl(_ url: URL) throws {
-        guard let key = self.licenseKey else {
-            throw "licenseKey required"
-        }
-        if !key.string.starts(with: "14NNS-2E") {
-            throw "this method is restricted"
-        }
-        self.url = url
     }
 }

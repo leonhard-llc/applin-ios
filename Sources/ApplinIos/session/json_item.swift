@@ -544,7 +544,7 @@ class JsonItem: Codable {
 
     func optPhotoUrl(_ config: ApplinConfig) throws -> URL? {
         if let value = self.photo_url {
-            guard let url = URL(string: value, relativeTo: config.url) else {
+            guard let url = URL(string: value, relativeTo: config.baseUrl) else {
                 throw ApplinError.appError("bad \(self.typ).photo_url: \(value)")
             }
             return url
@@ -577,7 +577,7 @@ class JsonItem: Codable {
         guard let value = self.url else {
             throw ApplinError.appError("missing \(self.typ).url")
         }
-        guard let url = URL(string: value, relativeTo: config.url) else {
+        guard let url = URL(string: value, relativeTo: config.baseUrl) else {
             throw ApplinError.appError("bad \(self.typ).url: \(value)")
         }
         return url

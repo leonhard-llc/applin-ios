@@ -4,7 +4,7 @@ import OSLog
 public class Cookies {
     static let logger = Logger(subsystem: "Applin", category: "Cookies")
     static func sessionCookie(_ config: ApplinConfig) -> HTTPCookie? {
-        HTTPCookieStorage.shared.cookies(for: config.url)?.first(where: { c in c.name == "session" })
+        HTTPCookieStorage.shared.cookies(for: config.baseUrl)?.first(where: { c in c.name == "session" })
     }
 
     static func deleteSessionCookie(_ config: ApplinConfig) {
