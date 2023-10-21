@@ -64,19 +64,19 @@ public class ApplinApp {
         return true
     }
 
-    public func applicationDidBecomeActive(_ application: UIApplication) {
+    public func applicationDidBecomeActive() {
         Self.logger.info("active")
         self.poller?.start()
         self.stateFileOwner?.start()
     }
 
-    public func applicationDidEnterBackground(_ application: UIApplication) {
+    public func applicationDidEnterBackground() {
         Self.logger.info("background")
         self.poller?.stop()
         self.stateFileOwner?.stop()
     }
 
-    public func applicationWillTerminate(_ application: UIApplication) {
+    public func applicationWillTerminate() {
         // App is running and gets terminated by the user or iOS.
         Self.logger.info("terminate")
         self.stateFileOwner?.eraseStack()
