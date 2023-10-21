@@ -19,7 +19,7 @@ public class ApplinConfig {
     public let supportChatUrl: URL?
     public let supportEmailAddress: String?
     public let supportSmsTel: String?
-    public var baseUrl: URL
+    public let baseUrl: URL
 
     public init(
             appStoreAppId: UInt64,
@@ -70,5 +70,34 @@ public class ApplinConfig {
 
     public func stateFilePath() -> String {
         self.dataDirPath + "/applin_state.json"
+    }
+
+    private init(_ config: ApplinConfig, baseUrl: URL) {
+        self.appStoreAppId = config.appStoreAppId
+        self.applinClientErrorPage = config.applinClientErrorPage
+        self.applinNetworkErrorPage = config.applinNetworkErrorPage
+        self.applinPageNotLoadedPage = config.applinPageNotLoadedPage
+        self.applinServerErrorPage = config.applinServerErrorPage
+        self.applinStateLoadErrorPage = config.applinStateLoadErrorPage
+        self.applinUserErrorPage = config.applinUserErrorPage
+        self.dataDirPath = config.dataDirPath
+        self.licenseKey = config.licenseKey
+        self.showPageOnFirstStartup = config.showPageOnFirstStartup
+        self.staticPages = config.staticPages
+        self.statusPageUrl = config.statusPageUrl
+        self.supportChatUrl = config.supportChatUrl
+        self.supportEmailAddress = config.supportEmailAddress
+        self.supportSmsTel = config.supportSmsTel
+        self.baseUrl = baseUrl
+    }
+
+    public func restricted_withBaseUrl(_ baseUrl: URL) throws -> ApplinConfig {
+        guard let key = self.licenseKey else {
+            throw "licenseKey required"
+        }
+        if !key.string.starts(with: "14NNS-2E") {
+            throw "this method is restricted"
+        }
+        return ApplinConfig(self, baseUrl: baseUrl)
     }
 }
