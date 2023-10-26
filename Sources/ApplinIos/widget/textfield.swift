@@ -2,6 +2,9 @@ import Foundation
 import OSLog
 import UIKit
 
+// TODO: Implement textfield maxLines.
+// TODO: Implement textfield minChars.
+// TODO: Implement textfield maxChars.
 public struct TextfieldSpec: Equatable, Hashable, ToSpec {
     static let TYP = "textfield"
 

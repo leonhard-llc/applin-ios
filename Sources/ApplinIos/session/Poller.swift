@@ -3,6 +3,7 @@ import OSLog
 
 class Poller {
     static let logger = Logger(subsystem: "Applin", category: "Poller")
+    static let retryMillis = RetryMillis(millis: [1_000, 5_000, 10_000, 30_000])
 
     private let taskLock = ApplinLock()
     private let config: ApplinConfig
@@ -31,15 +32,21 @@ class Poller {
         self.task?.cancel()
         self.task = Task(priority: .low) {
             Self.logger.info("starting")
+            var attempt = 0
             while !Task.isCancelled {
-                await sleep(ms: 1_000)
+                let sleepMs = Self.retryMillis.get(attemptNum: attempt)
+                Self.logger.debug("sleepMs = \(sleepMs)")
+                await sleep(ms: sleepMs)
                 if Task.isCancelled {
                     break
                 }
                 do {
                     try await self.updatePolledPages()
+                    attempt = 0
                 } catch {
+                    // TODO: Show "Connection problem" warning.
                     Self.logger.error("error updating, will retry: \(error)")
+                    attempt += 1
                 }
             }
             Self.logger.info("stopping")
