@@ -126,6 +126,7 @@ class ServerCaller {
             Self.logger.info("POST \(String(describing: path))")
             Self.logger.debug("POST \(String(describing: path)) request body=\(String(describing: String(data: body, encoding: .utf8)))")
         }
+        urlRequest.addValue("application/vnd.applin_response", forHTTPHeaderField: "accept")
         let (httpResponse, data) = try await self.doRequest(path: path, urlRequest, interactive: interactive)
         let contentTypeBase = httpResponse.contentTypeBase()
         Self.logger.info("\(urlRequest.httpMethod!) \(String(describing: path)) response status=\(httpResponse.statusCode) bodyLen=\(data.count) bodyType='\(contentTypeBase ?? "")'")
