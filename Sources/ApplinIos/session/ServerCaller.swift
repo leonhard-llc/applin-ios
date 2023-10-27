@@ -118,7 +118,6 @@ class ServerCaller {
         case .GET:
             Self.logger.info("GET \(String(describing: path))")
         case .POST:
-            urlRequest.addValue(config.originUrl, forHTTPHeaderField: "origin")
             let vars: [(String, JSON)] = varNamesAndValues.map({ (name, value) in (name, value.toJson()) })
             let jsonBody: [String: JSON] = vars.toDictionary()
             let body = try encodeJson(jsonBody)

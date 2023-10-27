@@ -1,20 +1,6 @@
 import Foundation
 import OSLog
 
-extension URL {
-    func asOrigin() throws -> String {
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin
-        guard let scheme = self.scheme else {
-            throw "url has no scheme: \(String(describing: self))"
-        }
-        guard let host = self.host else {
-            throw "url has no scheme: \(String(describing: self))"
-        }
-        let portString = self.port == nil ? "" : ":\(self.port!)"
-        return "\(scheme)://\(host)\(portString)"
-    }
-}
-
 public class ApplinConfig {
     static let logger = Logger(subsystem: "Applin", category: "ApplinConfig")
 
@@ -34,7 +20,6 @@ public class ApplinConfig {
     public let supportEmailAddress: String?
     public let supportSmsTel: String?
     public let baseUrl: URL
-    public let originUrl: String
 
     public init(
             appStoreAppId: UInt64,
@@ -71,7 +56,6 @@ public class ApplinConfig {
         #else
         self.baseUrl = self.licenseKey!.url
         #endif
-        self.originUrl = try self.baseUrl.asOrigin()
         Self.logger.info("dataDirPath=\(dataDirPath) baseUrl=\(self.baseUrl)")
         try createDir(self.dataDirPath)
     }
@@ -88,7 +72,7 @@ public class ApplinConfig {
         self.dataDirPath + "/applin_state.json"
     }
 
-    private init(_ config: ApplinConfig, baseUrl: URL) throws {
+    private init(_ config: ApplinConfig, baseUrl: URL) {
         self.appStoreAppId = config.appStoreAppId
         self.applinClientErrorPage = config.applinClientErrorPage
         self.applinNetworkErrorPage = config.applinNetworkErrorPage
@@ -105,7 +89,6 @@ public class ApplinConfig {
         self.supportEmailAddress = config.supportEmailAddress
         self.supportSmsTel = config.supportSmsTel
         self.baseUrl = baseUrl
-        self.originUrl = try self.baseUrl.asOrigin()
     }
 
     public func restricted_withBaseUrl(_ baseUrl: URL) throws -> ApplinConfig {
@@ -115,6 +98,6 @@ public class ApplinConfig {
         if !key.string.starts(with: "14NNS-2E") {
             throw "this method is restricted"
         }
-        return try ApplinConfig(self, baseUrl: baseUrl)
+        return ApplinConfig(self, baseUrl: baseUrl)
     }
 }
