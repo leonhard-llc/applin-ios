@@ -178,7 +178,7 @@ public class ImageView: UIView {
     private func loadImageBundleFile(filepath: String) async {
         do {
             Self.logger.debug("\(self) loadImageBundleFile start")
-            let data = try await readBundleFile(filepath: filepath)
+            let data = try readBundleFile(filepath: filepath)
             guard let image = UIImage(data: data) else {
                 throw "error processing bundle file as image: \(String(describing: filepath)) len=\(data.count)"
             }

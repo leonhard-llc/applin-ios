@@ -97,7 +97,7 @@ public func moveFile(atPath: String, toPath: String) async throws {
     try await task.value
 }
 
-public func readBundleFile(filepath: String) async throws -> Data {
+public func readBundleFile(filepath: String) throws -> Data {
     guard let url = Bundle.main.url(forResource: filepath, withExtension: nil)
     else {
         throw ApplinError.appError("bundle file not found: \(filepath)")
