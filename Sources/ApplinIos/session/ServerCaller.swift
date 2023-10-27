@@ -118,6 +118,7 @@ class ServerCaller {
         case .GET:
             Self.logger.info("GET \(String(describing: path))")
         case .POST:
+            urlRequest.addValue(config.originUrl, forHTTPHeaderField: "origin")
             let vars: [(String, JSON)] = varNamesAndValues.map({ (name, value) in (name, value.toJson()) })
             let jsonBody: [String: JSON] = vars.toDictionary()
             let body = try encodeJson(jsonBody)
@@ -126,8 +127,8 @@ class ServerCaller {
             Self.logger.info("POST \(String(describing: path))")
             Self.logger.debug("POST \(String(describing: path)) request body=\(String(describing: String(data: body, encoding: .utf8)))")
         }
-        // TODO: Add 'referer' and remove `skip_forgery_protection` from Ruby code.
         urlRequest.addValue("application/vnd.applin_response", forHTTPHeaderField: "accept")
+        //Self.logger.debug("urlRequest \(urlRequest.httpMethod) \(String(describing: urlRequest)) \(String(describing: urlRequest.allHTTPHeaderFields))")
         let (httpResponse, data) = try await self.doRequest(path: path, urlRequest, interactive: interactive)
         let contentTypeBase = httpResponse.contentTypeBase()
         Self.logger.info("\(urlRequest.httpMethod!) \(String(describing: path)) response status=\(httpResponse.statusCode) bodyLen=\(data.count) bodyType='\(contentTypeBase ?? "")'")
