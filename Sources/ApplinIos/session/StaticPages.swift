@@ -31,12 +31,12 @@ public class StaticPages {
                 // TODO: Include error code in title.
                 title: "Error",
                 ephemeral: true,
-                FormSpec([
+                ScrollSpec(pull_to_refresh: false, FormSpec([
                     ErrorTextSpec("Error in app.  Please try again, quit and reopen the app. or update the app."),
                     FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
                     FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
                     FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
-                ])
+                ]))
         )
     }
 
@@ -45,13 +45,13 @@ public class StaticPages {
                 pageKey: pageKey,
                 title: "Connection Problem",
                 ephemeral: true,
-                FormSpec([
+                ScrollSpec(pull_to_refresh: false, FormSpec([
                     ErrorTextSpec("Could not contact server.  Check your connection and try again."),
                     FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
                     FormButtonSpec(text: "Server Status", [.push(StaticPageKeys.SERVER_STATUS)]),
                     FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
                     FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
-                ])
+                ]))
         )
     }
 
@@ -60,13 +60,13 @@ public class StaticPages {
                 pageKey: pageKey,
                 title: "Error",
                 ephemeral: true,
-                FormSpec([
+                ScrollSpec(pull_to_refresh: false, FormSpec([
                     ErrorTextSpec("Problem talking to server.  Please try again or update the app."),
                     FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
                     FormButtonSpec(text: "Server Status", [.push(StaticPageKeys.SERVER_STATUS)]),
                     FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
                     FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
-                ])
+                ]))
         )
     }
 
@@ -86,9 +86,9 @@ public class StaticPages {
                 pageKey: pageKey,
                 title: "Problem",
                 ephemeral: true,
-                FormSpec([
+                ScrollSpec(pull_to_refresh: false, FormSpec([
                     ErrorTextSpec("${INTERACTIVE_ERROR_DETAILS}"),
-                ])
+                ]))
         )
     }
 
@@ -138,6 +138,10 @@ public class StaticPages {
             let url = URL(string: "sms:\(tel)")!
             buttons.append(FormButtonSpec(text: "Text Support", [.launchUrl(url)]))
         }
-        return NavPageSpec(pageKey: pageKey, title: "Support", FormSpec(buttons))
+        return NavPageSpec(pageKey: pageKey, title: "Support",
+                ScrollSpec(pull_to_refresh: false,
+                        FormSpec(buttons)
+                )
+        )
     }
 }
