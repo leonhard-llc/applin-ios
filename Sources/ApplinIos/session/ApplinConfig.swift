@@ -5,16 +5,16 @@ public class ApplinConfig {
     static let logger = Logger(subsystem: "Applin", category: "ApplinConfig")
 
     public let appStoreAppId: UInt64
-    public let applinClientErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    public let applinNetworkErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    public let applinPageNotLoadedPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    public let applinServerErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    public let applinStateLoadErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
-    public let applinUserErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec
+    public let applinClientErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec
+    public let applinNetworkErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec
+    public let applinPageNotLoadedPage: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec
+    public let applinServerErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec
+    public let applinStateLoadErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec
+    public let applinUserErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec
     public let dataDirPath: String
     public let licenseKey: ApplinLicenseKey?
     public let showPageOnFirstStartup: String
-    public let staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec]
+    public let staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec]
     public let statusPageUrl: URL?
     public let supportChatUrl: URL?
     public let supportEmailAddress: String?
@@ -25,7 +25,7 @@ public class ApplinConfig {
             appStoreAppId: UInt64,
             dataDirPath: String = getDataDirPath(),
             showPageOnFirstStartup: String,
-            staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> PageSpec],
+            staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec],
             urlForDebugBuilds: URL,
             urlForSimulatorBuilds: URL,
             licenseKey: ApplinLicenseKey?,
@@ -65,7 +65,7 @@ public class ApplinConfig {
     }
 
     public func staticPageSpec(pageKey: String) -> PageSpec? {
-        self.staticPages[pageKey]?(self, pageKey)
+        self.staticPages[pageKey]?(self, pageKey).toPageSpec()
     }
 
     public func stateFilePath() -> String {

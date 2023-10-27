@@ -48,7 +48,7 @@ class PageStack {
                     spec = staticPageSpec
                     instant = now
                 } else {
-                    spec = config.applinPageNotLoadedPage(config, key)
+                    spec = config.applinPageNotLoadedPage(config, key).toPageSpec()
                     instant = Instant.EARLIEST
                 }
                 return Entry(pageKey: key, spec, instant, lamportInstant)

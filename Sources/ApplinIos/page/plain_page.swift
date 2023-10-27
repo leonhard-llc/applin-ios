@@ -2,7 +2,7 @@ import Foundation
 import OSLog
 import UIKit
 
-public struct PlainPageSpec: Equatable {
+public struct PlainPageSpec: Equatable, ToPageSpec {
     static let TYP = "plain_page"
     let connectionMode: ConnectionMode
     let ephemeral: Bool?
@@ -38,7 +38,7 @@ public struct PlainPageSpec: Equatable {
         return item
     }
 
-    public func toSpec() -> PageSpec {
+    public func toPageSpec() -> PageSpec {
         .plainPage(self)
     }
 

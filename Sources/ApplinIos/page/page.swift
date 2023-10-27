@@ -28,7 +28,11 @@ protocol PageController: UIViewController {
     func update(_ ctx: PageContext, _ newPageSpec: PageSpec)
 }
 
-public enum PageSpec: CustomStringConvertible, Equatable {
+public protocol ToPageSpec {
+    func toPageSpec() -> PageSpec
+}
+
+public enum PageSpec: CustomStringConvertible, Equatable, ToPageSpec {
     case loadingPage
     case navPage(NavPageSpec)
     case plainPage(PlainPageSpec)
@@ -75,6 +79,10 @@ public enum PageSpec: CustomStringConvertible, Equatable {
         case let .plainPage(inner):
             return inner.ephemeral ?? false
         }
+    }
+
+    public func toPageSpec() -> PageSpec {
+        self
     }
 
     func vars() -> [(String, Var)] {

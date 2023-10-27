@@ -8,7 +8,7 @@ public enum StartEnum: Equatable {
     case empty
 }
 
-public struct NavPageSpec: Equatable {
+public struct NavPageSpec: Equatable, ToPageSpec {
     static let TYP = "nav_page"
     let connectionMode: ConnectionMode
     let end: Spec?
@@ -71,7 +71,7 @@ public struct NavPageSpec: Equatable {
         return item
     }
 
-    public func toSpec() -> PageSpec {
+    public func toPageSpec() -> PageSpec {
         .navPage(self)
     }
 

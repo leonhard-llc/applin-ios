@@ -25,7 +25,7 @@ public class StaticPageKeys {
 }
 
 public class StaticPages {
-    public static func applinClientError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func applinClientError(_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec {
         NavPageSpec(
                 pageKey: pageKey,
                 // TODO: Include error code in title.
@@ -37,10 +37,10 @@ public class StaticPages {
                     FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
                     FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
                 ])
-        ).toSpec()
+        )
     }
 
-    public static func applinNetworkError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func applinNetworkError(_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Connection Problem",
@@ -52,10 +52,10 @@ public class StaticPages {
                     FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
                     FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
                 ])
-        ).toSpec()
+        )
     }
 
-    public static func applinServerError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func applinServerError(_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Error",
@@ -67,10 +67,10 @@ public class StaticPages {
                     FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
                     FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
                 ])
-        ).toSpec()
+        )
     }
 
-    public static func applinStateLoadError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func applinStateLoadError(_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Connect to Load App",
@@ -78,10 +78,10 @@ public class StaticPages {
                 FormSpec([
                     FormButtonSpec(text: "Connect", [.poll]),
                 ])
-        ).toSpec()
+        )
     }
 
-    public static func applinUserError(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func applinUserError(_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Problem",
@@ -89,42 +89,42 @@ public class StaticPages {
                 FormSpec([
                     ErrorTextSpec("${INTERACTIVE_ERROR_DETAILS}"),
                 ])
-        ).toSpec()
+        )
     }
 
-    public static func errorDetails(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func errorDetails(_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec {
         NavPageSpec(pageKey: pageKey, title: "Error Details", ephemeral: true,
                 ScrollSpec(pull_to_refresh: false,
                         LastErrorTextSpec()
-                )).toSpec()
+                ))
     }
 
-    public static func pageNotLoaded(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func pageNotLoaded(_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Page Not Loaded",
                 connectionMode: .pollSeconds(30),
                 ColumnSpec([FormButtonSpec(text: "Load Page", [.poll])])
-        ).toSpec()
+        )
     }
 
-    public static func pageNotFound(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func pageNotFound(_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec {
         NavPageSpec(
                 pageKey: pageKey,
                 title: "Not Found",
                 ephemeral: true,
                 ColumnSpec([TextSpec("Page not found.")])
-        ).toSpec()
+        )
     }
 
-    public static func serverStatus(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func serverStatus(_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec {
         NavPageSpec(pageKey: pageKey, title: "Server Status", ScrollSpec(
                 // TODO: Replace this with a markdown page that loads the status markdown URL.
                 TextSpec("Not implemented")
-        )).toSpec()
+        ))
     }
 
-    public static func support(_ config: ApplinConfig, _ pageKey: String) -> PageSpec {
+    public static func support(_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec {
         var buttons: [FormButtonSpec] = []
         // TODO: Support including error code in urls.
         if let url = config.supportChatUrl {
@@ -138,6 +138,6 @@ public class StaticPages {
             let url = URL(string: "sms:\(tel)")!
             buttons.append(FormButtonSpec(text: "Text Support", [.launchUrl(url)]))
         }
-        return NavPageSpec(pageKey: pageKey, title: "Support", FormSpec(buttons)).toSpec()
+        return NavPageSpec(pageKey: pageKey, title: "Support", FormSpec(buttons))
     }
 }
