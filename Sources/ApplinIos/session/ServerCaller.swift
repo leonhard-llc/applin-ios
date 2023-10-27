@@ -126,6 +126,7 @@ class ServerCaller {
             Self.logger.info("POST \(String(describing: path))")
             Self.logger.debug("POST \(String(describing: path)) request body=\(String(describing: String(data: body, encoding: .utf8)))")
         }
+        // TODO: Add 'referer' and remove `skip_forgery_protection` from Ruby code.
         urlRequest.addValue("application/vnd.applin_response", forHTTPHeaderField: "accept")
         let (httpResponse, data) = try await self.doRequest(path: path, urlRequest, interactive: interactive)
         let contentTypeBase = httpResponse.contentTypeBase()

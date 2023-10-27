@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
+public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
     case choosePhoto(String)
     case copyToClipboard(String)
     case launchUrl(URL)
@@ -92,7 +92,7 @@ enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
         }
     }
 
-    var description: String {
+    public var description: String {
         switch self {
         case let .choosePhoto(value):
             return "choosePhoto(\(value))"

@@ -7,6 +7,12 @@ public struct ImageSpec: Equatable, Hashable, ToSpec {
     let disposition: ApplinDisposition?
     let url: URL
 
+    public init(url: String, aspectRatio: Double, disposition: ApplinDisposition? = nil) {
+        self.aspectRatio = aspectRatio
+        self.disposition = disposition
+        self.url = URL(string: url)!
+    }
+
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.aspectRatio = try item.requireAspectRatio()
         self.disposition = item.optDisposition()
@@ -19,12 +25,6 @@ public struct ImageSpec: Equatable, Hashable, ToSpec {
         item.setDisposition(self.disposition)
         item.url = self.url.relativeString
         return item
-    }
-
-    init(_ config: ApplinConfig, url: String, aspectRatio: Double, disposition: ApplinDisposition? = nil) {
-        self.aspectRatio = aspectRatio
-        self.disposition = disposition
-        self.url = URL(string: url)!
     }
 
     public func toSpec() -> Spec {

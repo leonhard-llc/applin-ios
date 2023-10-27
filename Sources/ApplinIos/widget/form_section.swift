@@ -6,6 +6,11 @@ public struct FormSectionSpec: Equatable, Hashable, ToSpec {
     let optTitle: String?
     let widgets: [Spec]
 
+    public init(_ title: String?, _ widgets: [ToSpec]) {
+        self.optTitle = title
+        self.widgets = widgets.map({ widget in widget.toSpec() })
+    }
+
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.optTitle = item.title
         self.widgets = try item.optWidgets(config)?.filter({ spec in !spec.is_empty() }) ?? []
@@ -16,11 +21,6 @@ public struct FormSectionSpec: Equatable, Hashable, ToSpec {
         item.title = self.optTitle
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
-    }
-
-    init(_ title: String?, _ widgets: [ToSpec]) {
-        self.optTitle = title
-        self.widgets = widgets.map({ widget in widget.toSpec() })
     }
 
     public func toSpec() -> Spec {

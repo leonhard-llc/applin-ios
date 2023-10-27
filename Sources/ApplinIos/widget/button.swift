@@ -7,6 +7,11 @@ public struct ButtonSpec: Equatable, Hashable, ToSpec {
     let actions: [ActionSpec]
     let text: String
 
+    public init(text: String, _ actions: [ActionSpec] = []) {
+        self.text = text
+        self.actions = actions
+    }
+
     init(_ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
         self.text = try item.requireText()
@@ -17,11 +22,6 @@ public struct ButtonSpec: Equatable, Hashable, ToSpec {
         item.actions = self.actions.map({ action in action.toString() })
         item.text = self.text
         return item
-    }
-
-    init(text: String, _ actions: [ActionSpec] = []) {
-        self.text = text
-        self.actions = actions
     }
 
     public func toSpec() -> Spec {

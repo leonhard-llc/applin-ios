@@ -17,6 +17,23 @@ public struct NavPageSpec: Equatable {
     let title: String
     let widget: Spec
 
+    public init(
+            pageKey: String,
+            title: String,
+            start: StartEnum = .defaultBackButton,
+            end: Spec? = nil,
+            connectionMode: ConnectionMode = .disconnect,
+            ephemeral: Bool? = nil,
+            _ widget: ToSpec
+    ) {
+        self.connectionMode = connectionMode
+        self.end = end
+        self.start = start
+        self.title = title
+        self.ephemeral = ephemeral
+        self.widget = widget.toSpec()
+    }
+
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.poll_seconds)
         self.end = try item.optEnd(config)
@@ -54,24 +71,7 @@ public struct NavPageSpec: Equatable {
         return item
     }
 
-    public init(
-            pageKey: String,
-            title: String,
-            start: StartEnum = .defaultBackButton,
-            end: Spec? = nil,
-            connectionMode: ConnectionMode = .disconnect,
-            ephemeral: Bool? = nil,
-            _ widget: ToSpec
-    ) {
-        self.connectionMode = connectionMode
-        self.end = end
-        self.start = start
-        self.title = title
-        self.ephemeral = ephemeral
-        self.widget = widget.toSpec()
-    }
-
-    func toSpec() -> PageSpec {
+    public func toSpec() -> PageSpec {
         .navPage(self)
     }
 

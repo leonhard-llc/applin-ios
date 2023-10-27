@@ -35,7 +35,6 @@ class Poller {
             var attempt = 0
             while !Task.isCancelled {
                 let sleepMs = Self.retryMillis.get(attemptNum: attempt)
-                Self.logger.debug("sleepMs = \(sleepMs)")
                 await sleep(ms: sleepMs)
                 if Task.isCancelled {
                     break

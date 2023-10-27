@@ -4,6 +4,9 @@ import UIKit
 public struct EmptySpec: Equatable, Hashable, ToSpec {
     static let TYP = "empty"
 
+    public init() {
+    }
+
     func toJsonItem() -> JsonItem {
         let item = JsonItem(EmptySpec.TYP)
         return item

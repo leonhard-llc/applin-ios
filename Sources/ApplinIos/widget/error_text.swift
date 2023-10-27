@@ -4,6 +4,10 @@ public struct ErrorTextSpec: Equatable, Hashable, ToSpec {
     static let TYP = "error_text"
     let text: String
 
+    public init(_ text: String) {
+        self.text = text
+    }
+
     init(_ item: JsonItem) throws {
         self.text = try item.requireText()
     }
@@ -12,10 +16,6 @@ public struct ErrorTextSpec: Equatable, Hashable, ToSpec {
         let item = JsonItem(ErrorTextSpec.TYP)
         item.text = self.text
         return item
-    }
-
-    public init(_ text: String) {
-        self.text = text
     }
 
     public func toSpec() -> Spec {

@@ -4,6 +4,9 @@ import UIKit
 public struct LastErrorTextSpec: Equatable, Hashable, ToSpec {
     static let TYP = "last_error_text"
 
+    public init() {
+    }
+
     func toJsonItem() -> JsonItem {
         let item = JsonItem(LastErrorTextSpec.TYP)
         return item

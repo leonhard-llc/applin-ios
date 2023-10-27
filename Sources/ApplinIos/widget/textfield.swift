@@ -20,6 +20,30 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
     let rpc: String?
     let varName: String
 
+    public init(
+            varName: String,
+            allow: ApplinAllow? = nil,
+            autoCapitalize: ApplinAutoCapitalize? = nil,
+            error: String? = nil,
+            initialString: String? = nil,
+            label: String? = nil,
+            maxChars: UInt32? = nil,
+            maxLines: UInt32? = nil,
+            minChars: UInt32? = nil,
+            rpc: String? = nil
+    ) throws {
+        self.allow = allow
+        self.autoCapitalize = autoCapitalize
+        self.error = error
+        self.initialString = initialString
+        self.label = label
+        self.maxChars = maxChars
+        self.maxLines = maxLines
+        self.minChars = minChars
+        self.rpc = rpc
+        self.varName = varName
+    }
+
     init(_ item: JsonItem) throws {
         self.allow = item.optAllow() ?? .all
         self.autoCapitalize = item.optAutoCapitalize()
@@ -46,30 +70,6 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
         item.rpc = self.rpc
         item.var_name = self.varName
         return item
-    }
-
-    init(
-            varName: String,
-            allow: ApplinAllow? = nil,
-            autoCapitalize: ApplinAutoCapitalize? = nil,
-            error: String? = nil,
-            initialString: String? = nil,
-            label: String? = nil,
-            maxChars: UInt32? = nil,
-            maxLines: UInt32? = nil,
-            minChars: UInt32? = nil,
-            rpc: String? = nil
-    ) throws {
-        self.allow = allow
-        self.autoCapitalize = autoCapitalize
-        self.error = error
-        self.initialString = initialString
-        self.label = label
-        self.maxChars = maxChars
-        self.maxLines = maxLines
-        self.minChars = minChars
-        self.rpc = rpc
-        self.varName = varName
     }
 
     public func toSpec() -> Spec {

@@ -7,6 +7,10 @@ public struct BackButtonSpec: Equatable, Hashable {
     static let TYP = "back_button"
     let actions: [ActionSpec]
 
+    public init(_ actions: [ActionSpec]) {
+        self.actions = actions
+    }
+
     init(_ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
     }

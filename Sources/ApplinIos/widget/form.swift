@@ -9,6 +9,10 @@ public struct FormSpec: Equatable, Hashable, ToSpec {
     static let TYP = "form"
     let widgets: [Spec]
 
+    public init(_ widgets: [ToSpec]) {
+        self.widgets = widgets.map({ widget in widget.toSpec() })
+    }
+
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.widgets = try item.optWidgets(config)?.filter({ spec in !spec.is_empty() }) ?? []
     }
@@ -17,10 +21,6 @@ public struct FormSpec: Equatable, Hashable, ToSpec {
         let item = JsonItem(FormSpec.TYP)
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         return item
-    }
-
-    init(_ widgets: [ToSpec]) {
-        self.widgets = widgets.map({ widget in widget.toSpec() })
     }
 
     public func toSpec() -> Spec {

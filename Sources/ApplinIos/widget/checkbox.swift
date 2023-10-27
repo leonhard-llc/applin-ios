@@ -9,6 +9,13 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
     let text: String?
     let varName: String
 
+    init(varName: String, initialBool: Bool? = nil, text: String? = nil, rpc: String? = nil) {
+        self.initialBool = initialBool
+        self.rpc = rpc
+        self.text = text
+        self.varName = varName
+    }
+
     init(_ item: JsonItem) throws {
         self.initialBool = item.initial_bool
         self.rpc = item.rpc
@@ -23,13 +30,6 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
         item.text = self.text
         item.var_name = self.varName
         return item
-    }
-
-    init(varName: String, initialBool: Bool? = nil, text: String? = nil, rpc: String? = nil) {
-        self.initialBool = initialBool
-        self.rpc = rpc
-        self.text = text
-        self.varName = varName
     }
 
     public func toSpec() -> Spec {

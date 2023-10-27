@@ -10,6 +10,20 @@ public struct NavButtonSpec: Equatable, Hashable, ToSpec {
     let subText: String?
     let text: String
 
+    public init(
+            photoUrl: URL? = nil,
+            text: String,
+            subText: String? = nil,
+            badge: String? = nil,
+            _ actions: [ActionSpec]
+    ) {
+        self.actions = actions
+        self.badgeText = badge
+        self.photoUrl = photoUrl
+        self.subText = subText
+        self.text = text
+    }
+
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
         self.badgeText = item.badge_text
@@ -26,14 +40,6 @@ public struct NavButtonSpec: Equatable, Hashable, ToSpec {
         item.sub_text = self.subText
         item.text = self.text
         return item
-    }
-
-    init(photoUrl: URL? = nil, text: String, subText: String? = nil, badge: String? = nil, _ actions: [ActionSpec]) {
-        self.actions = actions
-        self.badgeText = badge
-        self.photoUrl = photoUrl
-        self.subText = subText
-        self.text = text
     }
 
     public func toSpec() -> Spec {

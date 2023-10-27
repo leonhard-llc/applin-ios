@@ -4,14 +4,14 @@ import Foundation
 import OSLog
 import UIKit
 
-enum ApplinAllow {
+public enum ApplinAllow {
     case all
     case ascii
     case email
     case numbers
     case tel
 
-    func keyboardType() -> UIKeyboardType {
+    public func keyboardType() -> UIKeyboardType {
         switch self {
         case .all:
             return .default
@@ -27,11 +27,11 @@ enum ApplinAllow {
     }
 }
 
-enum ApplinAutoCapitalize {
+public enum ApplinAutoCapitalize {
     case names
     case sentences
 
-    func textAutocapitalizationType() -> UITextAutocapitalizationType {
+    public func textAutocapitalizationType() -> UITextAutocapitalizationType {
         switch self {
         case .names:
             return .words
@@ -41,7 +41,7 @@ enum ApplinAutoCapitalize {
     }
 }
 
-enum ApplinDimension: Equatable, Hashable {
+public enum ApplinDimension: Equatable, Hashable {
     case value(Float32)
     case range(Float32?, Float32?)
 }
@@ -52,12 +52,12 @@ public enum ApplinDisposition: Equatable, Hashable {
     case cover
 }
 
-enum ApplinHAlignment: CustomStringConvertible, Equatable, Hashable {
+public enum ApplinHAlignment: CustomStringConvertible, Equatable, Hashable {
     case start
     case center
     case end
 
-    func toAlignment() -> ApplinAlignment {
+    public func toAlignment() -> ApplinAlignment {
         switch self {
         case .start:
             return .center_start
@@ -68,7 +68,7 @@ enum ApplinHAlignment: CustomStringConvertible, Equatable, Hashable {
         }
     }
 
-    var description: String {
+    public var description: String {
         switch self {
         case .start:
             return "start"
@@ -80,12 +80,12 @@ enum ApplinHAlignment: CustomStringConvertible, Equatable, Hashable {
     }
 }
 
-enum ApplinVAlignment: CustomStringConvertible, Equatable, Hashable {
+public enum ApplinVAlignment: CustomStringConvertible, Equatable, Hashable {
     case top
     case center
     case bottom
 
-    func toAlignment() -> ApplinAlignment {
+    public func toAlignment() -> ApplinAlignment {
         switch self {
         case .top:
             return .top_center
@@ -96,7 +96,7 @@ enum ApplinVAlignment: CustomStringConvertible, Equatable, Hashable {
         }
     }
 
-    var description: String {
+    public var description: String {
         switch self {
         case .top:
             return "top"
@@ -108,7 +108,7 @@ enum ApplinVAlignment: CustomStringConvertible, Equatable, Hashable {
     }
 }
 
-enum ApplinAlignment: CustomStringConvertible, Equatable, Hashable {
+public enum ApplinAlignment: CustomStringConvertible, Equatable, Hashable {
     case top_start
     case top_center
     case top_end
@@ -141,7 +141,7 @@ enum ApplinAlignment: CustomStringConvertible, Equatable, Hashable {
         }
     }
 
-    var description: String {
+    public var description: String {
         switch self {
         case .top_start:
             return "top_start"

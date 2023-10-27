@@ -6,6 +6,17 @@ public struct GroupedRowTableSpec: Equatable, Hashable, ToSpec {
     let rowGroups: [[[Spec?]]]
     let spacing: Float32
 
+    public init(rowGroups: [[[ToSpec?]]], spacing: Float32 = 8.0) {
+        self.rowGroups = rowGroups.map { rows -> [[Spec?]] in
+            rows.map { row -> [Spec?] in
+                row.map { widget -> Spec? in
+                    widget?.toSpec()
+                }
+            }
+        }
+        self.spacing = spacing
+    }
+
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.rowGroups = try item.row_groups?.map({ rows in
             try rows.map({ row in

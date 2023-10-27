@@ -5,7 +5,7 @@ public struct TextSpec: Equatable, Hashable, ToSpec {
     static let TYP = "text"
     let text: String
 
-    init(_ text: String) {
+    public init(_ text: String) {
         self.text = text
     }
 

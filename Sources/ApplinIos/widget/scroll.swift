@@ -7,6 +7,11 @@ public struct ScrollSpec: Equatable, Hashable, ToSpec {
     let pull_to_refresh: Bool?
     let widget: Spec
 
+    public init(pull_to_refresh: Bool? = nil, _ widget: ToSpec) {
+        self.pull_to_refresh = pull_to_refresh
+        self.widget = widget.toSpec()
+    }
+
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.pull_to_refresh = item.pull_to_refresh
         self.widget = try item.requireWidget(config)
@@ -17,11 +22,6 @@ public struct ScrollSpec: Equatable, Hashable, ToSpec {
         item.pull_to_refresh = self.pull_to_refresh
         item.widget = self.widget.toJsonItem()
         return item
-    }
-
-    init(pull_to_refresh: Bool? = nil, _ sub: ToSpec) {
-        self.pull_to_refresh = pull_to_refresh
-        self.widget = sub.toSpec()
     }
 
     public func toSpec() -> Spec {

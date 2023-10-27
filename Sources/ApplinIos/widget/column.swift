@@ -7,6 +7,12 @@ public struct ColumnSpec: Equatable, Hashable, ToSpec {
     let alignment: ApplinHAlignment
     let spacing: Float32
 
+    public init(alignment: ApplinHAlignment = .start, spacing: Float32 = 0.0, _ widgets: [ToSpec]) {
+        self.widgets = widgets.map({ widget in widget.toSpec() })
+        self.alignment = alignment
+        self.spacing = spacing
+    }
+
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.widgets = try item.optWidgets(config) ?? []
         self.alignment = item.optAlign() ?? .start
@@ -18,12 +24,6 @@ public struct ColumnSpec: Equatable, Hashable, ToSpec {
         item.widgets = self.widgets.map({ widgets in widgets.toJsonItem() })
         item.setAlign(self.alignment)
         return item
-    }
-
-    init(_ widgets: [ToSpec]) {
-        self.widgets = widgets.map({ widget in widget.toSpec() })
-        self.alignment = .start
-        self.spacing = 0.0
     }
 
     public func toSpec() -> Spec {

@@ -8,6 +8,12 @@ public struct FormButtonSpec: Equatable, Hashable, ToSpec {
     let alignment: ApplinHAlignment?
     let text: String
 
+    public init(text: String, _ actions: [ActionSpec], alignment: ApplinHAlignment = .center) {
+        self.actions = actions
+        self.alignment = alignment
+        self.text = text
+    }
+
     init(_ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
         self.alignment = item.optAlign()
@@ -20,12 +26,6 @@ public struct FormButtonSpec: Equatable, Hashable, ToSpec {
         item.setAlign(self.alignment)
         item.text = self.text
         return item
-    }
-
-    init(text: String, _ actions: [ActionSpec]) {
-        self.actions = actions
-        self.alignment = .center
-        self.text = text
     }
 
     public func toSpec() -> Spec {

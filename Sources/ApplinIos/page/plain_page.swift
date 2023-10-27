@@ -9,6 +9,18 @@ public struct PlainPageSpec: Equatable {
     let title: String?
     let widget: Spec
 
+    public init(
+            title: String?,
+            connectionMode: ConnectionMode = .disconnect,
+            ephemeral: Bool? = nil,
+            _ widget: ToSpec
+    ) {
+        self.connectionMode = connectionMode
+        self.ephemeral = ephemeral
+        self.title = title
+        self.widget = widget.toSpec()
+    }
+
     init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.poll_seconds)
         self.ephemeral = item.ephemeral
@@ -26,19 +38,7 @@ public struct PlainPageSpec: Equatable {
         return item
     }
 
-    public init(
-            title: String?,
-            connectionMode: ConnectionMode = .disconnect,
-            ephemeral: Bool? = nil,
-            _ widget: ToSpec
-    ) {
-        self.connectionMode = connectionMode
-        self.ephemeral = ephemeral
-        self.title = title
-        self.widget = widget.toSpec()
-    }
-
-    func toSpec() -> PageSpec {
+    public func toSpec() -> PageSpec {
         .plainPage(self)
     }
 
