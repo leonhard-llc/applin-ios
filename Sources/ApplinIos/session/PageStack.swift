@@ -312,13 +312,14 @@ class PageStack {
                 await UIApplication.shared.open(url)
             }
         case .logout:
-            // TODO: Delete session cookies.
-            // TODO: Delete state file.
-            // TODO: Stop state file writer.
-            // TODO: Erase session saved state.
-            // TODO: Disconnect streamer.
-            // TODO: Stop poller.
-            // TODO: Interrupt sequence of actions.
+            // TODO: Implement 'logout' action
+            // - Delete session cookies.
+            // - Delete state file.
+            // - Stop state file writer.
+            // - Erase session saved state.
+            // - Disconnect streamer.
+            // - Stop poller.
+            // - Interrupt sequence of actions.
             Self.logger.info("action not implemented")
         case .nothing:
             break

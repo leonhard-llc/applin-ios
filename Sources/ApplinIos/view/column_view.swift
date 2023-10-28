@@ -94,7 +94,7 @@ class ColumnView: UIView {
     }
 
     override func draw(_ rect: CGRect) {
-        // TODO: Fix bug when first loading the Checkboxes demo page, the lines are in the wrong place.
+        // TODO: Fix bug on Simulator which causes lines to be in the wrong place on first load.  See Checkboxes demo page.
         if let color = self.separatorColor, let ctx = UIGraphicsGetCurrentContext() {
             // Draw a line left-to-right between subviews
             let left = 0.0
