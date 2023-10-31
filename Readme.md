@@ -4,7 +4,8 @@ How to use this library: https://www.applin.dev/docs/ios/
 
 ## License
 You may use this software to build and test apps.
-To use this software in a released or distributed app, you maintain a valid license for it.
+To use this software in a released or distributed app,
+you must maintain a valid license for it.
 See https://www.applin.dev/ .
 
 When you build in `Release` mode:
