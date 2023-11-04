@@ -159,7 +159,7 @@ class CheckboxWidget: Widget {
             throw "Expected no subs got: \(subs)"
         }
         self.spec = checkboxSpec
-        self.button.setTitle(self.spec.text, for: .normal)
+        self.button.setTitle(self.spec.text ?? "", for: .normal)
         let checked = varSet.bool(self.spec.varName) ?? self.spec.initialBool ?? false
         Task {
             await self.updateButton(checked: checked, title: self.spec.text)
