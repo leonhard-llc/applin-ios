@@ -126,6 +126,8 @@ class ServerCaller {
             Self.logger.info("POST \(String(describing: path))")
             Self.logger.debug("POST \(String(describing: path)) request body=\(String(describing: String(data: body, encoding: .utf8)))")
         }
+        // NOTE: Rpc POST requests must include the `accept` header so Rails backends can bypass the built-in CSRF checks.
+        // TODO: Test that rpc requests include the `Accept` header.
         urlRequest.addValue("application/vnd.applin_response", forHTTPHeaderField: "accept")
         //Self.logger.debug("urlRequest \(urlRequest.httpMethod) \(String(describing: urlRequest)) \(String(describing: urlRequest.allHTTPHeaderFields))")
         let (httpResponse, data) = try await self.doRequest(path: path, urlRequest, interactive: interactive)
