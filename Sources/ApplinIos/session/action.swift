@@ -6,7 +6,7 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
     case copyToClipboard(String)
     case launchUrl(URL)
     case logout
-    case onErrorPoll
+    case onUserErrorPoll
     case poll
     case pop
     case push(String)
@@ -24,8 +24,8 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
         case "logout":
             self = .logout
             return
-        case "on_error_poll":
-            self = .onErrorPoll
+        case "on_user_error_poll":
+            self = .onUserErrorPoll
             return
         case "poll":
             self = .poll
@@ -75,8 +75,8 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "launch_url:\(value)"
         case .logout:
             return "logout"
-        case .onErrorPoll:
-            return "on_error_poll"
+        case .onUserErrorPoll:
+            return "on_user_error_poll"
         case .poll:
             return "poll"
         case .pop:
@@ -102,8 +102,8 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "launchUrl(\(value))"
         case .logout:
             return "logout"
-        case .onErrorPoll:
-            return "on_error_poll"
+        case .onUserErrorPoll:
+            return "on_user_error_poll"
         case .poll:
             return "poll"
         case .pop:
@@ -123,7 +123,7 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
         switch self {
         case .choosePhoto, .copyToClipboard, .launchUrl, .logout, .pop, .takePhoto:
             return false
-        case .onErrorPoll, .poll, .push, .replaceAll, .rpc:
+        case .onUserErrorPoll, .poll, .push, .replaceAll, .rpc:
             return true
         }
     }

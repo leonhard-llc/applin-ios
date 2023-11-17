@@ -312,7 +312,7 @@ class PageStack {
             // - Stop poller.
             // - Interrupt sequence of actions.
             Self.logger.info("action not implemented")
-        case .onErrorPoll:
+        case .onUserErrorPoll:
             break
         case .poll:
             try await self.doPollAction(pageKey: pageKey)
@@ -349,8 +349,8 @@ class PageStack {
                         }
                     }
                     return true
-                } catch let e {
-                    if actions.contains(where: { action in action == .onErrorPoll}) {
+                } catch let e as ApplinError {
+                    if case .userError = e, actions.contains(where: { action in action == .onUserErrorPoll }) {
                         let _ = try? await self.doPollAction(pageKey: pageKey)
                     }
                     throw e

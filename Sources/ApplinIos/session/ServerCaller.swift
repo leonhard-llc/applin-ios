@@ -71,7 +71,7 @@ class ServerCaller {
                 let string = String(String(data: data, encoding: .utf8)?.prefix(1000) ?? "")
                 throw ApplinError.appError(string)
             case 503:
-                throw ApplinError.userError("Server overloaded. Please try again.")
+                throw ApplinError.serverError("Server overloaded. Please try again.")
             case 500...599:
                 throw ApplinError.serverError("server returned error for \(path) : \(httpResponse.statusCode) "
                         + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode))")
