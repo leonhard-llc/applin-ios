@@ -233,11 +233,8 @@ class PageStack {
             return
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
-        let optUpdate =
+        let update =
                 try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
-        guard let update = optUpdate else {
-            throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
-        }
         await self.mutex.lockAsyncAndUpdate({ state in
             state.set(pageKey: pageKey, update.spec)
         })
@@ -254,11 +251,8 @@ class PageStack {
             return
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
-        let optUpdate =
+        let update =
                 try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
-        guard let update = optUpdate else {
-            throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
-        }
         try await self.mutex.lockAsyncThrowsAndUpdate({ state in
             try state.push(pageKey: pageKey, update.spec)
         })
@@ -275,11 +269,8 @@ class PageStack {
             return
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
-        let optUpdate =
+        let update =
                 try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
-        guard let update = optUpdate else {
-            throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
-        }
         await self.mutex.lockAsyncAndUpdate({ state in
             state.replaceAll(pageKey: pageKey, update.spec)
         })

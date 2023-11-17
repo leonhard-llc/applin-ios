@@ -58,11 +58,15 @@ class Poller {
 
     func updatePolledPages() async throws {
         try await self.taskLock.lockAsyncThrows({
-            guard let pageStack = self.pageStack else {
+            guard let pageStack = self.pageStack, let serverCaller = self.serverCaller else {
                 return
             }
+            var optLastError: ApplinError? = nil
             let stackPages: [(String, PageSpec, Instant)] = pageStack.stackPages().reversed()
             for (key, spec, updated) in stackPages {
+                if Task.isCancelled {
+                    break
+                }
                 guard case let .pollSeconds(intervalSeconds) = spec.connectionMode else {
                     continue
                 }
@@ -75,16 +79,19 @@ class Poller {
                 }
                 let varNamesAndValues = pageStack.varNamesAndValues(pageKey: key)
                 let token = pageStack.token()
-                let optUpdate = try await serverCaller?.poll(
-                        path: key,
-                        varNamesAndValues: varNamesAndValues,
-                        interactive: false
-                )
-                if let update = optUpdate {
+                do {
+                    let update = try await serverCaller.poll(
+                            path: key,
+                            varNamesAndValues: varNamesAndValues,
+                            interactive: false
+                    )
                     let _ = await pageStack.tryUpdate(pageKey: key, token, update.spec)
-                } else {
-                    Self.logger.error("got no response body for '\(key)")
+                } catch let e as ApplinError {
+                    optLastError = e
                 }
+            }
+            if let lastError = optLastError {
+                throw lastError
             }
         })
     }

@@ -154,9 +154,13 @@ class ServerCaller {
         }
     }
 
-    func poll(path: String, varNamesAndValues: [(String, Var)], interactive: Bool) async throws -> PageUpdate? {
+    func poll(path: String, varNamesAndValues: [(String, Var)], interactive: Bool) async throws -> PageUpdate {
         let method: CallMethod = varNamesAndValues.isEmpty ? .GET : .POST
-        return try await self.call(method, path: path, varNamesAndValues: varNamesAndValues, interactive: interactive)
+        let optUpdate = try await self.call(method, path: path, varNamesAndValues: varNamesAndValues, interactive: interactive)
+        guard let update = optUpdate else {
+            throw ApplinError.serverError("server returned empty result for page '\(path)")
+        }
+        return update
     }
 
     func upload(path: String, uploadBody: UploadBody) async throws {
