@@ -6,8 +6,6 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
     case copyToClipboard(String)
     case launchUrl(URL)
     case logout
-    // TODO: Delete `nothing` action.
-    case nothing
     case onErrorPoll
     case poll
     case pop
@@ -25,9 +23,6 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             throw ApplinError.appError("action is empty")
         case "logout":
             self = .logout
-            return
-        case "nothing":
-            self = .nothing
             return
         case "on_error_poll":
             self = .onErrorPoll
@@ -80,8 +75,6 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "launch_url:\(value)"
         case .logout:
             return "logout"
-        case .nothing:
-            return "nothing"
         case .onErrorPoll:
             return "on_error_poll"
         case .poll:
@@ -109,8 +102,6 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "launchUrl(\(value))"
         case .logout:
             return "logout"
-        case .nothing:
-            return "nothing"
         case .onErrorPoll:
             return "on_error_poll"
         case .poll:
@@ -130,7 +121,7 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
 
     var showWorking: Bool {
         switch self {
-        case .choosePhoto, .copyToClipboard, .launchUrl, .logout, .nothing, .pop, .takePhoto:
+        case .choosePhoto, .copyToClipboard, .launchUrl, .logout, .pop, .takePhoto:
             return false
         case .onErrorPoll, .poll, .push, .replaceAll, .rpc:
             return true

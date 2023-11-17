@@ -312,8 +312,6 @@ class PageStack {
             // - Stop poller.
             // - Interrupt sequence of actions.
             Self.logger.info("action not implemented")
-        case .nothing:
-            break
         case .onErrorPoll:
             break
         case .poll:
