@@ -1,7 +1,5 @@
 import Foundation
 
-import Foundation
-
 class ApplinLock {
     private let locked = AtomicBool(false)
     private let nsLock = NSLock()
@@ -30,6 +28,7 @@ class ApplinLock {
                     // TODO: See if we can use `withCheckedContinuation` and eliminate the spin lock.
                     try await Task.sleep(nanoseconds: 50_000_000)
                 } catch {
+                    // Task is cancelled.  Try to acquire the lock as fast as possible, without spinning.
                     self.lock_nsLock()
                     break
                 }

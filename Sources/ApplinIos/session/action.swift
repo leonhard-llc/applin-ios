@@ -6,7 +6,9 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
     case copyToClipboard(String)
     case launchUrl(URL)
     case logout
+    // TODO: Delete `nothing` action.
     case nothing
+    case onErrorPoll
     case poll
     case pop
     case push(String)
@@ -26,6 +28,9 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return
         case "nothing":
             self = .nothing
+            return
+        case "on_error_poll":
+            self = .onErrorPoll
             return
         case "poll":
             self = .poll
@@ -77,10 +82,12 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "logout"
         case .nothing:
             return "nothing"
-        case .pop:
-            return "pop"
+        case .onErrorPoll:
+            return "on_error_poll"
         case .poll:
             return "poll"
+        case .pop:
+            return "pop"
         case let .push(value):
             return "push:\(value)"
         case let .replaceAll(value):
@@ -104,10 +111,12 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
             return "logout"
         case .nothing:
             return "nothing"
-        case .pop:
-            return "pop"
+        case .onErrorPoll:
+            return "on_error_poll"
         case .poll:
             return "poll"
+        case .pop:
+            return "pop"
         case let .push(value):
             return "push(\(value))"
         case let .replaceAll(value):
@@ -123,7 +132,7 @@ public enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
         switch self {
         case .choosePhoto, .copyToClipboard, .launchUrl, .logout, .nothing, .pop, .takePhoto:
             return false
-        case .poll, .push, .replaceAll, .rpc:
+        case .onErrorPoll, .poll, .push, .replaceAll, .rpc:
             return true
         }
     }

@@ -323,6 +323,8 @@ class PageStack {
             Self.logger.info("action not implemented")
         case .nothing:
             break
+        case .onErrorPoll:
+            break
         case .poll:
             try await self.doPollAction(pageKey: pageKey)
         case .pop:
@@ -344,19 +346,26 @@ class PageStack {
     func doActions(pageKey: String, _ actions: [ActionSpec], showWorking: Bool? = nil) async -> Bool {
         await self.lock.lockAsync({
             await self.handleInteractiveError({
-                let showWorkingForActions = !actions.filter({ action in action.showWorking }).isEmpty
-                if showWorking ?? showWorkingForActions {
-                    try await self.withWorking({
+                let showWorkingForActions = actions.contains(where: { action in action.showWorking })
+                do {
+                    if showWorking ?? showWorkingForActions {
+                        try await self.withWorking({
+                            for action in actions {
+                                try await self.doAction(pageKey: pageKey, action)
+                            }
+                        })
+                    } else {
                         for action in actions {
                             try await self.doAction(pageKey: pageKey, action)
                         }
-                    })
-                } else {
-                    for action in actions {
-                        try await self.doAction(pageKey: pageKey, action)
                     }
+                    return true
+                } catch let e {
+                    if actions.contains(where: { action in action == .onErrorPoll}) {
+                        let _ = try? await self.doPollAction(pageKey: pageKey)
+                    }
+                    throw e
                 }
-                return true
             })
         })
     }
