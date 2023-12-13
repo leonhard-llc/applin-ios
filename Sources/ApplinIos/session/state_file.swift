@@ -95,7 +95,7 @@ class StateFileOwner {
             let bytes = try encodeJson(contents)
             let hash = UInt64(truncatingIfNeeded: bytes.hashValue)
             if self.fileBytesHash.load() == hash {
-                Self.logger.debug("file contents unchanged, skipping writing file")
+                Self.logger.dbg("file contents unchanged, skipping writing file")
                 return
             }
             let dirPath = (self.path as NSString).deletingLastPathComponent

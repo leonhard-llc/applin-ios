@@ -57,7 +57,7 @@ class PlainPageController: UIViewController, PageController {
     var helper: SingleViewContainerHelper!
 
     init() {
-        Self.logger.debug("init")
+        Self.logger.dbg("init")
         super.init(nibName: nil, bundle: nil)
         self.helper = SingleViewContainerHelper(superView: self.view)
     }

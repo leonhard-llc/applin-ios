@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 
 // TODO: Put all of these inside a Util class.
 
@@ -196,6 +197,17 @@ extension HTTPURLResponse {
         } else {
             return nil
         }
+    }
+}
+
+extension Logger {
+    func dbg(_ msg: String) {
+        #if targetEnvironment(simulator)
+        // Work around OSlog's flakiness on Simulator.
+        self.info("\(msg)")
+        #else
+        self.dbg("\(msg)")
+        #endif
     }
 }
 

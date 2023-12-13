@@ -25,7 +25,7 @@ class RowView: UIView {
     }
 
     func update(_ alignment: ApplinVAlignment, spacing: Float32, subviews: [UIView]) {
-        //Self.logger.debug("update alignment=\(alignment) separator=\(String(describing: separator)) spacing=\(spacing) subviews=\(subviews)")
+        //Self.logger.dbg("update alignment=\(alignment) separator=\(String(describing: separator)) spacing=\(spacing) subviews=\(subviews)")
         self.alignment = alignment
         self.orderedSubviews = subviews
         self.spacing = spacing

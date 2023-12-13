@@ -72,7 +72,7 @@ public class ImageView: UIView {
         self.symbol = symbol
         switch symbol {
         case let .loading(indicator):
-            Self.logger.debug("\(self) .loading")
+            Self.logger.dbg("\(self) .loading")
             indicator.translatesAutoresizingMaskIntoConstraints = false
             self.containerHelper!.update(indicator, {
                 [
@@ -81,7 +81,7 @@ public class ImageView: UIView {
                 ]
             })
         case let .image(image):
-            Self.logger.debug("\(self) .image")
+            Self.logger.dbg("\(self) .image")
             image.translatesAutoresizingMaskIntoConstraints = false
             switch self.disposition {
             case .fit:
@@ -100,7 +100,7 @@ public class ImageView: UIView {
                 ]
             })
         case let .error(image):
-            Self.logger.debug("\(self) .error")
+            Self.logger.dbg("\(self) .error")
             image.translatesAutoresizingMaskIntoConstraints = false
             image.tintColor = .systemGray
             self.containerHelper!.update(image, {
@@ -118,7 +118,7 @@ public class ImageView: UIView {
 
     @MainActor
     private func fetchImage(_ url: URL) async {
-        Self.logger.debug("\(self) fetchImage \(url.absoluteString)")
+        Self.logger.dbg("\(self) fetchImage \(url.absoluteString)")
         self.name = "ImageView{\(self.address) \(url.absoluteString)}"
         let indicator = Self.makeIndicator()
         self.setSymbol(.loading(indicator))
@@ -143,7 +143,7 @@ public class ImageView: UIView {
             if Task.isCancelled {
                 return
             }
-            Self.logger.debug("\(self) start")
+            Self.logger.dbg("\(self) start")
             do {
                 let (data, urlResponse) = try await urlSession.data(for: urlRequest)
                 let httpResponse = urlResponse as! HTTPURLResponse
@@ -161,28 +161,28 @@ public class ImageView: UIView {
                 guard let image = UIImage(data: data) else {
                     throw "error processing data as image: \(data.count) bytes"
                 }
-                Self.logger.debug("\(self) done")
+                Self.logger.dbg("\(self) done")
                 let uiImageView = UIImageView(image: image)
                 self.setSymbol(.image(uiImageView))
                 return
             } catch {
-                Self.logger.debug("\(self) error: \(error)")
+                Self.logger.dbg("\(self) error: \(error)")
                 await sleep(ms: 5_000)
             }
         }
-        Self.logger.debug("\(self) giving up")
+        Self.logger.dbg("\(self) giving up")
         let image = NoIntrinsicSizeImageView(image: UIImage(systemName: "xmark"))
         self.setSymbol(.error(image))
     }
 
     private func loadImageBundleFile(filepath: String) async {
         do {
-            Self.logger.debug("\(self) loadImageBundleFile start")
+            Self.logger.dbg("\(self) loadImageBundleFile start")
             let data = try readBundleFile(filepath: filepath)
             guard let image = UIImage(data: data) else {
                 throw "error processing bundle file as image: \(String(describing: filepath)) len=\(data.count)"
             }
-            Self.logger.debug("\(self) loadImageBundleFile done")
+            Self.logger.dbg("\(self) loadImageBundleFile done")
             let uiImageView = UIImageView(image: image)
             Task { @MainActor in
                 self.setSymbol(.image(uiImageView))
@@ -199,7 +199,7 @@ public class ImageView: UIView {
     public func update(_ url: URL, aspectRatio: Double, _ disposition: ApplinDisposition) {
         Task { @MainActor in
             await self.lock.lockAsync({
-                Self.logger.debug("\(self) update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
+                Self.logger.dbg("\(self) update aspectRatio=\(aspectRatio) url=\(url.absoluteString)")
                 if self.aspectRatio != aspectRatio {
                     self.aspectRatio = aspectRatio
                     self.applyAspectRatio(aspectRatio)

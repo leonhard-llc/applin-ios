@@ -28,14 +28,14 @@ class TableView: UIView {
     }
 
     func update(rowSeparators: [UInt], spacing: Float32, newSubviewRows: [[UIView?]]) {
-        Self.logger.debug("TableView.update rowSeparators=\(String(describing: rowSeparators)) spacing=\(spacing) newSubviewRows=\(newSubviewRows)")
+        Self.logger.dbg("TableView.update rowSeparators=\(String(describing: rowSeparators)) spacing=\(spacing) newSubviewRows=\(newSubviewRows)")
         self.rowSeparators = rowSeparators
         self.spacing = CGFloat(spacing)
         let newSubviews = Set(newSubviewRows.flatMap({ $0 }).compactMap({ $0 }))
         for row in self.subviewRows {
             for optSubview in row {
                 if let subview = optSubview, !newSubviews.contains(subview) {
-                    Self.logger.debug("TableView.update remove \(subview)")
+                    Self.logger.dbg("TableView.update remove \(subview)")
                     subview.removeFromSuperview(self)
                 }
             }
@@ -45,7 +45,7 @@ class TableView: UIView {
         for subviewRow in self.subviewRows {
             for optSubview in subviewRow {
                 if let subview = optSubview, !existingSubviews.contains(subview) {
-                    Self.logger.debug("TableView.update add \(subview)")
+                    Self.logger.dbg("TableView.update add \(subview)")
                     subview.translatesAutoresizingMaskIntoConstraints = false
                     self.addSubview(subview)
                 }
@@ -54,7 +54,7 @@ class TableView: UIView {
         var newConstraints: [NSLayoutConstraint] = []
         let numColumns = max(1, self.subviewRows.map({ row in row.count }).max() ?? 0)
         let numRows = max(1, self.subviewRows.count)
-        Self.logger.debug("TableView numColumns=\(numColumns) numRows=\(numRows)")
+        Self.logger.dbg("TableView numColumns=\(numColumns) numRows=\(numRows)")
         while self.colSizers.count < numColumns {
             let view = NamedUIView(name: "\(self).colSizer\(self.colSizers.count)")
             view.translatesAutoresizingMaskIntoConstraints = false
@@ -77,7 +77,7 @@ class TableView: UIView {
         while self.rowSizers.count > numRows {
             self.rowSizers.popLast()?.removeFromSuperview()
         }
-        Self.logger.debug("TableView colSizers.count=\(self.colSizers.count) rowSizers.count=\(self.rowSizers.count)")
+        Self.logger.dbg("TableView colSizers.count=\(self.colSizers.count) rowSizers.count=\(self.rowSizers.count)")
         // Sizer dimensions.
         newConstraints.append(contentsOf: self.colSizers.map(
                 { view in view.heightAnchor.constraint(equalToConstant: 0.0) }))

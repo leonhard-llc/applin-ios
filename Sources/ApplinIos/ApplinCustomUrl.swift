@@ -21,7 +21,7 @@ public class ApplinCustomUrl: CustomDebugStringConvertible {
         guard let components = NSURLComponents(string: trimmedInput ) else {
             throw "error converting to NSURLComponents: \(String(describing: input))"
         }
-        Self.logger.debug("components \(components)")
+        Self.logger.dbg("components \(components)")
         let scheme: String
         if components.scheme == "http" || components.scheme == "https" {
             scheme = components.scheme!

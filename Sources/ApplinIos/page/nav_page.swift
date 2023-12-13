@@ -96,7 +96,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     var optOriginalBackButton: UIBarButtonItem?
 
     init(_ navController: NavigationController?, _ ctx: PageContext) {
-        Self.logger.debug("NavPageController.init")
+        Self.logger.dbg("NavPageController.init")
         self.navController = navController
         self.ctx = ctx
         // PlainPageController cannot do self.navigationItem.navBarHidden = true,
@@ -130,7 +130,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
         }
         switch spec.start {
         case let .backButton(inner):
-            Self.logger.debug("back inner.tap()")
+            Self.logger.dbg("back inner.tap()")
             inner.tap(self.ctx)
         case .defaultBackButton:
             Task {
@@ -145,7 +145,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
 
     /// Called when the user taps the Back button.
     func navigationBar(_ navigationBar: UINavigationBar, shouldPop item: UINavigationItem) -> Bool {
-        Self.logger.debug("title=\(String(describing: self.title)) navigationBar shouldPop=\(item)")
+        Self.logger.dbg("title=\(String(describing: self.title)) navigationBar shouldPop=\(item)")
         self.back()
         return false  // UINavigationBar should not remove NavigationItem objects.
     }
@@ -153,7 +153,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     /// Called when the user taps the Back button,
     /// or long-presses the Back button and taps Back from the popup menu.
     func navigationBar(_ navigationBar: UINavigationBar, didPop item: UINavigationItem) {
-        Self.logger.debug("title=\(String(describing: self.title)) navigationBar didPop=\(item)")
+        Self.logger.dbg("title=\(String(describing: self.title)) navigationBar didPop=\(item)")
         self.back()
     }
 
@@ -161,7 +161,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
     /// when the view is removed from the view (isMovingFromParent=true).
     override func viewDidDisappear(_ animated: Bool) {
         // NOTE: UIKit on iOS 15 does not set self.isBeingDismissed=true like the docs claim.
-        Self.logger.debug("title=\(String(describing: self.title)) viewDidDisappear isMovingFromParent=\(self.isMovingFromParent)")
+        Self.logger.dbg("title=\(String(describing: self.title)) viewDidDisappear isMovingFromParent=\(self.isMovingFromParent)")
         if self.isMovingFromParent {
             self.back()
         }

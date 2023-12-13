@@ -80,7 +80,7 @@ class FormButtonWidget: Widget {
 
         weak var weakSelf: FormButtonWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
-            Self.logger.debug("UIAction")
+            Self.logger.dbg("UIAction")
             weakSelf?.tap()
         })
         self.button = UIButton(type: .custom, primaryAction: action)

@@ -83,7 +83,7 @@ class CheckboxWidget: Widget {
         // around is to bind `weak self` before creating the handler.
         weak var weakSelf: CheckboxWidget? = self
         let action = UIAction(title: "uninitialized", handler: { [weakSelf] _ in
-            Self.logger.debug("UIAction")
+            Self.logger.dbg("UIAction")
             Task {
                 await weakSelf?.tap()
             }
@@ -130,7 +130,7 @@ class CheckboxWidget: Widget {
 
     @MainActor
     private func tap() async {
-        Self.logger.debug("tap")
+        Self.logger.dbg("tap")
         guard let varSet = self.ctx.varSet, let pageStack = self.ctx.pageStack else {
             return
         }

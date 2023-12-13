@@ -193,7 +193,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
 
     @objc
     func doneButtonPressed() {
-        Self.logger.debug("varName=\(self.spec.varName) doneButtonPressed")
+        Self.logger.dbg("varName=\(self.spec.varName) doneButtonPressed")
         self.textview.resignFirstResponder()
     }
 
@@ -207,7 +207,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        Self.logger.debug("varName=\(self.spec.varName) update spec=\(String(describing: textfieldSpec))")
+        Self.logger.dbg("varName=\(self.spec.varName) update spec=\(String(describing: textfieldSpec))")
         self.spec = textfieldSpec
         if !self.initialized {
             self.textview.text = varSet.string(self.spec.varName) ?? self.spec.initialString ?? ""
@@ -260,17 +260,17 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         }
         let keyboardTypeChanged = self.textview.keyboardType != self.spec.keyboardType()
         if keyboardTypeChanged {
-            Self.logger.debug("varName=\(self.spec.varName) keyboardType changed \(String(describing: self.textview.keyboardType)) -> \(String(describing: self.spec.keyboardType()))")
+            Self.logger.dbg("varName=\(self.spec.varName) keyboardType changed \(String(describing: self.textview.keyboardType)) -> \(String(describing: self.spec.keyboardType()))")
             self.textview.keyboardType = self.spec.keyboardType()
         }
         let newAutocapType = self.spec.autoCapitalize?.textAutocapitalizationType() ?? .none
         let autocapTypeChanged = self.textview.autocapitalizationType != newAutocapType
         if autocapTypeChanged {
-            Self.logger.debug("varName=\(self.spec.varName) autocapitalizationType changed \(String(describing: self.textview.autocapitalizationType)) -> \(String(describing: newAutocapType))")
+            Self.logger.dbg("varName=\(self.spec.varName) autocapitalizationType changed \(String(describing: self.textview.autocapitalizationType)) -> \(String(describing: newAutocapType))")
             self.textview.autocapitalizationType = newAutocapType
         }
         if keyboardTypeChanged || autocapTypeChanged {
-            Self.logger.debug("varName=\(self.spec.varName) reloadInputViews")
+            Self.logger.dbg("varName=\(self.spec.varName) reloadInputViews")
             self.textview.reloadInputViews()
         }
         self.constraintSet.set(constraints)
@@ -279,7 +279,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     // UITextViewDelegate
 
     func textViewDidChange(_: UITextView) {
-        Self.logger.debug("varName=\(self.spec.varName) textViewDidChange")
+        Self.logger.dbg("varName=\(self.spec.varName) textViewDidChange")
         let value = self.textview.text.isEmpty ? nil : self.textview.text
         self.ctx.varSet?.setString(self.spec.varName, value)
         //if let rpcPath = self.spec.rpc {

@@ -42,12 +42,12 @@ public struct BackButtonSpec: Equatable, Hashable {
     }
 
     func newWidget() -> Widget {
-        Self.logger.debug("\(String(describing: self)) newWidget")
+        Self.logger.dbg("\(String(describing: self)) newWidget")
         return BackButtonWidget()
     }
 
     func tap(_ ctx: PageContext) {
-        Self.logger.debug("\(String(describing: self)) tap")
+        Self.logger.dbg("\(String(describing: self)) tap")
         Task {
             await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.actions)
         }

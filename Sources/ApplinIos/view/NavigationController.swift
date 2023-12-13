@@ -108,7 +108,7 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
     private func updateViewControllers() {
         let newControllers: [UIViewController] = self.entries.map({ (_key, value) in value.controller() })
         if self.pageControllers != newControllers {
-            Self.logger.debug("setViewControllers \(newControllers)")
+            Self.logger.dbg("setViewControllers \(newControllers)")
             let oldTopController = self.top?.controller()
             self.top = self.entries.last?.1
             let changedTop = self.top?.controller() !== oldTopController
@@ -122,7 +122,7 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
     @MainActor
     func setWorking(_ text: String?) async {
         await self.lock.lockAsync {
-            Self.logger.debug("setWorking '\(String(describing: text))")
+            Self.logger.dbg("setWorking '\(String(describing: text))")
             self.workingHelper.clear()
             if let text = text {
                 let working = WorkingView(text: text)
@@ -145,8 +145,8 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
         await self.lock.lockAsync {
             //for (key, pageSpec) in self.entries { Self.logger.trace("old page '\(key)' = \(pageSpec)") }
             //for (key, pageSpec) in newPages { Self.logger.trace("new page '\(key)' = \(pageSpec)") }
-            Self.logger.debug("old page keys: \(self.entries.map({ $0.0 }))")
-            Self.logger.debug("new page keys: \(newPages.map({ $0.0 }))")
+            Self.logger.dbg("old page keys: \(self.entries.map({ $0.0 }))")
+            Self.logger.dbg("new page keys: \(newPages.map({ $0.0 }))")
             var keyToEntry: [String: Entry] = self.entries.toDictionary()
             self.entries = []
             for (key, pageSpec) in newPages {
@@ -184,7 +184,7 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
 
     public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         let result = self.top?.allowBackSwipe() ?? false
-        Self.logger.debug("allowBackSwipe \(result)")
+        Self.logger.dbg("allowBackSwipe \(result)")
         return result
     }
 }

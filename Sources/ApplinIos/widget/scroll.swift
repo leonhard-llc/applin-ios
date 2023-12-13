@@ -91,7 +91,7 @@ public class KeyboardAvoidingScrollView: UIScrollView {
             return
         }
         let relativeFrame = self.convert(frameNsValue.cgRectValue, from: self.window)
-        Self.logger.debug("adjustForKeyboard frameNsValue=\(frameNsValue), relativeFrame=\(String(describing: relativeFrame))")
+        Self.logger.dbg("adjustForKeyboard frameNsValue=\(frameNsValue), relativeFrame=\(String(describing: relativeFrame))")
         if notification.name == UIResponder.keyboardWillHideNotification {
             self.contentInset = .zero
         } else {

@@ -20,7 +20,7 @@ class ColumnView: UIView {
     }
 
     convenience init() {
-        Self.logger.debug("init")
+        Self.logger.dbg("init")
         self.init(frame: CGRect.zero)
     }
 
@@ -37,7 +37,7 @@ class ColumnView: UIView {
     }
 
     func update(_ alignment: ApplinHAlignment, separator: UIColor?, spacing: Float32, subviews: [UIView]) {
-        Self.logger.debug("ColumnView.update alignment=\(alignment) separator=\(String(describing: separator)) spacing=\(spacing) subviews=\(subviews)")
+        Self.logger.dbg("ColumnView.update alignment=\(alignment) separator=\(String(describing: separator)) spacing=\(spacing) subviews=\(subviews)")
         self.alignment = alignment
         self.orderedSubviews = subviews
         self.separatorColor = separator
@@ -45,14 +45,14 @@ class ColumnView: UIView {
         let newSubviews = Set(subviews)
         for subview in self.subviews {
             if !newSubviews.contains(subview) {
-                Self.logger.debug("ColumnView.update remove \(subview)")
+                Self.logger.dbg("ColumnView.update remove \(subview)")
                 subview.removeFromSuperview(self)
             }
         }
         let existingSubviews = Set(self.subviews)
         for subview in subviews {
             if !existingSubviews.contains(subview) {
-                Self.logger.debug("ColumnView.update add \(subview)")
+                Self.logger.dbg("ColumnView.update add \(subview)")
                 subview.translatesAutoresizingMaskIntoConstraints = false
                 self.addSubview(subview)
             }
