@@ -46,24 +46,31 @@ class ServerCaller {
         self.urlSession.invalidateAndCancel()
     }
 
-    private func doRequest(
-            path: String,
-            _ urlRequest: URLRequest,
-            interactive: Bool
-    ) async throws -> (HTTPURLResponse, Data) {
+    private func doRequest(path: String, _ req: URLRequest, interactive: Bool) async throws -> (HTTPURLResponse, Data) {
+        let method = req.httpMethod ?? ""
+        Self.logger.info("HTTP request \(method) \(String(reflecting: path))")
+        Self.logger.dbg("HTTP request_headers \(method) \(String(reflecting: path)) \(String(reflecting: req.allHTTPHeaderFields ?? [:]))")
+        if let body = req.httpBody {
+            Self.logger.dbg("HTTP request_body \(method) \(String(reflecting: path)) body=\(String(reflecting: String(data: body, encoding: .utf8)))")
+        }
         let data: Data
-        let httpResponse: HTTPURLResponse
+        let resp: HTTPURLResponse
         do {
-            let (urlData, urlResponse) = try await self.urlSession.data(for: urlRequest)
+            let (urlData, urlResponse) = try await self.urlSession.data(for: req)
             data = urlData
-            httpResponse = urlResponse as! HTTPURLResponse
+            resp = urlResponse as! HTTPURLResponse
         } catch {
-            throw ApplinError.networkError("error talking to server at \(urlRequest.url?.absoluteString ?? "") : \(error)")
+            throw ApplinError.networkError("error talking to server at \(req.url?.absoluteString ?? "") : \(error)")
+        }
+        Self.logger.info("HTTP response \(method) \(String(reflecting: path)) status=\(resp.statusCode) bodyLen=\(data.count) contentType='\(resp.value(forHTTPHeaderField: "content-type"))'")
+        Self.logger.dbg("HTTP response_headers \(method) \(String(reflecting: path)) \(resp.allHeaderFields.map({k, v in "\(String(reflecting: String(describing: k))):\(String(reflecting: String(describing: v)))"}).joined(separator: " "))")
+        if !data.isEmpty {
+            Self.logger.dbg("HTTP response_body \(method) \(String(reflecting: path)) body=\(String(reflecting: (String(data: data, encoding: .utf8)!)))")
         }
         do {
-            switch httpResponse.statusCode {
+            switch resp.statusCode {
             case 200...299:
-                return (httpResponse, data)
+                return (resp, data)
             case 403, 422:
                 let string = String(String(data: data, encoding: .utf8)?.prefix(1000) ?? "")
                 throw ApplinError.userError(string)
@@ -73,11 +80,11 @@ class ServerCaller {
             case 503:
                 throw ApplinError.serverError("Server overloaded. Please try again.")
             case 500...599:
-                throw ApplinError.serverError("server returned error for \(path) : \(httpResponse.statusCode) "
-                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode))")
+                throw ApplinError.serverError("server returned error for \(path) : \(resp.statusCode) "
+                        + "\(HTTPURLResponse.localizedString(forStatusCode: resp.statusCode))")
             default:
-                throw ApplinError.serverError("server returned unexpected resposne for \(path) : \(httpResponse.statusCode) "
-                        + "\(HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode))")
+                throw ApplinError.serverError("server returned unexpected response for \(path) : \(resp.statusCode) "
+                        + "\(HTTPURLResponse.localizedString(forStatusCode: resp.statusCode))")
             }
         } catch let e as ApplinError {
             if interactive {
@@ -114,32 +121,24 @@ class ServerCaller {
                 cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
         )
         urlRequest.httpMethod = method.toString()
-        switch method {
-        case .GET:
-            Self.logger.info("HTTP request GET \(String(describing: path))")
-        case .POST:
+        if method == .POST {
             let vars: [(String, JSON)] = varNamesAndValues.map({ (name, value) in (name, value.toJson()) })
             let jsonBody: [String: JSON] = vars.toDictionary()
             let body = try encodeJson(jsonBody)
             urlRequest.httpBody = body
             urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
-            Self.logger.info("HTTP request POST \(String(describing: path))")
-            Self.logger.dbg("HTTP request_body POST \(String(describing: path)) body=\(String(describing: String(data: body, encoding: .utf8)))")
         }
         // NOTE: Rpc POST requests must include the `accept` header so Rails backends can bypass the built-in CSRF checks.
         // TODO: Test that rpc requests include the `Accept` header.
         urlRequest.addValue("application/vnd.applin_response", forHTTPHeaderField: "accept")
-        //Self.logger.dbg("urlRequest \(urlRequest.httpMethod) \(String(describing: urlRequest)) \(String(describing: urlRequest.allHTTPHeaderFields))")
         let (httpResponse, data) = try await self.doRequest(path: path, urlRequest, interactive: interactive)
         let contentTypeBase = httpResponse.contentTypeBase()
-        Self.logger.info("HTTP response \(urlRequest.httpMethod!) \(String(describing: path)) status=\(httpResponse.statusCode) bodyLen=\(data.count) contentType='\(contentTypeBase ?? "")'")
         if data.isEmpty {
             return nil
         }
-        Self.logger.dbg("HTTP response_body \(urlRequest.httpMethod!) \(String(describing: path)) status=\(httpResponse.statusCode) body=\(String(describing: data))")
         do {
             if contentTypeBase != "application/vnd.applin_response" {
-                throw "content-type is not 'application/vnd.applin_response': \(String(describing: contentTypeBase ?? ""))"
+                throw "content-type is not 'application/vnd.applin_response': \(String(reflecting: contentTypeBase ?? ""))"
             }
 
             struct ApplinResponse: Codable {
@@ -172,9 +171,6 @@ class ServerCaller {
         urlRequest.httpMethod = "PUT"
         urlRequest.httpBody = uploadBody.data
         urlRequest.addValue(uploadBody.contentType, forHTTPHeaderField: "Content-Type")
-        Self.logger.info("HTTP request PUT \(String(describing: path)) request bodyLen=\(uploadBody.data.count) contentType='\(uploadBody.contentType)'")
-        let (httpResponse, data) = try await self.doRequest(path: path, urlRequest, interactive: true)
-        let contentTypeBase = httpResponse.contentTypeBase()
-        Self.logger.info("HTTP response PUT \(String(describing: path)) status=\(httpResponse.statusCode) bodyLen=\(data.count) contentType='\(contentTypeBase ?? "")'")
+        let _ = try await self.doRequest(path: path, urlRequest, interactive: true)
     }
 }
