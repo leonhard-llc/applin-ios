@@ -116,15 +116,15 @@ class ServerCaller {
         urlRequest.httpMethod = method.toString()
         switch method {
         case .GET:
-            Self.logger.info("GET \(String(describing: path))")
+            Self.logger.info("HTTP request GET \(String(describing: path))")
         case .POST:
             let vars: [(String, JSON)] = varNamesAndValues.map({ (name, value) in (name, value.toJson()) })
             let jsonBody: [String: JSON] = vars.toDictionary()
             let body = try encodeJson(jsonBody)
             urlRequest.httpBody = body
             urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
-            Self.logger.info("POST \(String(describing: path))")
-            Self.logger.debug("POST \(String(describing: path)) request body=\(String(describing: String(data: body, encoding: .utf8)))")
+            Self.logger.info("HTTP request POST \(String(describing: path))")
+            Self.logger.debug("HTTP request_body POST \(String(describing: path)) body=\(String(describing: String(data: body, encoding: .utf8)))")
         }
         // NOTE: Rpc POST requests must include the `accept` header so Rails backends can bypass the built-in CSRF checks.
         // TODO: Test that rpc requests include the `Accept` header.
@@ -132,11 +132,11 @@ class ServerCaller {
         //Self.logger.debug("urlRequest \(urlRequest.httpMethod) \(String(describing: urlRequest)) \(String(describing: urlRequest.allHTTPHeaderFields))")
         let (httpResponse, data) = try await self.doRequest(path: path, urlRequest, interactive: interactive)
         let contentTypeBase = httpResponse.contentTypeBase()
-        Self.logger.info("\(urlRequest.httpMethod!) \(String(describing: path)) response status=\(httpResponse.statusCode) bodyLen=\(data.count) bodyType='\(contentTypeBase ?? "")'")
+        Self.logger.info("HTTP response \(urlRequest.httpMethod!) \(String(describing: path)) status=\(httpResponse.statusCode) bodyLen=\(data.count) contentType='\(contentTypeBase ?? "")'")
         if data.isEmpty {
             return nil
         }
-        Self.logger.debug("\(urlRequest.httpMethod!) \(String(describing: path)) response status=\(httpResponse.statusCode) body=\(String(describing: data))")
+        Self.logger.debug("HTTP response_body \(urlRequest.httpMethod!) \(String(describing: path)) status=\(httpResponse.statusCode) body=\(String(describing: data))")
         do {
             if contentTypeBase != "application/vnd.applin_response" {
                 throw "content-type is not 'application/vnd.applin_response': \(String(describing: contentTypeBase ?? ""))"
@@ -172,10 +172,12 @@ class ServerCaller {
         urlRequest.httpMethod = "PUT"
         urlRequest.httpBody = uploadBody.data
         urlRequest.addValue(uploadBody.contentType, forHTTPHeaderField: "Content-Type")
-        Self.logger.info("PUT \(String(describing: path)) request bodyLen=\(uploadBody.data.count) contentType='\(uploadBody.contentType)'")
+        Self.logger.info("HTTP request PUT \(String(describing: path)) request bodyLen=\(uploadBody.data.count) contentType='\(uploadBody.contentType)'")
         let (httpResponse, data) = try await self.doRequest(path: path, urlRequest, interactive: true)
         let contentTypeBase = httpResponse.contentTypeBase()
-        Self.logger.info("PUT \(String(describing: path)) response status=\(httpResponse.statusCode) bodyLen=\(data.count) contentType='\(contentTypeBase ?? "")'")
-        Self.logger.debug("PUT \(String(describing: path)) response status=\(httpResponse.statusCode) body=\(String(describing: data))")
+        Self.logger.info("HTTP response PUT \(String(describing: path)) status=\(httpResponse.statusCode) bodyLen=\(data.count) contentType='\(contentTypeBase ?? "")'")
+        if !data.isEmpty {
+            Self.logger.debug("HTTP response_body PUT \(String(describing: path)) status=\(httpResponse.statusCode) body=\(String(describing: data))")
+        }
     }
 }
