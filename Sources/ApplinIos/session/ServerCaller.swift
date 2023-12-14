@@ -63,10 +63,11 @@ class ServerCaller {
             throw ApplinError.networkError("error talking to server at \(req.url?.absoluteString ?? "") : \(error)")
         }
         Self.logger.info("HTTP response \(method) \(String(reflecting: path)) status=\(resp.statusCode) bodyLen=\(data.count) contentType='\(resp.value(forHTTPHeaderField: "content-type"))'")
-        Self.logger.dbg("HTTP response_headers \(method) \(String(reflecting: path)) \(resp.allHeaderFields.map({k, v in "\(String(reflecting: String(describing: k))):\(String(reflecting: String(describing: v)))"}).joined(separator: " "))")
+        Self.logger.dbg("HTTP response_headers \(method) \(String(reflecting: path)) \(resp.allHeaderFields.map({ k, v in "\(String(reflecting: String(describing: k))):\(String(reflecting: String(describing: v)))" }).joined(separator: " "))")
         if !data.isEmpty {
             Self.logger.dbg("HTTP response_body \(method) \(String(reflecting: path)) body=\(String(reflecting: (String(data: data, encoding: .utf8)!)))")
         }
+        //Self.logger.dbg("HTTPCookieStorage.shared.cookies is \(String(reflecting: HTTPCookieStorage.shared.cookies))")
         do {
             switch resp.statusCode {
             case 200...299:
