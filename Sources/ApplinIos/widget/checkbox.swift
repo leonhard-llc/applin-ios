@@ -4,29 +4,36 @@ import UIKit
 
 public struct CheckboxSpec: Equatable, Hashable, ToSpec {
     static let TYP = "checkbox"
+    let actions: [ActionSpec]
     let initialBool: Bool?
-    let rpc: String?
+    let pollDelayMs: UInt32?
     let text: String?
     let varName: String
 
-    init(varName: String, initialBool: Bool? = nil, text: String? = nil, rpc: String? = nil) {
+    public init(
+            varName: String,
+            actions: [ActionSpec] = [],
+            initialBool: Bool? = nil,
+            pollDelayMs: UInt32? = nil,
+            text: String? = nil
+    ) {
+        self.actions = actions
         self.initialBool = initialBool
-        self.rpc = rpc
         self.text = text
         self.varName = varName
     }
 
     init(_ item: JsonItem) throws {
+        self.actions = try item.optActions() ?? []
         self.initialBool = item.initial_bool
-        self.rpc = item.rpc
         self.text = item.text
         self.varName = try item.requireVar()
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(CheckboxSpec.TYP)
+        item.actions = self.actions.map({ action in action.toString() })
         item.initial_bool = self.initialBool
-        item.rpc = self.rpc
         item.text = self.text
         item.var_name = self.varName
         return item
@@ -61,6 +68,7 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
     }
 
     func visitActions(_ f: (ActionSpec) -> ()) {
+        self.actions.forEach(f)
     }
 }
 
@@ -139,8 +147,8 @@ class CheckboxWidget: Widget {
         let newValue: Bool = !originalValue
         varSet.set(self.spec.varName, .bool(newValue))
         self.updateButton(checked: newValue, title: self.spec.text)
-        if let rpc = self.spec.rpc {
-            let ok = await pageStack.doActions(pageKey: self.ctx.pageKey, [.rpc(rpc)])
+        if !self.spec.actions.isEmpty {
+            let ok = await pageStack.doActions(pageKey: self.ctx.pageKey, self.spec.actions)
             if !ok {
                 varSet.setBool(self.spec.varName, originalVarValue)
                 self.updateButton(checked: !newValue, title: self.spec.text)
