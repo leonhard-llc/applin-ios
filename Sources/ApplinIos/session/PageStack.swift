@@ -205,7 +205,7 @@ class PageStack {
         self.weakVarSet = varSet
     }
 
-    func doChoosePhotoAction(path: String) async throws {
+    private func doChoosePhotoAction(path: String) async throws {
         guard let nav = self.weakNav else {
             return
         }
@@ -223,7 +223,7 @@ class PageStack {
         }
     }
 
-    func doPollAction(pageKey: String) async throws {
+    private func doPollAction(pageKey: String) async throws {
         if self.config.staticPages[pageKey] != nil {
             // Show first page on startup.
             await self.mutex.lockAsyncAndUpdate({ state in })
@@ -240,7 +240,7 @@ class PageStack {
         })
     }
 
-    func doPushAction(pageKey: String) async throws {
+    private func doPushAction(pageKey: String) async throws {
         if let spec = self.config.staticPageSpec(pageKey: pageKey) {
             try await self.mutex.lockAsyncThrowsAndUpdate({ state in
                 try state.push(pageKey: pageKey, spec)
@@ -258,7 +258,7 @@ class PageStack {
         })
     }
 
-    func doReplaceAllAction(pageKey: String) async throws {
+    private func doReplaceAllAction(pageKey: String) async throws {
         if let spec = self.config.staticPageSpec(pageKey: pageKey) {
             try await self.mutex.lockAsyncThrowsAndUpdate({ state in
                 state.replaceAll(pageKey: pageKey, spec)
@@ -276,7 +276,7 @@ class PageStack {
         })
     }
 
-    func doRpcAction(pageKey: String, path: String) async throws {
+    private func doRpcAction(pageKey: String, path: String) async throws {
         guard let serverCaller = self.weakServerCaller else {
             return
         }

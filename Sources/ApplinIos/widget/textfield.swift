@@ -16,8 +16,7 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
     let maxChars: UInt32?
     let maxLines: UInt32?
     let minChars: UInt32?
-    // TODO: Change this to `refreshPageDelayMs`
-    let rpc: String?
+    let pollDelayMs: UInt32?
     let varName: String
 
     public init(
@@ -30,7 +29,7 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
             maxChars: UInt32? = nil,
             maxLines: UInt32? = nil,
             minChars: UInt32? = nil,
-            rpc: String? = nil
+            pollDelayMs: UInt32? = nil
     ) throws {
         self.allow = allow
         self.autoCapitalize = autoCapitalize
@@ -40,7 +39,7 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
         self.maxChars = maxChars
         self.maxLines = maxLines
         self.minChars = minChars
-        self.rpc = rpc
+        self.pollDelayMs = pollDelayMs
         self.varName = varName
     }
 
@@ -53,7 +52,7 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
         self.maxChars = item.max_chars
         self.maxLines = item.max_lines
         self.minChars = item.min_chars
-        self.rpc = item.rpc
+        self.pollDelayMs = item.poll_delay_ms
         self.varName = try item.requireVar()
     }
 
@@ -67,7 +66,7 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
         item.max_chars = self.maxChars
         item.max_lines = self.maxLines
         item.min_chars = self.minChars
-        item.rpc = self.rpc
+        item.poll_delay_ms = self.pollDelayMs
         item.var_name = self.varName
         return item
     }
@@ -124,8 +123,8 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     var spec: TextfieldSpec
     var initialized = false
 
-    private let lock = NSLock()
-    private var rpcTask: Task<Void, Never>?
+    let lock = NSLock()
+    var pollDelayTask: Task<(), Never>?
 
     init(_ ctx: PageContext, _ spec: TextfieldSpec) {
         self.ctx = ctx
@@ -282,25 +281,16 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         Self.logger.dbg("varName=\(self.spec.varName) textViewDidChange")
         let value = self.textview.text.isEmpty ? nil : self.textview.text
         self.ctx.varSet?.setString(self.spec.varName, value)
-        //if let rpcPath = self.spec.rpc {
-        //    self.lock.lock()
-        //    defer {
-        //        self.lock.unlock()
-        //    }
-        //    self.rpcTask?.cancel()
-        //    self.rpcTask = Task {
-        //        await sleep(ms: 3_000)
-        //        if Task.isCancelled {
-        //            return
-        //        }
-        //        do {
-        //            try await self.ctx.serverCaller?.call(path: rpcPath, sourcePageKey: self.ctx.pageKey)
-        //        } catch let e as ApplinError {
-        //            Self.logger.warning("varName=\(self.spec.varName)  rpc error: \(e)")
-        //        } catch let e {
-        //            Self.logger.warning("varName=\(self.spec.varName)  rpc unexpected error: \(e)")
-        //        }
-        //    }
-        //}
+        if let pollDelayMs = self.spec.pollDelayMs {
+            self.pollDelayTask?.cancel()
+            self.pollDelayTask = Task(priority: .low) {
+                await sleep(ms: Int(pollDelayMs))
+                if Task.isCancelled {
+                    return
+                }
+                Self.logger.dbg("varName=\(self.spec.varName) textViewDidChange poll")
+                let _ = await self.ctx.pageStack?.doActions(pageKey: self.ctx.pageKey, [.poll], showWorking: false)
+            }
+        }
     }
 }

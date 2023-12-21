@@ -19,6 +19,7 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
     ) {
         self.actions = actions
         self.initialBool = initialBool
+        self.pollDelayMs = pollDelayMs
         self.text = text
         self.varName = varName
     }
@@ -26,6 +27,7 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
     init(_ item: JsonItem) throws {
         self.actions = try item.optActions() ?? []
         self.initialBool = item.initial_bool
+        self.pollDelayMs = item.poll_delay_ms
         self.text = item.text
         self.varName = try item.requireVar()
     }
@@ -34,6 +36,7 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
         let item = JsonItem(CheckboxSpec.TYP)
         item.actions = self.actions.map({ action in action.toString() })
         item.initial_bool = self.initialBool
+        item.poll_delay_ms = self.pollDelayMs
         item.text = self.text
         item.var_name = self.varName
         return item
@@ -80,6 +83,7 @@ class CheckboxWidget: Widget {
     var spec: CheckboxSpec
     var button: UIButton!
     let ctx: PageContext
+    var pollDelayTask: Task<(), Never>?
 
     init(_ spec: CheckboxSpec, _ ctx: PageContext) {
         self.container = TappableView()
@@ -152,6 +156,18 @@ class CheckboxWidget: Widget {
             if !ok {
                 varSet.setBool(self.spec.varName, originalVarValue)
                 self.updateButton(checked: !newValue, title: self.spec.text)
+            }
+        }
+
+        if let pollDelayMs = self.spec.pollDelayMs {
+            self.pollDelayTask?.cancel()
+            self.pollDelayTask = Task(priority: .low) {
+                await sleep(ms: Int(pollDelayMs))
+                if Task.isCancelled {
+                    return
+                }
+                Self.logger.dbg("varName=\(self.spec.varName) checkbox poll")
+                let _ = await self.ctx.pageStack?.doActions(pageKey: self.ctx.pageKey, [.poll], showWorking: false)
             }
         }
     }
