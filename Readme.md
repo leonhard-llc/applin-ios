@@ -31,6 +31,10 @@ SOFTWARE.
 
 ## Changes
 
+- v0.25.0
+    - Add `poll_delay_ms` field to checkbox and textfield.
+    - Add checkbox `actions` field and remove `rpc` field.
+    - Improve debug logging of network requests and responses.
 - v0.24.0
     - Add `on_user_error_poll` action.
     - Remove `nothing` action.
