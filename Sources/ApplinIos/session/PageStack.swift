@@ -144,17 +144,28 @@ class PageStack {
         func token() -> Token {
             Token(self.lamportClock.now())
         }
+
+        func topPageKey() -> String? {
+            self.stack.last?.pageKey
+        }
     }
 
     class StateMutex {
         private let lock = ApplinLock()
         private let state: State
+        weak var weakForegroundPoller: ForegroundPoller?
         weak var weakNav: NavigationController?
         weak var weakPageStack: PageStack?
         weak var weakVarSet: VarSet?
 
-        init(state: State, _ nav: NavigationController?, _ varSet: VarSet?) {
+        init(
+                state: State,
+                _ foregroundPoller: ForegroundPoller?,
+                _ nav: NavigationController?,
+                _ varSet: VarSet?
+        ) {
             self.state = state
+            self.weakForegroundPoller = foregroundPoller
             self.weakNav = nav
             self.weakVarSet = varSet
         }
@@ -174,10 +185,11 @@ class PageStack {
         func lockAsyncThrowsAndUpdate<R>(_ f: (State) throws -> R) async throws -> R {
             let result = try await self.lock.lockAsyncThrows({ try f(self.state) })
             if let nav = self.weakNav,
+               let foregroundPoller = self.weakForegroundPoller,
                let pageStack = self.weakPageStack,
                let varSet = self.weakVarSet,
                let stackSpecs = self.state.stackSpecsForUpdate() {
-                await nav.update(pageStack, varSet, newPages: stackSpecs)
+                await nav.update(foregroundPoller, pageStack, varSet, newPages: stackSpecs)
             }
             return result
         }
@@ -193,13 +205,15 @@ class PageStack {
     init(
             _ config: ApplinConfig,
             _ lamportClock: LamportClock,
+            _ foregroundPoller: ForegroundPoller?,
             _ nav: NavigationController?,
             _ varSet: VarSet?,
             _ wallClock: WallClock,
             pageKeys: [String]
     ) {
         self.config = config
-        self.mutex = StateMutex(state: State(config, lamportClock, wallClock, pageKeys: pageKeys), nav, varSet)
+        let state = State(config, lamportClock, wallClock, pageKeys: pageKeys)
+        self.mutex = StateMutex(state: state, foregroundPoller, nav, varSet)
         self.mutex.weakPageStack = self
         self.weakNav = nav
         self.weakVarSet = varSet
@@ -398,6 +412,13 @@ class PageStack {
             state.stackPages()
         })
     }
+
+    func topPageKey() -> String? {
+        self.mutex.lockReadOnly({ state in
+            state.topPageKey()
+        })
+    }
+
 
     func token() -> Token {
         self.mutex.token()

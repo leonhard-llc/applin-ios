@@ -123,9 +123,6 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     var spec: TextfieldSpec
     var initialized = false
 
-    let lock = NSLock()
-    var pollDelayTask: Task<(), Never>?
-
     init(_ ctx: PageContext, _ spec: TextfieldSpec) {
         self.ctx = ctx
         self.spec = spec
@@ -282,15 +279,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
         let value = self.textview.text.isEmpty ? nil : self.textview.text
         self.ctx.varSet?.setString(self.spec.varName, value)
         if let pollDelayMs = self.spec.pollDelayMs {
-            self.pollDelayTask?.cancel()
-            self.pollDelayTask = Task(priority: .low) {
-                await sleep(ms: Int(pollDelayMs))
-                if Task.isCancelled {
-                    return
-                }
-                Self.logger.dbg("varName=\(self.spec.varName) textViewDidChange poll")
-                let _ = await self.ctx.pageStack?.doActions(pageKey: self.ctx.pageKey, [.poll], showWorking: false)
-            }
+            self.ctx.foregroundPoller?.schedulePoll(delayMillis: pollDelayMs)
         }
     }
 }

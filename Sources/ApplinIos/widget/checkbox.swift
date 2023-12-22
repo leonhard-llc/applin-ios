@@ -83,7 +83,6 @@ class CheckboxWidget: Widget {
     var spec: CheckboxSpec
     var button: UIButton!
     let ctx: PageContext
-    var pollDelayTask: Task<(), Never>?
 
     init(_ spec: CheckboxSpec, _ ctx: PageContext) {
         self.container = TappableView()
@@ -158,17 +157,8 @@ class CheckboxWidget: Widget {
                 self.updateButton(checked: !newValue, title: self.spec.text)
             }
         }
-
         if let pollDelayMs = self.spec.pollDelayMs {
-            self.pollDelayTask?.cancel()
-            self.pollDelayTask = Task(priority: .low) {
-                await sleep(ms: Int(pollDelayMs))
-                if Task.isCancelled {
-                    return
-                }
-                Self.logger.dbg("varName=\(self.spec.varName) checkbox poll")
-                let _ = await self.ctx.pageStack?.doActions(pageKey: self.ctx.pageKey, [.poll], showWorking: false)
-            }
+            self.ctx.foregroundPoller?.schedulePoll(delayMillis: pollDelayMs)
         }
     }
 

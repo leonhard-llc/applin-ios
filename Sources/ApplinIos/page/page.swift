@@ -5,18 +5,21 @@ class PageContext {
     weak var cache: WidgetCache?
     let hasPrevPage: Bool
     let pageKey: String
+    weak var foregroundPoller: ForegroundPoller?
     weak var pageStack: PageStack?
     weak var varSet: VarSet?
 
     init(_ cache: WidgetCache?,
          hasPrevPage: Bool,
          pageKey: String,
+         _ foregroundPoller: ForegroundPoller,
          _ pageStack: PageStack,
          _ varSet: VarSet
     ) {
         self.cache = cache
         self.hasPrevPage = hasPrevPage
         self.pageKey = pageKey
+        self.foregroundPoller = foregroundPoller
         self.pageStack = pageStack
         self.varSet = varSet
     }

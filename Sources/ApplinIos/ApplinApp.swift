@@ -8,11 +8,12 @@ public class ApplinApp {
     let wallClock = WallClock()
     public let config: ApplinConfig
     //let streamer: Streamer
-    var varSet: VarSet?
+    var foregroundPoller: ForegroundPoller?
     var pageStack: PageStack?
     var poller: Poller?
     var serverCaller: ServerCaller?
     var stateFileOwner: StateFileOwner?
+    var varSet: VarSet?
 
     public init(_ config: ApplinConfig) {
         Self.logger.info("init")
@@ -53,7 +54,16 @@ public class ApplinApp {
             Self.logger.info("no session")
             pageKeys = [config.showPageOnFirstStartup]
         }
-        self.pageStack = PageStack(self.config, self.lamportClock, self.navigationController, varSet, self.wallClock, pageKeys: pageKeys)
+        self.foregroundPoller = ForegroundPoller()
+        self.pageStack = PageStack(
+                self.config,
+                self.lamportClock,
+                self.foregroundPoller,
+                self.navigationController,
+                varSet,
+                self.wallClock, pageKeys: pageKeys
+        )
+        self.foregroundPoller!.weakPageStack = self.pageStack!
         self.serverCaller = ServerCaller(self.config, self.pageStack, self.varSet)
         self.pageStack!.weakServerCaller = self.serverCaller
         self.poller = Poller(self.config, self.pageStack, self.serverCaller, self.wallClock)

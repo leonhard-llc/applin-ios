@@ -30,7 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## Changes
-
+- v0.26.0 - Fix "cancelled" errors when using `poll_delay_ms` field.
 - v0.25.0
     - Add `poll_delay_ms` field to checkbox and textfield.
     - Add checkbox `actions` field and remove `rpc` field.

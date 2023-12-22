@@ -140,7 +140,7 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
     }
 
     @MainActor
-    func update(_ pageStack: PageStack, _ varSet: VarSet, newPages: [(String, PageSpec)]) async {
+    func update(_ foregroundPoller: ForegroundPoller, _ pageStack: PageStack, _ varSet: VarSet, newPages: [(String, PageSpec)]) async {
         precondition(!newPages.isEmpty)
         await self.lock.lockAsync {
             //for (key, pageSpec) in self.entries { Self.logger.trace("old page '\(key)' = \(pageSpec)") }
@@ -153,7 +153,14 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
                 let hasPrevPage = !self.entries.isEmpty
                 let optEntry = keyToEntry.removeValue(forKey: key)
                 let widgetCache = optEntry?.widgetCache() ?? WidgetCache()
-                let ctx = PageContext(widgetCache, hasPrevPage: hasPrevPage, pageKey: key, pageStack, varSet)
+                let ctx = PageContext(
+                        widgetCache,
+                        hasPrevPage: hasPrevPage,
+                        pageKey: key,
+                        foregroundPoller,
+                        pageStack,
+                        varSet
+                )
                 switch pageSpec {
                 case .loadingPage:
                     let ctl = optEntry?.loadingPageController() ?? LoadingPageController()
