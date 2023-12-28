@@ -25,6 +25,14 @@ public class StaticPageKeys {
 }
 
 public class StaticPages {
+    public static func logoutButton() -> [Spec] {
+        #if DEBUG
+        return [FormButtonSpec(text: "Logout - DEBUG BUILDS ONLY", [.logout]).toSpec()]
+        #else
+        return []
+        #endif
+    }
+
     public static func applinClientError(_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec {
         NavPageSpec(
                 pageKey: pageKey,
@@ -36,7 +44,7 @@ public class StaticPages {
                     FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
                     FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
                     FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
-                ]))
+                ] + Self.logoutButton()))
         )
     }
 
@@ -51,7 +59,7 @@ public class StaticPages {
                     FormButtonSpec(text: "Server Status", [.push(StaticPageKeys.SERVER_STATUS)]),
                     FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
                     FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
-                ]))
+                ] + Self.logoutButton()))
         )
     }
 
@@ -66,7 +74,7 @@ public class StaticPages {
                     FormButtonSpec(text: "Server Status", [.push(StaticPageKeys.SERVER_STATUS)]),
                     FormButtonSpec(text: "Support", [.push(StaticPageKeys.SUPPORT)]),
                     FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
-                ]))
+                ] + Self.logoutButton()))
         )
     }
 

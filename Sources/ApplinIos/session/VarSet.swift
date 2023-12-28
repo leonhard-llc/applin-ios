@@ -170,4 +170,14 @@ class VarSet {
             }
         })
     }
+
+    func removeAll() {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        self.vars.removeAll()
+        self.connectionError = nil
+        self.interactiveError = nil
+    }
 }

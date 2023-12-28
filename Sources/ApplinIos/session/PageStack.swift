@@ -317,15 +317,11 @@ class PageStack {
                 await UIApplication.shared.open(url)
             }
         case .logout:
-            // TODO: Implement 'logout' action
-            // - Delete session cookies.
-            // - Delete state file.
-            // - Stop state file writer.
-            // - Erase session saved state.
-            // - Disconnect streamer.
-            // - Stop poller.
-            // - Interrupt sequence of actions.
-            Self.logger.info("action not implemented")
+            // TODO: Display confirmation dialog.
+            Cookies.deleteSessionCookie(self.config)
+            self.weakVarSet?.removeAll()
+            try await self.doReplaceAllAction(pageKey: config.showPageOnFirstStartup)
+            // TODO: Display "Logged Out" dialog.
         case .onUserErrorPoll:
             break
         case .poll:
