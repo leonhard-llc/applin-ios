@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## Changes
+- v0.28.0 - Add `selector` widget.
 - v0.27.0 - Add `logout` action.
 - v0.26.0 - Fix "cancelled" errors when using `poll_delay_ms` field.
 - v0.25.0

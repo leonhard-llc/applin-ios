@@ -40,6 +40,7 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case navButton(NavButtonSpec)
         case textfield(TextfieldSpec)
         case scroll(ScrollSpec)
+        case selector(SelectorSpec)
         case text(TextSpec)
     }
 
@@ -87,6 +88,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
             self.value = .textfield(try TextfieldSpec(item))
         case ScrollSpec.TYP:
             self.value = .scroll(try ScrollSpec(config, item))
+        case SelectorSpec.TYP:
+            self.value = .selector(try SelectorSpec(item))
         case TextSpec.TYP:
             self.value = .text(try TextSpec(item))
         default:
@@ -125,6 +128,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .textfield(inner):
             return inner.toJsonItem()
         case let .scroll(inner):
+            return inner.toJsonItem()
+        case let .selector(inner):
             return inner.toJsonItem()
         case let .text(inner):
             return inner.toJsonItem()
@@ -167,6 +172,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
             return inner.keys()
         case let .scroll(inner):
             return inner.keys()
+        case let .selector(inner):
+            return inner.keys()
         case let .text(inner):
             return inner.keys()
         }
@@ -203,6 +210,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .textfield(inner):
             return inner.priority()
         case let .scroll(inner):
+            return inner.priority()
+        case let .selector(inner):
             return inner.priority()
         case let .text(inner):
             return inner.priority()
@@ -241,6 +250,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
             return inner.subs()
         case let .scroll(inner):
             return inner.subs()
+        case let .selector(inner):
+            return inner.subs()
         case let .text(inner):
             return inner.subs()
         }
@@ -277,6 +288,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .textfield(inner):
             return inner.vars()
         case let .scroll(inner):
+            return inner.vars()
+        case let .selector(inner):
             return inner.vars()
         case let .text(inner):
             return inner.vars()
@@ -315,6 +328,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
             return inner.visitActions(f)
         case let .scroll(inner):
             return inner.visitActions(f)
+        case let .selector(inner):
+            return inner.visitActions(f)
         case let .text(inner):
             return inner.visitActions(f)
         }
@@ -351,6 +366,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .textfield(inner):
             return inner.widgetClass()
         case let .scroll(inner):
+            return inner.widgetClass()
+        case let .selector(inner):
             return inner.widgetClass()
         case let .text(inner):
             return inner.widgetClass()
@@ -389,6 +406,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
             return inner.newWidget(ctx)
         case let .scroll(inner):
             return inner.newWidget()
+        case let .selector(inner):
+            return inner.newWidget(ctx)
         case let .text(inner):
             return inner.newWidget()
         }
@@ -425,6 +444,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .textfield(inner):
             return "\(inner)"
         case let .scroll(inner):
+            return "\(inner)"
+        case let .selector(inner):
             return "\(inner)"
         case let .text(inner):
             return "\(inner)"

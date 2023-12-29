@@ -186,6 +186,8 @@ class JsonItem: Codable {
     var id: String?
     var initial_bool: Bool?
     var initial_string: String?
+    var initial_string1: String?
+    var initial_string2: String?
     var is_cancel: Bool?
     var is_default: Bool?
     var is_destructive: Bool?
@@ -197,6 +199,9 @@ class JsonItem: Codable {
     var min_chars: UInt32?
     var min_height: Float32?
     var min_width: Float32?
+    var options: [String]?
+    var options1: [String]?
+    var options2: [String]?
     var photo_url: String?
     var poll_seconds: UInt32?
     var poll_delay_ms: UInt32?
@@ -211,6 +216,8 @@ class JsonItem: Codable {
     var title: String?
     var url: String?
     var var_name: String?
+    var var_name1: String?
+    var var_name2: String?
     var widget: JsonItem?
     var widgets: [JsonItem]?
     var width: Float32?
