@@ -164,6 +164,7 @@ class ServerCaller {
     }
 
     func upload(path: String, uploadBody: UploadBody) async throws {
+        // TODO: Stop url-encoding url parameters.
         let url = self.config.baseUrl.appendingPathComponent(path.removePrefix("/"))
         var urlRequest = URLRequest(
                 url: url,

@@ -162,6 +162,7 @@ class SelectorWidget: NSObject, UIPickerViewDataSource, UIPickerViewDelegate, Wi
         }
 
         NSLayoutConstraint.activate([
+            // TODO: Fix error "[LayoutConstraints] Unable to simultaneously satisfy constraints."
             self.pickerView.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.required),
             self.pickerView.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 4.0),
             self.pickerView.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -4.0),

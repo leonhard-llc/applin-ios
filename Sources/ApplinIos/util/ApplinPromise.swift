@@ -22,17 +22,22 @@ class ApplinPromise<T> {
     }
 
     func complete(value: T) {
+        if !self.tryComplete(value: value) {
+            preconditionFailure("promise is already completed")
+        }
+    }
+
+    func tryComplete(value: T) -> Bool {
         self.resultLock.lock()
-        switch self.result {
-        case .no:
-            break
-        case .yes(_):
-            preconditionFailure()
+        guard case .no = self.result else {
+            self.resultLock.unlock()
+            return false
         }
         self.result = .yes(value)
         self.resultLock.unlock()
 
         self.applinLock.unsafeUnlock()
+        return true
     }
 
     func value() async -> T {

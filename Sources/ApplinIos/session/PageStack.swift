@@ -237,6 +237,25 @@ class PageStack {
         }
     }
 
+    private func doTakePhotoAction(path: String) async throws -> Bool {
+        guard let nav = self.weakNav else {
+            return false
+        }
+        switch await PhotoTaker.take(nav) {
+        case nil:
+            return false
+        case let .failure(e):
+            throw ApplinError.appError("takePhoto(path=\(path)) error: \(e)")
+        case let .success(data):
+            Self.logger.info("takePhoto uploading \(data.count) bytes")
+            let uploadBody = UploadBody(data, contentType: "image/jpeg")
+            try await self.withWorking({
+                try await self.weakServerCaller?.upload(path: path, uploadBody: uploadBody)
+            })
+            return true
+        }
+    }
+
     private func doPollAction(pageKey: String) async throws {
         if self.config.staticPages[pageKey] != nil {
             // Show first page on startup.
@@ -303,7 +322,7 @@ class PageStack {
         )
     }
 
-    private func doAction(pageKey: String, _ action: ActionSpec) async throws {
+    private func doAction(pageKey: String, _ action: ActionSpec) async throws -> Bool {
         Self.logger.info("action \(action.description)")
         switch action {
         case let .choosePhoto(path):
@@ -336,10 +355,10 @@ class PageStack {
             try await self.doReplaceAllAction(pageKey: key)
         case let .rpc(path):
             try await self.doRpcAction(pageKey: pageKey, path: path)
-        case .takePhoto(_):
-            // TODO: Implement take_photo.
-            Self.logger.info("action not implemented")
+        case let .takePhoto(path):
+            return try await self.doTakePhotoAction(path: path)
         }
+        return true
     }
 
     func doActions(pageKey: String, _ actions: [ActionSpec], showWorking: Bool? = nil) async -> Bool {
@@ -350,12 +369,18 @@ class PageStack {
                     if showWorking ?? showWorkingForActions {
                         try await self.withWorking({
                             for action in actions {
-                                try await self.doAction(pageKey: pageKey, action)
+                                let success = try await self.doAction(pageKey: pageKey, action)
+                                if !success {
+                                    break;
+                                }
                             }
                         })
                     } else {
                         for action in actions {
-                            try await self.doAction(pageKey: pageKey, action)
+                            let success = try await self.doAction(pageKey: pageKey, action)
+                            if !success {
+                                break;
+                            }
                         }
                     }
                     return true

@@ -1,9 +1,8 @@
-import Combine
 import Foundation
 import PhotosUI // Imports PhotoKit.
 
 class PhotoPicker: ObservableObject, PHPickerViewControllerDelegate {
-    let promise: ApplinPromise<[PHPickerResult]> = ApplinPromise()
+    let promise: ApplinPromise<PHPickerResult?> = ApplinPromise()
 
     @MainActor
     static func pick(_ navController: UINavigationController) async -> Result<Data, String>? {
@@ -15,9 +14,9 @@ class PhotoPicker: ObservableObject, PHPickerViewControllerDelegate {
         let picker = PHPickerViewController(configuration: config)
         picker.delegate = photoPicker
         await navController.presentAsync(picker, animated: true)
-        let results = await photoPicker.promise.value()
+        let optResult = await photoPicker.promise.value()
         await navController.dismissAsync(animated: true)
-        guard let result = results.first else {
+        guard let result = optResult else {
             return nil
         }
         let promise: ApplinPromise<Result<UIImage, String>> = ApplinPromise()
@@ -51,6 +50,6 @@ class PhotoPicker: ObservableObject, PHPickerViewControllerDelegate {
     // PHPickerViewControllerDelegate
 
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        self.promise.complete(value: results)
+        let _ = self.promise.tryComplete(value: results.first)
     }
 }

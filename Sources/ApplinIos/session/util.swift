@@ -206,7 +206,7 @@ extension Logger {
         // Work around OSlog's flakiness on Simulator.
         self.info("\(msg)")
         #else
-        self.dbg("\(msg)")
+        self.debug("\(msg)")
         #endif
     }
 }
@@ -287,6 +287,14 @@ extension UInt64 {
 //        self.value = value
 //    }
 // }
+
+//extension UINavigationController {
+//    func presentAlertOk(title: String, message: String?) {
+//        let dialogCtl = UIAlertController(title: title, message: message, preferredStyle: .alert)
+//        dialogCtl.addAction(UIAlertAction(title: "Ok", style: .default, handler: { _ in }))
+//        self.present(dialogCtl, animated: true)
+//    }
+//}
 
 struct Stopwatch {
     let start: Date
