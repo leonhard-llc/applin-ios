@@ -167,7 +167,9 @@ class ScrollWidget: Widget {
             ]
         }
         if scrollSpec.pull_to_refresh ?? true {
-            self.scrollView.refreshControl = self.refreshControl
+            if scrollView.refreshControl != self.refreshControl {
+                self.scrollView.refreshControl = self.refreshControl
+            }
         } else {
             self.scrollView.refreshControl = nil
         }
