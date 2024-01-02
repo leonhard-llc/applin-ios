@@ -22,7 +22,14 @@ class PhotoPicker: ObservableObject, PHPickerViewControllerDelegate {
         let promise: ApplinPromise<Result<UIImage, String>> = ApplinPromise()
         result.itemProvider.loadObject(ofClass: UIImage.self) { reading, error in
             if error != nil {
-                promise.complete(value: .failure("\(error ?? "nil")"))
+                #if targetEnvironment(simulator)
+                let suffix = "\nNote that Apple Simulator fails reading HEIC images (bug 63426347)."
+                #else
+                let suffix = ""
+                #endif
+                promise.complete(value: .failure(
+                        "Error reading image: \"\(error?.localizedDescription ?? "nil")\".\(suffix)"
+                ))
             } else if let uiImage = reading as? UIImage {
                 promise.complete(value: .success(uiImage))
             } else {
