@@ -33,6 +33,7 @@ SOFTWARE.
 - v0.29.0
     - Add `take_photo` action.
     - Fix bug in Logger.dbg.
+    - Fix logged warnings from `selector` widget about layout constraints.
 - v0.28.0 - Add `selector` widget.
 - v0.27.0 - Add `logout` action.
 - v0.26.0 - Fix "cancelled" errors when using `poll_delay_ms` field.
