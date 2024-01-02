@@ -40,12 +40,12 @@ public enum PageSpec: CustomStringConvertible, Equatable, ToPageSpec {
     case navPage(NavPageSpec)
     case plainPage(PlainPageSpec)
 
-    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
         switch item.typ {
         case NavPageSpec.TYP:
             self = try .navPage(NavPageSpec(config, item))
         case PlainPageSpec.TYP:
-            self = try .plainPage(PlainPageSpec(config, pageKey: pageKey, item))
+            self = try .plainPage(PlainPageSpec(config, item))
         default:
             throw ApplinError.appError("unexpected page 'typ' value: \(item.typ)")
         }

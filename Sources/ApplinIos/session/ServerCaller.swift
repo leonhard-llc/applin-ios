@@ -46,12 +46,12 @@ class ServerCaller {
         self.urlSession.invalidateAndCancel()
     }
 
-    private func doRequest(path: String, _ req: URLRequest, interactive: Bool) async throws -> (HTTPURLResponse, Data) {
+    private func doRequest(_ req: URLRequest, interactive: Bool) async throws -> (HTTPURLResponse, Data) {
         let method = req.httpMethod ?? ""
-        Self.logger.info("HTTP request \(method) \(String(reflecting: path))")
-        Self.logger.dbg("HTTP request_headers \(method) \(String(reflecting: path)) \(String(reflecting: req.allHTTPHeaderFields ?? [:]))")
+        Self.logger.info("HTTP request \(method) \(String(reflecting: req.url!.relativeString))")
+        Self.logger.dbg("HTTP request_headers \(method) \(String(reflecting: req.url!.relativeString)) \(String(reflecting: req.allHTTPHeaderFields ?? [:]))")
         if let body = req.httpBody {
-            Self.logger.dbg("HTTP request_body \(method) \(String(reflecting: path)) body=\(String(reflecting: String(data: body, encoding: .utf8)))")
+            Self.logger.dbg("HTTP request_body \(method) \(String(reflecting: req.url!.relativeString)) body=\(String(reflecting: String(data: body, encoding: .utf8)))")
         }
         let data: Data
         let resp: HTTPURLResponse
@@ -60,12 +60,12 @@ class ServerCaller {
             data = urlData
             resp = urlResponse as! HTTPURLResponse
         } catch {
-            throw ApplinError.networkError("error talking to server at \(req.url?.absoluteString ?? "") : \(error)")
+            throw ApplinError.networkError("error talking to server at \(req.url!.absoluteString) : \(error)")
         }
-        Self.logger.info("HTTP response \(method) \(String(reflecting: path)) status=\(resp.statusCode) bodyLen=\(data.count) contentType='\(resp.value(forHTTPHeaderField: "content-type"))'")
-        Self.logger.dbg("HTTP response_headers \(method) \(String(reflecting: path)) \(resp.allHeaderFields.map({ k, v in "\(String(reflecting: String(describing: k))):\(String(reflecting: String(describing: v)))" }).joined(separator: " "))")
+        Self.logger.info("HTTP response \(method) \(String(reflecting: req.url!.relativeString)) status=\(resp.statusCode) bodyLen=\(data.count) contentType='\(resp.value(forHTTPHeaderField: "content-type"))'")
+        Self.logger.dbg("HTTP response_headers \(method) \(String(reflecting: req.url!.relativeString)) \(resp.allHeaderFields.map({ k, v in "\(String(reflecting: String(describing: k))):\(String(reflecting: String(describing: v)))" }).joined(separator: " "))")
         if !data.isEmpty {
-            Self.logger.dbg("HTTP response_body \(method) \(String(reflecting: path)) body=\(String(reflecting: (String(data: data, encoding: .utf8)!)))")
+            Self.logger.dbg("HTTP response_body \(method) \(String(reflecting: req.url!.relativeString)) body=\(String(reflecting: (String(data: data, encoding: .utf8)!)))")
         }
         //Self.logger.dbg("HTTPCookieStorage.shared.cookies is \(String(reflecting: HTTPCookieStorage.shared.cookies))")
         do {
@@ -81,10 +81,10 @@ class ServerCaller {
             case 503:
                 throw ApplinError.serverError("Server overloaded. Please try again.")
             case 500...599:
-                throw ApplinError.serverError("server returned error for \(path) : \(resp.statusCode) "
+                throw ApplinError.serverError("server returned error for \(req.url!.relativeString) : \(resp.statusCode) "
                         + "\(HTTPURLResponse.localizedString(forStatusCode: resp.statusCode))")
             default:
-                throw ApplinError.serverError("server returned unexpected response for \(path) : \(resp.statusCode) "
+                throw ApplinError.serverError("server returned unexpected response for \(req.url!.relativeString) : \(resp.statusCode) "
                         + "\(HTTPURLResponse.localizedString(forStatusCode: resp.statusCode))")
             }
         } catch let e as ApplinError {
@@ -112,13 +112,13 @@ class ServerCaller {
 
     func call(
             _ method: CallMethod,
-            path: String,
+            url: String,
             varNamesAndValues: [(String, Var)],
             interactive: Bool
     ) async throws -> PageUpdate? {
-        let url = self.config.baseUrl.appendingPathComponent(path.removePrefix("/"))
+        let relativeUrl = try self.config.relativeUrl(url: url)
         var urlRequest = URLRequest(
-                url: url,
+                url: relativeUrl,
                 cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
         )
         urlRequest.httpMethod = method.toString()
@@ -132,7 +132,7 @@ class ServerCaller {
         // NOTE: Rpc POST requests must include the `accept` header so Rails backends can bypass the built-in CSRF checks.
         // TODO: Test that rpc requests include the `Accept` header.
         urlRequest.addValue("application/vnd.applin_response", forHTTPHeaderField: "accept")
-        let (httpResponse, data) = try await self.doRequest(path: path, urlRequest, interactive: interactive)
+        let (httpResponse, data) = try await self.doRequest(urlRequest, interactive: interactive)
         let contentTypeBase = httpResponse.contentTypeBase()
         if data.isEmpty {
             return nil
@@ -147,25 +147,29 @@ class ServerCaller {
             }
 
             let response: ApplinResponse = try decodeJson(data)
-            let pageSpec: PageSpec = try PageSpec(self.config, pageKey: path, response.page)
+            let pageSpec: PageSpec = try PageSpec(self.config, response.page)
             return PageUpdate(data, pageSpec)
         } catch {
             throw ApplinError.serverError("error processing server response: \(error)")
         }
     }
 
-    func poll(path: String, varNamesAndValues: [(String, Var)], interactive: Bool) async throws -> PageUpdate {
+    func poll(url: String, varNamesAndValues: [(String, Var)], interactive: Bool) async throws -> PageUpdate {
         let method: CallMethod = varNamesAndValues.isEmpty ? .GET : .POST
-        let optUpdate = try await self.call(method, path: path, varNamesAndValues: varNamesAndValues, interactive: interactive)
+        let optUpdate = try await self.call(
+                method,
+                url: url,
+                varNamesAndValues: varNamesAndValues,
+                interactive: interactive
+        )
         guard let update = optUpdate else {
-            throw ApplinError.serverError("server returned empty result for page '\(path)")
+            throw ApplinError.serverError("server returned empty result for page '\(url)")
         }
         return update
     }
 
-    func upload(path: String, uploadBody: UploadBody) async throws {
-        // TODO: Stop url-encoding url parameters.
-        let url = self.config.baseUrl.appendingPathComponent(path.removePrefix("/"))
+    func upload(url: String, uploadBody: UploadBody) async throws {
+        let url = try self.config.relativeUrl(url: url)
         var urlRequest = URLRequest(
                 url: url,
                 cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
@@ -173,6 +177,6 @@ class ServerCaller {
         urlRequest.httpMethod = "PUT"
         urlRequest.httpBody = uploadBody.data
         urlRequest.addValue(uploadBody.contentType, forHTTPHeaderField: "Content-Type")
-        let _ = try await self.doRequest(path: path, urlRequest, interactive: true)
+        let _ = try await self.doRequest(urlRequest, interactive: true)
     }
 }

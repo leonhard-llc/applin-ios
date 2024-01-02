@@ -81,7 +81,7 @@ class Poller {
                 let token = pageStack.token()
                 do {
                     let update = try await serverCaller.poll(
-                            path: key,
+                            url: key,
                             varNamesAndValues: varNamesAndValues,
                             interactive: false
                     )

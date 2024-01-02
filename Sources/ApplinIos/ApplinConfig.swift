@@ -64,6 +64,20 @@ public class ApplinConfig {
         URL(string: "itms-apps://itunes.apple.com/app/id\(self.appStoreAppId)")!
     }
 
+    public func relativeUrl(url: String) throws -> URL {
+        guard let url = URL(string: url.removePrefix("/"), relativeTo: self.baseUrl),
+              url.scheme == self.baseUrl.scheme,
+              url.host == self.baseUrl.host,
+              url.port == self.baseUrl.port,
+              url.user == self.baseUrl.user,
+              url.password == self.baseUrl.password,
+              url.path.starts(with: self.baseUrl.path)
+        else {
+            throw ApplinError.appError("failed parsing upload url '\(url)")
+        }
+        return url
+    }
+
     public func staticPageSpec(pageKey: String) -> PageSpec? {
         self.staticPages[pageKey]?(self, pageKey).toPageSpec()
     }

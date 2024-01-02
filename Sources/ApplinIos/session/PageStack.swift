@@ -219,7 +219,7 @@ class PageStack {
         self.weakVarSet = varSet
     }
 
-    private func doChoosePhotoAction(path: String) async throws {
+    private func doChoosePhotoAction(url: String) async throws {
         guard let nav = self.weakNav else {
             return
         }
@@ -227,17 +227,17 @@ class PageStack {
         case nil:
             break
         case let .failure(e):
-            throw ApplinError.appError("choosePhoto(path=\(path)) error: \(e)")
+            throw ApplinError.appError("choosePhoto(url=\(url)) error: \(e)")
         case let .success(data):
             Self.logger.info("choosePhoto uploading \(data.count) bytes")
             let uploadBody = UploadBody(data, contentType: "image/jpeg")
             return try await self.withWorking({
-                try await self.weakServerCaller?.upload(path: path, uploadBody: uploadBody)
+                try await self.weakServerCaller?.upload(url: url, uploadBody: uploadBody)
             })
         }
     }
 
-    private func doTakePhotoAction(path: String) async throws -> Bool {
+    private func doTakePhotoAction(url: String) async throws -> Bool {
         guard let nav = self.weakNav else {
             return false
         }
@@ -245,12 +245,12 @@ class PageStack {
         case nil:
             return false
         case let .failure(e):
-            throw ApplinError.appError("takePhoto(path=\(path)) error: \(e)")
+            throw ApplinError.appError("takePhoto(url=\(url)) error: \(e)")
         case let .success(data):
             Self.logger.info("takePhoto uploading \(data.count) bytes")
             let uploadBody = UploadBody(data, contentType: "image/jpeg")
             try await self.withWorking({
-                try await self.weakServerCaller?.upload(path: path, uploadBody: uploadBody)
+                try await self.weakServerCaller?.upload(url: url, uploadBody: uploadBody)
             })
             return true
         }
@@ -267,7 +267,7 @@ class PageStack {
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         let update =
-                try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+                try await serverCaller.poll(url: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
         await self.mutex.lockAsyncAndUpdate({ state in
             state.set(pageKey: pageKey, update.spec)
         })
@@ -285,7 +285,7 @@ class PageStack {
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         let update =
-                try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+                try await serverCaller.poll(url: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
         try await self.mutex.lockAsyncThrowsAndUpdate({ state in
             try state.push(pageKey: pageKey, update.spec)
         })
@@ -303,7 +303,7 @@ class PageStack {
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         let update =
-                try await serverCaller.poll(path: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+                try await serverCaller.poll(url: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
         await self.mutex.lockAsyncAndUpdate({ state in
             state.replaceAll(pageKey: pageKey, update.spec)
         })
@@ -316,7 +316,7 @@ class PageStack {
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         let _ = try await serverCaller.call(
                 .POST,
-                path: path,
+                url: path,
                 varNamesAndValues: varNamesAndValues,
                 interactive: true
         )
@@ -325,8 +325,8 @@ class PageStack {
     private func doAction(pageKey: String, _ action: ActionSpec) async throws -> Bool {
         Self.logger.info("action \(action.description)")
         switch action {
-        case let .choosePhoto(path):
-            try await self.doChoosePhotoAction(path: path);
+        case let .choosePhoto(url):
+            try await self.doChoosePhotoAction(url: url);
         case let .copyToClipboard(string):
             Self.logger.info("action copyToClipboard(\(string))")
             UIPasteboard.general.string = string
@@ -355,8 +355,8 @@ class PageStack {
             try await self.doReplaceAllAction(pageKey: key)
         case let .rpc(path):
             try await self.doRpcAction(pageKey: pageKey, path: path)
-        case let .takePhoto(path):
-            return try await self.doTakePhotoAction(path: path)
+        case let .takePhoto(url):
+            return try await self.doTakePhotoAction(url: url)
         }
         return true
     }

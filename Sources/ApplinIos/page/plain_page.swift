@@ -21,7 +21,7 @@ public struct PlainPageSpec: Equatable, ToPageSpec {
         self.widget = widget.toSpec()
     }
 
-    init(_ config: ApplinConfig, pageKey: String, _ item: JsonItem) throws {
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
         self.connectionMode = ConnectionMode(item.stream, item.poll_seconds)
         self.ephemeral = item.ephemeral
         self.title = item.title
