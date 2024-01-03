@@ -5,7 +5,7 @@ class PhotoPicker: ObservableObject, PHPickerViewControllerDelegate {
     let promise: ApplinPromise<PHPickerResult?> = ApplinPromise()
 
     @MainActor
-    static func pick(_ navController: UINavigationController) async -> Result<Data, String>? {
+    static func pick(_ navController: UINavigationController) async throws -> UIImage? {
         let photoPicker = PhotoPicker()
         var config = PHPickerConfiguration(photoLibrary: .shared())
         config.filter = .images
@@ -36,22 +36,17 @@ class PhotoPicker: ObservableObject, PHPickerViewControllerDelegate {
                 promise.complete(value: .failure("Error reading image."))
             }
         }
-        let uiImage: UIImage
+        let image: UIImage
         switch await promise.value() {
-        case let .failure(err):
-            return .failure(err)
-        case let .success(u):
-            uiImage = u
+        case let .failure(e):
+            throw ApplinError.appError(e)
+        case let .success(i):
+            image = i
         }
-        let optData = await Task<Data?, Never> {
-            uiImage.jpegData(compressionQuality: 0.9)
+        if image.size.width < 1.0 || image.size.height < 1.0 {
+            throw ApplinError.userError("Cannot use that image.")
         }
-                .value
-        if let data = optData {
-            return .success(data)
-        } else {
-            return .failure("Error converting image to JPEG.")
-        }
+        return image
     }
 
     // PHPickerViewControllerDelegate

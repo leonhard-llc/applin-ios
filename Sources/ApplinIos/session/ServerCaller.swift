@@ -168,8 +168,7 @@ class ServerCaller {
         return update
     }
 
-    func upload(url: String, uploadBody: UploadBody) async throws {
-        let url = try self.config.relativeUrl(url: url)
+    func upload(url: URL, uploadBody: UploadBody) async throws {
         var urlRequest = URLRequest(
                 url: url,
                 cachePolicy: .reloadIgnoringLocalAndRemoteCacheData

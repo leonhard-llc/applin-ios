@@ -219,41 +219,48 @@ class PageStack {
         self.weakVarSet = varSet
     }
 
-    private func doChoosePhotoAction(url: String) async throws {
+    private func uploadImage(_ image: UIImage, url: String) async throws -> Bool {
+        var image = image
+        var url = try self.config.relativeUrl(url: url)
+        if let aspectRatioString = url.components()?.queryItems?["aspect_ratio"] {
+            url = url.removingQueryItem(name: "aspect_ratio")
+            guard let aspectRatio = Float32(aspectRatioString) else {
+                throw ApplinError.appError("failed parsing upload URL aspect_ratio param: '\(aspectRatioString)'")
+            }
+            guard let nav = self.weakNav,
+                  let editedImage = try await PhotoEditor.edit(nav, image, aspectRatio: aspectRatio)
+            else {
+                return false
+            }
+            image = editedImage
+        }
+        let data = try await image.jpegData(compressionQuality: 0.9)
+        Self.logger.info("choosePhoto uploading \(data.count) bytes")
+        let uploadBody = UploadBody(data, contentType: "image/jpeg")
+        try await self.withWorking({
+            try await self.weakServerCaller?.upload(url: url, uploadBody: uploadBody)
+        })
+        return true
+    }
+
+    private func doChoosePhotoAction(url: String) async throws -> Bool {
         guard let nav = self.weakNav else {
-            return
+            return false
         }
-        switch await PhotoPicker.pick(nav) {
-        case nil:
-            break
-        case let .failure(e):
-            throw ApplinError.appError("choosePhoto(url=\(url)) error: \(e)")
-        case let .success(data):
-            Self.logger.info("choosePhoto uploading \(data.count) bytes")
-            let uploadBody = UploadBody(data, contentType: "image/jpeg")
-            return try await self.withWorking({
-                try await self.weakServerCaller?.upload(url: url, uploadBody: uploadBody)
-            })
+        guard let uiImage = try await PhotoPicker.pick(nav) else {
+            return false
         }
+        return try await self.uploadImage(uiImage, url: url)
     }
 
     private func doTakePhotoAction(url: String) async throws -> Bool {
         guard let nav = self.weakNav else {
             return false
         }
-        switch await PhotoTaker.take(nav) {
-        case nil:
+        guard let uiImage = try await PhotoTaker.take(nav) else {
             return false
-        case let .failure(e):
-            throw ApplinError.appError("takePhoto(url=\(url)) error: \(e)")
-        case let .success(data):
-            Self.logger.info("takePhoto uploading \(data.count) bytes")
-            let uploadBody = UploadBody(data, contentType: "image/jpeg")
-            try await self.withWorking({
-                try await self.weakServerCaller?.upload(url: url, uploadBody: uploadBody)
-            })
-            return true
         }
+        return try await self.uploadImage(uiImage, url: url)
     }
 
     private func doPollAction(pageKey: String) async throws {
@@ -326,7 +333,7 @@ class PageStack {
         Self.logger.info("action \(action.description)")
         switch action {
         case let .choosePhoto(url):
-            try await self.doChoosePhotoAction(url: url);
+            return try await self.doChoosePhotoAction(url: url)
         case let .copyToClipboard(string):
             Self.logger.info("action copyToClipboard(\(string))")
             UIPasteboard.general.string = string
@@ -340,7 +347,7 @@ class PageStack {
             Cookies.deleteSessionCookie(self.config)
             self.weakVarSet?.removeAll()
             try await self.doReplaceAllAction(pageKey: config.showPageOnFirstStartup)
-            // TODO: Display "Logged Out" dialog.
+                // TODO: Display "Logged Out" dialog.
         case .onUserErrorPoll:
             break
         case .poll:

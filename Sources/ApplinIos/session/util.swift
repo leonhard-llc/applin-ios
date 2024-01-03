@@ -1,5 +1,6 @@
 import Foundation
 import OSLog
+import UIKit
 
 // TODO: Put all of these inside a Util class.
 
@@ -188,6 +189,12 @@ extension Array {
     }
 }
 
+extension CGFloat {
+    func clamp(_ minVal: CGFloat, _ maxVal: CGFloat) -> CGFloat {
+        CGFloat.minimum(maxVal, CGFloat.maximum(minVal, self))
+    }
+}
+
 extension HTTPURLResponse {
     func contentTypeBase() -> String? {
         if let mimeType = self.mimeType {
@@ -273,6 +280,34 @@ extension String {
 //    }
 //}
 
+extension UIButton {
+    func setTitleColor(_ color: UIColor) {
+        self.setTitleColor(color, for: .normal)
+        self.setTitleColor(color, for: .focused)
+        self.setTitleColor(color, for: .selected)
+        self.setTitleColor(color, for: .highlighted)
+        self.setTitleColor(color, for: .disabled)
+    }
+}
+
+extension UIColor {
+    func dark() -> UIColor {
+        self.resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))
+    }
+}
+
+extension UIImage {
+    func jpegData(compressionQuality: CGFloat) async throws -> Data {
+        let task = Task<Data?, Never> {
+            self.jpegData(compressionQuality: compressionQuality)
+        }
+        guard let data = await task.value else {
+            throw ApplinError.appError("Error converting image to JPEG.")
+        }
+        return data
+    }
+}
+
 extension UInt64 {
     func saturatingMultiply(_ other: UInt64) -> UInt64 {
         let (result, overflow) = self.multipliedReportingOverflow(by: other)
@@ -295,6 +330,27 @@ extension UInt64 {
 //        self.present(dialogCtl, animated: true)
 //    }
 //}
+
+extension URL {
+    func components() -> URLComponents? {
+        URLComponents(url: self, resolvingAgainstBaseURL: true)
+    }
+
+    func removingQueryItem(name: String) -> URL {
+        var components = self.components()!
+        components.queryItems?.removeAll(where: { qi in qi.name == name })
+        if components.queryItems?.isEmpty == true {
+            components.queryItems = nil
+        }
+        return components.url!
+    }
+}
+
+extension Array where Iterator.Element == URLQueryItem {
+    subscript(_ key: String) -> String? {
+        first(where: { elem in elem.name == key })?.value
+    }
+}
 
 struct Stopwatch {
     let start: Date

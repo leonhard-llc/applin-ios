@@ -65,15 +65,22 @@ public class ApplinConfig {
     }
 
     public func relativeUrl(url: String) throws -> URL {
-        guard let url = URL(string: url.removePrefix("/"), relativeTo: self.baseUrl),
-              url.scheme == self.baseUrl.scheme,
+        let trimmedUrl = url.removePrefix("/")
+        if trimmedUrl.isEmpty {
+            return self.baseUrl
+        }
+        guard let url = URL(string: trimmedUrl, relativeTo: self.baseUrl)
+        else {
+            throw ApplinError.appError("failed parsing url '\(url)'")
+        }
+        guard url.scheme == self.baseUrl.scheme,
               url.host == self.baseUrl.host,
               url.port == self.baseUrl.port,
               url.user == self.baseUrl.user,
               url.password == self.baseUrl.password,
               url.path.starts(with: self.baseUrl.path)
         else {
-            throw ApplinError.appError("failed parsing upload url '\(url)")
+            throw ApplinError.appError("invalid url '\(url)'")
         }
         return url
     }

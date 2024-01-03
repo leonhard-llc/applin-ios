@@ -6,8 +6,8 @@ class PhotoTaker: NSObject, UIImagePickerControllerDelegate, UINavigationControl
     let promise: ApplinPromise<[UIImagePickerController.InfoKey: Any]> = ApplinPromise()
 
     @MainActor
-    static func take(_ navController: UINavigationController) async -> Result<Data, String>? {
-        let allowed = await AVCaptureDevice.requestAccess(for: .video);
+    static func take(_ navController: UINavigationController) async throws -> UIImage? {
+        let allowed = await AVCaptureDevice.requestAccess(for: .video)
         if !allowed {
             let dialogCtl = UIAlertController(title: "Need Camera Permission", message: nil, preferredStyle: .alert)
             dialogCtl.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in }))
@@ -24,11 +24,11 @@ class PhotoTaker: NSObject, UIImagePickerControllerDelegate, UINavigationControl
             return nil
         }
         if !UIImagePickerController.isSourceTypeAvailable(.camera) {
-            return .failure("Camera is unavailable.")
+            throw ApplinError.appError("Camera is unavailable.")
         }
         let availableMediaTypes = UIImagePickerController.availableMediaTypes(for: .camera) ?? []
         if !availableMediaTypes.contains(UTType.image.identifier) {
-            return .failure("Image capture is unavailable.")
+            throw ApplinError.appError("Image capture is unavailable.")
         }
         let photoTaker = PhotoTaker()
         let imagePicker = UIImagePickerController()
@@ -46,15 +46,9 @@ class PhotoTaker: NSObject, UIImagePickerControllerDelegate, UINavigationControl
             return nil
         }
         guard let uiImage = (info[.editedImage] ?? info[.originalImage]) as? UIImage else {
-            return .failure("Failed to retrieve image from camera.")
+            throw ApplinError.appError("Failed to retrieve image from camera.")
         }
-        let dataTask = Task<Data?, Never> {
-            uiImage.jpegData(compressionQuality: 0.9)
-        }
-        guard let data = await dataTask.value else {
-            return .failure("Error converting image to JPEG.")
-        }
-        return .success(data)
+        return uiImage
     }
 
     // UIImagePickerControllerDelegate
