@@ -19,7 +19,7 @@ class PhotoEditor: UIViewController {
 
     private let titleLabel: UILabel!
     private let cancelButton: UIButton!
-    private let saveButton: UIButton!
+    private var saveButton: UIButton?
     private let resizer: UIView!
     private let topShade: UIView!
     private let leftShade: UIView!
@@ -27,17 +27,16 @@ class PhotoEditor: UIViewController {
     private let bottomShade: UIView!
     private let portal: UIView!
     private let imageView: UIImageView!
-    private let sourceSize: CGSize
-    private let resultSize: CGSize
     private let sourceAspectRatio: CGFloat
     private let resultAspectRatio: CGFloat
-    private let initialScale: CGFloat
-    private let minScale: CGFloat
-    private let maxScale: CGFloat
-    private let scrollLimits: CGSize
+    //private let initialScale: CGFloat
+    //private let minScale: CGFloat
+    //private let maxScale: CGFloat
     /// Radians.
-    private var rotation: CGFloat = 0.0
+    //private var rotation: CGFloat = 0.0
     private var scale: CGFloat = 0.0
+    /// Offset units are in result image widths.
+    private let offsetScrollLimits: CGSize
     private var offset = CGSize.zero
 
     let promise: ApplinPromise<UIImage?> = ApplinPromise()
@@ -105,33 +104,23 @@ class PhotoEditor: UIViewController {
         precondition(image.size.width >= 1.0)
         precondition(image.size.height >= 1.0)
         self.resultAspectRatio = CGFloat(aspectRatio)
-        self.sourceSize = image.size
         self.sourceAspectRatio = image.size.width / image.size.height
         if self.sourceAspectRatio < self.resultAspectRatio {
             // Source is taller than result.
-            let resultWidth = image.size.width
-            let resultHeight = resultWidth / self.resultAspectRatio
-            self.resultSize = CGSize(width: resultWidth, height: resultHeight)
-            let scaledSourceHeight = self.resultSize.width / self.sourceAspectRatio
-            let verticalRange = scaledSourceHeight - resultHeight
-            self.scrollLimits = CGSize(width: 0, height: verticalRange / 2.0)
+            self.scale = 1.0
+            self.offsetScrollLimits = CGSize(width: 0, height: 0.5 * (1.0 / self.sourceAspectRatio - 1.0 / self.resultAspectRatio))
         } else if self.sourceAspectRatio == self.resultAspectRatio {
-            self.resultSize = image.size
-            self.scrollLimits = CGSize.zero
+            self.offsetScrollLimits = CGSize.zero
         } else {
             // Source is wider than result.
-            let resultHeight = image.size.height
-            let resultWidth = resultHeight * self.resultAspectRatio
-            self.resultSize = CGSize(width: resultWidth, height: resultHeight)
-            let scaledSourceWidth = self.resultSize.height * self.sourceAspectRatio
-            let horizontalRange = scaledSourceWidth - resultWidth
-            self.scrollLimits = CGSize(width: horizontalRange / 2.0, height: 0)
+            self.scale = self.sourceAspectRatio / self.resultAspectRatio
+            self.offsetScrollLimits = CGSize(width: 0.5 * (self.scale - 1.0), height: 0)
         }
-        Self.logger.dbg("sourceSize=\(self.sourceSize) sourceAspectRatio=\(self.sourceAspectRatio) resultAspectRatio=\(self.resultAspectRatio) resultSize=\(self.resultSize) scrollLimits=\(self.scrollLimits)")
-        self.initialScale = max(image.size.width, image.size.height) / min(image.size.width, image.size.height)
-        self.minScale = 0.5 * min(self.sourceAspectRatio, 1.0 / self.sourceAspectRatio)
-        self.maxScale = 5.0 * max(self.sourceAspectRatio, 1.0 / self.sourceAspectRatio)
-        self.scale = self.initialScale;
+        Self.logger.dbg("sourceAspectRatio=\(self.sourceAspectRatio) resultAspectRatio=\(self.resultAspectRatio) scrollLimits=\(self.offsetScrollLimits)")
+        //self.initialScale = max(image.size.width, image.size.height) / min(image.size.width, image.size.height)
+        //self.minScale = 0.5 * min(self.sourceAspectRatio, 1.0 / self.sourceAspectRatio)
+        //self.maxScale = 5.0 * max(self.sourceAspectRatio, 1.0 / self.sourceAspectRatio)
+        //self.scale = self.initialScale;
 
         super.init(nibName: nil, bundle: nil)
 
@@ -176,11 +165,12 @@ class PhotoEditor: UIViewController {
             self.portal.bottomAnchor.constraint(equalTo: self.bottomShade.topAnchor),
             self.portal.centerXAnchor.constraint(equalTo: self.resizer.centerXAnchor),
             self.portal.centerYAnchor.constraint(equalTo: self.resizer.centerYAnchor),
-            self.portal.widthAnchor.constraint(equalTo: self.portal.heightAnchor, multiplier: CGFloat(aspectRatio)),
-            self.imageView.topAnchor.constraint(equalTo: self.portal.topAnchor),
+            self.portal.widthAnchor.constraint(equalTo: self.portal.heightAnchor, multiplier: self.resultAspectRatio),
+            self.imageView.centerXAnchor.constraint(equalTo: self.portal.centerXAnchor),
+            self.imageView.centerYAnchor.constraint(equalTo: self.portal.centerYAnchor),
             self.imageView.leftAnchor.constraint(equalTo: self.portal.leftAnchor),
             self.imageView.rightAnchor.constraint(equalTo: self.portal.rightAnchor),
-            self.imageView.bottomAnchor.constraint(equalTo: self.portal.bottomAnchor),
+            self.imageView.heightAnchor.constraint(equalTo: self.imageView.widthAnchor, multiplier: 1.0 / self.sourceAspectRatio)
         ])
     }
 
@@ -189,22 +179,21 @@ class PhotoEditor: UIViewController {
     }
 
     func updateImageTransform() {
-        Self.logger.dbg("scale=\(self.scale) offset=\(self.offset) rotation=\(self.rotation)")
-        let scaleViewToResult = self.resultSize.width / self.portal.bounds.width
-        self.imageView.transform =
-                CGAffineTransform.identity
-                        .scaledBy(x: self.scale, y: self.scale)
-                        .scaledBy(x: 1.0 / scaleViewToResult, y: 1.0 / scaleViewToResult)
-                        //.rotated(by: self.rotation * 180.0 / CGFloat.pi)
-                        .translatedBy(x: self.offset.width, y: self.offset.height)
-                        .scaledBy(x: scaleViewToResult, y: scaleViewToResult)
+        Self.logger.dbg("offset=\(self.offset)")
+        self.imageView.transform = CGAffineTransform.identity
+                .scaledBy(x: self.imageView.bounds.width, y: self.imageView.bounds.width)
+                .translatedBy(x: self.offset.width, y: self.offset.height)
+                .scaledBy(
+                        x: 1.0 / self.imageView.bounds.width,
+                        y: 1.0 / self.imageView.bounds.width)
+                .scaledBy(x: self.scale, y: self.scale)
     }
 
     @objc func onDoubleTap() {
         Self.logger.info("onDoubleTap")
-        self.rotation = 0.0
+        //self.rotation = 0.0
         self.offset = CGSize.zero
-        self.scale = self.initialScale
+        //self.scale = self.initialScale
         self.updateImageTransform()
     }
 
@@ -213,16 +202,15 @@ class PhotoEditor: UIViewController {
             return
         }
         let delta = panRecognizer.translation(in: self.portal)
-        let scaleViewToResult = self.resultSize.width / self.portal.bounds.width
-        self.offset.width += delta.x * scaleViewToResult
-        self.offset.height += delta.y * scaleViewToResult
+        self.offset.width += delta.x / self.portal.bounds.width
+        self.offset.height += delta.y / self.portal.bounds.width
         panRecognizer.setTranslation(.zero, in: self.portal)
         //Self.logger.debug("onPan \(delta.x),\(delta.y)")
-        if self.rotation == 0.0 && self.scale == self.initialScale {
-            // Constrain scrolling.
-            self.offset.width = self.offset.width.clamp(-self.scrollLimits.width, self.scrollLimits.width)
-            self.offset.height = self.offset.height.clamp(-self.scrollLimits.height, self.scrollLimits.height)
-        }
+        //if self.rotation == 0.0 && self.scale == self.initialScale {
+        // Constrain scrolling.
+        self.offset.width = self.offset.width.clamp(-self.offsetScrollLimits.width, self.offsetScrollLimits.width)
+        self.offset.height = self.offset.height.clamp(-self.offsetScrollLimits.height, self.offsetScrollLimits.height)
+        //}
         self.updateImageTransform()
     }
 
