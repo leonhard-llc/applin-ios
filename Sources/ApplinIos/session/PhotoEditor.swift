@@ -221,6 +221,7 @@ class PhotoEditor: UIViewController {
 
     @objc func save() {
         Self.logger.dbg("save")
+        let before = Date.now
         let resultWidth: CGFloat
         let resultHeight: CGFloat
         if self.sourceAspectRatio < self.resultAspectRatio {
@@ -253,6 +254,7 @@ class PhotoEditor: UIViewController {
             let height = 1.0 / self.sourceAspectRatio
             self.sourceImage.draw(in: CGRect(x: -0.5, y: -0.5 * height, width: 1.0, height: height))
         })
+        Self.logger.debug("rendered and compressed image, elapsed=\(before.distance(to: Date.now))")
         let _ = self.promise.tryComplete(value: image)
     }
 

@@ -45,6 +45,7 @@ class ServerCaller {
     }
 
     private func doRequest(_ req: URLRequest, interactive: Bool) async throws -> (HTTPURLResponse, Data) {
+        let before = Date.now
         let method = req.httpMethod ?? ""
         Self.logger.info("HTTP request \(method) \(String(reflecting: req.url!.relativeString))")
         Self.logger.dbg("HTTP request_headers \(method) \(String(reflecting: req.url!.relativeString)) \(String(reflecting: req.allHTTPHeaderFields ?? [:]))")
@@ -58,9 +59,9 @@ class ServerCaller {
             data = urlData
             resp = urlResponse as! HTTPURLResponse
         } catch {
-            throw ApplinError.networkError("error talking to server at \(req.url!.absoluteString) : \(error)")
+            throw ApplinError.networkError("error talking to server at \(req.url!.absoluteString) elapsed_sec=\(before.distance(to: Date.now)): \(error)")
         }
-        Self.logger.info("HTTP response \(method) \(String(reflecting: req.url!.relativeString)) status=\(resp.statusCode) bodyLen=\(data.count) contentType='\(resp.value(forHTTPHeaderField: "content-type"))'")
+        Self.logger.info("HTTP response \(method) \(String(reflecting: req.url!.relativeString)) status=\(resp.statusCode) bodyLen=\(data.count) contentType='\(resp.value(forHTTPHeaderField: "content-type"))' elapsed_sec=\(before.distance(to: Date.now))")
         Self.logger.dbg("HTTP response_headers \(method) \(String(reflecting: req.url!.relativeString)) \(resp.allHeaderFields.map({ k, v in "\(String(reflecting: String(describing: k))):\(String(reflecting: String(describing: v)))" }).joined(separator: " "))")
         if !data.isEmpty {
             Self.logger.dbg("HTTP response_body \(method) \(String(reflecting: req.url!.relativeString)) body=\(String(reflecting: (String(data: data, encoding: .utf8)!)))")
