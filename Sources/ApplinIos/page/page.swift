@@ -12,9 +12,9 @@ class PageContext {
     init(_ cache: WidgetCache?,
          hasPrevPage: Bool,
          pageKey: String,
-         _ foregroundPoller: ForegroundPoller,
-         _ pageStack: PageStack,
-         _ varSet: VarSet
+         _ foregroundPoller: ForegroundPoller?,
+         _ pageStack: PageStack?,
+         _ varSet: VarSet?
     ) {
         self.cache = cache
         self.hasPrevPage = hasPrevPage

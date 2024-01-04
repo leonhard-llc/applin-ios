@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "34EABA48-DF37-4AB3-AAD6-C935DC2F74CF",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:ApplinIos.xcodeproj",
+        "identifier" : "CE71808F2A8BF8AE00509251",
+        "name" : "Tests"
+      }
+    }
+  ],
+  "version" : 1
+}

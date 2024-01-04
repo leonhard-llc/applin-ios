@@ -1,5 +1,5 @@
 import XCTest
-@testable import applin_ios
+@testable import ApplinIos
 
 class applin_iosTests: XCTestCase {
 
