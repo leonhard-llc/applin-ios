@@ -220,7 +220,7 @@ class PageStack {
     }
 
     private func uploadImage(_ image: UIImage, url: String) async throws -> Bool {
-        var image = image
+        let data: Data
         var url = try self.config.relativeUrl(url: url)
         if let aspectRatioString = url.components()?.queryItems?["aspect_ratio"] {
             url = url.removingQueryItem(name: "aspect_ratio")
@@ -228,14 +228,18 @@ class PageStack {
                 throw ApplinError.appError("failed parsing upload URL aspect_ratio param: '\(aspectRatioString)'")
             }
             guard let nav = self.weakNav,
-                  let editedImage = try await PhotoEditor.edit(nav, image, aspectRatio: aspectRatio)
+                  let jpegData = try await PhotoEditor.edit(nav, image, aspectRatio: aspectRatio)
             else {
                 return false
             }
-            image = editedImage
+            data = jpegData
+        } else {
+            data = try await image.jpegData(compressionQuality: 0.9)
         }
-        let data = try await image.jpegData(compressionQuality: 0.9)
         Self.logger.info("choosePhoto uploading \(data.count) bytes")
+        //let filePath = self.config.dataDirPath + "/upload.jpg"
+        //Self.logger.info("writing \(filePath)")
+        //try await writeFile(data: data, path: filePath)
         let uploadBody = UploadBody(data, contentType: "image/jpeg")
         try await self.withWorking({
             try await self.weakServerCaller?.upload(url: url, uploadBody: uploadBody)

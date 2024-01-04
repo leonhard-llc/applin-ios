@@ -5,7 +5,7 @@ import UIKit
 class PhotoEditor: UIViewController {
     static let logger = Logger(subsystem: "Applin", category: "PhotoEditor")
 
-    static func edit(_ navController: UINavigationController, _ image: UIImage, aspectRatio: Float32) async throws -> UIImage? {
+    static func edit(_ navController: UINavigationController, _ image: UIImage, aspectRatio: Float32) async throws -> Data? {
         let photoEditor = PhotoEditor(image, aspectRatio: aspectRatio)
         photoEditor.modalPresentationStyle = .fullScreen
         // TODO: Make the presented modal appear right-side up when device is upside down.
@@ -17,6 +17,7 @@ class PhotoEditor: UIViewController {
         return value
     }
 
+    private let sourceImage: UIImage
     private let titleLabel: UILabel!
     private let cancelButton: UIButton!
     private var saveButton: UIButton?
@@ -39,10 +40,11 @@ class PhotoEditor: UIViewController {
     private let offsetScrollLimits: CGSize
     private var offset = CGSize.zero
 
-    let promise: ApplinPromise<UIImage?> = ApplinPromise()
+    let promise: ApplinPromise<Data?> = ApplinPromise()
 
     init(_ image: UIImage, aspectRatio: Float32) {
         Self.logger.dbg("PhotoEditor.init")
+        self.sourceImage = image
         self.titleLabel = UILabel()
         self.titleLabel.translatesAutoresizingMaskIntoConstraints = false
         self.titleLabel.text = "Crop"
@@ -59,15 +61,6 @@ class PhotoEditor: UIViewController {
         self.cancelButton = UIButton(type: .system, primaryAction: backAction)
         self.cancelButton.translatesAutoresizingMaskIntoConstraints = false
         self.cancelButton.setTitleColor(.label.dark())
-
-        let saveAction = UIAction(title: "    Save    ", handler: { _ in
-            Self.logger.dbg("saveButton UIAction")
-            // TODO: Render image.
-            let _ = promise.tryComplete(value: nil)
-        })
-        self.saveButton = UIButton(type: .system, primaryAction: saveAction)
-        self.saveButton.translatesAutoresizingMaskIntoConstraints = false
-        self.saveButton.setTitleColor(.label.dark())
 
         self.resizer = UIView()
         self.resizer.translatesAutoresizingMaskIntoConstraints = false
@@ -108,7 +101,9 @@ class PhotoEditor: UIViewController {
         if self.sourceAspectRatio < self.resultAspectRatio {
             // Source is taller than result.
             self.scale = 1.0
-            self.offsetScrollLimits = CGSize(width: 0, height: 0.5 * (1.0 / self.sourceAspectRatio - 1.0 / self.resultAspectRatio))
+            self.offsetScrollLimits = CGSize(
+                    width: 0,
+                    height: 0.5 * ((1.0 / self.sourceAspectRatio) - (1.0 / self.resultAspectRatio)))
         } else if self.sourceAspectRatio == self.resultAspectRatio {
             self.offsetScrollLimits = CGSize.zero
         } else {
@@ -124,16 +119,26 @@ class PhotoEditor: UIViewController {
 
         super.init(nibName: nil, bundle: nil)
 
+        // This is here because UIButton.addAction(uiAction, for: .primaryActionTriggered) does not work.
+        self.saveButton = UIButton(
+                type: .system,
+                primaryAction: UIAction(title: "    Save    ", handler: { [weak self] _ in self?.save() }))
+        self.saveButton!.translatesAutoresizingMaskIntoConstraints = false
+        self.saveButton!.setTitleColor(.label.dark())
+
         self.view.backgroundColor = .black
         self.view.addSubview(self.titleLabel)
         self.view.addSubview(self.cancelButton)
-        self.view.addSubview(self.saveButton)
+        self.view.addSubview(self.saveButton!)
         self.view.addSubview(self.resizer)
 
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(onDoubleTap))
         tapRecognizer.numberOfTapsRequired = 2
         self.resizer.addGestureRecognizer(tapRecognizer)
         self.resizer.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(onPan)))
+
+        // TODO: Support zooming.
+        // TODO: Support rotating.
 
         NSLayoutConstraint.activate([
             self.titleLabel.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 4.0),
@@ -144,9 +149,9 @@ class PhotoEditor: UIViewController {
             self.cancelButton.topAnchor.constraint(equalTo: self.resizer.bottomAnchor, constant: 8.0),
             self.cancelButton.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 8.0),
             self.cancelButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -8.0),
-            self.saveButton.topAnchor.constraint(equalTo: self.resizer.bottomAnchor, constant: 8.0),
-            self.saveButton.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -8.0),
-            self.saveButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -8.0),
+            self.saveButton!.topAnchor.constraint(equalTo: self.resizer.bottomAnchor, constant: 8.0),
+            self.saveButton!.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -8.0),
+            self.saveButton!.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -8.0),
             self.topShade.topAnchor.constraint(equalTo: self.resizer.topAnchor),
             self.topShade.leftAnchor.constraint(equalTo: self.resizer.leftAnchor),
             self.topShade.rightAnchor.constraint(equalTo: self.resizer.rightAnchor),
@@ -212,6 +217,43 @@ class PhotoEditor: UIViewController {
         self.offset.height = self.offset.height.clamp(-self.offsetScrollLimits.height, self.offsetScrollLimits.height)
         //}
         self.updateImageTransform()
+    }
+
+    @objc func save() {
+        Self.logger.dbg("save")
+        let resultWidth: CGFloat
+        let resultHeight: CGFloat
+        if self.sourceAspectRatio < self.resultAspectRatio {
+            // Source is taller than result.
+            resultWidth = self.sourceImage.size.width
+            resultHeight = resultWidth / self.resultAspectRatio
+        } else if self.sourceAspectRatio == self.resultAspectRatio {
+            resultWidth = self.sourceImage.size.width
+            resultHeight = self.sourceImage.size.height
+        } else {
+            // Source is wider than result.
+            resultHeight = self.sourceImage.size.height
+            resultWidth = resultHeight * self.resultAspectRatio
+        }
+        let format = UIGraphicsImageRendererFormat()
+        format.opaque = true
+        format.scale = 1.0 // One pixel per point.
+        format.preferredRange = .standard // Use sRGB.  Note that .extended is P3 color space.
+        let renderer = UIGraphicsImageRenderer(
+                size: CGSize(width: resultWidth, height: resultHeight), format: format)
+        let image = renderer.jpegData(withCompressionQuality: 0.90, actions: { ctx in
+            //ctx.cgContext.concatenate(CGAffineTransform(rotationAngle: self.rotation * 180.0 / CGFloat.pi))
+            ctx.cgContext.concatenate(CGAffineTransform(translationX: resultWidth / 2.0, y: resultHeight / 2.0))
+            ctx.cgContext.concatenate(CGAffineTransform(scaleX: resultWidth, y: resultWidth))
+            ctx.cgContext.concatenate(CGAffineTransform(translationX: self.offset.width, y: self.offset.height))
+            ctx.cgContext.concatenate(CGAffineTransform(scaleX: self.scale, y: self.scale))
+            //ctx.cgContext.setFillColor(CGColor(gray: 0.75, alpha: 1.0))
+            //ctx.cgContext.fill(CGRect(x: -0.49, y: -0.49, width: 0.98, height: 0.98))
+            //self.sourceImage.draw(at: CGPoint(x: 0, y: 0))
+            let height = 1.0 / self.sourceAspectRatio
+            self.sourceImage.draw(in: CGRect(x: -0.5, y: -0.5 * height, width: 1.0, height: height))
+        })
+        let _ = self.promise.tryComplete(value: image)
     }
 
     // UIViewController
