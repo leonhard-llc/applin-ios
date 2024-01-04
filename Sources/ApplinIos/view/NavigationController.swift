@@ -120,12 +120,12 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
     }
 
     @MainActor
-    func setWorking(_ text: String?) async {
+    func setWorking(_ text: String?, _ task: Task<(), Error>?) async {
         await self.lock.lockAsync {
             Self.logger.dbg("setWorking '\(String(describing: text))")
             self.workingHelper.clear()
             if let text = text {
-                let working = WorkingView(text: text)
+                let working = WorkingView(text: text, task)
                 working.translatesAutoresizingMaskIntoConstraints = false
                 self.workingHelper.update(working, {
                     [

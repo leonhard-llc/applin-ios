@@ -490,17 +490,27 @@ class PageStack {
         return namesAndValues
     }
 
-    private func withWorking<T>(_ f: () async throws -> T) async throws -> T {
-        await self.weakNav?.setWorking("Working")
+    private func withWorking(_ f: @escaping () async throws -> ()) async throws {
+        //let promise: ApplinPromise<()> = ApplinPromise()
+        let task = Task(priority: .userInitiated) { @MainActor in
+            do {
+                try await f()
+                //let _ = promise.tryComplete(value: <#T##()##()#>)
+            } catch let e {
+                if !Task.isCancelled {
+                    throw e
+                }
+            }
+        };
+        await self.weakNav?.setWorking("Working", task)
         let stopwatch = Stopwatch()
         do {
-            let result = try await f()
+            try await task.value
             await stopwatch.waitUntil(seconds: 0.5)
-            await self.weakNav?.setWorking(nil)
-            return result
+            await self.weakNav?.setWorking(nil, nil)
         } catch let e {
             await stopwatch.waitUntil(seconds: 0.5)
-            await self.weakNav?.setWorking(nil)
+            await self.weakNav?.setWorking(nil, nil)
             throw e
         }
     }

@@ -32,8 +32,6 @@ class ServerCaller {
     public init(_ config: ApplinConfig, _ pageStack: PageStack?, _ varSet: VarSet?) {
         self.config = config
         let urlSessionConfig = URLSessionConfiguration.default
-        urlSessionConfig.timeoutIntervalForRequest = 10.0 /* seconds */
-        urlSessionConfig.timeoutIntervalForResource = 60.0 /* seconds */
         urlSessionConfig.urlCache = nil
         urlSessionConfig.httpCookieAcceptPolicy = .always
         urlSessionConfig.httpShouldSetCookies = true
@@ -176,6 +174,7 @@ class ServerCaller {
         urlRequest.httpMethod = "PUT"
         urlRequest.httpBody = uploadBody.data
         urlRequest.addValue(uploadBody.contentType, forHTTPHeaderField: "Content-Type")
+        urlRequest.timeoutInterval = 3600
         let _ = try await self.doRequest(urlRequest, interactive: true)
     }
 }
