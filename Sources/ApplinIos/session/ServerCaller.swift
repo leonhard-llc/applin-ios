@@ -174,6 +174,7 @@ class ServerCaller {
         urlRequest.httpMethod = "PUT"
         urlRequest.httpBody = uploadBody.data
         urlRequest.addValue(uploadBody.contentType, forHTTPHeaderField: "Content-Type")
+        urlRequest.addValue("100-continue", forHTTPHeaderField: "Expect")
         urlRequest.timeoutInterval = 3600
         let _ = try await self.doRequest(urlRequest, interactive: true)
     }
