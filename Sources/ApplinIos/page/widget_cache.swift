@@ -57,16 +57,12 @@ private class NodeTable {
 
     func remove(_ node: DoneNode) {
         for key in node.keys {
-            if var nodeList = self.keyToNodes[key] {
-                nodeList.removeAll(where: { nodeInTable in nodeInTable === node })
-            }
+            self.keyToNodes[key]?.removeAll(where: { nodeInTable in nodeInTable === node })
         }
         if self.optOldRoot === node {
             self.optOldRoot = nil
         }
-        if let superNode = node.optSuper {
-            superNode.subs.removeAll(where: { sub in sub === node })
-        }
+        node.optSuper?.subs.removeAll(where: { sub in sub === node })
     }
 
     func find(_ roughNode: RoughNode) -> DoneNode? {

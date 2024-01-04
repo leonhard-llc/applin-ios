@@ -74,40 +74,53 @@ class WidgetCacheTests: XCTestCase {
                 self.ctx!,
                 ColumnSpec([TextSpec("t1")]).toSpec()
         ) as! ColumnWidget
-        let label1 = column1.columnView.orderedSubviews.first!.subviews.first! as! Label
+        let label1 = column1.columnView.orderedSubviews.first! as! PaddedLabel
         XCTAssertEqual(label1.text, "t1")
         let column2 = cache.updateAll(
                 self.ctx!,
                 ColumnSpec([TextSpec("t2"), TextSpec("t1")]).toSpec()
         ) as! ColumnWidget
         XCTAssert(column1 === column2)
-        let label2a = column2.columnView.orderedSubviews[0].subviews.first as! Label
-        let label2b = column2.columnView.orderedSubviews[1].subviews.first as! Label
+        let label2a = column2.columnView.orderedSubviews[0] as! PaddedLabel
+        let label2b = column2.columnView.orderedSubviews[1] as! PaddedLabel
         XCTAssert(label1 !== label2a)
         XCTAssertEqual(label2a.text, "t2")
         XCTAssert(label1 === label2b)
         XCTAssertEqual(label2b.text, "t1")
     }
 
-    func testImageLabelBug() throws {
+    @MainActor
+    func testImageLabelBug() async throws {
         let cache = WidgetCache()
         let column1 = cache.updateAll(
                 self.ctx!,
-                ColumnSpec([TextSpec("t2"), TextSpec("t1")]).toSpec()
+                ColumnSpec([
+                    TextSpec("t"),
+                    ImageSpec(url: "/i?id=1", aspectRatio: 1.0),
+                ]).toSpec()
         ) as! ColumnWidget
-        let label1 = column1.columnView.orderedSubviews.first!.subviews.first! as! Label
-        XCTAssertEqual(label1.text, "t1")
         let column2 = cache.updateAll(
                 self.ctx!,
-                ColumnSpec([TextSpec("t2"), TextSpec("t1")]).toSpec()
+                ColumnSpec([
+                    TextSpec("t"),
+                    ImageSpec(url: "/i?id=1", aspectRatio: 1.0),
+                    TextSpec("t"),
+                    ImageSpec(url: "/i?id=2", aspectRatio: 1.0),
+                ]).toSpec()
         ) as! ColumnWidget
         XCTAssert(column1 === column2)
-        let label2a = column2.columnView.orderedSubviews[0].subviews.first as! Label
-        let label2b = column2.columnView.orderedSubviews[1].subviews.first as! Label
-        XCTAssert(label1 !== label2a)
-        XCTAssertEqual(label2a.text, "t2")
-        XCTAssert(label1 === label2b)
-        XCTAssertEqual(label2b.text, "t1")
+        let label1 = column2.columnView.orderedSubviews[0] as! PaddedLabel
+        let image1 = column2.columnView.orderedSubviews[1] as! ImageView
+        let label2 = column2.columnView.orderedSubviews[2] as! PaddedLabel
+        let image2 = column2.columnView.orderedSubviews[3] as! ImageView
+        XCTAssert(label1 !== label2) // Fails before fix.
+        XCTAssertEqual(label1.text, "t")
+        XCTAssertEqual(label2.text, "t")
+        XCTAssert(image1 !== image2)
+        let image1Url = await image1.getUrl()!.absoluteString
+        let image2Url = await image2.getUrl()!.absoluteString
+        XCTAssertEqual(image1Url, "/i?id=1")
+        XCTAssertEqual(image2Url, "/i?id=2")
     }
 
     // TODO(mleonhard) Test stateful widget updates.

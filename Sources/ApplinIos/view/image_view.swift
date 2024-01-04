@@ -226,4 +226,14 @@ public class ImageView: UIView {
     override public var description: String {
         self.name
     }
+
+    public func getUrl() async -> URL? {
+        let task = Task { @MainActor in
+            await self.lock.lockAsync({ self.url })
+        }
+        if case let .success(url) = await task.result {
+            return url
+        }
+        return nil
+    }
 }
