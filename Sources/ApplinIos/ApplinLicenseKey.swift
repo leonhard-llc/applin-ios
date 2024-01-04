@@ -29,7 +29,9 @@ public class ApplinLicenseKey {
         guard let url = URL(string: url_string) else {
             throw "error in license key: url is invalid"
         }
-        precondition(url.scheme == "https")
+        if url.scheme != "https" {
+            throw "error in license key: scheme is not https"
+        }
         if sig_string.isEmpty {
             throw "error in license key: signature part is empty"
         }
