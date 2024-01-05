@@ -16,6 +16,7 @@ class PhotoEditor: UIViewController {
 
     private let sourceImage: UIImage
     private let titleLabel: UILabel!
+    private let instructionsLabel: UILabel!
     private let cancelButton: UIButton!
     private var saveButton: UIButton?
     private let resizer: UIView!
@@ -48,6 +49,13 @@ class PhotoEditor: UIViewController {
         self.titleLabel.numberOfLines = 0
         self.titleLabel.textAlignment = .center
         self.titleLabel.textColor = .label.dark()
+        self.instructionsLabel = UILabel()
+        self.instructionsLabel.translatesAutoresizingMaskIntoConstraints = false
+        self.instructionsLabel.text = "Pinch to zoom/rotate.  Double-tap to reset."
+        self.instructionsLabel.font = UIFont.preferredFont(forTextStyle: .body)
+        self.instructionsLabel.numberOfLines = 0
+        self.instructionsLabel.textAlignment = .center
+        self.instructionsLabel.textColor = .label.dark()
 
         let promise = self.promise
         let backAction = UIAction(title: "    Cancel    ", handler: { _ in
@@ -124,6 +132,7 @@ class PhotoEditor: UIViewController {
 
         self.view.backgroundColor = .black
         self.view.addSubview(self.titleLabel)
+        self.view.addSubview(self.instructionsLabel)
         self.view.addSubview(self.cancelButton)
         self.view.addSubview(self.saveButton!)
         self.view.addSubview(self.resizer)
@@ -137,18 +146,19 @@ class PhotoEditor: UIViewController {
         self.resizer.addGestureRecognizer(
                 UIRotationGestureRecognizer(target: self, action: #selector(onRotate)))
 
-        // TODO: Add instructions label.
-
         NSLayoutConstraint.activate([
             self.titleLabel.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 4.0),
             self.titleLabel.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             self.resizer.topAnchor.constraint(equalTo: self.titleLabel.bottomAnchor, constant: 4.0),
             self.resizer.leftAnchor.constraint(equalTo: self.view.leftAnchor),
             self.resizer.rightAnchor.constraint(equalTo: self.view.rightAnchor),
-            self.cancelButton.topAnchor.constraint(equalTo: self.resizer.bottomAnchor, constant: 8.0),
+            self.instructionsLabel.topAnchor.constraint(equalTo: self.resizer.bottomAnchor, constant: 4.0),
+            self.instructionsLabel.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 4.0),
+            self.instructionsLabel.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: 4.0),
+            self.cancelButton.topAnchor.constraint(equalTo: self.instructionsLabel.bottomAnchor, constant: 8.0),
             self.cancelButton.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 8.0),
             self.cancelButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -8.0),
-            self.saveButton!.topAnchor.constraint(equalTo: self.resizer.bottomAnchor, constant: 8.0),
+            self.saveButton!.topAnchor.constraint(equalTo: self.instructionsLabel.bottomAnchor, constant: 8.0),
             self.saveButton!.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: -8.0),
             self.saveButton!.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -8.0),
             self.topShade.topAnchor.constraint(equalTo: self.resizer.topAnchor),
