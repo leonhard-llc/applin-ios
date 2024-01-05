@@ -36,6 +36,7 @@ SOFTWARE.
       Users can now rotate and crop their photos before upload!
     - Support URL parameters on upload URLs and page URLs.
     - Improve error reporting.
+    - Fix a bug that caused some widgets to not appear.
 - v0.29.0
     - Add `take_photo` action.
     - Fix bug in Logger.dbg.
