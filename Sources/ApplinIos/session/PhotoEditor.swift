@@ -243,16 +243,19 @@ class PhotoEditor: UIViewController {
         let renderer = UIGraphicsImageRenderer(
                 size: CGSize(width: resultWidth, height: resultHeight), format: format)
         let image = renderer.jpegData(withCompressionQuality: 0.90, actions: { ctx in
-            //ctx.cgContext.concatenate(CGAffineTransform(rotationAngle: self.rotation * 180.0 / CGFloat.pi))
-            ctx.cgContext.concatenate(CGAffineTransform(translationX: resultWidth / 2.0, y: resultHeight / 2.0))
             ctx.cgContext.concatenate(CGAffineTransform(scaleX: resultWidth, y: resultWidth))
+            ctx.cgContext.concatenate(CGAffineTransform(translationX: 0.5, y: 0.5 / self.resultAspectRatio))
+            //ctx.cgContext.concatenate(CGAffineTransform(rotationAngle: self.rotation * 180.0 / CGFloat.pi))
             ctx.cgContext.concatenate(CGAffineTransform(translationX: self.offset.width, y: self.offset.height))
             ctx.cgContext.concatenate(CGAffineTransform(scaleX: self.scale, y: self.scale))
-            //ctx.cgContext.setFillColor(CGColor(gray: 0.75, alpha: 1.0))
+            // I couldn't get UIImage.draw(in:) to work.  It sometimes renders shifted vertically.
+            //let height = 1.0 / self.resultAspectRatio
+            //self.sourceImage.draw(in: CGRect(x: -0.5, y: -0.5 * height, width: 1.0, height: height))
+            //ctx.cgContext.setFillColor(CGColor(gray: 0.75, alpha: 0.85))
             //ctx.cgContext.fill(CGRect(x: -0.49, y: -0.49, width: 0.98, height: 0.98))
-            //self.sourceImage.draw(at: CGPoint(x: 0, y: 0))
-            let height = 1.0 / self.sourceAspectRatio
-            self.sourceImage.draw(in: CGRect(x: -0.5, y: -0.5 * height, width: 1.0, height: height))
+            ctx.cgContext.concatenate(CGAffineTransform(translationX: -0.5, y: -0.5 / self.sourceAspectRatio))
+            ctx.cgContext.concatenate(CGAffineTransform(scaleX: 1.0 / self.sourceImage.size.width, y: 1.0 / self.sourceImage.size.width))
+            self.sourceImage.draw(at: CGPoint(x: 0.0, y: 0.0))
         })
         Self.logger.debug("rendered and compressed image, elapsed=\(before.distance(to: Date.now))")
         let _ = self.promise.tryComplete(value: image)
