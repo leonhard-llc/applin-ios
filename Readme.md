@@ -35,6 +35,7 @@ SOFTWARE.
     - Support the `aspect_ratio=N` URL parameter for `choose_photo` and `take_photo` actions.
       Users can now rotate and crop their photos before upload!
     - Support URL parameters on upload URLs and page URLs.
+    - Improve error reporting.
 - v0.29.0
     - Add `take_photo` action.
     - Fix bug in Logger.dbg.

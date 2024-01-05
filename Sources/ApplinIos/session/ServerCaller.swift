@@ -72,10 +72,12 @@ class ServerCaller {
             case 200...299:
                 return (resp, data)
             case 403, 422:
-                let string = String(String(data: data, encoding: .utf8)?.prefix(1000) ?? "")
+                let string = String(data: data, encoding: .utf8)?.prefixString(len: 1000).emptyToNil() ??
+                        "server returned: \(resp.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: resp.statusCode))"
                 throw ApplinError.userError(string)
             case 400...499:
-                let string = String(String(data: data, encoding: .utf8)?.prefix(1000) ?? "")
+                let string = String(data: data, encoding: .utf8)?.prefixString(len: 1000).emptyToNil() ??
+                        "server returned: \(resp.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: resp.statusCode))"
                 throw ApplinError.appError(string)
             case 503:
                 throw ApplinError.serverError("Server overloaded. Please try again.")

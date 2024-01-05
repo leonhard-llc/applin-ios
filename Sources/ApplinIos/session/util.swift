@@ -269,6 +269,14 @@ extension String {
             return self
         }
     }
+
+    func prefixString(len: Int) -> String {
+        String(self.prefix(len))
+    }
+
+    func emptyToNil() -> String? {
+        self.isEmpty ? nil : self
+    }
 }
 
 //extension Task where Success == Sendable, Failure == Error {
