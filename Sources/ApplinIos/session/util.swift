@@ -190,7 +190,7 @@ extension Array {
 }
 
 extension CGFloat {
-    func clamp(_ minVal: CGFloat, _ maxVal: CGFloat) -> CGFloat {
+    func clamped(_ minVal: CGFloat, _ maxVal: CGFloat) -> CGFloat {
         CGFloat.minimum(maxVal, CGFloat.maximum(minVal, self))
     }
 }

@@ -8,12 +8,9 @@ class PhotoEditor: UIViewController {
     static func edit(_ navController: UINavigationController, _ image: UIImage, aspectRatio: Float32) async throws -> Data? {
         let photoEditor = PhotoEditor(image, aspectRatio: aspectRatio)
         photoEditor.modalPresentationStyle = .fullScreen
-        // TODO: Make the presented modal appear right-side up when device is upside down.
         navController.present(photoEditor, animated: true)
-        //navController.pushViewController(photoEditor, animated: false)
         let value = await photoEditor.promise.value()
         photoEditor.dismiss(animated: true)
-        //navController.popViewController(animated: false)
         return value
     }
 
@@ -30,15 +27,14 @@ class PhotoEditor: UIViewController {
     private let imageView: UIImageView!
     private let sourceAspectRatio: CGFloat
     private let resultAspectRatio: CGFloat
-    /// Radians.
-    //private var rotation: CGFloat = 0.0
+    private var rotation: CGFloat = 0.0
     private let initialScale: CGFloat
     private let minScale: CGFloat
     private let maxScale: CGFloat
     private var scale: CGFloat = 0.0
     /// Offset units are in result image widths.
     private let offsetScrollLimits: CGSize
-    private var offset = CGSize.zero
+    private var offset = CGPoint.zero
 
     let promise: ApplinPromise<Data?> = ApplinPromise()
 
@@ -112,7 +108,7 @@ class PhotoEditor: UIViewController {
             self.initialScale = self.sourceAspectRatio / self.resultAspectRatio
             self.offsetScrollLimits = CGSize(width: 0.5 * (self.initialScale - 1.0), height: 0)
         }
-        Self.logger.dbg("sourceAspectRatio=\(self.sourceAspectRatio) resultAspectRatio=\(self.resultAspectRatio) scrollLimits=\(self.offsetScrollLimits)")
+        //Self.logger.dbg("sourceAspectRatio=\(self.sourceAspectRatio) resultAspectRatio=\(self.resultAspectRatio) scrollLimits=\(self.offsetScrollLimits)")
         self.minScale = 0.5 * min(self.sourceAspectRatio, 1.0 / self.sourceAspectRatio)
         self.maxScale = 5.0 * max(self.sourceAspectRatio, 1.0 / self.sourceAspectRatio)
         self.scale = self.initialScale;
@@ -137,10 +133,10 @@ class PhotoEditor: UIViewController {
         self.resizer.addGestureRecognizer(tapRecognizer)
         self.resizer.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(onPan)))
         self.resizer.addGestureRecognizer(
-                // Apple doesn't document the signature of the action.
                 UIPinchGestureRecognizer(target: self, action: #selector(onPinch)))
+        self.resizer.addGestureRecognizer(
+                UIRotationGestureRecognizer(target: self, action: #selector(onRotate)))
 
-        // TODO: Support rotating.
         // TODO: Add instructions label.
 
         NSLayoutConstraint.activate([
@@ -187,9 +183,27 @@ class PhotoEditor: UIViewController {
     }
 
     func updateImageTransform() {
+        if self.rotation == 0.0 && self.scale == self.initialScale {
+            self.offset.x = self.offset.x.clamped(-self.offsetScrollLimits.width, self.offsetScrollLimits.width)
+            self.offset.y = self.offset.y.clamped(-self.offsetScrollLimits.height, self.offsetScrollLimits.height)
+        } else {
+            self.scale = self.scale.clamped(minScale, maxScale)
+            while self.rotation < 0.0 {
+                self.rotation += 2 * CGFloat.pi
+            }
+            while 2 * CGFloat.pi < self.rotation {
+                self.rotation -= 2 * CGFloat.pi
+            }
+            self.offset.x = self.offset.x.clamped(-0.48 * self.scale, 0.48 * self.scale)
+            self.offset.y = self.offset.y.clamped(
+                    -0.48 * self.scale / self.sourceAspectRatio,
+                    0.48 * self.scale / self.sourceAspectRatio)
+        }
+        //Self.logger.debug("offset=\(self.offset.x),\(self.offset.y) scale=\(self.scale)  rotation=\(self.rotation)")
         self.imageView.transform = CGAffineTransform.identity
                 .scaledBy(x: self.imageView.bounds.width, y: self.imageView.bounds.width)
-                .translatedBy(x: self.offset.width, y: self.offset.height)
+                .translatedBy(x: self.offset.x, y: self.offset.y)
+                .rotated(by: self.rotation)
                 .scaledBy(
                         x: 1.0 / self.imageView.bounds.width,
                         y: 1.0 / self.imageView.bounds.width)
@@ -197,44 +211,70 @@ class PhotoEditor: UIViewController {
     }
 
     @objc func onDoubleTap() {
-        Self.logger.info("onDoubleTap")
-        //self.rotation = 0.0
-        self.offset = CGSize.zero
-        //self.scale = self.initialScale
-        Self.logger.debug("onPan scale=\(self.scale) offset=\(self.offset.width),\(self.offset.height)")
+        //Self.logger.info("onDoubleTap")
+        self.offset = CGPoint.zero
+        self.rotation = 0.0
+        self.scale = self.initialScale
         self.updateImageTransform()
     }
 
-    @objc func onPan(_ panRecognizer: UIPanGestureRecognizer) {
-        if panRecognizer.state != .began && panRecognizer.state != .changed {
+    func scaleAndRotate(focalPoint: CGPoint, deltaScale: CGFloat, deltaRotation: CGFloat) {
+        // NOTE: In iOS Simulator, hold ALT to pinch & zoom.
+        // Hold ALT + SHIFT to move touch points.
+        self.scale *= deltaScale
+        self.rotation += deltaRotation
+        // Adjust offset so the same part of the image stays under the focal point.
+        self.offset = self.offset.applying(.identity
+                .translatedBy(x: -0.5, y: -0.5 / self.resultAspectRatio)
+                .translatedBy(x: focalPoint.x, y: focalPoint.y)
+                .rotated(by: deltaRotation)
+                .scaledBy(x: deltaScale, y: deltaScale)
+                .translatedBy(x: -focalPoint.x, y: -focalPoint.y)
+                .translatedBy(x: 0.5, y: 0.5 / self.resultAspectRatio)
+        )
+        self.updateImageTransform()
+    }
+
+    @objc func onPan(_ recognizer: UIPanGestureRecognizer) {
+        guard recognizer.state == .began || recognizer.state == .changed else {
             return
         }
-        let delta = panRecognizer.translation(in: self.portal)
+        let delta = recognizer.translation(in: self.portal)
+        recognizer.setTranslation(.zero, in: self.portal)
         let offsetDX = delta.x / self.portal.bounds.width
         let offsetDY = delta.y / self.portal.bounds.width
-        self.offset.width += offsetDX
-        self.offset.height += offsetDY
-        panRecognizer.setTranslation(.zero, in: self.portal)
-        if /* self.rotation == 0.0 && */ self.scale == self.initialScale {
-            self.offset.width = self.offset.width.clamp(-self.offsetScrollLimits.width, self.offsetScrollLimits.width)
-            self.offset.height = self.offset.height.clamp(-self.offsetScrollLimits.height, self.offsetScrollLimits.height)
-        } else {
-            self.offset.width = self.offset.width.clamp(-0.8, 0.8)
-            self.offset.height = self.offset.height.clamp(
-                    -0.8 / self.sourceAspectRatio,
-                    0.8 / self.sourceAspectRatio)
-        }
-        Self.logger.debug("onPan delta=\(offsetDX),\(offsetDY) offset=\(self.offset.width),\(self.offset.height)")
+        self.offset.x += offsetDX
+        self.offset.y += offsetDY
+        //Self.logger.debug("onPan deltaOffset=\(offsetDX),\(offsetDY)")
         self.updateImageTransform()
     }
 
-    @objc func onPinch(_ pinchRecognizer: UIPinchGestureRecognizer) {
-        // TODO: Adjust offset.  See code in `EditPhotoViewState._doPinchZoom` in `c1/dart/lib/page/edit_photo_page.dart`.
-        self.scale *= pinchRecognizer.scale
-        self.scale = self.scale.clamp(minScale, maxScale)
-        Self.logger.info("onPinch dScale=\(pinchRecognizer.scale) scale=\(self.scale)")
-        pinchRecognizer.scale = 1.0
-        self.updateImageTransform()
+    @objc func onPinch(_ recognizer: UIPinchGestureRecognizer) {
+        guard recognizer.state == .began || recognizer.state == .changed else {
+            return
+        }
+        let location = recognizer.location(in: self.portal)
+        let focalPoint = CGPoint(
+                x: location.x / self.portal.bounds.width,
+                y: location.y / self.portal.bounds.width)
+        let deltaScale = recognizer.scale
+        recognizer.scale = 1.0
+        //Self.logger.debug("onPinch focalPoint=\(focalPoint.x),\(focalPoint.y) deltaScale=\(deltaScale)")
+        self.scaleAndRotate(focalPoint: focalPoint, deltaScale: deltaScale, deltaRotation: 0.0)
+    }
+
+    @objc func onRotate(_ recognizer: UIRotationGestureRecognizer) {
+        guard recognizer.state == .began || recognizer.state == .changed else {
+            return
+        }
+        let location = recognizer.location(in: self.portal)
+        let focalPoint = CGPoint(
+                x: location.x / self.portal.bounds.width,
+                y: location.y / self.portal.bounds.width)
+        let deltaRotation = recognizer.rotation
+        recognizer.rotation = 0.0
+        //Self.logger.debug("onRotate focalPoint=\(focalPoint.x),\(focalPoint.y) deltaRotation=\(deltaRotation)")
+        self.scaleAndRotate(focalPoint: focalPoint, deltaScale: 1.0, deltaRotation: deltaRotation)
     }
 
     @objc func save() {
@@ -263,8 +303,8 @@ class PhotoEditor: UIViewController {
         let image = renderer.jpegData(withCompressionQuality: 0.90, actions: { ctx in
             ctx.cgContext.concatenate(CGAffineTransform(scaleX: resultWidth, y: resultWidth))
             ctx.cgContext.concatenate(CGAffineTransform(translationX: 0.5, y: 0.5 / self.resultAspectRatio))
-            //ctx.cgContext.concatenate(CGAffineTransform(rotationAngle: self.rotation * 180.0 / CGFloat.pi))
-            ctx.cgContext.concatenate(CGAffineTransform(translationX: self.offset.width, y: self.offset.height))
+            ctx.cgContext.concatenate(CGAffineTransform(translationX: self.offset.x, y: self.offset.y))
+            ctx.cgContext.concatenate(CGAffineTransform(rotationAngle: self.rotation))
             ctx.cgContext.concatenate(CGAffineTransform(scaleX: self.scale, y: self.scale))
             // I couldn't get UIImage.draw(in:) to work.  It sometimes renders shifted vertically.
             //let height = 1.0 / self.resultAspectRatio

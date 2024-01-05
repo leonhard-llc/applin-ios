@@ -33,7 +33,7 @@ SOFTWARE.
 - v0.30.0
     - Add "Cancel" button to "Working" modal.  Users can now cancel slow operations!
     - Support the `aspect_ratio=N` URL parameter for `choose_photo` and `take_photo` actions.
-      Users can now crop their photos before upload!
+      Users can now rotate and crop their photos before upload!
     - Support URL parameters on upload URLs and page URLs.
 - v0.29.0
     - Add `take_photo` action.
