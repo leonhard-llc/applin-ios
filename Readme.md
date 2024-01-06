@@ -30,7 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## Changes
-
+- v0.32.0
+    - Bugfixes.
 - v0.31.0
     - Add `modal` action.
     - Change the wire format of action definitions from strings to JSON objects.

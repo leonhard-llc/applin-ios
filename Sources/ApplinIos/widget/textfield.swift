@@ -276,8 +276,7 @@ class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
 
     func textViewDidChange(_: UITextView) {
         Self.logger.dbg("varName=\(self.spec.varName) textViewDidChange")
-        let value = self.textview.text.isEmpty ? nil : self.textview.text
-        self.ctx.varSet?.setString(self.spec.varName, value)
+        self.ctx.varSet?.setString(self.spec.varName, self.textview.text)
         if let pollDelayMs = self.spec.pollDelayMs {
             self.ctx.foregroundPoller?.schedulePoll(delayMillis: pollDelayMs)
         }
