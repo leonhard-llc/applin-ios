@@ -102,8 +102,8 @@ public class SyncCell<T> {
 }
 
 public extension Task {
-    var resultSync: Result<Success, Failure> {
-        get {
+    var valueSync: Success {
+        get throws {
             let cell = SyncCell<Result<Success, Failure>?>(nil)
             let semaphore = DispatchSemaphore(value: 0)
             let task = self
@@ -113,7 +113,7 @@ public extension Task {
                 semaphore.signal()
             }
             semaphore.wait()
-            return cell.get()!
+            return try cell.get()!.get()
         }
     }
 }

@@ -30,8 +30,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## Changes
+
+- v0.31.0
+    - Add `modal` action.
+    - Change the wire format of action definitions from strings to JSON objects.
 - v0.30.0
-    - Add "Cancel" button to "Working" modal.  Users can now cancel slow operations!
+    - Add "Cancel" button to "Working" modal. Users can now cancel slow operations!
     - Support the `aspect_ratio=N` URL parameter for `choose_photo` and `take_photo` actions.
       Users can now rotate and crop their photos before upload!
     - Support URL parameters on upload URLs and page URLs.

@@ -263,6 +263,37 @@ class PageStack {
         return try await self.uploadImage(uiImage, spec)
     }
 
+    private func doModalAction(pageKey: String, _ spec: ModalActionSpec) async throws {
+        let task = Task<(), Never> { @MainActor in
+            guard let nav = self.weakNav else {
+                return
+            }
+            let dialogCtl = UIAlertController(title: spec.title, message: spec.message, preferredStyle: .alert)
+            for button in spec.buttons {
+                let style: UIAlertAction.Style
+                if button.text == "Cancel" {
+                    style = .cancel
+                } else if button.text.starts(with: "!") {
+                    style = .destructive
+                } else {
+                    style = .default
+                }
+                dialogCtl.addAction(UIAlertAction(
+                        title: button.text.removePrefix("!"),
+                        style: style,
+                        handler: { _ in
+                            Task {
+                                await self.doActions(pageKey: pageKey, button.actions)
+                            }
+                        }
+                ))
+            }
+            nav.present(dialogCtl, animated: true);
+        }
+        let _ = await task.value
+    }
+
+
     private func doPollAction(pageKey: String) async throws {
         if self.config.staticPages[pageKey] != nil {
             // Show first page on startup.
@@ -347,8 +378,7 @@ class PageStack {
             self.weakVarSet?.removeAll()
             try await self.doReplaceAllAction(pageKey: config.showPageOnFirstStartup)
         case let .modal(spec):
-            // TODO: Implement `modal` action.
-            break
+            try await self.doModalAction(pageKey: pageKey, spec)
         case .onUserErrorPoll:
             break
         case .poll:

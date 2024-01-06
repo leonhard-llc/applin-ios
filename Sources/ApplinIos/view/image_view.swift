@@ -228,12 +228,9 @@ public class ImageView: UIView {
     }
 
     public func getUrl() async -> URL? {
-        let task = Task { @MainActor in
+        let task = Task<URL?, Never> { @MainActor in
             await self.lock.lockAsync({ self.url })
         }
-        if case let .success(url) = await task.result {
-            return url
-        }
-        return nil
+        return await task.value
     }
 }

@@ -165,10 +165,15 @@ public enum ApplinAlignment: CustomStringConvertible, Equatable, Hashable {
     }
 }
 
+public struct JsonModalButton: Codable {
+    let text: String
+    let actions: [JsonAction]
+}
+
 class JsonAction: Codable {
     var typ: String
     var aspect_ratio: Float32?
-    var buttons: [String: [JsonAction]]?
+    var buttons: [JsonModalButton]?
     var message: String?
     var page: String?
     var string_value: String?
@@ -179,7 +184,7 @@ class JsonAction: Codable {
         self.typ = typ
     }
 
-    func requireButtons() throws -> [String: [JsonAction]] {
+    func requireButtons() throws -> [JsonModalButton] {
         guard let buttons = self.buttons else {
             throw ApplinError.appError("missing \(self.typ).buttons")
         }

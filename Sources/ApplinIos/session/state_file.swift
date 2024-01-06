@@ -81,7 +81,7 @@ class StateFileOwner {
                 }
             }
         }
-        try! task.resultSync.get()
+        try! task.valueSync
     }
 
     func write(_ varSet: VarSet, _ optPageStack: PageStack?) async throws {
@@ -119,7 +119,7 @@ class StateFileOwner {
                 }
                 try await self.write(varSet, nil)
             }
-            try task.resultSync.get()
+            try task.valueSync
         } catch {
             Self.logger.error("failed saving state: \(error)")
         }

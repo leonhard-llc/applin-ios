@@ -1,18 +1,23 @@
 import Foundation
 import UIKit
 
-public struct ModalActionSpec: Codable, Equatable, Hashable {
-    let title: String
-    let message: String?
-    let buttons: [String: [ActionSpec]]
+public struct ModalButtonSpec: Equatable, Hashable {
+    let text: String
+    let actions: [ActionSpec]
 }
 
-public struct UploadPhotoActionSpec: Codable, Equatable, Hashable {
+public struct ModalActionSpec: Equatable, Hashable {
+    let title: String
+    let message: String?
+    let buttons: [ModalButtonSpec]
+}
+
+public struct UploadPhotoActionSpec: Equatable, Hashable {
     let url: URL
     let aspect_ratio: Float32?
 }
 
-public indirect enum ActionSpec: Codable, CustomStringConvertible, Equatable, Hashable {
+public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
     case choosePhoto(UploadPhotoActionSpec)
     case copyToClipboard(String)
     case launchUrl(URL)
@@ -49,8 +54,11 @@ public indirect enum ActionSpec: Codable, CustomStringConvertible, Equatable, Ha
         case "launch_url":
             self = .launchUrl(try jsonAction.requireUrl(config))
         case "modal":
-            let buttons = try jsonAction.requireButtons().mapValues({ jsonActionList in
-                try jsonActionList.map({ jA in try ActionSpec(config, jA) })
+            let buttons = try jsonAction.requireButtons().map({ jsonButton in
+                ModalButtonSpec(
+                        text: jsonButton.text,
+                        actions: try jsonButton.actions.map({ jA in try ActionSpec(config, jA) })
+                )
             })
             if buttons.isEmpty {
                 throw ApplinError.appError("empty modal.buttons")
@@ -97,7 +105,12 @@ public indirect enum ActionSpec: Codable, CustomStringConvertible, Equatable, Ha
             let jsonAction = JsonAction(typ: "modal")
             jsonAction.title = spec.title
             jsonAction.message = spec.message
-            jsonAction.buttons = spec.buttons.mapValues({ s in s.map({ s in s.toJsonAction() }) })
+            jsonAction.buttons = spec.buttons.map({ b in
+                JsonModalButton(
+                        text: b.text,
+                        actions: b.actions.map({ s in s.toJsonAction() })
+                )
+            })
             return jsonAction
         case .onUserErrorPoll:
             return JsonAction(typ: "on_user_error_poll")
