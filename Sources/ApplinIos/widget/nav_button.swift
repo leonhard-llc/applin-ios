@@ -25,7 +25,7 @@ public struct NavButtonSpec: Equatable, Hashable, ToSpec {
     }
 
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
-        self.actions = try item.optActions() ?? []
+        self.actions = try item.optActions(config) ?? []
         self.badgeText = item.badge_text
         self.photoUrl = try item.optPhotoUrl(config)
         self.subText = item.sub_text
@@ -34,7 +34,7 @@ public struct NavButtonSpec: Equatable, Hashable, ToSpec {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(NavButtonSpec.TYP)
-        item.actions = self.actions.map({ action in action.toString() })
+        item.actions = self.actions.map({ action in action.toJsonAction() })
         item.badge_text = self.badgeText
         item.photo_url = self.photoUrl?.relativeString
         item.sub_text = self.subText

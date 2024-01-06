@@ -219,14 +219,10 @@ class PageStack {
         self.weakVarSet = varSet
     }
 
-    private func uploadImage(_ image: UIImage, url: String) async throws -> Bool {
+    private func uploadImage(_ image: UIImage, _ spec: UploadPhotoActionSpec) async throws -> Bool {
+        // TODO: Allow user to retry a failed upload.
         let data: Data
-        var url = try self.config.relativeUrl(url: url)
-        if let aspectRatioString = url.components()?.queryItems?["aspect_ratio"] {
-            url = url.removingQueryItem(name: "aspect_ratio")
-            guard let aspectRatio = Float32(aspectRatioString) else {
-                throw ApplinError.appError("failed parsing upload URL aspect_ratio param: '\(aspectRatioString)'")
-            }
+        if let aspectRatio = spec.aspect_ratio {
             guard let nav = self.weakNav,
                   let jpegData = try await PhotoEditor.edit(nav, image, aspectRatio: aspectRatio)
             else {
@@ -242,29 +238,29 @@ class PageStack {
         //try await writeFile(data: data, path: filePath)
         let uploadBody = UploadBody(data, contentType: "image/jpeg")
         try await self.withWorking({
-            try await self.weakServerCaller?.upload(url: url, uploadBody: uploadBody)
+            try await self.weakServerCaller?.upload(url: spec.url, uploadBody: uploadBody)
         })
         return true
     }
 
-    private func doChoosePhotoAction(url: String) async throws -> Bool {
+    private func doChoosePhotoAction(_ spec: UploadPhotoActionSpec) async throws -> Bool {
         guard let nav = self.weakNav else {
             return false
         }
         guard let uiImage = try await PhotoPicker.pick(nav) else {
             return false
         }
-        return try await self.uploadImage(uiImage, url: url)
+        return try await self.uploadImage(uiImage, spec)
     }
 
-    private func doTakePhotoAction(url: String) async throws -> Bool {
+    private func doTakePhotoAction(_ spec: UploadPhotoActionSpec) async throws -> Bool {
         guard let nav = self.weakNav else {
             return false
         }
         guard let uiImage = try await PhotoTaker.take(nav) else {
             return false
         }
-        return try await self.uploadImage(uiImage, url: url)
+        return try await self.uploadImage(uiImage, spec)
     }
 
     private func doPollAction(pageKey: String) async throws {
@@ -278,7 +274,7 @@ class PageStack {
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         let update =
-                try await serverCaller.poll(url: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+                try await serverCaller.poll(pageKey: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
         await self.mutex.lockAsyncAndUpdate({ state in
             state.set(pageKey: pageKey, update.spec)
         })
@@ -296,7 +292,7 @@ class PageStack {
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         let update =
-                try await serverCaller.poll(url: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+                try await serverCaller.poll(pageKey: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
         try await self.mutex.lockAsyncThrowsAndUpdate({ state in
             try state.push(pageKey: pageKey, update.spec)
         })
@@ -314,20 +310,20 @@ class PageStack {
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         let update =
-                try await serverCaller.poll(url: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+                try await serverCaller.poll(pageKey: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
         await self.mutex.lockAsyncAndUpdate({ state in
             state.replaceAll(pageKey: pageKey, update.spec)
         })
     }
 
-    private func doRpcAction(pageKey: String, path: String) async throws {
+    private func doRpcAction(pageKey: String, _ url: URL) async throws {
         guard let serverCaller = self.weakServerCaller else {
             return
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
         let _ = try await serverCaller.call(
                 .POST,
-                url: path,
+                url,
                 varNamesAndValues: varNamesAndValues,
                 interactive: true
         )
@@ -336,22 +332,23 @@ class PageStack {
     private func doAction(pageKey: String, _ action: ActionSpec) async throws -> Bool {
         Self.logger.info("action \(action.description)")
         switch action {
-        case let .choosePhoto(url):
-            return try await self.doChoosePhotoAction(url: url)
+        case let .choosePhoto(spec):
+            return try await self.doChoosePhotoAction(spec)
         case let .copyToClipboard(string):
-            Self.logger.info("action copyToClipboard(\(string))")
             UIPasteboard.general.string = string
         case let .launchUrl(url):
-            Self.logger.info("action launchUrl(\(url)")
             Task { @MainActor in
                 await UIApplication.shared.open(url)
             }
         case .logout:
             // TODO: Display confirmation dialog.
+            // TODO: Display "Logged Out" dialog.
             Cookies.deleteSessionCookie(self.config)
             self.weakVarSet?.removeAll()
             try await self.doReplaceAllAction(pageKey: config.showPageOnFirstStartup)
-                // TODO: Display "Logged Out" dialog.
+        case let .modal(spec):
+            // TODO: Implement `modal` action.
+            break
         case .onUserErrorPoll:
             break
         case .poll:
@@ -360,14 +357,14 @@ class PageStack {
             try await self.mutex.lockAsyncThrowsAndUpdate({ state in
                 try state.pop()
             })
-        case let .push(key):
-            try await self.doPushAction(pageKey: key)
-        case let .replaceAll(key):
-            try await self.doReplaceAllAction(pageKey: key)
-        case let .rpc(path):
-            try await self.doRpcAction(pageKey: pageKey, path: path)
-        case let .takePhoto(url):
-            return try await self.doTakePhotoAction(url: url)
+        case let .push(pageKey):
+            try await self.doPushAction(pageKey: pageKey)
+        case let .replaceAll(pageKey):
+            try await self.doReplaceAllAction(pageKey: pageKey)
+        case let .rpc(url):
+            try await self.doRpcAction(pageKey: pageKey, url)
+        case let .takePhoto(spec):
+            return try await self.doTakePhotoAction(spec)
         }
         return true
     }

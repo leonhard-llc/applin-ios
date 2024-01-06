@@ -14,15 +14,15 @@ public struct FormButtonSpec: Equatable, Hashable, ToSpec {
         self.text = text
     }
 
-    init(_ item: JsonItem) throws {
-        self.actions = try item.optActions() ?? []
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
+        self.actions = try item.optActions(config) ?? []
         self.alignment = item.optAlign()
         self.text = try item.requireText()
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(FormButtonSpec.TYP)
-        item.actions = self.actions.map({ action in action.toString() })
+        item.actions = self.actions.map({ action in action.toJsonAction() })
         item.setAlign(self.alignment)
         item.text = self.text
         return item

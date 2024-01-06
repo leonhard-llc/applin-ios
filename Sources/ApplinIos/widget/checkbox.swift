@@ -24,8 +24,8 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
         self.varName = varName
     }
 
-    init(_ item: JsonItem) throws {
-        self.actions = try item.optActions() ?? []
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
+        self.actions = try item.optActions(config) ?? []
         self.initialBool = item.initial_bool
         self.pollDelayMs = item.poll_delay_ms
         self.text = item.text
@@ -34,7 +34,7 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(CheckboxSpec.TYP)
-        item.actions = self.actions.map({ action in action.toString() })
+        item.actions = self.actions.map({ action in action.toJsonAction() })
         item.initial_bool = self.initialBool
         item.poll_delay_ms = self.pollDelayMs
         item.text = self.text

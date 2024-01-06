@@ -59,11 +59,11 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
     init(_ config: ApplinConfig, _ item: JsonItem) throws {
         switch item.typ {
         case BackButtonSpec.TYP:
-            self.value = .backButton(try BackButtonSpec(item))
+            self.value = .backButton(try BackButtonSpec(config, item))
         case ButtonSpec.TYP:
-            self.value = .button(try ButtonSpec(item))
+            self.value = .button(try ButtonSpec(config, item))
         case CheckboxSpec.TYP:
-            self.value = .checkbox(try CheckboxSpec(item))
+            self.value = .checkbox(try CheckboxSpec(config, item))
         case ColumnSpec.TYP:
             self.value = .column(try ColumnSpec(config, item))
         case EmptySpec.TYP:
@@ -73,7 +73,7 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case FormSpec.TYP:
             self.value = .form(try FormSpec(config, item))
         case FormButtonSpec.TYP:
-            self.value = .formButton(try FormButtonSpec(item))
+            self.value = .formButton(try FormButtonSpec(config, item))
         case FormSectionSpec.TYP:
             self.value = .formSection(try FormSectionSpec(config, item))
         case GroupedRowTableSpec.TYP:

@@ -254,6 +254,18 @@ extension String: Error {
 }
 
 extension String {
+    func debug() -> String {
+        String(reflecting: self)
+    }
+
+    func emptyToNil() -> String? {
+        self.isEmpty ? nil : self
+    }
+
+    func prefixString(len: Int) -> String {
+        String(self.prefix(len))
+    }
+
     func removePrefix(_ prefix: String) -> String {
         if self.hasPrefix(prefix) {
             return String(self.dropFirst(prefix.count))
@@ -268,14 +280,6 @@ extension String {
         } else {
             return self
         }
-    }
-
-    func prefixString(len: Int) -> String {
-        String(self.prefix(len))
-    }
-
-    func emptyToNil() -> String? {
-        self.isEmpty ? nil : self
     }
 }
 

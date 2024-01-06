@@ -113,13 +113,12 @@ class ServerCaller {
 
     func call(
             _ method: CallMethod,
-            url: String,
+            _ url: URL,
             varNamesAndValues: [(String, Var)],
             interactive: Bool
     ) async throws -> PageUpdate? {
-        let relativeUrl = try self.config.relativeUrl(url: url)
         var urlRequest = URLRequest(
-                url: relativeUrl,
+                url: url,
                 cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
         )
         urlRequest.httpMethod = method.toString()
@@ -155,16 +154,17 @@ class ServerCaller {
         }
     }
 
-    func poll(url: String, varNamesAndValues: [(String, Var)], interactive: Bool) async throws -> PageUpdate {
+    func poll(pageKey: String, varNamesAndValues: [(String, Var)], interactive: Bool) async throws -> PageUpdate {
+        let relativeUrl = try self.config.relativeUrl(url: pageKey)
         let method: CallMethod = varNamesAndValues.isEmpty ? .GET : .POST
         let optUpdate = try await self.call(
                 method,
-                url: url,
+                relativeUrl,
                 varNamesAndValues: varNamesAndValues,
                 interactive: interactive
         )
         guard let update = optUpdate else {
-            throw ApplinError.serverError("server returned empty result for page '\(url)")
+            throw ApplinError.serverError("server returned empty result for page '\(pageKey)")
         }
         return update
     }

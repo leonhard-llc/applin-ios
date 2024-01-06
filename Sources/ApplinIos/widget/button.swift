@@ -12,14 +12,14 @@ public struct ButtonSpec: Equatable, Hashable, ToSpec {
         self.actions = actions
     }
 
-    init(_ item: JsonItem) throws {
-        self.actions = try item.optActions() ?? []
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
+        self.actions = try item.optActions(config) ?? []
         self.text = try item.requireText()
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(ButtonSpec.TYP)
-        item.actions = self.actions.map({ action in action.toString() })
+        item.actions = self.actions.map({ action in action.toJsonAction() })
         item.text = self.text
         return item
     }

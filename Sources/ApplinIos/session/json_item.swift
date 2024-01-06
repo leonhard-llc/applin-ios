@@ -165,11 +165,61 @@ public enum ApplinAlignment: CustomStringConvertible, Equatable, Hashable {
     }
 }
 
+class JsonAction: Codable {
+    var typ: String
+    var aspect_ratio: Float32?
+    var buttons: [String: [JsonAction]]?
+    var message: String?
+    var page: String?
+    var string_value: String?
+    var title: String?
+    var url: String?
+
+    public init(typ: String) {
+        self.typ = typ
+    }
+
+    func requireButtons() throws -> [String: [JsonAction]] {
+        guard let buttons = self.buttons else {
+            throw ApplinError.appError("missing \(self.typ).buttons")
+        }
+        return buttons
+    }
+
+    func requirePage() throws -> String {
+        guard let page = self.page else {
+            throw ApplinError.appError("missing \(self.typ).page")
+        }
+        return page
+    }
+
+    func requireStringValue() throws -> String {
+        guard let value = self.string_value else {
+            throw ApplinError.appError("missing \(self.typ).string_value")
+        }
+        return value
+    }
+
+    func requireTitle() throws -> String {
+        guard let title = self.title else {
+            throw ApplinError.appError("missing \(self.typ).title")
+        }
+        return title
+    }
+
+    func requireUrl(_ config: ApplinConfig) throws -> URL {
+        guard let string = self.url else {
+            throw ApplinError.appError("missing \(self.typ).url")
+        }
+        return try config.relativeUrl(url: string)
+    }
+}
+
 class JsonItem: Codable {
     static let logger = Logger(subsystem: "Applin", category: "JsonItem")
 
     var typ: String
-    var actions: [String]?
+    var actions: [JsonAction]?
     var align: String?
     var allow: String?
     var aspect_ratio: Double?
@@ -177,7 +227,6 @@ class JsonItem: Codable {
     var badge_text: String?
     var cache: Bool?
     var check_rpc: String?
-    // TODO: Split this into separate horizontal and vertical fields.
     var disposition: String?
     var end: JsonItem?
     var ephemeral: Bool?
@@ -226,8 +275,8 @@ class JsonItem: Codable {
         self.typ = typ
     }
 
-    func optActions() throws -> [ActionSpec]? {
-        try self.actions?.map({ string in try ActionSpec(string) })
+    func optActions(_ config: ApplinConfig) throws -> [ActionSpec]? {
+        try self.actions?.map({ jsonAction in try ActionSpec(config, jsonAction) })
     }
 
     func optAlign() -> ApplinAlignment? {

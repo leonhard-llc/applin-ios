@@ -11,13 +11,13 @@ public struct BackButtonSpec: Equatable, Hashable {
         self.actions = actions
     }
 
-    init(_ item: JsonItem) throws {
-        self.actions = try item.optActions() ?? []
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
+        self.actions = try item.optActions(config) ?? []
     }
 
     func toJsonItem() -> JsonItem {
         let item = JsonItem(BackButtonSpec.TYP)
-        item.actions = self.actions.map({ action in action.toString() })
+        item.actions = self.actions.map({ action in action.toJsonAction() })
         return item
     }
 
