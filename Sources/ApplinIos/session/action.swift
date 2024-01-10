@@ -12,6 +12,11 @@ public struct ModalActionSpec: Equatable, Hashable {
     let buttons: [ModalButtonSpec]
 }
 
+public struct RpcActionSpec: Equatable, Hashable {
+    let url: URL
+    let on_user_error_poll: Bool?
+}
+
 public struct UploadPhotoActionSpec: Equatable, Hashable {
     let url: URL
     let aspect_ratio: Float32?
@@ -22,14 +27,12 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
     case copyToClipboard(String)
     case launchUrl(URL)
     case logout
-    // TODO: Move on_user_error_poll to an attribute of the `rpc` action.
-    case onUserErrorPoll
     case poll
     case pop
     case push(String)
     // TODO: Add push-preload.
     case replaceAll(String)
-    case rpc(URL)
+    case rpc(RpcActionSpec)
     case takePhoto(UploadPhotoActionSpec)
     case modal(ModalActionSpec)
     // TODO: Add a `confirm:MESSAGE` action.
@@ -38,21 +41,19 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
         switch jsonAction.typ {
         case "logout":
             self = .logout
-        case "on_user_error_poll":
-            self = .onUserErrorPoll
         case "poll":
             self = .poll
         case "pop":
             self = .pop
         case "choose_photo":
             self = .choosePhoto(UploadPhotoActionSpec(
-                    url: try jsonAction.requireUrl(config),
+                    url: try jsonAction.requireRelativeUrl(config),
                     aspect_ratio: jsonAction.aspect_ratio
             ))
         case "copy_to_clipboard":
             self = .copyToClipboard(try jsonAction.requireStringValue())
         case "launch_url":
-            self = .launchUrl(try jsonAction.requireUrl(config))
+            self = .launchUrl(try jsonAction.requireUrl())
         case "modal":
             let buttons = try jsonAction.requireButtons().map({ jsonButton in
                 ModalButtonSpec(
@@ -73,10 +74,13 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
         case "replace_all":
             self = .replaceAll(try jsonAction.requirePage())
         case "rpc":
-            self = .rpc(try jsonAction.requireUrl(config))
+            self = .rpc(RpcActionSpec(
+                    url: try jsonAction.requireRelativeUrl(config),
+                    on_user_error_poll: jsonAction.on_user_error_poll
+            ))
         case "take_photo":
             self = .takePhoto(UploadPhotoActionSpec(
-                    url: try jsonAction.requireUrl(config),
+                    url: try jsonAction.requireRelativeUrl(config),
                     aspect_ratio: jsonAction.aspect_ratio
             ))
         default:
@@ -112,8 +116,6 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
                 )
             })
             return jsonAction
-        case .onUserErrorPoll:
-            return JsonAction(typ: "on_user_error_poll")
         case .poll:
             return JsonAction(typ: "poll")
         case .pop:
@@ -126,9 +128,10 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
             let jsonAction = JsonAction(typ: "replace_all")
             jsonAction.page = pageKey
             return jsonAction
-        case let .rpc(url):
+        case let .rpc(spec):
             let jsonAction = JsonAction(typ: "rpc")
-            jsonAction.url = url.absoluteString
+            jsonAction.url = spec.url.absoluteString
+            jsonAction.on_user_error_poll = spec.on_user_error_poll
             return jsonAction
         case let .takePhoto(spec):
             let jsonAction = JsonAction(typ: "take_photo")
@@ -150,8 +153,6 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
             return "logout"
         case let .modal(spec):
             return "modal(title=\(spec.title.debug()),message=\(spec.message?.debug() ?? ""),buttons=\(spec.buttons))"
-        case .onUserErrorPoll:
-            return "on_user_error_poll"
         case .poll:
             return "poll"
         case .pop:
@@ -160,8 +161,8 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
             return "push(\(pageKey))"
         case let .replaceAll(pageKey):
             return "replaceAll(\(pageKey))"
-        case let .rpc(url):
-            return "rpc(\(url.relativeString))"
+        case let .rpc(spec):
+            return "rpc(\(spec.url.relativeString),on_user_error_poll=\(spec.on_user_error_poll?.description ?? "null")"
         case let .takePhoto(spec):
             return "takePhoto(url=\(spec.url.absoluteString),aspect_ratio=\(spec.aspect_ratio?.description ?? "")"
         }
@@ -171,7 +172,7 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
         switch self {
         case .choosePhoto, .copyToClipboard, .launchUrl, .logout, .modal, .pop, .takePhoto:
             return false
-        case .onUserErrorPoll, .poll, .push, .replaceAll, .rpc:
+        case .poll, .push, .replaceAll, .rpc:
             return true
         }
     }

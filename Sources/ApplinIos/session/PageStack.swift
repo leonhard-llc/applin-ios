@@ -239,6 +239,7 @@ class PageStack {
         let uploadBody = UploadBody(data, contentType: "image/jpeg")
         try await self.withWorking({
             try await self.weakServerCaller?.upload(url: spec.url, uploadBody: uploadBody)
+            return true
         })
         return true
     }
@@ -379,8 +380,6 @@ class PageStack {
             try await self.doReplaceAllAction(pageKey: config.showPageOnFirstStartup)
         case let .modal(spec):
             try await self.doModalAction(pageKey: pageKey, spec)
-        case .onUserErrorPoll:
-            break
         case .poll:
             try await self.doPollAction(pageKey: pageKey)
         case .pop:
@@ -391,8 +390,16 @@ class PageStack {
             try await self.doPushAction(pageKey: pageKey)
         case let .replaceAll(pageKey):
             try await self.doReplaceAllAction(pageKey: pageKey)
-        case let .rpc(url):
-            try await self.doRpcAction(pageKey: pageKey, url)
+        case let .rpc(spec):
+            do {
+                try await self.doRpcAction(pageKey: pageKey, spec.url)
+            } catch let e as ApplinError {
+                if case .userError = e, spec.on_user_error_poll ?? false {
+                    let _ = try? await self.doPollAction(pageKey: pageKey)
+                }
+                throw e
+            }
+
         case let .takePhoto(spec):
             return try await self.doTakePhotoAction(spec)
         }
@@ -403,30 +410,24 @@ class PageStack {
         await self.lock.lockAsync({
             await self.handleInteractiveError({
                 let showWorkingForActions = actions.contains(where: { action in action.showWorking })
-                do {
-                    if showWorking ?? showWorkingForActions {
-                        try await self.withWorking({
-                            for action in actions {
-                                let success = try await self.doAction(pageKey: pageKey, action)
-                                if !success {
-                                    break;
-                                }
-                            }
-                        })
-                    } else {
+                if showWorking ?? showWorkingForActions {
+                    return try await self.withWorking({ () in
                         for action in actions {
                             let success = try await self.doAction(pageKey: pageKey, action)
                             if !success {
-                                break;
+                                return false
                             }
+                        }
+                        return true
+                    })
+                } else {
+                    for action in actions {
+                        let success = try await self.doAction(pageKey: pageKey, action)
+                        if !success {
+                            return false
                         }
                     }
                     return true
-                } catch let e as ApplinError {
-                    if case .userError = e, actions.contains(where: { action in action == .onUserErrorPoll }) {
-                        let _ = try? await self.doPollAction(pageKey: pageKey)
-                    }
-                    throw e
                 }
             })
         })
@@ -517,24 +518,26 @@ class PageStack {
         return namesAndValues
     }
 
-    private func withWorking(_ f: @escaping () async throws -> ()) async throws {
+    private func withWorking(_ f: @escaping () async throws -> Bool) async throws -> Bool {
         //let promise: ApplinPromise<()> = ApplinPromise()
         let task = Task(priority: .userInitiated) { @MainActor in
             do {
-                try await f()
+                return try await f()
                 //let _ = promise.tryComplete(value: <#T##()##()#>)
             } catch let e {
                 if !Task.isCancelled {
                     throw e
                 }
+                return false
             }
         };
         await self.weakNav?.setWorking("Working", task)
         let stopwatch = Stopwatch()
         do {
-            try await task.value
+            let result = try await task.value
             await stopwatch.waitUntil(seconds: 0.5)
             await self.weakNav?.setWorking(nil, nil)
+            return result
         } catch let e {
             await stopwatch.waitUntil(seconds: 0.5)
             await self.weakNav?.setWorking(nil, nil)

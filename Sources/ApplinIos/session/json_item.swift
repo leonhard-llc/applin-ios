@@ -175,6 +175,7 @@ class JsonAction: Codable {
     var aspect_ratio: Float32?
     var buttons: [JsonModalButton]?
     var message: String?
+    var on_user_error_poll: Bool?
     var page: String?
     var string_value: String?
     var title: String?
@@ -212,11 +213,22 @@ class JsonAction: Codable {
         return title
     }
 
-    func requireUrl(_ config: ApplinConfig) throws -> URL {
+    func requireRelativeUrl(_ config: ApplinConfig) throws -> URL {
         guard let string = self.url else {
             throw ApplinError.appError("missing \(self.typ).url")
         }
         return try config.relativeUrl(url: string)
+    }
+
+    func requireUrl() throws -> URL {
+        guard let string = self.url else {
+            throw ApplinError.appError("missing \(self.typ).url")
+        }
+        guard let url = URL(string: string)
+        else {
+            throw ApplinError.appError("failed parsing \(self.typ).url \(String(reflecting: string))")
+        }
+        return url
     }
 }
 

@@ -7,7 +7,7 @@ class WorkingView: UIView {
     let label: UILabel
     var cancelButton: UIButton?
 
-    init(text: String, _ task: Task<(), Error>?) {
+    init(text: String, _ task: Task<Bool, Error>?) {
         self.indicator = UIActivityIndicatorView()
         self.indicator.translatesAutoresizingMaskIntoConstraints = false
         self.indicator.startAnimating()

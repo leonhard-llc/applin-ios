@@ -120,7 +120,7 @@ public class NavigationController: UINavigationController, UIGestureRecognizerDe
     }
 
     @MainActor
-    func setWorking(_ text: String?, _ task: Task<(), Error>?) async {
+    func setWorking(_ text: String?, _ task: Task<Bool, Error>?) async {
         await self.lock.lockAsync {
             Self.logger.dbg("setWorking '\(String(describing: text))")
             self.workingHelper.clear()
