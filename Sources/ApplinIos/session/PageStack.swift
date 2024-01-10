@@ -237,11 +237,10 @@ class PageStack {
         //Self.logger.info("writing \(filePath)")
         //try await writeFile(data: data, path: filePath)
         let uploadBody = UploadBody(data, contentType: "image/jpeg")
-        try await self.withWorking({
+        return try await self.withWorking({
             try await self.weakServerCaller?.upload(url: spec.url, uploadBody: uploadBody)
             return true
         })
-        return true
     }
 
     private func doChoosePhotoAction(_ spec: UploadPhotoActionSpec) async throws -> Bool {
