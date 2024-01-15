@@ -99,14 +99,14 @@ public enum PageSpec: CustomStringConvertible, Equatable, ToPageSpec {
         }
     }
 
-    func visitActions(_ f: (ActionSpec) -> ()) {
+    func hasValidatedInput() -> Bool {
         switch self {
         case .loadingPage:
-            break
+            return false
         case let .navPage(inner):
-            return inner.visitActions(f)
+            return inner.hasValidatedInput()
         case let .plainPage(inner):
-            return inner.visitActions(f)
+            return inner.hasValidatedInput()
         }
     }
 }

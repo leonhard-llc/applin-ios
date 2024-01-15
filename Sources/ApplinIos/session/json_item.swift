@@ -281,6 +281,7 @@ class JsonItem: Codable {
     var text: String?
     var title: String?
     var url: String?
+    var validated: Bool?
     var var_name: String?
     var var_name1: String?
     var var_name2: String?

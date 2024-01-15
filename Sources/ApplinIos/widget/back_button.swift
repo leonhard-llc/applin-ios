@@ -21,29 +21,25 @@ public struct BackButtonSpec: Equatable, Hashable {
         return item
     }
 
+    func hasValidatedInput() -> Bool {
+        false
+    }
+
     func keys() -> [String] {
         []
     }
 
-    func subs() -> [Spec] {
-        []
-    }
-
-    func vars() -> [(String, Var)] {
-        []
+    func newWidget() -> Widget {
+        Self.logger.dbg("\(String(describing: self)) newWidget")
+        return BackButtonWidget()
     }
 
     func priority() -> WidgetPriority {
         .stateless
     }
 
-    func widgetClass() -> AnyClass {
-        BackButtonWidget.self
-    }
-
-    func newWidget() -> Widget {
-        Self.logger.dbg("\(String(describing: self)) newWidget")
-        return BackButtonWidget()
+    func subs() -> [Spec] {
+        []
     }
 
     func tap(_ ctx: PageContext) {
@@ -53,8 +49,12 @@ public struct BackButtonSpec: Equatable, Hashable {
         }
     }
 
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.actions.forEach(f)
+    func vars() -> [(String, Var)] {
+        []
+    }
+
+    func widgetClass() -> AnyClass {
+        BackButtonWidget.self
     }
 }
 

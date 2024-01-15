@@ -23,12 +23,16 @@ public struct FormSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.form(self))
+    func hasValidatedInput() -> Bool {
+        self.widgets.reduce(false, { result, spec in spec.hasValidatedInput() || result })
     }
 
     func keys() -> [String] {
         []
+    }
+
+    func newWidget() -> Widget {
+        FormWidget()
     }
 
     func priority() -> WidgetPriority {
@@ -39,20 +43,16 @@ public struct FormSpec: Equatable, Hashable, ToSpec {
         self.widgets
     }
 
+    public func toSpec() -> Spec {
+        Spec(.form(self))
+    }
+
     func vars() -> [(String, Var)] {
         self.widgets.flatMap({ widget in widget.vars() })
     }
 
     func widgetClass() -> AnyClass {
         FormWidget.self
-    }
-
-    func newWidget() -> Widget {
-        FormWidget()
-    }
-
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.widgets.forEach({ widget in widget.visitActions(f) })
     }
 }
 

@@ -19,12 +19,16 @@ public struct TextSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.text(self))
+    func hasValidatedInput() -> Bool {
+        false
     }
 
     func keys() -> [String] {
         ["text:\(self.text)"]
+    }
+
+    func newWidget() -> Widget {
+        TextWidget()
     }
 
     func priority() -> WidgetPriority {
@@ -35,19 +39,16 @@ public struct TextSpec: Equatable, Hashable, ToSpec {
         []
     }
 
+    public func toSpec() -> Spec {
+        Spec(.text(self))
+    }
+
     func vars() -> [(String, Var)] {
         []
     }
 
     func widgetClass() -> AnyClass {
         TextWidget.self
-    }
-
-    func newWidget() -> Widget {
-        TextWidget()
-    }
-
-    func visitActions(_ f: (ActionSpec) -> ()) {
     }
 }
 

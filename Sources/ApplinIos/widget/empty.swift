@@ -12,12 +12,16 @@ public struct EmptySpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.empty(self))
+    func hasValidatedInput() -> Bool {
+        false
     }
 
     func keys() -> [String] {
         []
+    }
+
+    func newWidget() -> Widget {
+        EmptyWidget()
     }
 
     func priority() -> WidgetPriority {
@@ -28,19 +32,16 @@ public struct EmptySpec: Equatable, Hashable, ToSpec {
         []
     }
 
+    public func toSpec() -> Spec {
+        Spec(.empty(self))
+    }
+
     func vars() -> [(String, Var)] {
         []
     }
 
     func widgetClass() -> AnyClass {
         EmptyWidget.self
-    }
-
-    func newWidget() -> Widget {
-        EmptyWidget()
-    }
-
-    func visitActions(_ f: (ActionSpec) -> ()) {
     }
 }
 

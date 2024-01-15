@@ -42,12 +42,12 @@ public struct PlainPageSpec: Equatable, ToPageSpec {
         .plainPage(self)
     }
 
-    func vars() -> [(String, Var)] {
-        self.widget.vars()
+    func hasValidatedInput() -> Bool {
+        self.widget.hasValidatedInput()
     }
 
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.widget.visitActions(f)
+    func vars() -> [(String, Var)] {
+        self.widget.vars()
     }
 }
 

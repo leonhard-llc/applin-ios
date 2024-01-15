@@ -42,8 +42,8 @@ public struct NavButtonSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.navButton(self))
+    func hasValidatedInput() -> Bool {
+        false
     }
 
     func keys() -> [String] {
@@ -57,6 +57,10 @@ public struct NavButtonSpec: Equatable, Hashable, ToSpec {
         return keys
     }
 
+    func newWidget(_ ctx: PageContext) -> Widget {
+        NavButtonWidget(self, ctx)
+    }
+
     func priority() -> WidgetPriority {
         .focusable
     }
@@ -65,20 +69,16 @@ public struct NavButtonSpec: Equatable, Hashable, ToSpec {
         []
     }
 
-    func widgetClass() -> AnyClass {
-        NavButtonWidget.self
-    }
-
-    func newWidget(_ ctx: PageContext) -> Widget {
-        NavButtonWidget(self, ctx)
+    public func toSpec() -> Spec {
+        Spec(.navButton(self))
     }
 
     func vars() -> [(String, Var)] {
         []
     }
 
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.actions.forEach(f)
+    func widgetClass() -> AnyClass {
+        NavButtonWidget.self
     }
 }
 

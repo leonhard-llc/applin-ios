@@ -44,12 +44,22 @@ public struct GroupedRowTableSpec: Equatable, Hashable, ToSpec {
         self.spacing = 0.0
     }
 
-    public func toSpec() -> Spec {
-        Spec(.groupedRowTable(self))
+    func hasValidatedInput() -> Bool {
+        return self.rowGroups.reduce(false, { result, rowGroup in
+            rowGroup.reduce(result, { result, row in
+                row.reduce(result, { result, spec in
+                    (spec?.hasValidatedInput() ?? false) || result
+                })
+            })
+        })
     }
 
     func keys() -> [String] {
         []
+    }
+
+    func newWidget() -> Widget {
+        GroupedRowTableWidget()
     }
 
     func priority() -> WidgetPriority {
@@ -60,20 +70,16 @@ public struct GroupedRowTableSpec: Equatable, Hashable, ToSpec {
         self.rowGroups.flatMap({ group in group.flatMap({ row in row.compactMap({ $0 }) }) })
     }
 
+    public func toSpec() -> Spec {
+        Spec(.groupedRowTable(self))
+    }
+
     func vars() -> [(String, Var)] {
         self.rowGroups.flatMap({ group in group.flatMap({ row in row.compactMap({ widget in widget?.vars() }) }).flatMap({ $0 }) })
     }
 
     func widgetClass() -> AnyClass {
         GroupedRowTableWidget.self
-    }
-
-    func newWidget() -> Widget {
-        GroupedRowTableWidget()
-    }
-
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.rowGroups.forEach({ rowGroup in rowGroup.forEach({ row in row.forEach({ widget in widget?.visitActions(f) }) }) })
     }
 }
 

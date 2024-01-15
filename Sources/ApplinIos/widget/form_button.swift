@@ -28,12 +28,16 @@ public struct FormButtonSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.formButton(self))
+    func hasValidatedInput() -> Bool {
+        false
     }
 
     func keys() -> [String] {
         ["form_button:\(self.actions)", "form_button:\(self.text)"]
+    }
+
+    func newWidget(_ ctx: PageContext) -> Widget {
+        FormButtonWidget(self, ctx)
     }
 
     func priority() -> WidgetPriority {
@@ -44,20 +48,16 @@ public struct FormButtonSpec: Equatable, Hashable, ToSpec {
         []
     }
 
-    func widgetClass() -> AnyClass {
-        FormButtonWidget.self
-    }
-
-    func newWidget(_ ctx: PageContext) -> Widget {
-        FormButtonWidget(self, ctx)
+    public func toSpec() -> Spec {
+        Spec(.formButton(self))
     }
 
     func vars() -> [(String, Var)] {
         []
     }
 
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.actions.forEach(f)
+    func widgetClass() -> AnyClass {
+        FormButtonWidget.self
     }
 }
 

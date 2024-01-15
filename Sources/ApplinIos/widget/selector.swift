@@ -14,6 +14,7 @@ public struct SelectorSpec: Equatable, Hashable, ToSpec {
     let options1: [String]?
     let options2: [String]?
     let pollDelayMs: UInt32?
+    let validated: Bool?
     let varName: String
     let varName1: String?
     let varName2: String?
@@ -30,7 +31,8 @@ public struct SelectorSpec: Equatable, Hashable, ToSpec {
             options: [String]? = nil,
             options1: [String]? = nil,
             options2: [String]? = nil,
-            pollDelayMs: UInt32? = nil
+            pollDelayMs: UInt32? = nil,
+            validated: Bool? = nil
     ) throws {
         self.error = error
         self.initialString = initialString
@@ -41,6 +43,7 @@ public struct SelectorSpec: Equatable, Hashable, ToSpec {
         self.options1 = options1
         self.options2 = options2
         self.pollDelayMs = pollDelayMs
+        self.validated = validated
         self.varName = varName
         self.varName1 = varName1
         self.varName2 = varName2
@@ -56,6 +59,7 @@ public struct SelectorSpec: Equatable, Hashable, ToSpec {
         self.options1 = item.options1
         self.options2 = item.options2
         self.pollDelayMs = item.poll_delay_ms
+        self.validated = item.validated
         self.varName = try item.requireVar()
         self.varName1 = item.var_name1
         self.varName2 = item.var_name2
@@ -72,18 +76,23 @@ public struct SelectorSpec: Equatable, Hashable, ToSpec {
         item.options1 = self.options1
         item.options2 = self.options2
         item.poll_delay_ms = self.pollDelayMs
+        item.validated = self.validated
         item.var_name = self.varName
         item.var_name1 = self.varName1
         item.var_name2 = self.varName2
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.selector(self))
+    func hasValidatedInput() -> Bool {
+        self.validated ?? false
     }
 
     func keys() -> [String] {
         ["selector:\(self.varName)"]
+    }
+
+    func newWidget(_ ctx: PageContext) -> Widget {
+        SelectorWidget(ctx, self)
     }
 
     func priority() -> WidgetPriority {
@@ -94,19 +103,16 @@ public struct SelectorSpec: Equatable, Hashable, ToSpec {
         []
     }
 
+    public func toSpec() -> Spec {
+        Spec(.selector(self))
+    }
+
     func vars() -> [(String, Var)] {
         [(self.varName, .string(self.initialString ?? ""))]
     }
 
     func widgetClass() -> AnyClass {
         SelectorWidget.self
-    }
-
-    func newWidget(_ ctx: PageContext) -> Widget {
-        SelectorWidget(ctx, self)
-    }
-
-    func visitActions(_ f: (ActionSpec) -> ()) {
     }
 }
 

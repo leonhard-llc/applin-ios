@@ -140,6 +140,45 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         self
     }
 
+    func hasValidatedInput() -> Bool {
+        switch self.value {
+        case let .backButton(inner):
+            return inner.hasValidatedInput()
+        case let .button(inner):
+            return inner.hasValidatedInput()
+        case let .checkbox(inner):
+            return inner.hasValidatedInput()
+        case let .column(inner):
+            return inner.hasValidatedInput()
+        case let .empty(inner):
+            return inner.hasValidatedInput()
+        case let .errorText(inner):
+            return inner.hasValidatedInput()
+        case let .form(inner):
+            return inner.hasValidatedInput()
+        case let .formButton(inner):
+            return inner.hasValidatedInput()
+        case let .formSection(inner):
+            return inner.hasValidatedInput()
+        case let .groupedRowTable(inner):
+            return inner.hasValidatedInput()
+        case let .image(inner):
+            return inner.hasValidatedInput()
+        case let .lastErrorText(inner):
+            return inner.hasValidatedInput()
+        case let .navButton(inner):
+            return inner.hasValidatedInput()
+        case let .textfield(inner):
+            return inner.hasValidatedInput()
+        case let .scroll(inner):
+            return inner.hasValidatedInput()
+        case let .selector(inner):
+            return inner.hasValidatedInput()
+        case let .text(inner):
+            return inner.hasValidatedInput()
+        }
+    }
+
     func keys() -> [String] {
         switch self.value {
         case let .backButton(inner):
@@ -293,45 +332,6 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
             return inner.vars()
         case let .text(inner):
             return inner.vars()
-        }
-    }
-
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        switch self.value {
-        case let .backButton(inner):
-            return inner.visitActions(f)
-        case let .button(inner):
-            return inner.visitActions(f)
-        case let .checkbox(inner):
-            return inner.visitActions(f)
-        case let .column(inner):
-            return inner.visitActions(f)
-        case let .empty(inner):
-            return inner.visitActions(f)
-        case let .errorText(inner):
-            return inner.visitActions(f)
-        case let .form(inner):
-            return inner.visitActions(f)
-        case let .formButton(inner):
-            return inner.visitActions(f)
-        case let .formSection(inner):
-            return inner.visitActions(f)
-        case let .groupedRowTable(inner):
-            return inner.visitActions(f)
-        case let .image(inner):
-            return inner.visitActions(f)
-        case let .lastErrorText(inner):
-            return inner.visitActions(f)
-        case let .navButton(inner):
-            return inner.visitActions(f)
-        case let .textfield(inner):
-            return inner.visitActions(f)
-        case let .scroll(inner):
-            return inner.visitActions(f)
-        case let .selector(inner):
-            return inner.visitActions(f)
-        case let .text(inner):
-            return inner.visitActions(f)
         }
     }
 

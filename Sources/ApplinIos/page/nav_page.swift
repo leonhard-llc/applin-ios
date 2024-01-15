@@ -75,13 +75,12 @@ public struct NavPageSpec: Equatable, ToPageSpec {
         .navPage(self)
     }
 
-    func vars() -> [(String, Var)] {
-        self.widget.vars()
+    func hasValidatedInput() -> Bool {
+        self.widget.hasValidatedInput()
     }
 
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.end?.visitActions(f)
-        self.widget.visitActions(f)
+    func vars() -> [(String, Var)] {
+        self.widget.vars()
     }
 }
 

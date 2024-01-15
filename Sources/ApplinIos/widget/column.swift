@@ -26,12 +26,16 @@ public struct ColumnSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.column(self))
+    func hasValidatedInput() -> Bool {
+        self.widgets.reduce(false, { result, spec in spec.hasValidatedInput() || result })
     }
 
     func keys() -> [String] {
         []
+    }
+
+    func newWidget() -> Widget {
+        ColumnWidget()
     }
 
     func priority() -> WidgetPriority {
@@ -42,20 +46,16 @@ public struct ColumnSpec: Equatable, Hashable, ToSpec {
         self.widgets
     }
 
+    public func toSpec() -> Spec {
+        Spec(.column(self))
+    }
+
     func vars() -> [(String, Var)] {
         self.widgets.flatMap({ widget in widget.vars() })
     }
 
     func widgetClass() -> AnyClass {
         ColumnWidget.self
-    }
-
-    func newWidget() -> Widget {
-        ColumnWidget()
-    }
-
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.widgets.forEach({ widget in widget.visitActions(f) })
     }
 }
 

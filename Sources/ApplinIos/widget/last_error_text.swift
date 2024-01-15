@@ -12,12 +12,16 @@ public struct LastErrorTextSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.lastErrorText(self))
+    func hasValidatedInput() -> Bool {
+        false
     }
 
     func keys() -> [String] {
         []
+    }
+
+    func newWidget() -> Widget {
+        LastErrorTextWidget()
     }
 
     func priority() -> WidgetPriority {
@@ -28,19 +32,16 @@ public struct LastErrorTextSpec: Equatable, Hashable, ToSpec {
         []
     }
 
-    func widgetClass() -> AnyClass {
-        LastErrorTextWidget.self
-    }
-
-    func newWidget() -> Widget {
-        LastErrorTextWidget()
+    public func toSpec() -> Spec {
+        Spec(.lastErrorText(self))
     }
 
     func vars() -> [(String, Var)] {
         []
     }
 
-    func visitActions(_ f: (ActionSpec) -> ()) {
+    func widgetClass() -> AnyClass {
+        LastErrorTextWidget.self
     }
 }
 

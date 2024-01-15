@@ -243,6 +243,7 @@ class PageStack {
         })
     }
 
+    // TODO: Don't show error modal when poll-delay poll fails.  Show error bar.
     private func doChoosePhotoAction(_ spec: UploadPhotoActionSpec) async throws -> Bool {
         guard let nav = self.weakNav else {
             return false
@@ -293,58 +294,68 @@ class PageStack {
         let _ = await task.value
     }
 
+    private func fetchPageSpec(_ serverCaller: ServerCaller, pageKey: String) async throws -> PageSpec {
+        if let spec = self.config.staticPageSpec(pageKey: pageKey) {
+            return spec
+        }
+        let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
+        let update = try await serverCaller.poll(
+                pageKey: pageKey,
+                varNamesAndValues: varNamesAndValues,
+                interactive: true
+        )
+        return update.spec
+    }
 
     private func doPollAction(pageKey: String) async throws {
+        guard let serverCaller = self.weakServerCaller else {
+            return
+        }
         if self.config.staticPages[pageKey] != nil {
             // Show first page on startup.
             await self.mutex.lockAsyncAndUpdate({ state in })
             return
         }
-        guard let serverCaller = self.weakServerCaller else {
-            return
-        }
-        let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
-        let update =
-                try await serverCaller.poll(pageKey: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+        let spec = try await self.fetchPageSpec(serverCaller, pageKey: pageKey)
         await self.mutex.lockAsyncAndUpdate({ state in
-            state.set(pageKey: pageKey, update.spec)
+            state.set(pageKey: pageKey, spec)
         })
     }
 
     private func doPushAction(pageKey: String) async throws {
-        if let spec = self.config.staticPageSpec(pageKey: pageKey) {
-            try await self.mutex.lockAsyncThrowsAndUpdate({ state in
-                try state.push(pageKey: pageKey, spec)
-            })
-            return
-        }
         guard let serverCaller = self.weakServerCaller else {
             return
         }
-        let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
-        let update =
-                try await serverCaller.poll(pageKey: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+        let spec = try await self.fetchPageSpec(serverCaller, pageKey: pageKey)
         try await self.mutex.lockAsyncThrowsAndUpdate({ state in
-            try state.push(pageKey: pageKey, update.spec)
+            try state.push(pageKey: pageKey, spec)
         })
+        // TODO: Skip the extra poll when the validated input widgets' vars have no values.
+        if spec.hasValidatedInput() {
+            // Poll again, this time sending variable values so server can validate them.
+            let spec = try await self.fetchPageSpec(serverCaller, pageKey: pageKey)
+            await self.mutex.lockAsyncAndUpdate({ state in
+                state.set(pageKey: pageKey, spec)
+            })
+        }
     }
 
     private func doReplaceAllAction(pageKey: String) async throws {
-        if let spec = self.config.staticPageSpec(pageKey: pageKey) {
-            try await self.mutex.lockAsyncThrowsAndUpdate({ state in
-                state.replaceAll(pageKey: pageKey, spec)
-            })
-            return
-        }
         guard let serverCaller = self.weakServerCaller else {
             return
         }
-        let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
-        let update =
-                try await serverCaller.poll(pageKey: pageKey, varNamesAndValues: varNamesAndValues, interactive: true)
+        let spec = try await self.fetchPageSpec(serverCaller, pageKey: pageKey)
         await self.mutex.lockAsyncAndUpdate({ state in
-            state.replaceAll(pageKey: pageKey, update.spec)
+            state.replaceAll(pageKey: pageKey, spec)
         })
+        // TODO: Skip the extra poll when the validated input widgets' vars have no values.
+        if spec.hasValidatedInput() {
+            // Poll again, this time sending variable values so server can validate them.
+            let spec = try await self.fetchPageSpec(serverCaller, pageKey: pageKey)
+            await self.mutex.lockAsyncAndUpdate({ state in
+                state.set(pageKey: pageKey, spec)
+            })
+        }
     }
 
     private func doRpcAction(pageKey: String, _ url: URL) async throws {

@@ -23,12 +23,16 @@ public struct FormSectionSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.formSection(self))
+    func hasValidatedInput() -> Bool {
+        self.widgets.reduce(false, { result, spec in spec.hasValidatedInput() || result })
     }
 
     func keys() -> [String] {
         []
+    }
+
+    func newWidget() -> Widget {
+        FormSectionWidget()
     }
 
     func priority() -> WidgetPriority {
@@ -47,12 +51,8 @@ public struct FormSectionSpec: Equatable, Hashable, ToSpec {
         FormSectionWidget.self
     }
 
-    func newWidget() -> Widget {
-        FormSectionWidget()
-    }
-
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.widgets.forEach({ widget in widget.visitActions(f) })
+    public func toSpec() -> Spec {
+        Spec(.formSection(self))
     }
 }
 

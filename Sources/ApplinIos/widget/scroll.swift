@@ -24,12 +24,16 @@ public struct ScrollSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.scroll(self))
+    func hasValidatedInput() -> Bool {
+        self.widget.hasValidatedInput()
     }
 
     func keys() -> [String] {
         []
+    }
+
+    func newWidget() -> Widget {
+        ScrollWidget()
     }
 
     func priority() -> WidgetPriority {
@@ -40,20 +44,16 @@ public struct ScrollSpec: Equatable, Hashable, ToSpec {
         [self.widget]
     }
 
+    public func toSpec() -> Spec {
+        Spec(.scroll(self))
+    }
+
     func vars() -> [(String, Var)] {
         self.widget.vars()
     }
 
     func widgetClass() -> AnyClass {
         ScrollWidget.self
-    }
-
-    func newWidget() -> Widget {
-        ScrollWidget()
-    }
-
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.widget.visitActions(f)
     }
 }
 

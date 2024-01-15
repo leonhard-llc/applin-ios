@@ -8,6 +8,7 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
     let initialBool: Bool?
     let pollDelayMs: UInt32?
     let text: String?
+    let validated: Bool?
     let varName: String
 
     public init(
@@ -15,12 +16,14 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
             actions: [ActionSpec] = [],
             initialBool: Bool? = nil,
             pollDelayMs: UInt32? = nil,
-            text: String? = nil
+            text: String? = nil,
+            validated: Bool? = nil
     ) {
         self.actions = actions
         self.initialBool = initialBool
         self.pollDelayMs = pollDelayMs
         self.text = text
+        self.validated = validated
         self.varName = varName
     }
 
@@ -29,6 +32,7 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
         self.initialBool = item.initial_bool
         self.pollDelayMs = item.poll_delay_ms
         self.text = item.text
+        self.validated = item.validated
         self.varName = try item.requireVar()
     }
 
@@ -38,16 +42,21 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
         item.initial_bool = self.initialBool
         item.poll_delay_ms = self.pollDelayMs
         item.text = self.text
+        item.validated = self.validated
         item.var_name = self.varName
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.checkbox(self))
+    func hasValidatedInput() -> Bool {
+        self.validated ?? false
     }
 
     func keys() -> [String] {
         ["checkbox:\(self.varName)"]
+    }
+
+    func newWidget(_ ctx: PageContext) -> Widget {
+        CheckboxWidget(self, ctx)
     }
 
     func priority() -> WidgetPriority {
@@ -58,20 +67,16 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
         []
     }
 
-    func widgetClass() -> AnyClass {
-        CheckboxWidget.self
-    }
-
-    func newWidget(_ ctx: PageContext) -> Widget {
-        CheckboxWidget(self, ctx)
+    public func toSpec() -> Spec {
+        Spec(.checkbox(self))
     }
 
     func vars() -> [(String, Var)] {
         [(self.varName, .bool(self.initialBool ?? false))]
     }
 
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.actions.forEach(f)
+    func widgetClass() -> AnyClass {
+        CheckboxWidget.self
     }
 }
 

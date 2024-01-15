@@ -27,12 +27,16 @@ public struct ImageSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.image(self))
+    func hasValidatedInput() -> Bool {
+        false
     }
 
     func keys() -> [String] {
         ["image::\(self.url.absoluteString)"]
+    }
+
+    func newWidget() -> Widget {
+        ImageWidget(aspectRatio: self.aspectRatio)
     }
 
     func priority() -> WidgetPriority {
@@ -43,19 +47,16 @@ public struct ImageSpec: Equatable, Hashable, ToSpec {
         []
     }
 
-    func widgetClass() -> AnyClass {
-        ImageWidget.self
-    }
-
-    func newWidget() -> Widget {
-        ImageWidget(aspectRatio: self.aspectRatio)
+    public func toSpec() -> Spec {
+        Spec(.image(self))
     }
 
     func vars() -> [(String, Var)] {
         []
     }
 
-    func visitActions(_ f: (ActionSpec) -> ()) {
+    func widgetClass() -> AnyClass {
+        ImageWidget.self
     }
 }
 

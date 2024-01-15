@@ -17,6 +17,7 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
     let maxLines: UInt32?
     let minChars: UInt32?
     let pollDelayMs: UInt32?
+    let validated: Bool?
     let varName: String
 
     public init(
@@ -29,7 +30,8 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
             maxChars: UInt32? = nil,
             maxLines: UInt32? = nil,
             minChars: UInt32? = nil,
-            pollDelayMs: UInt32? = nil
+            pollDelayMs: UInt32? = nil,
+            validated: Bool? = nil
     ) throws {
         self.allow = allow
         self.autoCapitalize = autoCapitalize
@@ -40,6 +42,7 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
         self.maxLines = maxLines
         self.minChars = minChars
         self.pollDelayMs = pollDelayMs
+        self.validated = validated
         self.varName = varName
     }
 
@@ -53,6 +56,7 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
         self.maxLines = item.max_lines
         self.minChars = item.min_chars
         self.pollDelayMs = item.poll_delay_ms
+        self.validated = item.validated
         self.varName = try item.requireVar()
     }
 
@@ -67,12 +71,13 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
         item.max_lines = self.maxLines
         item.min_chars = self.minChars
         item.poll_delay_ms = self.pollDelayMs
+        item.validated = self.validated
         item.var_name = self.varName
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.textfield(self))
+    func hasValidatedInput() -> Bool {
+        self.validated ?? false
     }
 
     func keys() -> [String] {
@@ -83,6 +88,10 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
         self.allow?.keyboardType() ?? .default
     }
 
+    func newWidget(_ ctx: PageContext) -> Widget {
+        TextfieldWidget(ctx, self)
+    }
+
     func priority() -> WidgetPriority {
         .focusable
     }
@@ -91,19 +100,16 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
         []
     }
 
+    public func toSpec() -> Spec {
+        Spec(.textfield(self))
+    }
+
     func vars() -> [(String, Var)] {
         [(self.varName, .string(self.initialString ?? ""))]
     }
 
     func widgetClass() -> AnyClass {
         TextfieldWidget.self
-    }
-
-    func newWidget(_ ctx: PageContext) -> Widget {
-        TextfieldWidget(ctx, self)
-    }
-
-    func visitActions(_ f: (ActionSpec) -> ()) {
     }
 }
 

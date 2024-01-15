@@ -24,12 +24,16 @@ public struct ButtonSpec: Equatable, Hashable, ToSpec {
         return item
     }
 
-    public func toSpec() -> Spec {
-        Spec(.button(self))
+    func hasValidatedInput() -> Bool {
+        false
     }
 
     func keys() -> [String] {
         ["button:\(self.actions)", "button:\(self.text)"]
+    }
+
+    func newWidget(_ ctx: PageContext) -> Widget {
+        ButtonWidget(self, ctx)
     }
 
     func priority() -> WidgetPriority {
@@ -40,20 +44,16 @@ public struct ButtonSpec: Equatable, Hashable, ToSpec {
         []
     }
 
-    func widgetClass() -> AnyClass {
-        ButtonWidget.self
-    }
-
-    func newWidget(_ ctx: PageContext) -> Widget {
-        ButtonWidget(self, ctx)
+    public func toSpec() -> Spec {
+        Spec(.button(self))
     }
 
     func vars() -> [(String, Var)] {
         []
     }
 
-    func visitActions(_ f: (ActionSpec) -> ()) {
-        self.actions.forEach(f)
+    func widgetClass() -> AnyClass {
+        ButtonWidget.self
     }
 }
 
