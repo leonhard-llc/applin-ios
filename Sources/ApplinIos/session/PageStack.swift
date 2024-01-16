@@ -258,9 +258,16 @@ class PageStack {
         guard let nav = self.weakNav else {
             return false
         }
+        #if targetEnvironment(simulator)
+        Self.logger.info("We are running in Simulator, which has no camera support, so we pick a photo instead.")
+        guard let uiImage = try await PhotoPicker.pick(nav) else {
+            return false
+        }
+        #else
         guard let uiImage = try await PhotoTaker.take(nav) else {
             return false
         }
+        #endif
         return try await self.uploadImage(uiImage, spec)
     }
 
