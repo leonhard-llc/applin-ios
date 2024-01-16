@@ -108,7 +108,14 @@ public struct SelectorSpec: Equatable, Hashable, ToSpec {
     }
 
     func vars() -> [(String, Var)] {
-        [(self.varName, .string(self.initialString ?? ""))]
+        var result = [(self.varName, Var.string(self.initialString ?? ""))]
+        if let varName1 = self.varName1 {
+            result.append((varName1, Var.string(self.initialString1 ?? "")))
+        }
+        if let varName2 = self.varName2 {
+            result.append((varName2, Var.string(self.initialString2 ?? "")))
+        }
+        return result
     }
 
     func widgetClass() -> AnyClass {
