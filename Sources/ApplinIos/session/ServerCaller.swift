@@ -123,8 +123,51 @@ class ServerCaller {
         )
         urlRequest.httpMethod = method.toString()
         if method == .POST {
-            let vars: [(String, JSON)] = varNamesAndValues.map({ (name, value) in (name, value.toJson()) })
-            let jsonBody: [String: JSON] = vars.toDictionary()
+            var jsonBody: [String: JSON] = [:]
+            for (name, value) in varNamesAndValues {
+                func split(_ name: String, sep: Character) throws -> (String, String) {
+                    let parts = name.split(maxSplits: 2, whereSeparator: { c in c == sep })
+                    guard let part0 = parts.get(0),
+                          let part1 = parts.get(1)
+                    else {
+                        throw ApplinError.appError("invalid var_name: \(String(reflecting: name))")
+                    }
+                    return (String(part0), String(part1))
+                }
+
+                func nameConflict(varNamesAndValues: [(String, Var)]) throws {
+                    throw ApplinError.appError("multiple vars resolve to name \(String(reflecting: name)): \(String(reflecting: varNamesAndValues.map({ (name, _) in name })))")
+                }
+
+                if name.contains("%") {
+                    // var_name "ids%123" -> {"ids":["123"]}
+                    let (arrayName, arrayValue) = try split(name, sep: "%")
+                    switch jsonBody[arrayName] {
+                    case var .array(array):
+                        array.append(JSON.string(arrayValue))
+                        jsonBody[arrayName] = .array(array)
+                    case nil:
+                        jsonBody[arrayName] = .array([JSON.string(arrayValue)])
+                    default:
+                        try nameConflict(varNamesAndValues: varNamesAndValues)
+                    }
+                } else if name.contains("#") {
+                    // var_name="ids#123" value=true -> {"ids":{"123":true}}
+                    let (objName, key) = try split(name, sep: "#")
+                    switch jsonBody[objName] {
+                    case var .object(obj):
+                        obj[key] = value.toJson()
+                        jsonBody[objName] = .object(obj)
+                    case nil:
+                        jsonBody[objName] = .object([key: value.toJson()])
+                    default:
+                        try nameConflict(varNamesAndValues: varNamesAndValues)
+                    }
+                } else {
+                    // var_name="id" value="123" -> {"id":"123"}
+                    jsonBody[name] = value.toJson()
+                }
+            }
             let body = try encodeJson(jsonBody)
             urlRequest.httpBody = body
             urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
