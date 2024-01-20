@@ -68,9 +68,8 @@ public class ApplinApp {
         self.pageStack!.weakServerCaller = self.serverCaller
         self.poller = Poller(self.config, self.pageStack, self.serverCaller, self.wallClock)
         self.stateFileOwner = StateFileOwner(self.config, self.varSet, self.pageStack)
-        let lastPageKey = pageKeys.last!
         Task {
-            await self.pageStack!.doActions(pageKey: lastPageKey, [.poll])
+            await self.pageStack!.doActions([.poll])
         }
         return true
     }
@@ -85,12 +84,12 @@ public class ApplinApp {
             }
             if pageStack.nonEphemeralStackPageKeys() == customUrl.pageKeys {
                 // Page is already visible.  Poll it.
-                let _ = await self.pageStack?.doActions(pageKey: "", [.poll])
+                let _ = await self.pageStack?.doActions([.poll])
                 return
             }
             let firstAction = [ActionSpec.replaceAll(customUrl.pageKeys.first!)]
             let otherActions = customUrl.pageKeys.dropFirst().map({ pageKey in ActionSpec.push(pageKey) })
-            let _ = await self.pageStack?.doActions(pageKey: "", firstAction + otherActions)
+            let _ = await self.pageStack?.doActions(firstAction + otherActions)
         }
     }
 

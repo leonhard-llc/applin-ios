@@ -156,7 +156,7 @@ class CheckboxWidget: Widget {
         varSet.set(self.spec.varName, .bool(newValue))
         self.updateButton(checked: newValue, title: self.spec.text)
         if !self.spec.actions.isEmpty {
-            let ok = await pageStack.doActions(pageKey: self.ctx.pageKey, self.spec.actions)
+            let ok = await pageStack.doActions(self.spec.actions)
             if !ok {
                 varSet.setBool(self.spec.varName, originalVarValue)
                 self.updateButton(checked: !newValue, title: self.spec.text)

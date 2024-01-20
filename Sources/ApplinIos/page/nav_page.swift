@@ -133,7 +133,7 @@ class NavPageController: UIViewController, UINavigationBarDelegate, PageControll
             inner.tap(self.ctx)
         case .defaultBackButton:
             Task {
-                let _ = await self.ctx.pageStack?.doActions(pageKey: self.ctx.pageKey, [.pop])
+                let _ = await self.ctx.pageStack?.doActions([.pop])
             }
         case .empty:
             break

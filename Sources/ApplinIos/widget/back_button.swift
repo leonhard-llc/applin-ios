@@ -45,7 +45,7 @@ public struct BackButtonSpec: Equatable, Hashable {
     func tap(_ ctx: PageContext) {
         Self.logger.dbg("\(String(describing: self)) tap")
         Task {
-            await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.actions)
+            await ctx.pageStack?.doActions(self.actions)
         }
     }
 

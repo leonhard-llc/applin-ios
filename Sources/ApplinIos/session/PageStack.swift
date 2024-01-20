@@ -271,7 +271,7 @@ class PageStack {
         return try await self.uploadImage(uiImage, spec)
     }
 
-    private func doModalAction(pageKey: String, _ spec: ModalActionSpec) async throws {
+    private func doModalAction(_ spec: ModalActionSpec) async throws {
         let task = Task<(), Never> { @MainActor in
             guard let nav = self.weakNav else {
                 return
@@ -291,7 +291,7 @@ class PageStack {
                         style: style,
                         handler: { _ in
                             Task {
-                                await self.doActions(pageKey: pageKey, button.actions)
+                                await self.doActions(button.actions)
                             }
                         }
                 ))
@@ -314,8 +314,10 @@ class PageStack {
         return update.spec
     }
 
-    private func doPollAction(pageKey: String) async throws {
-        guard let serverCaller = self.weakServerCaller else {
+    private func doPollAction() async throws {
+        guard let serverCaller = self.weakServerCaller,
+              let pageKey = self.topPageKey()
+        else {
             return
         }
         if self.config.staticPages[pageKey] != nil {
@@ -365,8 +367,10 @@ class PageStack {
         }
     }
 
-    private func doRpcAction(pageKey: String, _ url: URL) async throws {
-        guard let serverCaller = self.weakServerCaller else {
+    private func doRpcAction(_ url: URL) async throws {
+        guard let serverCaller = self.weakServerCaller,
+              let pageKey = self.topPageKey()
+        else {
             return
         }
         let varNamesAndValues = self.varNamesAndValues(pageKey: pageKey)
@@ -378,7 +382,7 @@ class PageStack {
         )
     }
 
-    private func doAction(pageKey: String, _ action: ActionSpec) async throws -> Bool {
+    private func doAction(_ action: ActionSpec) async throws -> Bool {
         Self.logger.info("action \(action.description)")
         switch action {
         case let .choosePhoto(spec):
@@ -396,9 +400,9 @@ class PageStack {
             self.weakVarSet?.removeAll()
             try await self.doReplaceAllAction(pageKey: config.showPageOnFirstStartup)
         case let .modal(spec):
-            try await self.doModalAction(pageKey: pageKey, spec)
+            try await self.doModalAction(spec)
         case .poll:
-            try await self.doPollAction(pageKey: pageKey)
+            try await self.doPollAction()
         case .pop:
             try await self.mutex.lockAsyncThrowsAndUpdate({ state in
                 try state.pop()
@@ -409,10 +413,10 @@ class PageStack {
             try await self.doReplaceAllAction(pageKey: pageKey)
         case let .rpc(spec):
             do {
-                try await self.doRpcAction(pageKey: pageKey, spec.url)
+                try await self.doRpcAction(spec.url)
             } catch let e as ApplinError {
                 if case .userError = e, spec.on_user_error_poll ?? false {
-                    let _ = try? await self.doPollAction(pageKey: pageKey)
+                    let _ = try? await self.doPollAction()
                 }
                 throw e
             }
@@ -423,14 +427,14 @@ class PageStack {
         return true
     }
 
-    func doActions(pageKey: String, _ actions: [ActionSpec], showWorking: Bool? = nil) async -> Bool {
+    func doActions(_ actions: [ActionSpec], showWorking: Bool? = nil) async -> Bool {
         await self.lock.lockAsync({
             await self.handleInteractiveError({
                 let showWorkingForActions = actions.contains(where: { action in action.showWorking })
                 if showWorking ?? showWorkingForActions {
                     return try await self.withWorking({ () in
                         for action in actions {
-                            let success = try await self.doAction(pageKey: pageKey, action)
+                            let success = try await self.doAction(action)
                             if !success {
                                 return false
                             }
@@ -439,7 +443,7 @@ class PageStack {
                     })
                 } else {
                     for action in actions {
-                        let success = try await self.doAction(pageKey: pageKey, action)
+                        let success = try await self.doAction(action)
                         if !success {
                             return false
                         }

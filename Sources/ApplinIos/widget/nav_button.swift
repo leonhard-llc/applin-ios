@@ -231,7 +231,7 @@ class NavButtonWidget: Widget {
     @objc func tap() {
         Self.logger.dbg("tap")
         Task {
-            let _ = await self.ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.spec.actions)
+            let _ = await self.ctx.pageStack?.doActions(self.spec.actions)
         }
     }
 

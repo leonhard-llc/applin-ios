@@ -22,12 +22,9 @@ class ForegroundPoller {
             guard let pageStack = self.weakPageStack else {
                 return
             }
-            guard let pageKey = pageStack.topPageKey() else {
-                return
-            }
             Self.logger.dbg("poll")
             // TODO: Retry failed polls.
-            let _ = await pageStack.doActions(pageKey: pageKey, [.poll], showWorking: false)
+            let _ = await pageStack.doActions([.poll], showWorking: false)
         })
     }
 

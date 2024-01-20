@@ -86,7 +86,7 @@ class ButtonWidget: Widget {
     func tap() {
         Self.logger.info("tap")
         Task {
-            await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.spec.actions)
+            await ctx.pageStack?.doActions(self.spec.actions)
         }
     }
 

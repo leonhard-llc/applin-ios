@@ -136,7 +136,7 @@ class ScrollWidget: Widget {
         }
         Self.logger.info("refresh pageKey=\(pageKey)")
         Task(priority: .userInitiated) { @MainActor
-            let _ = await pageStack.doActions(pageKey: pageKey, [.poll], showWorking: false)
+            let _ = await pageStack.doActions([.poll], showWorking: false)
             await self.refreshControl.endRefreshing()
         }
     }

@@ -110,7 +110,7 @@ class FormButtonWidget: Widget {
         }
         Task {
             Self.logger.info("tap")
-            let _ = await ctx.pageStack?.doActions(pageKey: ctx.pageKey, self.spec.actions)
+            let _ = await ctx.pageStack?.doActions(self.spec.actions)
         }
     }
 
