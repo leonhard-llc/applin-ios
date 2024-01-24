@@ -401,6 +401,7 @@ class PageStack {
             try await self.doReplaceAllAction(pageKey: config.showPageOnFirstStartup)
         case let .modal(spec):
             try await self.doModalAction(spec)
+            return false
         case .poll:
             try await self.doPollAction()
         case .pop:
