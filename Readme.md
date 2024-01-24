@@ -30,6 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## Changes
+- v0.35.0
+    - Add `stop_actions` action.
 - v0.34.0
     - `modal` action to stop action processing.
     - Support '%' and '#' in `var_name`.

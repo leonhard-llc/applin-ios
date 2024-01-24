@@ -33,6 +33,7 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
     // TODO: Add push-preload.
     case replaceAll(String)
     case rpc(RpcActionSpec)
+    case stopActions
     case takePhoto(UploadPhotoActionSpec)
     case modal(ModalActionSpec)
     // TODO: Add a `confirm:MESSAGE` action.
@@ -78,6 +79,8 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
                     url: try jsonAction.requireRelativeUrl(config),
                     on_user_error_poll: jsonAction.on_user_error_poll
             ))
+        case "stop_actions":
+            self = .stopActions
         case "take_photo":
             self = .takePhoto(UploadPhotoActionSpec(
                     url: try jsonAction.requireRelativeUrl(config),
@@ -133,6 +136,8 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
             jsonAction.url = spec.url.absoluteString
             jsonAction.on_user_error_poll = spec.on_user_error_poll
             return jsonAction
+        case .stopActions:
+            return JsonAction(typ: "stop_actions")
         case let .takePhoto(spec):
             let jsonAction = JsonAction(typ: "take_photo")
             jsonAction.aspect_ratio = spec.aspect_ratio
@@ -163,6 +168,8 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
             return "replaceAll(\(pageKey))"
         case let .rpc(spec):
             return "rpc(\(spec.url.relativeString),on_user_error_poll=\(spec.on_user_error_poll?.description ?? "null")"
+        case .stopActions:
+            return "stop_actions"
         case let .takePhoto(spec):
             return "takePhoto(url=\(spec.url.absoluteString),aspect_ratio=\(spec.aspect_ratio?.description ?? "")"
         }
@@ -170,7 +177,7 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
 
     var showWorking: Bool {
         switch self {
-        case .choosePhoto, .copyToClipboard, .launchUrl, .logout, .modal, .pop, .takePhoto:
+        case .choosePhoto, .copyToClipboard, .launchUrl, .logout, .modal, .pop, .stopActions, .takePhoto:
             return false
         case .poll, .push, .replaceAll, .rpc:
             return true

@@ -421,7 +421,8 @@ class PageStack {
                 }
                 throw e
             }
-
+        case .stopActions:
+            return false
         case let .takePhoto(spec):
             return try await self.doTakePhotoAction(spec)
         }
