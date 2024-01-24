@@ -18,6 +18,7 @@ class WorkingView: UIView {
 
         let backAction = UIAction(title: "    Cancel    ", handler: { _ in
             Self.logger.dbg("cancel")
+            // TODO: Stop photo upload when cancelling.
             task?.cancel()
         })
         self.cancelButton = UIButton(type: .system, primaryAction: backAction)

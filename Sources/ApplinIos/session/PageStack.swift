@@ -193,6 +193,10 @@ class PageStack {
             }
             return result
         }
+
+        func update() async {
+            try! await self.lockAsyncThrowsAndUpdate({ _ in })
+        }
     }
 
     private var lock = ApplinLock()
@@ -222,7 +226,7 @@ class PageStack {
     private func uploadImage(_ image: UIImage, _ spec: UploadPhotoActionSpec) async throws -> Bool {
         // TODO: Allow user to retry a failed upload.
         let data: Data
-        if let aspectRatio = spec.aspect_ratio {
+        if let aspectRatio = spec.aspectRatio {
             guard let nav = self.weakNav,
                   let jpegData = try await PhotoEditor.edit(nav, image, aspectRatio: aspectRatio)
             else {
@@ -367,6 +371,14 @@ class PageStack {
         }
     }
 
+    private func doResetVarAction(varName: String) async {
+        guard let varSet = self.weakVarSet else {
+            return
+        }
+        varSet.set(varName, nil)
+        await self.mutex.update()
+    }
+
     private func doRpcAction(_ url: URL) async throws {
         guard let serverCaller = self.weakServerCaller,
               let pageKey = self.topPageKey()
@@ -412,11 +424,13 @@ class PageStack {
             try await self.doPushAction(pageKey: pageKey)
         case let .replaceAll(pageKey):
             try await self.doReplaceAllAction(pageKey: pageKey)
+        case let .resetVar(spec):
+            await self.doResetVarAction(varName: spec.varName)
         case let .rpc(spec):
             do {
                 try await self.doRpcAction(spec.url)
             } catch let e as ApplinError {
-                if case .userError = e, spec.on_user_error_poll ?? false {
+                if case .userError = e, spec.onUserErrorPoll ?? false {
                     let _ = try? await self.doPollAction()
                 }
                 throw e

@@ -12,14 +12,18 @@ public struct ModalActionSpec: Equatable, Hashable {
     let buttons: [ModalButtonSpec]
 }
 
+public struct ResetVarActionSpec: Equatable, Hashable {
+    let varName: String
+}
+
 public struct RpcActionSpec: Equatable, Hashable {
     let url: URL
-    let on_user_error_poll: Bool?
+    let onUserErrorPoll: Bool?
 }
 
 public struct UploadPhotoActionSpec: Equatable, Hashable {
     let url: URL
-    let aspect_ratio: Float32?
+    let aspectRatio: Float32?
 }
 
 public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
@@ -32,6 +36,7 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
     case push(String)
     // TODO: Add push-preload.
     case replaceAll(String)
+    case resetVar(ResetVarActionSpec)
     case rpc(RpcActionSpec)
     case stopActions
     case takePhoto(UploadPhotoActionSpec)
@@ -49,7 +54,7 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
         case "choose_photo":
             self = .choosePhoto(UploadPhotoActionSpec(
                     url: try jsonAction.requireRelativeUrl(config),
-                    aspect_ratio: jsonAction.aspect_ratio
+                    aspectRatio: jsonAction.aspect_ratio
             ))
         case "copy_to_clipboard":
             self = .copyToClipboard(try jsonAction.requireStringValue())
@@ -74,17 +79,21 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
             self = .push(try jsonAction.requirePage())
         case "replace_all":
             self = .replaceAll(try jsonAction.requirePage())
+        case "reset_var":
+            self = .resetVar(ResetVarActionSpec(
+                    varName: try jsonAction.requireVarName()
+            ))
         case "rpc":
             self = .rpc(RpcActionSpec(
                     url: try jsonAction.requireRelativeUrl(config),
-                    on_user_error_poll: jsonAction.on_user_error_poll
+                    onUserErrorPoll: jsonAction.on_user_error_poll
             ))
         case "stop_actions":
             self = .stopActions
         case "take_photo":
             self = .takePhoto(UploadPhotoActionSpec(
                     url: try jsonAction.requireRelativeUrl(config),
-                    aspect_ratio: jsonAction.aspect_ratio
+                    aspectRatio: jsonAction.aspect_ratio
             ))
         default:
             throw ApplinError.appError("unexpected action 'typ' value: \(jsonAction.typ)")
@@ -95,7 +104,7 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
         switch self {
         case let .choosePhoto(spec):
             let jsonAction = JsonAction(typ: "choose_photo")
-            jsonAction.aspect_ratio = spec.aspect_ratio
+            jsonAction.aspect_ratio = spec.aspectRatio
             jsonAction.url = spec.url.absoluteString
             return jsonAction
         case let .copyToClipboard(string_value):
@@ -131,16 +140,20 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
             let jsonAction = JsonAction(typ: "replace_all")
             jsonAction.page = pageKey
             return jsonAction
+        case let .resetVar(spec):
+            let jsonAction = JsonAction(typ: "reset_var")
+            jsonAction.var_name = spec.varName
+            return jsonAction
         case let .rpc(spec):
             let jsonAction = JsonAction(typ: "rpc")
             jsonAction.url = spec.url.absoluteString
-            jsonAction.on_user_error_poll = spec.on_user_error_poll
+            jsonAction.on_user_error_poll = spec.onUserErrorPoll
             return jsonAction
         case .stopActions:
             return JsonAction(typ: "stop_actions")
         case let .takePhoto(spec):
             let jsonAction = JsonAction(typ: "take_photo")
-            jsonAction.aspect_ratio = spec.aspect_ratio
+            jsonAction.aspect_ratio = spec.aspectRatio
             jsonAction.url = spec.url.absoluteString
             return jsonAction
         }
@@ -149,7 +162,7 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
     public var description: String {
         switch self {
         case let .choosePhoto(spec):
-            return "choosePhoto(url=\(spec.url.relativeString),aspect_ratio=\(spec.aspect_ratio?.description ?? "")"
+            return "choosePhoto(url=\(spec.url.relativeString),aspect_ratio=\(spec.aspectRatio?.description ?? "")"
         case let .copyToClipboard(string_value):
             return "copyToClipboard(\(string_value))"
         case let .launchUrl(url):
@@ -166,18 +179,20 @@ public indirect enum ActionSpec: CustomStringConvertible, Equatable, Hashable {
             return "push(\(pageKey))"
         case let .replaceAll(pageKey):
             return "replaceAll(\(pageKey))"
+        case let .resetVar(spec):
+            return "reset_var(\(spec.varName))"
         case let .rpc(spec):
-            return "rpc(\(spec.url.relativeString),on_user_error_poll=\(spec.on_user_error_poll?.description ?? "null")"
+            return "rpc(\(spec.url.relativeString),on_user_error_poll=\(spec.onUserErrorPoll?.description ?? "null")"
         case .stopActions:
             return "stop_actions"
         case let .takePhoto(spec):
-            return "takePhoto(url=\(spec.url.absoluteString),aspect_ratio=\(spec.aspect_ratio?.description ?? "")"
+            return "takePhoto(url=\(spec.url.absoluteString),aspect_ratio=\(spec.aspectRatio?.description ?? "")"
         }
     }
 
     var showWorking: Bool {
         switch self {
-        case .choosePhoto, .copyToClipboard, .launchUrl, .logout, .modal, .pop, .stopActions, .takePhoto:
+        case .choosePhoto, .copyToClipboard, .launchUrl, .logout, .modal, .pop, .resetVar, .stopActions, .takePhoto:
             return false
         case .poll, .push, .replaceAll, .rpc:
             return true

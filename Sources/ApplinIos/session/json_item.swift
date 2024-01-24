@@ -180,6 +180,7 @@ class JsonAction: Codable {
     var string_value: String?
     var title: String?
     var url: String?
+    var var_name: String?
 
     public init(typ: String) {
         self.typ = typ
@@ -206,18 +207,18 @@ class JsonAction: Codable {
         return value
     }
 
-    func requireTitle() throws -> String {
-        guard let title = self.title else {
-            throw ApplinError.appError("missing \(self.typ).title")
-        }
-        return title
-    }
-
     func requireRelativeUrl(_ config: ApplinConfig) throws -> URL {
         guard let string = self.url else {
             throw ApplinError.appError("missing \(self.typ).url")
         }
         return try config.relativeUrl(url: string)
+    }
+
+    func requireTitle() throws -> String {
+        guard let title = self.title else {
+            throw ApplinError.appError("missing \(self.typ).title")
+        }
+        return title
     }
 
     func requireUrl() throws -> URL {
@@ -229,6 +230,13 @@ class JsonAction: Codable {
             throw ApplinError.appError("failed parsing \(self.typ).url \(String(reflecting: string))")
         }
         return url
+    }
+
+    func requireVarName() throws -> String {
+        guard let varName = self.var_name else {
+            throw ApplinError.appError("missing \(self.typ).var_name")
+        }
+        return varName
     }
 }
 
