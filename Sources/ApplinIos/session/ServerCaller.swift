@@ -165,6 +165,9 @@ class ServerCaller {
                     }
                 } else {
                     // var_name="id" value="123" -> {"id":"123"}
+                    if jsonBody[name] != nil {
+                        try nameConflict(varNamesAndValues: varNamesAndValues)
+                    }
                     jsonBody[name] = value.toJson()
                 }
             }
