@@ -30,6 +30,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## Changes
+- v0.34.0
+    - `modal` action to stop action processing.
+    - Support '%' and '#' in `var_name`.
+    - Bugfixes
+- v0.33.0
+    - Add support for the `validated: true` attribute on input widgets.
 - v0.32.0
     - Bugfixes.
 - v0.31.0
