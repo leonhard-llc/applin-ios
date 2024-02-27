@@ -60,8 +60,7 @@ class ColumnView: UIView {
         var newConstraints: [NSLayoutConstraint] = []
         // Top
         if let first = subviews.first {
-            let topGap = CGFloat(self.separatorThickness() ?? 0.0)
-            newConstraints.append(first.topAnchor.constraint(equalTo: self.topAnchor, constant: topGap))
+            newConstraints.append(first.topAnchor.constraint(equalTo: self.topAnchor))
         }
         // Between
         for (n, a) in subviews.dropLast(1).enumerated() {
@@ -70,9 +69,8 @@ class ColumnView: UIView {
         }
         // Bottom
         if let last = subviews.last {
-            let bottomGap = CGFloat(0.0 - (self.separatorThickness() ?? 0.0))
             newConstraints.append(last.bottomAnchor.constraint(equalTo: self.topAnchor).withPriority(UILayoutPriority(0.001)))
-            newConstraints.append(last.bottomAnchor.constraint(lessThanOrEqualTo: self.bottomAnchor, constant: bottomGap))
+            newConstraints.append(last.bottomAnchor.constraint(lessThanOrEqualTo: self.bottomAnchor))
         }
         // Left, Right, and Alignment
         for view in subviews {
@@ -103,20 +101,10 @@ class ColumnView: UIView {
             ctx.setLineWidth(CGFloat(SEPARATOR_THICKNESS))
             ctx.setStrokeColor(color.cgColor)
             ctx.beginPath()
-            if let first = self.orderedSubviews.first, let sepThickness = self.separatorThickness() {
-                let y = first.frame.minY - CGFloat(sepThickness / 2.0)
-                ctx.move(to: CGPoint(x: left, y: y))
-                ctx.addLine(to: CGPoint(x: right, y: y))
-            }
             for (n, a) in self.orderedSubviews.dropLast(1).enumerated() {
                 let b = self.orderedSubviews[n + 1]
                 let y = (a.frame.maxY + b.frame.minY) / 2.0
                 //Self.logger.trace("draw (\(left), \(y)) -> (\(right), \(y))")
-                ctx.move(to: CGPoint(x: left, y: y))
-                ctx.addLine(to: CGPoint(x: right, y: y))
-            }
-            if let last = self.orderedSubviews.last, let sepThickness = self.separatorThickness() {
-                let y = last.frame.maxY + CGFloat(sepThickness / 2.0)
                 ctx.move(to: CGPoint(x: left, y: y))
                 ctx.addLine(to: CGPoint(x: right, y: y))
             }

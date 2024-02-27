@@ -69,7 +69,7 @@ class FormSectionWidget: Widget {
 
         self.header = NamedUIView(name: "FormSectionWidget.header")
         self.header.translatesAutoresizingMaskIntoConstraints = false
-        self.header.backgroundColor = .systemGroupedBackground
+        self.header.isOpaque = false
         self.container.addSubview(self.header)
 
         self.label = Label()
@@ -83,7 +83,9 @@ class FormSectionWidget: Widget {
 
         self.columnView = ColumnView()
         self.columnView.translatesAutoresizingMaskIntoConstraints = false
-        //self.columnView.backgroundColor = pastelMint
+        self.columnView.backgroundColor = .systemBackground
+        self.columnView.layer.cornerRadius = 14.0
+        self.columnView.clipsToBounds = true
         self.container.addSubview(self.columnView)
 
         NSLayoutConstraint.activate([
@@ -94,14 +96,14 @@ class FormSectionWidget: Widget {
             self.header.topAnchor.constraint(equalTo: self.container.topAnchor),
             self.header.heightAnchor.constraint(greaterThanOrEqualToConstant: 16.0),
             self.header.bottomAnchor.constraint(lessThanOrEqualTo: self.container.bottomAnchor),
-            self.label.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 8.0),
-            self.label.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -8.0),
+            self.label.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 16.0),
+            self.label.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -16.0),
             self.label.topAnchor.constraint(equalTo: self.container.topAnchor, constant: 12.0),
             self.label.bottomAnchor.constraint(equalTo: self.header.bottomAnchor, constant: -4.0),
-            self.columnView.leftAnchor.constraint(equalTo: self.container.leftAnchor),
-            self.columnView.rightAnchor.constraint(equalTo: self.container.rightAnchor),
+            self.columnView.leftAnchor.constraint(equalTo: self.container.leftAnchor, constant: 8.0),
+            self.columnView.rightAnchor.constraint(equalTo: self.container.rightAnchor, constant: -8.0),
             self.columnView.topAnchor.constraint(equalTo: self.header.bottomAnchor),
-            self.columnView.bottomAnchor.constraint(equalTo: self.container.bottomAnchor),
+            self.columnView.bottomAnchor.constraint(equalTo: self.container.bottomAnchor, constant: -8.0),
         ])
     }
 

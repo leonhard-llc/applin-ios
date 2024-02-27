@@ -62,7 +62,8 @@ class FormWidget: Widget {
     init() {
         self.columnView = ColumnView()
         self.columnView.translatesAutoresizingMaskIntoConstraints = false
-        //self.columnView.backgroundColor = pastelMint
+        self.columnView.backgroundColor = .systemGroupedBackground
+        self.columnView.isOpaque = true
         NSLayoutConstraint.activate([
             self.columnView.widthAnchor.constraint(equalToConstant: 100_000.0).withPriority(.fittingSizeLevel),
             self.columnView.heightAnchor.constraint(equalToConstant: 0.0).withPriority(.fittingSizeLevel),
@@ -83,8 +84,8 @@ class FormWidget: Widget {
         }
         self.columnView.update(
                 .start,
-                separator: .separator,
-                spacing: 0.0,
+                separator: nil,
+                spacing: 8.0,
                 subviews: subs.map { widget in
                     widget.getView()
                 }

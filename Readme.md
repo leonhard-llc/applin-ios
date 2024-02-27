@@ -30,16 +30,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## Changes
-- v0.35.0
-    - Add `stop_actions` action.
+- v0.36.0 - Update form_section to modern style.  Make form background dark and remove separators.
+- v0.35.0 - Add `stop_actions` action.
 - v0.34.0
     - `modal` action to stop action processing.
     - Support '%' and '#' in `var_name`.
     - Bugfixes
-- v0.33.0
-    - Add support for the `validated: true` attribute on input widgets.
-- v0.32.0
-    - Bugfixes.
+- v0.33.0 - Add support for the `validated: true` attribute on input widgets.
+- v0.32.0 - Bugfixes.
 - v0.31.0
     - Add `modal` action.
     - Change the wire format of action definitions from strings to JSON objects.

@@ -39,7 +39,7 @@ public class StaticPages {
                 // TODO: Include error code in title.
                 title: "Error",
                 ephemeral: true,
-                ScrollSpec(pull_to_refresh: false, FormSpec([
+                ScrollSpec(pull_to_refresh: false, ColumnSpec([
                     ErrorTextSpec("Error in app.  Please try again, quit and reopen the app. or update the app."),
                     FormButtonSpec(text: "Update App", [.launchUrl(config.appstoreUrl())]),
                     FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
@@ -53,7 +53,7 @@ public class StaticPages {
                 pageKey: pageKey,
                 title: "Connection Problem",
                 ephemeral: true,
-                ScrollSpec(pull_to_refresh: false, FormSpec([
+                ScrollSpec(pull_to_refresh: false, ColumnSpec([
                     ErrorTextSpec("Could not contact server.  Check your connection and try again."),
                     FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
                     FormButtonSpec(text: "Server Status", [.push(StaticPageKeys.SERVER_STATUS)]),
@@ -68,7 +68,7 @@ public class StaticPages {
                 pageKey: pageKey,
                 title: "Error",
                 ephemeral: true,
-                ScrollSpec(pull_to_refresh: false, FormSpec([
+                ScrollSpec(pull_to_refresh: false, ColumnSpec([
                     ErrorTextSpec("Problem talking to server.  Please try again or update the app."),
                     FormButtonSpec(text: "Error Details", [.push(StaticPageKeys.ERROR_DETAILS)]),
                     FormButtonSpec(text: "Server Status", [.push(StaticPageKeys.SERVER_STATUS)]),
@@ -83,7 +83,7 @@ public class StaticPages {
                 pageKey: pageKey,
                 title: "Connect to Load App",
                 ephemeral: true,
-                FormSpec([
+                ColumnSpec([
                     FormButtonSpec(text: "Connect", [.poll]),
                 ])
         )
@@ -94,7 +94,7 @@ public class StaticPages {
                 pageKey: pageKey,
                 title: "Problem",
                 ephemeral: true,
-                ScrollSpec(pull_to_refresh: false, FormSpec([
+                ScrollSpec(pull_to_refresh: false, ColumnSpec([
                     ErrorTextSpec("${INTERACTIVE_ERROR_DETAILS}"),
                 ]))
         )
@@ -148,7 +148,9 @@ public class StaticPages {
         }
         return NavPageSpec(pageKey: pageKey, title: "Support",
                 ScrollSpec(pull_to_refresh: false,
-                        FormSpec(buttons)
+                        FormSpec([
+                            FormSectionSpec("", buttons)
+                        ])
                 )
         )
     }
