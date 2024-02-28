@@ -28,6 +28,7 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case backButton(BackButtonSpec)
         case button(ButtonSpec)
         case checkbox(CheckboxSpec)
+        case checkboxButton(CheckboxButtonSpec)
         case column(ColumnSpec)
         case empty(EmptySpec)
         case errorText(ErrorTextSpec)
@@ -64,6 +65,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
             self.value = .button(try ButtonSpec(config, item))
         case CheckboxSpec.TYP:
             self.value = .checkbox(try CheckboxSpec(config, item))
+        case CheckboxButtonSpec.TYP:
+            self.value = .checkboxButton(try CheckboxButtonSpec(config, item))
         case ColumnSpec.TYP:
             self.value = .column(try ColumnSpec(config, item))
         case EmptySpec.TYP:
@@ -104,6 +107,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .button(inner):
             return inner.toJsonItem()
         case let .checkbox(inner):
+            return inner.toJsonItem()
+        case let .checkboxButton(inner):
             return inner.toJsonItem()
         case let .column(inner):
             return inner.toJsonItem()
@@ -148,6 +153,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
             return inner.hasValidatedInput()
         case let .checkbox(inner):
             return inner.hasValidatedInput()
+        case let .checkboxButton(inner):
+            return inner.hasValidatedInput()
         case let .column(inner):
             return inner.hasValidatedInput()
         case let .empty(inner):
@@ -186,6 +193,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .button(inner):
             return inner.keys()
         case let .checkbox(inner):
+            return inner.keys()
+        case let .checkboxButton(inner):
             return inner.keys()
         case let .column(inner):
             return inner.keys()
@@ -226,6 +235,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
             return inner.priority()
         case let .checkbox(inner):
             return inner.priority()
+        case let .checkboxButton(inner):
+            return inner.priority()
         case let .column(inner):
             return inner.priority()
         case let .empty(inner):
@@ -264,6 +275,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .button(inner):
             return inner.subs()
         case let .checkbox(inner):
+            return inner.subs()
+        case let .checkboxButton(inner):
             return inner.subs()
         case let .column(inner):
             return inner.subs()
@@ -304,6 +317,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
             return inner.vars()
         case let .checkbox(inner):
             return inner.vars()
+        case let .checkboxButton(inner):
+            return inner.vars()
         case let .column(inner):
             return inner.vars()
         case let .empty(inner):
@@ -342,6 +357,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .button(inner):
             return inner.widgetClass()
         case let .checkbox(inner):
+            return inner.widgetClass()
+        case let .checkboxButton(inner):
             return inner.widgetClass()
         case let .column(inner):
             return inner.widgetClass()
@@ -382,6 +399,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
             return inner.newWidget(ctx)
         case let .checkbox(inner):
             return inner.newWidget(ctx)
+        case let .checkboxButton(inner):
+            return inner.newWidget(ctx)
         case let .column(inner):
             return inner.newWidget()
         case let .empty(inner):
@@ -420,6 +439,8 @@ public class Spec: CustomStringConvertible, Equatable, Hashable, ToSpec {
         case let .button(inner):
             return "\(inner)"
         case let .checkbox(inner):
+            return "\(inner)"
+        case let .checkboxButton(inner):
             return "\(inner)"
         case let .column(inner):
             return "\(inner)"

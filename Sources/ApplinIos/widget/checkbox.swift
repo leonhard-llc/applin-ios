@@ -56,7 +56,7 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
     }
 
     func newWidget(_ ctx: PageContext) -> Widget {
-        CheckboxWidget(self, ctx)
+        CheckboxWidget(.checkbox(self), ctx)
     }
 
     func priority() -> WidgetPriority {
@@ -80,16 +80,91 @@ public struct CheckboxSpec: Equatable, Hashable, ToSpec {
     }
 }
 
+public struct CheckboxButtonSpec: Equatable, Hashable, ToSpec {
+    static let TYP = "checkbox_button"
+    let actions: [ActionSpec]
+    let initialBool: Bool?
+    let text: String?
+
+    public init(
+            actions: [ActionSpec] = [],
+            initialBool: Bool? = nil,
+            text: String? = nil
+    ) {
+        self.actions = actions
+        self.initialBool = initialBool
+        self.text = text
+    }
+
+    init(_ config: ApplinConfig, _ item: JsonItem) throws {
+        self.actions = try item.optActions(config) ?? []
+        self.initialBool = item.initial_bool
+        self.text = item.text
+    }
+
+    func toJsonItem() -> JsonItem {
+        let item = JsonItem(CheckboxSpec.TYP)
+        item.actions = self.actions.map({ action in action.toJsonAction() })
+        item.initial_bool = self.initialBool
+        item.text = self.text
+        return item
+    }
+
+    func hasValidatedInput() -> Bool {
+        false
+    }
+
+    func keys() -> [String] {
+        var result: [String] = []
+        if !self.actions.isEmpty {
+            result.append("checkbox_button:\(self.actions)")
+        }
+        if let text = self.text {
+            result.append("checkbox_button:\(text)")
+        }
+        return result
+    }
+
+    func newWidget(_ ctx: PageContext) -> Widget {
+        CheckboxWidget(.checkboxButton(self), ctx)
+    }
+
+    func priority() -> WidgetPriority {
+        .focusable
+    }
+
+    func subs() -> [Spec] {
+        []
+    }
+
+    public func toSpec() -> Spec {
+        Spec(.checkboxButton(self))
+    }
+
+    func vars() -> [(String, Var)] {
+        []
+    }
+
+    func widgetClass() -> AnyClass {
+        CheckboxWidget.self
+    }
+}
+
+enum CheckboxWidgetSpec {
+    case checkbox(CheckboxSpec)
+    case checkboxButton(CheckboxButtonSpec)
+}
+
 class CheckboxWidget: Widget {
     static let logger = Logger(subsystem: "Applin", category: "CheckboxWidget")
     let checked = UIImage(systemName: "checkmark.square.fill")!
     let unchecked = UIImage(systemName: "square")!
     var container: TappableView
-    var spec: CheckboxSpec
+    var spec: CheckboxWidgetSpec
     var button: UIButton!
     let ctx: PageContext
 
-    init(_ spec: CheckboxSpec, _ ctx: PageContext) {
+    init(_ spec: CheckboxWidgetSpec, _ ctx: PageContext) {
         self.container = TappableView()
         self.container.translatesAutoresizingMaskIntoConstraints = false
         self.spec = spec
@@ -150,20 +225,25 @@ class CheckboxWidget: Widget {
         guard let varSet = self.ctx.varSet, let pageStack = self.ctx.pageStack else {
             return
         }
-        let originalVarValue: Bool? = varSet.bool(self.spec.varName)
-        let originalValue = originalVarValue ?? self.spec.initialBool ?? false
-        let newValue: Bool = !originalValue
-        varSet.set(self.spec.varName, .bool(newValue))
-        self.updateButton(checked: newValue, title: self.spec.text)
-        if !self.spec.actions.isEmpty {
-            let ok = await pageStack.doActions(self.spec.actions)
-            if !ok {
-                varSet.setBool(self.spec.varName, originalVarValue)
-                self.updateButton(checked: !newValue, title: self.spec.text)
+        switch self.spec {
+        case let .checkbox(spec):
+            let originalVarValue: Bool? = varSet.bool(spec.varName)
+            let originalValue = originalVarValue ?? spec.initialBool ?? false
+            let newValue: Bool = !originalValue
+            varSet.set(spec.varName, .bool(newValue))
+            self.updateButton(checked: newValue, title: spec.text)
+            if !spec.actions.isEmpty {
+                let ok = await pageStack.doActions(spec.actions)
+                if !ok {
+                    varSet.setBool(spec.varName, originalVarValue)
+                    self.updateButton(checked: !newValue, title: spec.text)
+                }
             }
-        }
-        if let pollDelayMs = self.spec.pollDelayMs {
-            self.ctx.foregroundPoller?.schedulePoll(delayMillis: pollDelayMs)
+            if let pollDelayMs = spec.pollDelayMs {
+                self.ctx.foregroundPoller?.schedulePoll(delayMillis: pollDelayMs)
+            }
+        case let .checkboxButton(spec):
+            let _ = await pageStack.doActions(spec.actions)
         }
     }
 
@@ -171,17 +251,30 @@ class CheckboxWidget: Widget {
         guard let varSet = self.ctx.varSet else {
             return
         }
-        guard case let .checkbox(checkboxSpec) = spec.value else {
-            throw "Expected .checkbox got: \(spec)"
+        switch spec.value {
+        case let .checkbox(spec):
+            self.spec = .checkbox(spec)
+        case let .checkboxButton(spec):
+            self.spec = .checkboxButton(spec)
+        default:
+            throw "Expected .checkbox or .checkboxButton got: \(spec)"
         }
         if !subs.isEmpty {
             throw "Expected no subs got: \(subs)"
         }
-        self.spec = checkboxSpec
-        self.button.setTitle(self.spec.text ?? "", for: .normal)
-        let checked = varSet.bool(self.spec.varName) ?? self.spec.initialBool ?? false
-        Task {
-            await self.updateButton(checked: checked, title: self.spec.text)
+        switch self.spec {
+        case let .checkbox(spec):
+            self.button.setTitle(spec.text ?? "", for: .normal)
+            let checked = varSet.bool(spec.varName) ?? spec.initialBool ?? false
+            Task {
+                await self.updateButton(checked: checked, title: spec.text)
+            }
+        case let .checkboxButton(spec):
+            self.button.setTitle(spec.text ?? "", for: .normal)
+            let checked = spec.initialBool ?? false
+            Task {
+                await self.updateButton(checked: checked, title: spec.text)
+            }
         }
     }
 }

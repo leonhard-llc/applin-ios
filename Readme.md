@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## Changes
+- v0.38.0 - Add checkbox_button widget.
 - v0.37.0 - Update form_section to modern style.  Make form background dark and remove separators.
 - v0.36.0 - Add `reset_var` action.
 - v0.35.0 - Add `stop_actions` action.
