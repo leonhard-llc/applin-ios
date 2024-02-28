@@ -242,10 +242,10 @@
 		CE222B852B47386500550566 /* page */ = {
 			isa = PBXGroup;
 			children = (
-				CE222B8A2B47386500550566 /* page.swift */,
-				CE222B862B47386500550566 /* plain_page.swift */,
 				CE222B892B47386500550566 /* markdown_page.swift */,
 				CE222B882B47386500550566 /* nav_page.swift */,
+				CE222B8A2B47386500550566 /* page.swift */,
+				CE222B862B47386500550566 /* plain_page.swift */,
 				CE222B872B47386500550566 /* widget_cache.swift */,
 			);
 			path = page;
@@ -254,27 +254,27 @@
 		CE222B8B2B47386500550566 /* widget */ = {
 			isa = PBXGroup;
 			children = (
-				CE222B8C2B47386500550566 /* error_text.swift */,
-				CE222B8D2B47386500550566 /* scroll.swift */,
 				CE222B8E2B47386500550566 /* back_button.swift */,
-				CE222B8F2B47386500550566 /* empty.swift */,
-				CE222B902B47386500550566 /* selector.swift */,
-				CE222B912B47386500550566 /* image.swift */,
-				CE222B922B47386500550566 /* widget_util.swift */,
-				CE222B932B47386500550566 /* column.swift */,
-				CE222B942B47386500550566 /* grouped_row_table.swift */,
-				CE222B952B47386500550566 /* textfield.swift */,
-				CE222B962B47386500550566 /* media.swift */,
-				CE222B972B47386500550566 /* form.swift */,
-				CE222B982B47386500550566 /* form_section.swift */,
-				CE222B992B47386500550566 /* last_error_text.swift */,
-				CE222B9A2B47386500550566 /* form_button.swift */,
-				CE222B9B2B47386500550566 /* row.swift */,
-				CE222B9C2B47386500550566 /* widget.swift */,
-				CE222B9D2B47386500550566 /* nav_button.swift */,
-				CE222B9E2B47386500550566 /* checkbox.swift */,
-				CE222B9F2B47386500550566 /* text.swift */,
 				CE222BA02B47386500550566 /* button.swift */,
+				CE222B9E2B47386500550566 /* checkbox.swift */,
+				CE222B932B47386500550566 /* column.swift */,
+				CE222B8F2B47386500550566 /* empty.swift */,
+				CE222B8C2B47386500550566 /* error_text.swift */,
+				CE222B9A2B47386500550566 /* form_button.swift */,
+				CE222B982B47386500550566 /* form_section.swift */,
+				CE222B972B47386500550566 /* form.swift */,
+				CE222B942B47386500550566 /* grouped_row_table.swift */,
+				CE222B912B47386500550566 /* image.swift */,
+				CE222B992B47386500550566 /* last_error_text.swift */,
+				CE222B962B47386500550566 /* media.swift */,
+				CE222B9D2B47386500550566 /* nav_button.swift */,
+				CE222B9B2B47386500550566 /* row.swift */,
+				CE222B8D2B47386500550566 /* scroll.swift */,
+				CE222B902B47386500550566 /* selector.swift */,
+				CE222B9F2B47386500550566 /* text.swift */,
+				CE222B952B47386500550566 /* textfield.swift */,
+				CE222B922B47386500550566 /* widget_util.swift */,
+				CE222B9C2B47386500550566 /* widget.swift */,
 			);
 			path = widget;
 			sourceTree = "<group>";
@@ -282,14 +282,14 @@
 		CE222BA12B47386500550566 /* util */ = {
 			isa = PBXGroup;
 			children = (
-				CE222BA22B47386500550566 /* WallClock.swift */,
-				CE222BA32B47386500550566 /* AtomicUInt64.swift */,
+				CE222BA72B47386500550566 /* ApplinLock.swift */,
 				CE222BA42B47386500550566 /* ApplinMutex.swift */,
 				CE222BA52B47386500550566 /* ApplinPromise.swift */,
-				CE222BA62B47386500550566 /* LamportClock.swift */,
-				CE222BA72B47386500550566 /* ApplinLock.swift */,
 				CE222BA82B47386500550566 /* AtomicBool.swift */,
+				CE222BA32B47386500550566 /* AtomicUInt64.swift */,
+				CE222BA62B47386500550566 /* LamportClock.swift */,
 				CE222BA92B47386500550566 /* RetryMillis.swift */,
+				CE222BA22B47386500550566 /* WallClock.swift */,
 				CE222BAA2B47386500550566 /* Weak.swift */,
 			);
 			path = util;
@@ -298,21 +298,21 @@
 		CE222BAC2B47386500550566 /* view */ = {
 			isa = PBXGroup;
 			children = (
+				CE222BB52B47386500550566 /* badge.swift */,
+				CE222BB02B47386500550566 /* column_view.swift */,
+				CE222BB82B47386500550566 /* ErrorView.swift */,
+				CE222BB12B47386500550566 /* image_view.swift */,
 				CE222BAD2B47386500550566 /* Label.swift */,
+				CE222BB92B47386500550566 /* LoadingPageController.swift */,
+				CE222BBB2B47386500550566 /* NamedUIView.swift */,
+				CE222BB62B47386500550566 /* NavigationController.swift */,
+				CE222BBA2B47386500550566 /* PaddedLabel.swift */,
 				CE222BAE2B47386500550566 /* row_view.swift */,
 				CE222BAF2B47386500550566 /* session_status.swift */,
-				CE222BB02B47386500550566 /* column_view.swift */,
-				CE222BB12B47386500550566 /* image_view.swift */,
 				CE222BB22B47386500550566 /* table_view.swift */,
+				CE222BB72B47386500550566 /* tappable_view.swift */,
 				CE222BB32B47386500550566 /* view_util.swift */,
 				CE222BB42B47386500550566 /* working.swift */,
-				CE222BB52B47386500550566 /* badge.swift */,
-				CE222BB62B47386500550566 /* NavigationController.swift */,
-				CE222BB72B47386500550566 /* tappable_view.swift */,
-				CE222BB82B47386500550566 /* ErrorView.swift */,
-				CE222BB92B47386500550566 /* LoadingPageController.swift */,
-				CE222BBA2B47386500550566 /* PaddedLabel.swift */,
-				CE222BBB2B47386500550566 /* NamedUIView.swift */,
 			);
 			path = view;
 			sourceTree = "<group>";
@@ -320,23 +320,23 @@
 		CE222BC02B47386500550566 /* session */ = {
 			isa = PBXGroup;
 			children = (
-				CE222BC12B47386500550566 /* connection.swift */,
-				CE222BC22B47386500550566 /* PhotoEditor.swift */,
-				CE222BC32B47386500550566 /* VarSet.swift */,
-				CE222BC42B47386500550566 /* error.swift */,
-				CE222BC52B47386500550566 /* ServerCaller.swift */,
-				CE222BC62B47386500550566 /* PhotoTaker.swift */,
-				CE222BC72B47386500550566 /* PageStack.swift */,
-				CE222BC82B47386500550566 /* state_file.swift */,
-				CE222BC92B47386500550566 /* Poller.swift */,
-				CE222BCA2B47386500550566 /* json.swift */,
-				CE222BCB2B47386500550566 /* cookies.swift */,
-				CE222BCC2B47386500550566 /* util.swift */,
-				CE222BCD2B47386500550566 /* json_item.swift */,
-				CE222BCE2B47386500550566 /* ForegounrdPoller.swift */,
-				CE222BCF2B47386500550566 /* streamer.swift */,
 				CE222BD02B47386500550566 /* action.swift */,
+				CE222BC12B47386500550566 /* connection.swift */,
+				CE222BCB2B47386500550566 /* cookies.swift */,
+				CE222BC42B47386500550566 /* error.swift */,
+				CE222BCE2B47386500550566 /* ForegounrdPoller.swift */,
+				CE222BCD2B47386500550566 /* json_item.swift */,
+				CE222BCA2B47386500550566 /* json.swift */,
+				CE222BC72B47386500550566 /* PageStack.swift */,
+				CE222BC22B47386500550566 /* PhotoEditor.swift */,
 				CE222BD12B47386500550566 /* PhotoPicker.swift */,
+				CE222BC62B47386500550566 /* PhotoTaker.swift */,
+				CE222BC92B47386500550566 /* Poller.swift */,
+				CE222BC52B47386500550566 /* ServerCaller.swift */,
+				CE222BC82B47386500550566 /* state_file.swift */,
+				CE222BCF2B47386500550566 /* streamer.swift */,
+				CE222BCC2B47386500550566 /* util.swift */,
+				CE222BC32B47386500550566 /* VarSet.swift */,
 			);
 			path = session;
 			sourceTree = "<group>";
