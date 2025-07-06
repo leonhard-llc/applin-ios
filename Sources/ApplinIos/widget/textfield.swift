@@ -115,7 +115,7 @@ public struct TextfieldSpec: Equatable, Hashable, ToSpec {
 
 class TextfieldWidget: NSObject, UITextViewDelegate, Widget {
     static let BORDER_COLOR: UIColor = UIColor.label
-    static let BORDER_WIDTH: CGFloat = 0.7
+    static let BORDER_WIDTH: CGFloat = 1.0
     static let CORNER_RADIUS: CGFloat = 10.0
     static let ERROR_IMAGE = UIImage(systemName: "exclamationmark.circle")
     static let logger = Logger(subsystem: "Applin", category: "TextfieldWidget")

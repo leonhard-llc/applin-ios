@@ -63,3 +63,9 @@ SOFTWARE.
 - v0.24.0
     - Add `on_user_error_poll` action.
     - Remove `nothing` action.
+
+# TO DO
+- TODO: Gracefully handle a page that has too many items in it (720 sections).
+- TODO: Reset routes to homepage when app is killed, so user can escape a broken page.
+- TODO: Allow using Applin for a single page
+- TODO: Allow using Applin for a single UIView.

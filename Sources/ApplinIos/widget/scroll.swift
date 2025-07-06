@@ -120,6 +120,9 @@ class ScrollWidget: Widget {
     init() {
         self.scrollView = KeyboardAvoidingScrollView()
         self.scrollView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            self.scrollView.heightAnchor.constraint(equalToConstant: 100_000.0).withPriority(.defaultLow + 1.0),
+        ])
         self.scrollView.keyboardDismissMode = .interactive
         self.helper = SingleViewContainerHelper(superView: self.scrollView)
         self.refreshControl = UIRefreshControl()
