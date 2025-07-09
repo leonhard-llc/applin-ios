@@ -12,7 +12,6 @@ public class ApplinConfig {
     public let applinStateLoadErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec
     public let applinUserErrorPage: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec
     public let dataDirPath: String
-    public let licenseKey: ApplinLicenseKey?
     public let showPageOnFirstStartup: String
     public let staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec]
     public let statusPageUrl: URL?
@@ -23,20 +22,18 @@ public class ApplinConfig {
 
     public init(
             appStoreAppId: UInt64,
+            baseUrl: URL,
             dataDirPath: String = getDataDirPath(),
             showPageOnFirstStartup: String,
             staticPages: [String: (_ config: ApplinConfig, _ pageKey: String) -> ToPageSpec],
-            urlForDebugBuilds: URL,
-            urlForSimulatorBuilds: URL,
-            licenseKey: ApplinLicenseKey?,
             statusPageUrl: URL? = nil,
             supportChatUrl: URL? = nil,
             supportEmailAddress: String? = nil,
             supportSmsTel: String? = nil
     ) throws {
         self.appStoreAppId = appStoreAppId
+        self.baseUrl = baseUrl
         self.dataDirPath = dataDirPath
-        self.licenseKey = licenseKey
         self.staticPages = staticPages
         self.applinClientErrorPage = self.staticPages[StaticPageKeys.APPLIN_CLIENT_ERROR]!
         self.applinNetworkErrorPage = self.staticPages[StaticPageKeys.APPLIN_NETWORK_ERROR]!
@@ -49,13 +46,6 @@ public class ApplinConfig {
         self.supportChatUrl = supportChatUrl
         self.supportEmailAddress = supportEmailAddress
         self.supportSmsTel = supportSmsTel
-        #if targetEnvironment(simulator)
-        self.baseUrl = urlForSimulatorBuilds
-        #elseif DEBUG
-        self.baseUrl = urlForDebugBuilds
-        #else
-        self.baseUrl = self.licenseKey!.url
-        #endif
         Self.logger.info("dataDirPath=\(dataDirPath) baseUrl=\(self.baseUrl)")
         try createDir(self.dataDirPath)
     }
@@ -102,7 +92,6 @@ public class ApplinConfig {
         self.applinStateLoadErrorPage = config.applinStateLoadErrorPage
         self.applinUserErrorPage = config.applinUserErrorPage
         self.dataDirPath = config.dataDirPath
-        self.licenseKey = config.licenseKey
         self.showPageOnFirstStartup = config.showPageOnFirstStartup
         self.staticPages = config.staticPages
         self.statusPageUrl = config.statusPageUrl
@@ -110,15 +99,5 @@ public class ApplinConfig {
         self.supportEmailAddress = config.supportEmailAddress
         self.supportSmsTel = config.supportSmsTel
         self.baseUrl = baseUrl
-    }
-
-    public func restricted_withBaseUrl(_ baseUrl: URL) throws -> ApplinConfig {
-        guard let key = self.licenseKey else {
-            throw "licenseKey required"
-        }
-        if !key.string.starts(with: "14NNS-2E") {
-            throw "this method is restricted"
-        }
-        return ApplinConfig(self, baseUrl: baseUrl)
     }
 }

@@ -13,6 +13,7 @@ class WidgetCacheTests: XCTestCase {
         self.optTempDir = tempDir
         self.config = try ApplinConfig(
                 appStoreAppId: 0,
+                baseUrl: URL(string: "https://test1/")!,
                 showPageOnFirstStartup: "/",
                 staticPages: [
                     // Required
@@ -22,10 +23,7 @@ class WidgetCacheTests: XCTestCase {
                     StaticPageKeys.APPLIN_SERVER_ERROR: StaticPages.applinServerError,
                     StaticPageKeys.APPLIN_STATE_LOAD_ERROR: StaticPages.applinStateLoadError,
                     StaticPageKeys.APPLIN_USER_ERROR: StaticPages.applinUserError,
-                ],
-                urlForDebugBuilds: URL(string: "https://test1/")!,
-                urlForSimulatorBuilds: URL(string: "https://test1/")!,
-                licenseKey: nil)
+                ])
         self.ctx = PageContext(nil, hasPrevPage: false, pageKey: "/", nil, nil, nil)
     }
 

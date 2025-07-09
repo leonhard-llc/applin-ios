@@ -2,36 +2,14 @@
 
 How to use this library: https://www.applin.dev/docs/ios/
 
-## License
-
-You may use this software to build and test apps.
-To use this software in a released or distributed app,
-you must maintain a valid license for it.
-See https://www.applin.dev/ .
-
-When you build in `Release` mode:
-
-- Applin checks the license key.
-  If the key is missing or invalid, your app will not start.
-- Applin reports its app ID and license key to Leonhard LLC.
-  Approximately 1% of app installs per month will do this.
-
-You may not disable or interfere with these functions.
-
-Licenses expire, but keys do not contain the expiration date.
-An app with an expired license will run.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+License: Apache 2.0
 
 ## Changes
+
+- v0.40.0 - Apache 2.0 license. Removed `ApplinLicenseKey` class.
+- v0.39.0 - Bug fixes.
 - v0.38.0 - Add checkbox_button widget.
-- v0.37.0 - Update form_section to modern style.  Make form background dark and remove separators.
+- v0.37.0 - Update form_section to modern style. Make form background dark and remove separators.
 - v0.36.0 - Add `reset_var` action.
 - v0.35.0 - Add `stop_actions` action.
 - v0.34.0
@@ -65,7 +43,7 @@ SOFTWARE.
     - Remove `nothing` action.
 
 # TO DO
+
 - TODO: Gracefully handle a page that has too many items in it (720 sections).
-- TODO: Reset routes to homepage when app is killed, so user can escape a broken page.
 - TODO: Allow using Applin for a single page
 - TODO: Allow using Applin for a single UIView.
